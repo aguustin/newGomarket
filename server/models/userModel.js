@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
 
-const userSchema = mongoose.Schema({
-    nombreCompleto: {String},
-    mail: {String},
-    celular: {Number},
-    país: {String},
-    contrasenia: {String},
+const userSchema = new mongoose.Schema({
+    nombreCompleto: {type: String},
+    mail: {type: String},
+    celular: {type: Number},
+    pais: {type: String},
+    contrasenia: {type: String},
     misTickets:[{
-        categoriaId: {String}
+        categoriaId: {type: String}
     }]
 })
 
-export default mongoose.model('userModel', userSchema)
+const userModel = mongoose.model('userModel', userSchema) 
+
+export default userModel

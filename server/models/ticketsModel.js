@@ -1,64 +1,66 @@
 import mongoose from "mongoose";
 
 const ticketSchema = mongoose.Schema({
-    userId: {String}, 
-    paisDestino: {String},
-    tipoEvento: {String},
-    eventoEdad: {String},
-    consumoDeCarta: {String},
-    nombreEvento:{String},
-    efectivo: {Number}, /*(es si hay entradas en efectivo o no hay),*/
-    linkEvento: {String},
+    userId: {type: String}, 
+    paisDestino: {type: String},
+    tipoEvento: {type: String},
+    eventoEdad: {type: String},
+    consumoDeCarta: {type: String},
+    nombreEvento:{type: String},
+    montoVentas:{type: Number},
+    efectivo: {type: Number}, /*(es si hay entradas en efectivo o no hay),*/
+    linkEvento: {type: String},
     categorías:[{
-        nombreCategoria:{String},
-        vendidos: {Number},
-        devoluciones: {Number},
-        cortesías: {Number},
-        valorUnidad: {Number},
-        montoVendido: {Number},
-        montoDevoluciones: {Number},
-        montoDescuento: {Number},
-        montoTotal: {Number}
+        nombreCategoria:{type: String},
+        vendidos: {type: Number},
+        devoluciones: {type: Number},
+        cortesías: {type: Number},
+        valorUnidad: {type: Number},
+        montoVendido: {type: Number},
+        montoDevoluciones: {type: Number},
+        montoDescuento: {type: Number},
+        montoTotal: {type: Number}
     }],
-    Artistas: {String},
-    descripcionEvento: {String},
-    fechaInicio: {Date},
-    fechaFin: {Date},
-    provincia: {String},
-    localidad: {String},
-    dirección: {String},
-    lugarEvento: {String},
-    imgEvento: {String},
+    artistas: {type: String},
+    descripcionEvento: {type: String},
+    fechaInicio: {type: Date},
+    fechaFin: {type: Date},
+    provincia: {type: String},
+    localidad: {type: String},
+    dirección: {type: String},
+    lugarEvento: {type: String},
+    imgEvento: {type: String},
+    linkVideo:{type:String},
     tickets:[{
-            nombreTicket: {String},
-            descripcionTicket: {String},
-            precio: {Number},
-            cantidad: {Number},
-            fechaDeCierre: {Date},
-            imgTicket: {String}
+            nombreTicket: {type: String},
+            descripcionTicket: {type: String},
+            precio: {type: Number},
+            cantidad: {type: Number},
+            fechaDeCierre: {type: Date},
+            imgTicket: {type: String}
     }],
     rrpp:[{
-        nombre: {String},
+        nombre: {type: String},
         ticketsVenta:[{
-            idTicket: {String},
-            categoriaTicket: {String},
-            cantidad: {Number},
-            vendidos: {Number}
+            idTicket: {type: String},
+            categoriaTicket: {type: String},
+            cantidad: {type: Number},
+            vendidos: {type: Number}
         }],
         ticketsCortesia:[{
-            idTicket: {String},
-            categoriaTicket:{String},
-            cantidad: {Number},
-            entregados: {Number},
+            idTicket: {type: String},
+            categoriaTicket:{type: String},
+            cantidad: {type: Number},
+            entregados: {type: Number},
         }]
     }],
-    totalVentas: {Number},
-    totalDevoluciones:{ Number},
-    totalCortesias: {Number},
-    totalMontoVentido: {Number},
-    totalMontoDevoluciones:{Number},
-    totalMontoDescuento: {Number},
-    montoTotal: {Number}
+    totalVentas: {type: Number},
+    totalDevoluciones:{ type: Number},
+    totalCortesias: {type: Number},
+    totalMontoVentido: {type: Number},
+    totalMontoDevoluciones:{type: Number},
+    totalMontoDescuento: {type: Number},
+    montoTotal: {type: Number}
 
 })
 
