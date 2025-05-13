@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const ticketSchema = mongoose.Schema({
+const ticketSchema = new mongoose.Schema({
     userId: {type: String}, 
     paisDestino: {type: String},
     tipoEvento: {type: String},
@@ -23,6 +23,7 @@ const ticketSchema = mongoose.Schema({
     }],
     artistas: {type: String},
     descripcionEvento: {type: String},
+    categorias: {type: String},
     fechaInicio: {type: Date},
     fechaFin: {type: Date},
     provincia: {type: String},
@@ -64,4 +65,6 @@ const ticketSchema = mongoose.Schema({
 
 })
 
-export default mongoose.model('ticketsModel', ticketSchema)
+const ticketModel =  mongoose.model('ticketsModel', ticketSchema)
+
+export default ticketModel
