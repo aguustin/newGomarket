@@ -108,6 +108,21 @@ export const updateEventTicketsController = async (req, res) => {
 }
 
 
+export const getMyProdsController = async (req, res) => {
+    const {userId} = req.params
+    const findProds = await ticketModel.find({userId: userId})
+    res.status(200).json(findProds)
+}
+
+export const getOneProdController = async (req, res) => {
+    const {prodId} = req.params
+
+    const getProd = await ticketModel.find({_id: prodId})
+    
+    res.send(getProd)
+}
+
+
 export const updateEventController = async (req, res) => {
 
 }

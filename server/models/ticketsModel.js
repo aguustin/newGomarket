@@ -58,7 +58,7 @@ const ticketSchema = new mongoose.Schema({
     totalVentas: {type: Number},
     totalDevoluciones:{ type: Number},
     totalCortesias: {type: Number},
-    totalMontoVentido: {type: Number},
+    totalMontoVendido: {type: Number},
     totalMontoDevoluciones:{type: Number},
     totalMontoDescuento: {type: Number},
     montoTotal: {type: Number}

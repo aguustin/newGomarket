@@ -35,10 +35,11 @@ export const registerController = async (req, res) => {
 export const loginController = async (req, res) => {
     const {mail, contrasenia} = req.body
     const userFinded = await userModel.find({mail: mail})
+
     if(userFinded.length > 0){
         const decryptContrasenia = await bcrypt.compare(contrasenia, userFinded[0].contrasenia)
         if(decryptContrasenia){
-            return res.send(userFinded)
+            return res.status(200).json({userFinded, estado: 1 })
         }else{
             return res.status(200).json(2)
         }
