@@ -28,7 +28,7 @@ const ticketSchema = new mongoose.Schema({
     fechaFin: {type: Date},
     provincia: {type: String},
     localidad: {type: String},
-    dirección: {type: String},
+    direccion: {type: String},
     lugarEvento: {type: String},
     imgEvento: {type: String},
     linkVideo:{type:String},
@@ -38,7 +38,8 @@ const ticketSchema = new mongoose.Schema({
             precio: {type: Number},
             cantidad: {type: Number},
             fechaDeCierre: {type: Date},
-            imgTicket: {type: String}
+            imgTicket: {type: String},
+            visibilidad:{type: String}
     }],
     rrpp:[{
         nombre: {type: String},

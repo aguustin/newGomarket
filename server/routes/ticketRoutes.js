@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEventController, getAllEventsController, getMyProdsController, getOneProdController, updateEventTicketsController } from "../controllers/eventController.js";
+import { createEventController, getAllEventsController, getMyProdsController, getOneProdController, updateEventController, updateEventTicketsController } from "../controllers/eventController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -10,7 +10,11 @@ router.get('/getAllEvents', getAllEventsController)
 
 router.post('/createEvent', upload.single('imgEvento'), createEventController)
 
-router.post('/updateEventTickets', upload.single('imgTicket'), updateEventTicketsController)
+router.post('/createEventTickets', /*upload.single('imgTicket'),*/ createEventController)
+
+router.post('/updateEvent', upload.single('imgEvento'),  updateEventController)
+
+router.post('/updateTickets', upload.single('imgTicket'), updateEventTicketsController)
 
 router.get('/my_productions/:userId', getMyProdsController)
 

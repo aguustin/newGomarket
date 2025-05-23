@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createEventRequest, updateEventTicketsRequest } from "../../api/eventRequests"
+import { createEventRequest, createEventTicketsRequest } from "../../api/eventRequests"
 
 const CreateEventForm = () => {
 
@@ -56,7 +56,7 @@ const CreateEventForm = () => {
         formData.append('cantidad', e.target.elements.cantidad.value)
         formData.append('fechaDeCierre', new Date(closeDate))
         formData.append('imgTicket', e.target.elements.imgTicket.files[0])
-        updateEventTicketsRequest(formData)
+        createEventTicketsRequest(formData)
         setDisabledButton(false)
     }
 
