@@ -37,6 +37,7 @@ const ticketSchema = new mongoose.Schema({
             descripcionTicket: {type: String},
             precio: {type: Number},
             cantidad: {type: Number},
+            ventas:{type:Number},
             fechaDeCierre: {type: Date},
             imgTicket: {type: String},
             visibilidad:{type: String}

@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
-import { getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
+import { createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
 
 const EditProd = () => {
     const prodId = useParams()
     const fileRef = useRef(null);
     const fileRefsB = useRef({})
+    const [closeDate, setCloseDate] = useState()
     const [prod, setProd] = useState([])
     const [ticketData, setTicketData] = useState({});
     const [eventosEditados, setEventosEditados] = useState({});
+    const [visibilidad, setVisibilidad] = useState()
 
     useEffect(() => {
         const getOneProd = async () => {
@@ -53,7 +55,7 @@ const EditProd = () => {
 
     }
     
-    const editEventTicket = async (e, ticketId, imgTicket, nombreTicket, descripcionTicket, precio, visibilidad) => {
+    const editEventTicket = async (e, ticketId, imgTicket, nombreTicket, descripcionTicket, precio, fechaDeCierre, visibilidad) => {
         e.preventDefault()
        const formData = new FormData()
        const fileInput = fileRefsB.current[ticketId];
@@ -68,9 +70,9 @@ const EditProd = () => {
         formData.append('nombreTicket', dataToUpdate?.nombreTicket ?? nombreTicket)
         formData.append('descripcionTicket', dataToUpdate?.descripcionTicket ?? descripcionTicket)
         formData.append('precio', dataToUpdate?.precio ?? precio)
+        formData.append('fechaDeCierre', dataToUpdate?.fechaDeCierre ?? fechaDeCierre)
         formData.append('visibilidad', dataToUpdate?.visibilidad ?? visibilidad)
         const res = await updateTicketsRequest(formData)
-        console.log("ok: ", res.data)
     }
 
     const handleChangeEvento = (e, id, field) => {
@@ -84,6 +86,22 @@ const EditProd = () => {
         }));
         console.log(eventosEditados?.nombreEvento)
     };
+
+      const createEventTickets = (e) => {
+            e.preventDefault()
+            console.log('entro', prodId.prodId)
+            const formData = new FormData()
+            formData.append('prodId', prodId.prodId)
+            formData.append('nombreTicket', e.target.elements.nombreTicket.value)
+            formData.append('descripcionTicket', e.target.elements.descripcionTicket.value)
+            formData.append('precio', e.target.elements.precio.value)
+            formData.append('cantidad', e.target.elements.cantidad.value)
+            formData.append('fechaDeCierre', new Date(closeDate))
+            formData.append('imgTicket', e.target.elements.imgTicket.files[0])
+            formData.append('visibilidad', visibilidad)
+            createEventTicketsRequest(formData)
+            setVisibilidad()
+        }
 
     return(
         <>
@@ -198,6 +216,22 @@ const EditProd = () => {
                                     }))
                                     }></input>
                                     </div>
+                                    <div>
+                                        <div className="flex items-center">
+                                        <label>Fecha de cierre: </label><br></br>
+                                        <label>{tick.fechaDeCierre}</label>
+                                        <label>Cambiar fecha a:</label>
+                                        <input type="datetime-local" value={ticketData[tick._id]?.fechaDeCierre ?? tick.fechaDeCierre}  onChange={(e) =>
+                                        setTicketData(prev => ({
+                                        ...prev,
+                                        [tick._id]: {
+                                            ...prev[tick._id],
+                                            fechaDeCierre: e.target.value
+                                            }
+                                         }))
+                                    }></input>
+                                        </div>
+                                    </div>
                                      <div>
                                         <label>Visibilidad</label><br></br>
                                         <input type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>
@@ -210,12 +244,50 @@ const EditProd = () => {
                                          }))
                                     }></input>
                                     </div>
-                                    <button onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.visibilidad)}>Editar</button>
+                                    <button onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.fechaDeCierre, tick.visibilidad)}>Editar</button>
                                 </div>
                             </div> 
                         )
                     )}
-
+                        <form onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
+                            <div className="mt-9">
+                                <h3>Crear nuevo ticket</h3>
+                                <div>
+                                    <label>Nombre del ticket</label>
+                                    <input type="text" placeholder="..." name="nombreTicket" required></input>
+                                </div>
+                                <div>
+                                    <label>Descripcion del ticket</label>
+                                    <input type="text" placeholder="..." name="descripcionTicket" required></input>
+                                </div>
+                                <div className="flex items-center">
+                                    <div>
+                                        <label>Precio del ticket</label>
+                                        <input type="number" placeholder="..." name="precio" required></input>
+                                    </div>
+                                    <div>
+                                        <label>Cantidad</label>
+                                        <input type="number" placeholder="..." name="cantidad" required></input>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>Fecha y hora de fin:</label>
+                                    <input type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
+                                </div>
+                                <div>
+                                        <label>Visibilidad</label><br></br>
+                                        <input type="checkbox" name="visibilidad" onChange={(e) => setVisibilidad(e.target.value)}/>
+                                </div>
+                                <div>
+                                    <label>Imagen del ticket</label>
+                                    <input type="file" name="imgTicket"></input>
+                                </div>
+                            </div>
+                            <div className="flex items-center">
+                                <button type="submit">Agregar tickets</button>
+                            </div>
+                        </form>
+                        <a href="/">Continuar</a>
                 </div>
         </>
     )

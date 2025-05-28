@@ -62,11 +62,11 @@ export const createEventController = async (req, res) => {
 };
 
 export const createEventTicketsController = async (req, res) => {
-    const {eventId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre} = req.body
+    const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad} = req.body
 
         if(!req.file){
                 await ticketModel.updateOne(
-            {_id: eventId},
+            {_id: prodId},
             {
                 $addToSet:{
                     tickets:{
@@ -75,6 +75,7 @@ export const createEventTicketsController = async (req, res) => {
                         precio: precio,
                         cantidad: cantidad,
                         fechaDeCierre: fechaDeCierre,
+                        visibilidad: visibilidad,
                         imgTicket: 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg'
                     }
                 }
@@ -90,7 +91,7 @@ export const createEventTicketsController = async (req, res) => {
         }
           
         await ticketModel.updateOne(
-            {_id: eventId},
+            {_id: prodId},
             {
                 $addToSet:{
                     tickets:{
@@ -99,6 +100,7 @@ export const createEventTicketsController = async (req, res) => {
                         precio: precio,
                         cantidad: cantidad,
                         fechaDeCierre: fechaDeCierre,
+                        visibilidad: visibilidad,
                         imgTicket: result.secure_url
                     }
                 }
@@ -166,12 +168,15 @@ export const updateEventController = async (req, res) => {
 }
 
 export const updateEventTicketsController = async (req, res) => {
-    const {ticketId, nombreTicket, descripcionTicket, precio, visibilidad} = req.body
+    const {ticketId, nombreTicket, descripcionTicket, precio, fechaDeCierre, visibilidad} = req.body
+
     console.log(ticketId)
+
     const updateFields = { 
         nombreTicket, 
         descripcionTicket, 
         precio,
+        fechaDeCierre,
         visibilidad
     }
 
@@ -195,6 +200,7 @@ export const updateEventTicketsController = async (req, res) => {
                         "tickets.$.nombreTicket": updateFields.nombreTicket,
                         "tickets.$.descripcionTicket": updateFields.descripcionTicket,
                         "tickets.$.precio": updateFields.precio,
+                        "tickets.$.fechaDeCierre":updateFields.fechaDeCierre,
                         "tickets.$.visibilidad": updateFields.visibilidad,
                         "tickets.$.imgTicket": updateFields.imgTicket
                     } 
@@ -212,6 +218,7 @@ export const updateEventTicketsController = async (req, res) => {
                         "tickets.$.nombreTicket": updateFields.nombreTicket,
                         "tickets.$.descripcionTicket": updateFields.descripcionTicket,
                         "tickets.$.precio": updateFields.precio,
+                        "tickets.$.fechaDeCierre":updateFields.fechaDeCierre,
                         "tickets.$.visibilidad": updateFields.visibilidad
                 } 
             }
@@ -219,4 +226,43 @@ export const updateEventTicketsController = async (req, res) => {
         res.send(200)
     }
 
+}
+
+export const getEventToBuyController = async (req, res) => {
+    const {prodId} = req.params
+
+    const getProd = await ticketModel.find({_id: prodId})
+    
+    res.send(getProd)
+}
+
+export const buyEventTicketsController = async (req, res) => {
+  const quantities = req.body; // El objeto que viene del frontend
+
+  try {
+    const ticketIds = Object.keys(quantities); // ['id1', 'id2', ...]
+
+    for (const ticketId of ticketIds) {
+      const quantityToAdd = quantities[ticketId];
+
+      if (quantityToAdd > 0) {
+        // Buscar el documento que contenga ese ticket en el array
+        const result = await ticketModel.updateOne(
+          {"tickets._id": ticketId },
+          {
+            $inc: { 
+                "tickets.$.ventas": quantityToAdd,
+                "tickets.$.cantidad": -quantityToAdd
+             }
+          }
+        );
+        console.log(`Actualizado ${ticketId}: +${quantityToAdd}`, result);
+      }
+    }
+
+    res.status(200).json({ message: "Tickets actualizados correctamente" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error actualizando tickets" });
+  }
 }

@@ -13,3 +13,7 @@ export const updateTicketsRequest = (formData) => axios.post('http://localhost:4
 export const getProdsRequest = (userId) => axios.get(`http://localhost:4000/my_productions/${userId}`)
 
 export const getOneProdRequest = (prodId) => axios.get(`http://localhost:4000/get_prod/${prodId}`)
+
+export const getEventToBuyRequest = (prodId) => axios.get(`http://localhost:4000/buy_tickets/${prodId}`)
+
+export const buyTicketsRequest = (quantities) => axios.post('http://localhost:4000/buy', quantities)
