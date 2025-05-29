@@ -7,7 +7,8 @@ const BuyTicket = () => {
     const [prod, setProd] = useState([])
     const [quantity, setQuantity] = useState(0)
     const [quantities, setQuantities] = useState({});
-    console.log(prodId)
+    const [totalQuantity, setTotalQuantity] = useState(0)
+
     useEffect(() => {
             const getOneEvent = async () => {
                 const res = await getEventToBuyRequest(prodId.prodId)
@@ -21,6 +22,7 @@ const BuyTicket = () => {
         setQuantities(prev => {
             const current = prev[ticketId] || 0;
             if (current > 0) {
+                setTotalQuantity(totalQuantity - 1)
                 return {
                     ...prev,
                     [ticketId]: current - 1
@@ -34,10 +36,11 @@ const BuyTicket = () => {
         e.preventDefault()
         const ticketData = null
         if(quantity < 20){
-      setQuantities(prev => ({
-            ...prev,
-            [ticketId]: (prev[ticketId] || 0) + 1
-        }));
+            setTotalQuantity(totalQuantity + 1)
+            setQuantities(prev => ({
+                ...prev,
+                [ticketId]: (prev[ticketId] || 0) + 1
+            }));
         }
     }
 
@@ -45,17 +48,31 @@ const BuyTicket = () => {
         const qty = quantities[tck._id] || 0;
         return acc + qty * tck.precio;
     }, 0);
-    console.log(quantities)
+    
     const buyTickets = async (e) => {
-        e.preventDefault()
-        const res = await buyTicketsRequest(quantities)
+   try {
+    e.preventDefault();
+    const mail = e.target.elements.mail.value;
+
+    const data = await buyTicketsRequest(quantities, total, totalQuantity, mail, prod[0].nombreEvento);
+    console.log("Respuesta del backend:", data);
+
+    if (!data?.init_point) {
+      console.error("init_point no recibido");
+      return;
+    }
+
+    window.location.href = data.init_point;
+  } catch (error) {
+    console.error("Error en handlePayment:", error);
+  }
     }
 
     return(
         <>
         
             {prod.map((p) => 
-            <div>
+            <div key={p._id}>
                 <img src={p.imgEvento}></img>
             </div>
             )}
@@ -72,13 +89,9 @@ const BuyTicket = () => {
                     <label>Celular:</label>
                     <input type="number" name="celular" placeholder="Ej: 251222222"></input>
                 </div>
-                <div>
-                    <label>Celular:</label>
-                    <input type="number" name="celular" placeholder="Ej: 251222222"></input>
-                </div>
                {prod.map((p) =>
                     p.tickets.map((tck) => 
-                    <div>
+                    <div key={tck._id}>
                         <div className="flex">
                             <label>{tck.nombreTicket}: </label>
                             <div className="flex">

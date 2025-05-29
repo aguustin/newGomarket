@@ -5,6 +5,8 @@ import { connecDb } from "./connection.js"
 import userRoutes from "./routes/userRoutes.js"
 import ticketRoutes from "./routes/ticketRoutes.js"
 import cors from "cors"
+import dotenv from "dotenv"
+dotenv.config()
 
 const app = express()
 connecDb()

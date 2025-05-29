@@ -16,4 +16,22 @@ export const getOneProdRequest = (prodId) => axios.get(`http://localhost:4000/ge
 
 export const getEventToBuyRequest = (prodId) => axios.get(`http://localhost:4000/buy_tickets/${prodId}`)
 
-export const buyTicketsRequest = (quantities) => axios.post('http://localhost:4000/buy', quantities)
+//export const buyTicketsRequest = (quantities, total, totalQuantity, mail, nombreEvento) => axios.post('http://localhost:4000/buy', {quantities, total, totalQuantity, mail, nombreEvento})
+
+export const buyTicketsRequest = async (quantities, total, totalQuantity, mail, nombreEvento) => { 
+  try {
+    const response = await axios.post('http://localhost:4000/buy', {
+      quantities,
+      total,
+      totalQuantity,
+      mail,
+      nombreEvento,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error creando la preferencia de pago", error);
+    throw error;
+  }
+
+}
