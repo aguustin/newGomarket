@@ -246,13 +246,13 @@ export const buyEventTicketsController = async (req, res) => {
       items: [
         {
           title: `Ticket para ${nombreEvento}`,
-          quantity: totalQuantity,
+          quantity: 1,
           unit_price: total,
           currency_id: 'ARS',
         },
       ],
       payer: {
-        email: "priveros@godoycruz.gob.ar",
+        email: mail,
       },
       back_urls: {
         success: 'https://d775-200-32-101-183.ngrok-free.app/payment-success',

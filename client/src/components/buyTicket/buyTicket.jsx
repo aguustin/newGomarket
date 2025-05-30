@@ -50,22 +50,22 @@ const BuyTicket = () => {
     }, 0);
     
     const buyTickets = async (e) => {
-   try {
-    e.preventDefault();
-    const mail = e.target.elements.mail.value;
+            try {
+                e.preventDefault();
+                const mail = e.target.elements.mail.value;
 
-    const data = await buyTicketsRequest(quantities, total, totalQuantity, mail, prod[0].nombreEvento);
-    console.log("Respuesta del backend:", data);
+                const data = await buyTicketsRequest(quantities, total, totalQuantity, mail, prod[0].nombreEvento);
+                console.log("Respuesta del backend:", data);
 
-    if (!data?.init_point) {
-      console.error("init_point no recibido");
-      return;
-    }
+                if (!data?.init_point) {
+                console.error("init_point no recibido");
+                return;
+                }
 
-    window.location.href = data.init_point;
-  } catch (error) {
-    console.error("Error en handlePayment:", error);
-  }
+                window.location.href = data.init_point;
+            } catch (error) {
+                console.error("Error en handlePayment:", error);
+            }
     }
 
     return(
