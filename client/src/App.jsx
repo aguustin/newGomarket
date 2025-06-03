@@ -10,6 +10,7 @@ import Profile from './components/profile/profile'
 import Productions from './components/productions/productions'
 import EditProd from './components/editProd/editProd'
 import BuyTicket from './components/buyTicket/buyTicket'
+import TicketQr from './components/ticketqr/ticketqr'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path='/productions' element={<Productions/>}></Route>
             <Route path='/editar_evento/:prodId' element={<EditProd/>}></Route>
             <Route path='/buy_tickets/:prodId' element={<BuyTicket/>}></Route>
+            <Route path='/ticket/:eventId/:ticketId' element={<TicketQr/>}></Route>
           </Routes>
       </UserContextProvider>
     </BrowserRouter>

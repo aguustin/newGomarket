@@ -8,6 +8,7 @@ const BuyTicket = () => {
     const [quantity, setQuantity] = useState(0)
     const [quantities, setQuantities] = useState({});
     const [totalQuantity, setTotalQuantity] = useState(0)
+    const [ticketsIds, setTicketsIds] = useState()
 
     useEffect(() => {
             const getOneEvent = async () => {
@@ -28,7 +29,6 @@ const BuyTicket = () => {
                     [ticketId]: current - 1
                 };
             }
-            return prev;
         });
     };
 
@@ -39,7 +39,7 @@ const BuyTicket = () => {
             setTotalQuantity(totalQuantity + 1)
             setQuantities(prev => ({
                 ...prev,
-                [ticketId]: (prev[ticketId] || 0) + 1
+                [ticketId]: (prev[ticketId] || 0) + 1,
             }));
         }
     }
@@ -50,11 +50,11 @@ const BuyTicket = () => {
     }, 0);
     
     const buyTickets = async (e) => {
+              
             try {
                 e.preventDefault();
                 const mail = e.target.elements.mail.value;
-
-                const data = await buyTicketsRequest(quantities, total, totalQuantity, mail, prod[0].nombreEvento);
+                const data = await buyTicketsRequest(prod[0]._id, prod[0].nombreEvento, quantities, total, totalQuantity, mail);
                 console.log("Respuesta del backend:", data);
 
                 if (!data?.init_point) {
@@ -67,6 +67,7 @@ const BuyTicket = () => {
                 console.error("Error en handlePayment:", error);
             }
     }
+
 
     return(
         <>
@@ -87,7 +88,7 @@ const BuyTicket = () => {
                 </div>
                 <div>
                     <label>Celular:</label>
-                    <input type="number" name="celular" placeholder="Ej: 251222222"></input>
+                    <input type="number" name="celular" placeholder="Ej: 2613332221"></input>
                 </div>
                {prod.map((p) =>
                     p.tickets.map((tck) => 
@@ -95,9 +96,9 @@ const BuyTicket = () => {
                         <div className="flex">
                             <label>{tck.nombreTicket}: </label>
                             <div className="flex">
-                                <button onClick={(e) => restQuantity(e, tck._id, tck.precio)}>-</button>
+                                <button onClick={(e) => restQuantity(e, tck._id, tck.precio, tck.nombreTicket)}>-</button>
                                 <p>{quantities[tck._id] || 0}</p>
-                                <button onClick={(e) => addQuantity(e, tck._id, tck.precio)}>+</button>
+                                <button onClick={(e) => addQuantity(e, tck._id, tck.precio, tck.nombreTicket)}>+</button>
                                 <p>Precio c/u: {tck.precio}</p>
                             </div>
                         </div>

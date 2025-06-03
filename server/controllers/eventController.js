@@ -2,7 +2,11 @@ import mongoose from "mongoose";
 import cloudinary from "../middleware/cloudinary.js";
 import ticketModel from "../models/ticketsModel.js";
 import mercadopago from "../lib/mercadopago.js";
-
+import QRCode from 'qrcode';
+import nodemailer from 'nodemailer'; 
+import dotenv from 'dotenv';
+import { user_mail, pass } from "../config.js";
+dotenv.config();
 
 export const getAllEventsController = async (req, res) => {
     const getEvents = await ticketModel.find({})
@@ -239,15 +243,16 @@ export const getEventToBuyController = async (req, res) => {
 }
 
 export const buyEventTicketsController = async (req, res) => {
-  const { quantities, total, totalQuantity, mail, nombreEvento } = req.body;
-
+  const { eventId, nombreEvento, quantities, total, totalQuantity, mail } = req.body;
+  console.log(quantities)
+  //qrGeneratorController(quantities, mail) esto va en el webhook creo
   try {
     const preference = {
       items: [
         {
           title: `Ticket para ${nombreEvento}`,
           quantity: 1,
-          unit_price: total,
+          unit_price: 1/*total*/,
           currency_id: 'ARS',
         },
       ],
@@ -260,15 +265,20 @@ export const buyEventTicketsController = async (req, res) => {
         pending: 'https://d775-200-32-101-183.ngrok-free.app/payment-pending',
       },
       auto_return: 'approved',
-     notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',
+      notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',
+
+      //notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',anterior funciona sin los parametros.
     };
 
     const response = await mercadopago.preferences.create(preference);
 
-    res.json({
-      id: response.body.id,
-      init_point: response.body.init_point,
-    });
+    if(response.body && response.body.init_point){
+        qrGeneratorController(quantities, mail)
+        res.json({
+            id: response.body.id,
+            init_point: response.body.init_point,
+        });
+    }
   } catch (error) {
     console.error('Error al crear preferencia:', error);
     res.status(500).json({ message: 'Error creando la preferencia' });
@@ -276,6 +286,8 @@ export const buyEventTicketsController = async (req, res) => {
 };
 
 export const mercadoPagoWebhookController = async (req, res) => {
+  const { quantities, mail } = req.params;
+
   try {
     const paymentId = req.query['data.id'];
 
@@ -288,7 +300,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
     console.log('Estado del pago:', payment.body.status);
 
     if (payment.body.status === 'approved') {
-      // ✅ Pago aprobado: hacer lógica de negocio (guardar compra, enviar tickets, etc.)
+        qrGeneratorController(quantities, mail)
     }
 
     res.sendStatus(200);
@@ -298,8 +310,89 @@ export const mercadoPagoWebhookController = async (req, res) => {
   }
 };
 
+export const qrGeneratorController = async (quantities, mail) => {
+  try {
+    const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
+
+    const event = await ticketModel.findOne({
+      "tickets._id": { $in: ticketIds }
+    });
+
+    if (!event) return console.log("Evento no encontrado.");
+
+    const filteredTickets = event.tickets.filter(ticket =>
+      ticketIds.some(id => id.equals(ticket._id))
+    );
+
+    // Generar un QR por cada unidad de cada ticket comprado
+    for (const ticket of filteredTickets) {
+      const quantity = quantities[ticket._id.toString()];
+      for (let i = 0; i < quantity; i++) {
+        const qrUrl = `http://localhost:5173/ticket/${event._id}/${ticket._id}`;
+        const qrImage = await QRCode.toDataURL(qrUrl);
+        const qrBase64 = qrImage.split(',')[1];
+        const qrBuffer = Buffer.from(qrBase64, 'base64');
+        // Aquí puedes enviar por email el QR con `qrImage`
+        await sendQrEmail(mail, qrBuffer, ticket.nombreTicket, event.nombreEvento);
+      }
+    }
+    console.log("QRs generados y enviados.");
+  } catch (err) {
+    console.error("Error generando QRs: ", err);
+  }
+};
+
+const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+    auth: {
+      user: user_mail,
+      pass: pass
+    }
+  });
+    await transporter.sendMail({
+    from: '"GoTickets" <no-reply@gotickets.com>',
+    to: email,
+    subject: `Tu entrada para ${nombreEvento} - ${nombreTicket}`,
+    html: `
+        <h3>Gracias por tu compra</h3>
+        <p>Entrada: <strong>${nombreTicket}</strong></p>
+        <p>Escaneá este QR en la entrada:</p>
+        <img src="cid:qrcodeimg" alt="QR para ${nombreTicket}" style="width:200px;height:200px;"/>
+    `,
+    attachments: [
+        {
+        filename: 'qrcode.png',
+        content: qrBuffer,         
+        cid: 'qrcodeimg'      
+        }
+    ]
+    });
+};
+
+export const getInfoQrController = async (req, res) => {
+    const { eventId, ticketId } = req.params;
+    
+    const event = await ticketModel.findOne(
+      { _id: eventId, 'tickets._id': ticketId },
+      { 'tickets.$': 1, nombreEvento: 1, imgEvento: 1 }
+    );
+    
+    if (!event) return res.status(404).json({ message: 'No encontrado' });
+    
+    const ticket = event.tickets[0];
+    
+    res.status(200).json({
+      nombreEvento: event.nombreEvento,
+      imgEvento: event.imgEvento,
+      nombreTicket: ticket.nombreTicket,
+    });
+
+}
+
+
 export const paymentSuccessController = async (req, res) => {
-  const paymentId = req.query.payment_id;
+  /*const paymentId = req.query.payment_id;
 
   try {
     const payment = await mercadopago.payment.findById(paymentId);
@@ -313,5 +406,5 @@ export const paymentSuccessController = async (req, res) => {
   } catch (error) {
     console.error('Error al verificar pago:', error);
     res.status(500).send('Error interno');
-  }
+  }*/
 };

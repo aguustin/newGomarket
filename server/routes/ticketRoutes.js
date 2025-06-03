@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { buyEventTicketsController, createEventController, createEventTicketsController, getAllEventsController, getEventToBuyController, getMyProdsController, getOneProdController, mercadoPagoWebhookController, paymentSuccessController, updateEventController, updateEventTicketsController } from "../controllers/eventController.js";
+import { buyEventTicketsController, createEventController, createEventTicketsController, getAllEventsController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, mercadoPagoWebhookController, paymentSuccessController, updateEventController, updateEventTicketsController } from "../controllers/eventController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -24,7 +24,9 @@ router.get('/buy_tickets/:prodId', getEventToBuyController)
 
 router.post('/buy', buyEventTicketsController)
 
-router.post('/webhook/mercadopago', mercadoPagoWebhookController);
+router.get('/ticket/:eventId/:ticketId', getInfoQrController)
+
+//router.post('/webhook/mercadopago/:quantities/:mail', mercadoPagoWebhookController);
 
 router.get('/payment-success', paymentSuccessController);
 
