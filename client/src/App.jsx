@@ -27,7 +27,7 @@ function App() {
             <Route path='/productions' element={<Productions/>}></Route>
             <Route path='/editar_evento/:prodId' element={<EditProd/>}></Route>
             <Route path='/buy_tickets/:prodId' element={<BuyTicket/>}></Route>
-            <Route path='/ticket/:eventId/:ticketId' element={<TicketQr/>}></Route>
+            <Route path='/ticket/validate' element={<TicketQr/>}></Route>
           </Routes>
       </UserContextProvider>
     </BrowserRouter>

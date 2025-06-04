@@ -6,13 +6,13 @@ import userRoutes from "./routes/userRoutes.js"
 import ticketRoutes from "./routes/ticketRoutes.js"
 import cors from "cors"
 import dotenv from "dotenv"
-dotenv.config()
+import './lib/cron.js'
 
+dotenv.config()
 const app = express()
 connecDb()
 
 //setting
-
 
 //middleware
 app.use(express.text())

@@ -6,7 +6,10 @@ import QRCode from 'qrcode';
 import nodemailer from 'nodemailer'; 
 import dotenv from 'dotenv';
 import { user_mail, pass } from "../config.js";
+import jwt from 'jsonwebtoken';
 dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
 export const getAllEventsController = async (req, res) => {
     const getEvents = await ticketModel.find({})
@@ -311,6 +314,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 };
 
 export const qrGeneratorController = async (quantities, mail) => {
+  
   try {
     const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
 
@@ -324,18 +328,28 @@ export const qrGeneratorController = async (quantities, mail) => {
       ticketIds.some(id => id.equals(ticket._id))
     );
 
-    // Generar un QR por cada unidad de cada ticket comprado
     for (const ticket of filteredTickets) {
       const quantity = quantities[ticket._id.toString()];
       for (let i = 0; i < quantity; i++) {
-        const qrUrl = `http://localhost:5173/ticket/${event._id}/${ticket._id}`;
+        // 🔐 Crear token seguro con payload
+        const payload = {
+          eventId: event._id,
+          ticketId: ticket._id,
+          iat: Math.floor(Date.now() / 1000),
+        };
+
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' }); // expira en 7 días
+
+        // URL del QR con el token
+        const qrUrl = `http://localhost:5173/ticket/validate?token=${token}`;
         const qrImage = await QRCode.toDataURL(qrUrl);
         const qrBase64 = qrImage.split(',')[1];
         const qrBuffer = Buffer.from(qrBase64, 'base64');
-        // Aquí puedes enviar por email el QR con `qrImage`
+
         await sendQrEmail(mail, qrBuffer, ticket.nombreTicket, event.nombreEvento);
       }
     }
+
     console.log("QRs generados y enviados.");
   } catch (err) {
     console.error("Error generando QRs: ", err);
@@ -371,23 +385,36 @@ const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento) => {
 };
 
 export const getInfoQrController = async (req, res) => {
-    const { eventId, ticketId } = req.params;
-    
+    const { token } = req.query;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { eventId, ticketId } = decoded;
+
     const event = await ticketModel.findOne(
       { _id: eventId, 'tickets._id': ticketId },
-      { 'tickets.$': 1, nombreEvento: 1, imgEvento: 1 }
+      { 'tickets.$': 1, nombreEvento: 1, fechaInicio: 1, fechaFin: 1, imgEvento: 1 }
     );
-    
-    if (!event) return res.status(404).json({ message: 'No encontrado' });
-    
-    const ticket = event.tickets[0];
-    
-    res.status(200).json({
-      nombreEvento: event.nombreEvento,
-      imgEvento: event.imgEvento,
-      nombreTicket: ticket.nombreTicket,
-    });
 
+    if (!event) return res.status(404).json({ message: 'Evento no encontrado' });
+
+    const ticket = event.tickets[0];
+
+    if (!ticket || !ticket.isActive || new Date() > ticket.fechaDeCierre) {
+      return res.status(400).json({ message: 'Ticket caducado o inactivo' });
+    }
+
+    return res.json({
+      nombreEvento: event.nombreEvento,
+      nombreTicket: ticket.nombreTicket,
+      fechaInicioEvento: event.fechaInicio,
+      fechaCierreEvento: event.fechaFin,
+      fechaDeCierreTicket: ticket.fechaDeCierre,
+      imgEvento: event.imgEvento,
+    });
+  } catch (err) {
+    return res.status(401).json({ message: 'Token inválido o expirado' });
+  }
 }
 
 

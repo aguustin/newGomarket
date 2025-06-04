@@ -55,7 +55,6 @@ const BuyTicket = () => {
                 e.preventDefault();
                 const mail = e.target.elements.mail.value;
                 const data = await buyTicketsRequest(prod[0]._id, prod[0].nombreEvento, quantities, total, totalQuantity, mail);
-                console.log("Respuesta del backend:", data);
 
                 if (!data?.init_point) {
                 console.error("init_point no recibido");

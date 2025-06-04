@@ -24,7 +24,7 @@ router.get('/buy_tickets/:prodId', getEventToBuyController)
 
 router.post('/buy', buyEventTicketsController)
 
-router.get('/ticket/:eventId/:ticketId', getInfoQrController)
+router.get('/ticket/validate', getInfoQrController);
 
 //router.post('/webhook/mercadopago/:quantities/:mail', mercadoPagoWebhookController);
 
