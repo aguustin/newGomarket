@@ -52,11 +52,10 @@ const Staff = () => {
         }));
     }
     console.log("state: ", addState)
-    
+
     const addStaff = async (e) => {
         e.preventDefault()
         const mail = e.target.elements.email.value
-
         const res = await staffQrRequest(prodId, quantities, mail, addState)
     }
 
@@ -80,7 +79,7 @@ const Staff = () => {
                         <div>
                             <label>Estado:</label>
                             <select name="estado" onChange={(e) => addStateFunc(e, tck._id)}>
-                                <option value={1}>Activo</option>
+                                <option value={1}>Normal</option>
                                 <option value={3}>Cortesia</option>
                             </select>
                         </div>
