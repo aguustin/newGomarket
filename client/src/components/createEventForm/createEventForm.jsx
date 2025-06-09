@@ -46,7 +46,7 @@ const CreateEventForm = () => {
             console.log(showTickets)
     }
 
-    const createEventTickets = (e) => {
+    const createEventTickets = (e) => { //agregar estado a los tickets
         e.preventDefault()
         const formData = new FormData()
         formData.append('eventId', saveEventId)
@@ -56,6 +56,7 @@ const CreateEventForm = () => {
         formData.append('cantidad', e.target.elements.cantidad.value)
         formData.append('fechaDeCierre', new Date(closeDate))
         formData.append('imgTicket', e.target.elements.imgTicket.files[0])
+        formData.append('estado', e.target.elements.estado.value)
         createEventTicketsRequest(formData)
         setDisabledButton(false)
     }
@@ -168,6 +169,14 @@ const CreateEventForm = () => {
                             <div>
                                 <label>Cantidad</label>
                                 <input type="number" placeholder="..." name="cantidad" required></input>
+                            </div>
+                            <div>
+                                <label>Estado:</label>
+                                <select name="estado">
+                                    <option defaultValue={1} value={1}>Activo</option>
+                                    <option value={2}>No visible</option>
+                                    <option value={3}>Cortesia</option>
+                                </select>
                             </div>
                         </div>
                         <div>

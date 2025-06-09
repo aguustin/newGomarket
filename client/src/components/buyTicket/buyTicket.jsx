@@ -34,7 +34,6 @@ const BuyTicket = () => {
 
     const addQuantity = (e, ticketId) => {
         e.preventDefault()
-        const ticketData = null
         if(quantity < 20){
             setTotalQuantity(totalQuantity + 1)
             setQuantities(prev => ({

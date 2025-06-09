@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router"
+import { Link, useParams } from "react-router"
 import { createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
 
@@ -72,6 +72,7 @@ const EditProd = () => {
         formData.append('precio', dataToUpdate?.precio ?? precio)
         formData.append('fechaDeCierre', dataToUpdate?.fechaDeCierre ?? fechaDeCierre)
         formData.append('visibilidad', dataToUpdate?.visibilidad ?? visibilidad)
+        formData.append('estado', e.target.elements.estado.value)
         const res = await updateTicketsRequest(formData)
     }
 
@@ -99,6 +100,7 @@ const EditProd = () => {
             formData.append('fechaDeCierre', new Date(closeDate))
             formData.append('imgTicket', e.target.elements.imgTicket.files[0])
             formData.append('visibilidad', visibilidad)
+            formData.append('estado', e.target.elements.estado.value)
             createEventTicketsRequest(formData)
             setVisibilidad()
         }
@@ -244,6 +246,15 @@ const EditProd = () => {
                                          }))
                                     }></input>
                                     </div>
+                                    <div>
+                                        <label>Estado:</label>
+                                        <select name="estado">
+                                            <option defaultValue={tick.estado} value={tick.estado}>{tick.estado} </option>
+                                            <option value={1}>Activo</option>
+                                            <option value={2}>No visible</option>
+                                            <option value={3}>Agotado</option>
+                                        </select>
+                                    </div>
                                     <button onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.fechaDeCierre, tick.visibilidad)}>Editar</button>
                                 </div>
                             </div> 
@@ -269,6 +280,14 @@ const EditProd = () => {
                                         <label>Cantidad</label>
                                         <input type="number" placeholder="..." name="cantidad" required></input>
                                     </div>
+                                    <div>
+                                        <label>Estado:</label>
+                                        <select name="estado">
+                                            <option defaultValue={1} value={1}>Activo</option>
+                                            <option value={2}>No visible</option>
+                                            <option value={3}>Agotado</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div>
                                     <label>Fecha y hora de fin:</label>
@@ -287,6 +306,9 @@ const EditProd = () => {
                                 <button type="submit">Agregar tickets</button>
                             </div>
                         </form>
+                        <div className="flex items-center">
+                            <Link href={`/staff/${prod[0]?.nombreEvento}`}>Enviar tickets</Link>
+                        </div>
                         <a href="/">Continuar</a>
                 </div>
         </>

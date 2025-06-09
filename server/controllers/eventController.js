@@ -7,6 +7,7 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { user_mail, pass } from "../config.js";
 import jwt from 'jsonwebtoken';
+import userModel from "../models/userModel.js";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
@@ -71,7 +72,7 @@ export const createEventController = async (req, res) => {
 };
 
 export const createEventTicketsController = async (req, res) => {
-    const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad} = req.body
+    const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado} = req.body
 
         if(!req.file){
                 await ticketModel.updateOne(
@@ -85,6 +86,7 @@ export const createEventTicketsController = async (req, res) => {
                         cantidad: cantidad,
                         fechaDeCierre: fechaDeCierre,
                         visibilidad: visibilidad,
+                        estado: estado,
                         imgTicket: 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg'
                     }
                 }
@@ -110,6 +112,7 @@ export const createEventTicketsController = async (req, res) => {
                         cantidad: cantidad,
                         fechaDeCierre: fechaDeCierre,
                         visibilidad: visibilidad,
+                        estado: estado,
                         imgTicket: result.secure_url
                     }
                 }
@@ -177,7 +180,7 @@ export const updateEventController = async (req, res) => {
 }
 
 export const updateEventTicketsController = async (req, res) => {
-    const {ticketId, nombreTicket, descripcionTicket, precio, fechaDeCierre, visibilidad} = req.body
+    const {ticketId, nombreTicket, descripcionTicket, precio, fechaDeCierre, visibilidad, estado} = req.body
 
     console.log(ticketId)
 
@@ -186,7 +189,8 @@ export const updateEventTicketsController = async (req, res) => {
         descripcionTicket, 
         precio,
         fechaDeCierre,
-        visibilidad
+        visibilidad,
+        estado
     }
 
     const parseId = new mongoose.Types.ObjectId(ticketId)
@@ -247,36 +251,36 @@ export const getEventToBuyController = async (req, res) => {
 
 export const buyEventTicketsController = async (req, res) => {
   const { eventId, nombreEvento, quantities, total, totalQuantity, mail } = req.body;
-  console.log(quantities)
   //qrGeneratorController(quantities, mail) esto va en el webhook creo
   try {
-    const preference = {
-      items: [
-        {
-          title: `Ticket para ${nombreEvento}`,
-          quantity: 1,
-          unit_price: 1/*total*/,
-          currency_id: 'ARS',
-        },
-      ],
-      payer: {
-        email: mail,
-      },
-      back_urls: {
-        success: 'https://d775-200-32-101-183.ngrok-free.app/payment-success',
-        failure: 'https://d775-200-32-101-183.ngrok-free.app/payment-failure',
-        pending: 'https://d775-200-32-101-183.ngrok-free.app/payment-pending',
-      },
-      auto_return: 'approved',
-      notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',
-
-      //notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',anterior funciona sin los parametros.
-    };
-
+  const preference = {
+  items: [
+    {
+      title: `Ticket para ${nombreEvento}`,
+      quantity: 1,
+      unit_price: 1, // aca va "total"
+      currency_id: 'ARS',
+    },
+  ],
+  payer: {
+    email: mail,
+  },
+  back_urls: {
+    success: 'https://d775-200-32-101-183.ngrok-free.app/payment-success',
+    failure: 'https://d775-200-32-101-183.ngrok-free.app/payment-failure',
+    pending: 'https://d775-200-32-101-183.ngrok-free.app/payment-pending',
+  },
+  auto_return: 'approved',
+  notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',
+  metadata: {
+        quantities,
+        mail,
+  },
+};
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
-        qrGeneratorController(quantities, mail)
+        qrGeneratorController(quantities, mail) // SOLO PARA PROBAR LA GENERACION DE LOS QR SIN TENER QUE PAGAR SI O SI EN MERCADOPAGO
         res.json({
             id: response.body.id,
             init_point: response.body.init_point,
@@ -289,32 +293,68 @@ export const buyEventTicketsController = async (req, res) => {
 };
 
 export const mercadoPagoWebhookController = async (req, res) => {
-  const { quantities, mail } = req.params;
-
   try {
-    const paymentId = req.query['data.id'];
+    const paymentId = req.body?.data?.id; // ✅ Correct way to get payment ID
 
     if (!paymentId) {
+      console.error("❌ No payment ID found in webhook payload:", req.body);
       return res.sendStatus(400);
     }
 
     const payment = await mercadopago.payment.findById(paymentId);
 
-    console.log('Estado del pago:', payment.body.status);
+    console.log('✅ Estado del pago:', payment.body.status);
 
     if (payment.body.status === 'approved') {
-        qrGeneratorController(quantities, mail)
+      const { quantities, mail } = payment.body.metadata;
+      const ticketIds = Object.keys(quantities);
+
+      /*for (const id of ticketIds) {
+        const quantityToAdd = quantities[id];
+
+        await ticketModel.updateOne(
+          { "tickets._id": new mongoose.Types.ObjectId(id) },
+          {
+            $inc: {
+              "tickets.$.ventas": quantityToAdd,
+              "tickets.$.cantidad": -quantityToAdd
+            }
+          }
+        );
+        
+      }*/
+        const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
+          updateOne: {
+            filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
+            update: {
+              $inc: {
+                "tickets.$.ventas": quantity,
+                "tickets.$.cantidad": -quantity,
+              }
+            }
+          }
+        }));
+
+        await ticketModel.bulkWrite(bulkOps);
+      
+
+      if (!quantities || !mail) {
+        console.error("❌ Metadata is missing in approved payment:", payment.body.metadata);
+        return res.sendStatus(500);
+      }
+
+      console.log("🎟️ Generating QR for:", mail, "with quantities:", quantities);
+      await qrGeneratorController(quantities, mail);
     }
 
     res.sendStatus(200);
   } catch (error) {
-    console.error('Error en webhook:', error);
-    res.sendStatus(500);
+    console.error('❌ Error en webhook:', error?.message, error?.stack);
+    res.sendStatus(400);
   }
 };
 
 export const qrGeneratorController = async (quantities, mail) => {
-  
   try {
     const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
 
@@ -349,14 +389,115 @@ export const qrGeneratorController = async (quantities, mail) => {
         await sendQrEmail(mail, qrBuffer, ticket.nombreTicket, event.nombreEvento);
       }
     }
-
     console.log("QRs generados y enviados.");
   } catch (err) {
     console.error("Error generando QRs: ", err);
   }
 };
 
+export const sendQrStaffQrController = async (req, res) => {
+  const {prodId, quantities, mail, addState} = req.body
+  const findRrPp = await ticketModel.findOne({_id: prodId, "rrpp.mail": mail})
+  const ticketIds = Object.keys(quantities);
+
+  for (const id of ticketIds) {
+        const quantityToAdd = quantities[id];
+        await ticketModel.updateOne(
+          { "tickets._id": new mongoose.Types.ObjectId(id) },
+          {
+            $inc: {
+              "tickets.$.ventas": quantityToAdd,
+              "tickets.$.cantidad": -quantityToAdd,
+              
+            }
+          }
+        );
+  }
+
+  const addStates = Object.keys(addState);
+
+  if (findRrPp) {
+    // RRPP exists - update existing categoriaRRPP
+    if(state === 3){ 
+      for (const id of ticketIds){
+         /*cortesiaRRPP:[{
+            cantidadDeCortesias: {type: Number},
+            ticketId: {type: String},
+            nombreCategoria:{type: String},
+            entregados: {type: Number},
+        }]*/
+
+            await ticketModel.updateOne(
+              {
+                _id: prodId,
+                "rrpp.mail": mail,
+                 "rrpp.cortesiaRRPP.ticketId": { $ne: id }
+              },
+              {
+                $addToSet:{
+                  cantidadDeCortesias: quantityToAdd,
+                  ticketId: id,
+                  nombreCategoria: "nombreX",
+                }
+              }
+            )
+      }
+
+      return res.send(200).json({msg: "llego en estado 3 a cortesia"})
+    }
+
+      for (const id of ticketIds /*addStates*/) {
+        const quantityToAdd = quantities[id];
+        const state = addState[id];
+        
+        await ticketModel.updateOne(
+          {
+            _id: prodId,
+            "rrpp.mail": mail,
+            "rrpp.categoriaRRPP.ticketId": { $ne: id } // Only add if ticketId not present
+          },
+          { 
+            $addToSet: {
+              "rrpp.$.categoriaRRPP": {
+                ticketId: id,
+                nombreCategoria: "NombreX", // Replace with actual category if needed
+                cantidadDeTickets: quantityToAdd,
+                estado: state
+              }
+            }
+          }
+        );
+      }
+  }else {
+      // RRPP doesn't exist - add new rrpp entry
+      const getUser = await userModel.findOne({_id: prodId})
+  
+      const categoriaRRPPArray = addStates.map(id => ({
+        ticketId: id,
+        //nombreCategoria: getUser.nombreCompleto, // Replace with actual category if needed
+        cantidadDeTickets: quantities[id],
+        vendidos: quantities[id]
+      }));
+  
+      await ticketModel.updateOne(
+        { _id: prodId },
+        {
+          $addToSet: {
+            rrpp: {
+              nombre: getUser.nombreCompleto, // Provide actual name if available
+              mail: mail,
+              linkDePago: "link de pago",
+              categoriaRRPP: categoriaRRPPArray,
+            }
+          }
+        }
+      );
+  }
+  res.sendStatus(200)
+};
+
 const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento) => {
+  
   const transporter = nodemailer.createTransport({
     service: 'gmail', 
     auth: {
@@ -389,7 +530,7 @@ export const getInfoQrController = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const { eventId, ticketId } = decoded;
+    const { eventId, ticketId,  } = decoded;
 
     const event = await ticketModel.findOne(
       { _id: eventId, 'tickets._id': ticketId },

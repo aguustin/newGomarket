@@ -20,7 +20,7 @@ cron.schedule('0 * * * *', async () => {
 
         // Eliminar eventos caducados
         if (now > event.fechaFin) {
-            await Ticket.findByIdAndDelete(event._id);
+            await ticketModel.findByIdAndDelete(event._id);
             console.log(`Evento ${event._id} eliminado por caducidad`);
             continue;
         }

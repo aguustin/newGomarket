@@ -2,7 +2,7 @@ import userModel from "../models/userModel.js"
 import bcrypt from "bcrypt"
 
 export const getAllUsersController = async (req, res) => {
-    const getUsers = await userModel.find()
+    const getUsers = await userModel.find({})
     res.send(getUsers)
 }
 
@@ -10,6 +10,7 @@ export const registerController = async (req, res) => {
     const {nombreCompleto, mail, celular, pais, contrasenia, repetirContrasenia} = req.body
     
     const findUser = await userModel.find({mail: mail})
+    console.log(nombreCompleto, contrasenia)
     console.log(findUser)
     if(findUser.length > 0){
         return res.status(200).json({msj:'El usuario ya existe'})

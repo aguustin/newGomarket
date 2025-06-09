@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const ticketSchema = new mongoose.Schema({
     userId: {type: String}, 
+    numeroEvento:{type: Number},
     paisDestino: {type: String},
     tipoEvento: {type: String},
     eventoEdad: {type: String},
@@ -41,15 +42,23 @@ const ticketSchema = new mongoose.Schema({
             fechaDeCierre: {type: Date},
             imgTicket: {type: String},
             visibilidad:{type: String},
-            isActive: {type:Boolean}
+            estado: {type:Number} //1 todavia hay, 2 agotado, 3 cortesia
     }],
     rrpp:[{
         nombre: {type: String},
         mail:{type: String},
         linkDePago: {type:String},
         categoriaRRPP:[{
+            cantidadDeTickets: {type: Number},
+            ticketId: {type: String},
             nombreCategoria:{type: String},
             vendidos: {type: Number},
+        }],
+        cortesiaRRPP:[{
+            cantidadDeCortesias: {type: Number},
+            ticketId: {type: String},
+            nombreCategoria:{type: String},
+            entregados: {type: Number},
         }],
         montoTotalVendidoRRPP: {type: Number}
     }],
@@ -60,7 +69,6 @@ const ticketSchema = new mongoose.Schema({
     totalMontoDevoluciones:{type: Number},
     totalMontoDescuento: {type: Number},
     montoTotal: {type: Number}
-
 })
 
 const ticketModel =  mongoose.model('ticketsModel', ticketSchema)
