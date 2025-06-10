@@ -19,6 +19,7 @@ export const getAllEventsController = async (req, res) => {
 
 export const createEventController = async (req, res) => {
     const {userId, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento, linkEvento} = req.body
+    
     if(!req.file){
             const createdEvent = await ticketModel.create({
                     userId: userId,
@@ -72,55 +73,73 @@ export const createEventController = async (req, res) => {
 };
 
 export const createEventTicketsController = async (req, res) => {
-    const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado} = req.body
-
-        if(!req.file){
-                await ticketModel.updateOne(
-            {_id: prodId},
-            {
-                $addToSet:{
-                    tickets:{
-                        nombreTicket: nombreTicket,
-                        descripcionTicket: descripcionTicket,
-                        precio: precio,
-                        cantidad: cantidad,
-                        fechaDeCierre: fechaDeCierre,
-                        visibilidad: visibilidad,
-                        estado: estado,
-                        imgTicket: 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg'
-                    }
-                }
-            }
-        )
-            return res.status(200).json({ url: 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg', estado: 1 });
-    }
-
-    cloudinary.uploader.upload_stream({ resource_type: 'auto', folder:'GoTicketsT' }, async (error, result) => {
-        if (error) {
-            console.log(error);
-            return res.status(204).json({ error: 'Error uploading to Cloudinary' });
+  const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado} = req.body
+  const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
+  let fechaParsed = new Date(fechaDeCierre);
+  let estadoToInt = Number(estado)
+  const buildPayload = (imgUrl) => {
+    if (estadoToInt !== 3) {
+      return {
+        tickets: {
+          nombreTicket,
+          descripcionTicket,
+          precio,
+          cantidad,
+          fechaDeCierre: fechaParsed,
+          visibilidad,
+          estadoToInt,
+          imgTicket: imgUrl
         }
-          
-        await ticketModel.updateOne(
-            {_id: prodId},
-            {
-                $addToSet:{
-                    tickets:{
-                        nombreTicket: nombreTicket,
-                        descripcionTicket: descripcionTicket,
-                        precio: precio,
-                        cantidad: cantidad,
-                        fechaDeCierre: fechaDeCierre,
-                        visibilidad: visibilidad,
-                        estado: estado,
-                        imgTicket: result.secure_url
-                    }
-                }
-            }
-        )
-        return res.status(200).json({ url: result.secure_url, estado: 1});
-    }).end(req.file.buffer); 
-}
+      };
+    } else {
+      return {
+        cortesiaRRPP: {
+          nombreTicket,
+          descripcionTicket,
+          cantidadDeCortesias: cantidad,
+          entregados: 0,
+          fechaDeCierre: fechaParsed,
+          imgTicket: imgUrl
+        }
+      };
+    }
+  };
+  // Si no hay archivo, usamos la imagen por defecto
+  if (!req.file) {
+    const updatePayload = buildPayload(defaultImage);
+    
+    await ticketModel.updateOne(
+      { _id: prodId },
+      { $addToSet: updatePayload }
+    );
+    
+    console.log(updatePayload)
+    return res.status(200).json({ url: defaultImage, estado: 1 });
+  }
+
+  
+  // Si hay archivo, subimos a Cloudinary
+  cloudinary.uploader.upload_stream(
+    { resource_type: 'auto', folder: 'GoTicketsT' },
+    async (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(204).json({ error: 'Error uploading to Cloudinary' });
+      }
+      
+      const updatePayload = buildPayload(result.secure_url);
+      
+      console.log(updatePayload)
+      await ticketModel.updateOne(
+        { _id: prodId },
+        { $addToSet: updatePayload }
+      );
+
+      return res.status(200).json({ url: result.secure_url, estado: 1 });
+    }
+  ).end(req.file.buffer);
+}; 
+
 
 
 export const getMyProdsController = async (req, res) => {
@@ -131,7 +150,6 @@ export const getMyProdsController = async (req, res) => {
 
 export const getOneProdController = async (req, res) => {
     const {prodId} = req.params
-
     const getProd = await ticketModel.find({_id: prodId})
     
     res.send(getProd)
@@ -180,65 +198,86 @@ export const updateEventController = async (req, res) => {
 }
 
 export const updateEventTicketsController = async (req, res) => {
-    const {ticketId, nombreTicket, descripcionTicket, precio, fechaDeCierre, visibilidad, estado} = req.body
+  const {
+    ticketId,
+    nombreTicket,
+    descripcionTicket,
+    precio,
+    cantidad,
+    fechaDeCierre,
+    visibilidad,
+    estado
+  } = req.body;
+  
+let estadoInt = Number(estado)
+const parseId = new mongoose.Types.ObjectId(ticketId);
 
-    console.log(ticketId)
+// Construye campos comunes para actualización
+const buildUpdateFields = (imgUrl = null) => {
+  const commonFields = {
+    nombreTicket,
+    descripcionTicket,
+    fechaDeCierre,
+    visibilidad,
+  };
 
-    const updateFields = { 
-        nombreTicket, 
-        descripcionTicket, 
-        precio,
-        fechaDeCierre,
-        visibilidad,
-        estado
+  if (imgUrl) {
+    commonFields.imgTicket = imgUrl;
+  }
+
+  if (estadoInt !== 3) {
+    commonFields.precio = precio;
+  }
+
+  return commonFields;
+};
+
+// Actualiza el ticket correspondiente
+const updateTicket = async (imgUrl = null) => {
+  const updateFields = buildUpdateFields(imgUrl);
+  const pathPrefix = estadoInt === 3 ? "cortesiaRRPP" : "tickets";
+  const cantidadField = estadoInt === 3 ? "cantidadDeCortesias" : "cantidad";
+
+  const updateResult = await ticketModel.updateOne(
+    { [`${pathPrefix}._id`]: parseId },
+    {
+      $set: Object.fromEntries(
+        Object.entries(updateFields).map(([key, value]) => [
+          `${pathPrefix}.$.${key}`,
+          value
+        ])
+      ),
+      $set: { [`${pathPrefix}.$.${cantidadField}`]: cantidad }
     }
+  );
 
-    const parseId = new mongoose.Types.ObjectId(ticketId)
+  return updateResult;
+};
 
-    if(req.file){
-        cloudinary.uploader.upload_stream({ resource_type: 'auto', folder: 'GoTicketsT' },
-            async (error, result) => {
-                if (error) {
-                    console.error(error);
-                    return res.status(500).json({ error: 'Error uploading to Cloudinary' });
-                }
+// Si hay imagen, sube a Cloudinary
+if (req.file) {
+  cloudinary.uploader.upload_stream(
+    { resource_type: 'auto', folder: 'GoTicketsT' },
+    async (error, result) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error uploading to Cloudinary' });
+      }
 
-            // Agregar la URL de la imagen subida
-            updateFields.imgTicket = result.secure_url;
-
-            const updateResult = await ticketModel.updateOne(
-                { "tickets._id": parseId },
-                {  
-                    $set: {
-                        "tickets.$.nombreTicket": updateFields.nombreTicket,
-                        "tickets.$.descripcionTicket": updateFields.descripcionTicket,
-                        "tickets.$.precio": updateFields.precio,
-                        "tickets.$.fechaDeCierre":updateFields.fechaDeCierre,
-                        "tickets.$.visibilidad": updateFields.visibilidad,
-                        "tickets.$.imgTicket": updateFields.imgTicket
-                    } 
-                }
-            );
-
-            return res.status(200).json({ url: result.secure_url, updated: updateResult.modifiedCount > 0 });
-            }
-        ).end(req.file.buffer);
-    }else{
-        await ticketModel.updateOne(
-            { "tickets._id": parseId },
-            { 
-                $set: {
-                        "tickets.$.nombreTicket": updateFields.nombreTicket,
-                        "tickets.$.descripcionTicket": updateFields.descripcionTicket,
-                        "tickets.$.precio": updateFields.precio,
-                        "tickets.$.fechaDeCierre":updateFields.fechaDeCierre,
-                        "tickets.$.visibilidad": updateFields.visibilidad
-                } 
-            }
-        );
-        res.send(200)
+      const updateResult = await updateTicket(result.secure_url);
+      return res.status(200).json({
+        url: result.secure_url,
+        updated: updateResult.modifiedCount > 0
+      });
     }
-
+  ).end(req.file.buffer);
+} else {
+  // Sin imagen
+  const updateResult = await updateTicket();
+  return res.status(200).json({
+    updated: updateResult.modifiedCount > 0
+  });
+}
 }
 
 export const getEventToBuyController = async (req, res) => {
@@ -396,102 +435,64 @@ export const qrGeneratorController = async (quantities, mail) => {
 };
 
 export const sendQrStaffQrController = async (req, res) => {
-  const {prodId, quantities, mail, addState} = req.body
-  const findRrPp = await ticketModel.findOne({_id: prodId, "rrpp.mail": mail})
+  const {prodId, quantities, mail} = req.body
   const ticketIds = Object.keys(quantities);
+  const findRrPp = await ticketModel.findOne({_id: prodId, "rrpp.mail": mail, "ticketsCortesias.ticketIdCortesia": ticketIds})
 
   for (const id of ticketIds) {
-        const quantityToAdd = quantities[id];
-        await ticketModel.updateOne(
-          { "tickets._id": new mongoose.Types.ObjectId(id) },
-          {
-            $inc: {
-              "tickets.$.ventas": quantityToAdd,
-              "tickets.$.cantidad": -quantityToAdd,
-              
-            }
-          }
-        );
-  }
+       const verifyQuantity = await ticketModel.find({_id: prodId, "cortesiaRRPP._id": id })
 
-  const addStates = Object.keys(addState);
+        if(verifyQuantity[0]?.cantidadDeCortesias >= quantityToAdd){
+            const quantityToAdd = quantities[id];
+            await ticketModel.updateOne(
+            { 
+              _id: prodId,
+              "cortesiaRRPP._id": new mongoose.Types.ObjectId(id),
+            },
+            {
+              $inc: {
+                "cortesiaRRPP.$.cantidadDeCortesias": -quantityToAdd,
+                "cortesiaRRPP.$.entregados": quantityToAdd,
+              }
+            }
+          );
+        }else{
+          return res.send(200).json({msg: "No quedan mas tickets de cortesia"})
+        }
+  }
 
   if (findRrPp) {
     // RRPP exists - update existing categoriaRRPP
-    if(state === 3){ 
       for (const id of ticketIds){
-         /*cortesiaRRPP:[{
-            cantidadDeCortesias: {type: Number},
-            ticketId: {type: String},
-            nombreCategoria:{type: String},
-            entregados: {type: Number},
-        }]*/
-
             await ticketModel.updateOne(
               {
                 _id: prodId,
                 "rrpp.mail": mail,
-                 "rrpp.cortesiaRRPP.ticketId": { $ne: id }
+                "ticketsCortesias.ticketIdCortesia": id
               },
               {
-                $addToSet:{
-                  cantidadDeCortesias: quantityToAdd,
-                  ticketId: id,
-                  nombreCategoria: "nombreX",
-                }
+                $addToSet:{ "ticketsCortesias.$.ticketIdCortesia": id },
+                $inc: { "ticketsCortesias.$.cantidadDeCortesias": quantityToAdd }
               }
             )
       }
-
-      return res.send(200).json({msg: "llego en estado 3 a cortesia"})
-    }
-
-      for (const id of ticketIds /*addStates*/) {
-        const quantityToAdd = quantities[id];
-        const state = addState[id];
-        
-        await ticketModel.updateOne(
-          {
-            _id: prodId,
-            "rrpp.mail": mail,
-            "rrpp.categoriaRRPP.ticketId": { $ne: id } // Only add if ticketId not present
-          },
-          { 
-            $addToSet: {
-              "rrpp.$.categoriaRRPP": {
-                ticketId: id,
-                nombreCategoria: "NombreX", // Replace with actual category if needed
-                cantidadDeTickets: quantityToAdd,
-                estado: state
+      return res.send(200).json({msg: "llego en estado 3 a cortesia"}) 
+  }else{
+    /* for (const id of ticketIds){ //actualizar agregando el dato en caso de que el rrpp no exista
+            await ticketModel.updateOne(
+              {
+                _id: prodId,
+              },
+              {
+                $addToSet:{
+                  "rrpp.$.nombre": "aguss",
+                  "rrpp.$. 
+                  "ticketsCortesias.$.ticketIdCortesia": id 
+                },
+                $inc: { "ticketsCortesias.$.cantidadDeCortesias": quantityToAdd }
               }
-            }
-          }
-        );
-      }
-  }else {
-      // RRPP doesn't exist - add new rrpp entry
-      const getUser = await userModel.findOne({_id: prodId})
-  
-      const categoriaRRPPArray = addStates.map(id => ({
-        ticketId: id,
-        //nombreCategoria: getUser.nombreCompleto, // Replace with actual category if needed
-        cantidadDeTickets: quantities[id],
-        vendidos: quantities[id]
-      }));
-  
-      await ticketModel.updateOne(
-        { _id: prodId },
-        {
-          $addToSet: {
-            rrpp: {
-              nombre: getUser.nombreCompleto, // Provide actual name if available
-              mail: mail,
-              linkDePago: "link de pago",
-              categoriaRRPP: categoriaRRPPArray,
-            }
-          }
-        }
-      );
+            )
+      }*/
   }
   res.sendStatus(200)
 };
@@ -530,7 +531,7 @@ export const getInfoQrController = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const { eventId, ticketId,  } = decoded;
+    const { eventId, ticketId } = decoded;
 
     const event = await ticketModel.findOne(
       { _id: eventId, 'tickets._id': ticketId },

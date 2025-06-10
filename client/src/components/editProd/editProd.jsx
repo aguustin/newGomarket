@@ -7,6 +7,7 @@ const EditProd = () => {
     const prodId = useParams()
     const fileRef = useRef(null);
     const fileRefsB = useRef({})
+    const estadoRef = useRef()
     const [closeDate, setCloseDate] = useState()
     const [prod, setProd] = useState([])
     const [ticketData, setTicketData] = useState({});
@@ -59,6 +60,7 @@ const EditProd = () => {
         e.preventDefault()
        const formData = new FormData()
        const fileInput = fileRefsB.current[ticketId];
+       const estado = parseInt(estadoRef.current.value);
         if(fileInput?.files?.[0]){
             formData.append('imgTicket', fileInput.files[0]);
         }else{
@@ -70,9 +72,10 @@ const EditProd = () => {
         formData.append('nombreTicket', dataToUpdate?.nombreTicket ?? nombreTicket)
         formData.append('descripcionTicket', dataToUpdate?.descripcionTicket ?? descripcionTicket)
         formData.append('precio', dataToUpdate?.precio ?? precio)
+        formData.append('cantidad', dataToUpdate?.cantidad ?? cantidad)
         formData.append('fechaDeCierre', dataToUpdate?.fechaDeCierre ?? fechaDeCierre)
         formData.append('visibilidad', dataToUpdate?.visibilidad ?? visibilidad)
-        formData.append('estado', e.target.elements.estado.value)
+        formData.append('estado', estado)
         const res = await updateTicketsRequest(formData)
     }
 
@@ -218,6 +221,18 @@ const EditProd = () => {
                                     }))
                                     }></input>
                                     </div>
+                                     <div>
+                                        <label>Cantidad:</label><br></br>
+                                        <input type="number" name="cantidad" value={ticketData[tick._id]?.cantidad ?? tick.cantidad}  onChange={(e) =>
+                                        setTicketData(prev => ({
+                                        ...prev,
+                                        [tick._id]: {
+                                        ...prev[tick._id],
+                                        cantidad: e.target.value
+                                        }
+                                    }))
+                                    }></input>
+                                    </div>
                                     <div>
                                         <div className="flex items-center">
                                         <label>Fecha de cierre: </label><br></br>
@@ -248,11 +263,11 @@ const EditProd = () => {
                                     </div>
                                     <div>
                                         <label>Estado:</label>
-                                        <select name="estado">
-                                            <option defaultValue={tick.estado} value={tick.estado}>{tick.estado} </option>
+                                        <select name="estado" ref={estadoRef}>
+                                            <option defaultValue={tick.estado} value={tick.estado}>{tick.estado}</option>
                                             <option value={1}>Activo</option>
                                             <option value={2}>No visible</option>
-                                            <option value={3}>Agotado</option>
+                                            <option value={3}>Cortesia</option>
                                         </select>
                                     </div>
                                     <button onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.fechaDeCierre, tick.visibilidad)}>Editar</button>
@@ -285,7 +300,7 @@ const EditProd = () => {
                                         <select name="estado">
                                             <option defaultValue={1} value={1}>Activo</option>
                                             <option value={2}>No visible</option>
-                                            <option value={3}>Agotado</option>
+                                            <option value={3}>Cortesia</option>
                                         </select>
                                     </div>
                                 </div>

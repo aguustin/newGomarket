@@ -42,23 +42,28 @@ const ticketSchema = new mongoose.Schema({
             fechaDeCierre: {type: Date},
             imgTicket: {type: String},
             visibilidad:{type: String},
-            estado: {type:Number} //1 todavia hay, 2 agotado, 3 cortesia
+        }],
+    cortesiaRRPP:[{
+            nombreTicket: {type: String},
+            descripcionTicket: {type: String},
+            cantidadDeCortesias: {type: Number},
+            entregados: {type: Number},
+            fechaDeCierre: {type: Date},
+            imgTicket: {type: String}
     }],
     rrpp:[{
         nombre: {type: String},
         mail:{type: String},
         linkDePago: {type:String},
-        categoriaRRPP:[{
-            cantidadDeTickets: {type: Number},
+        ventasRRPP:[{
             ticketId: {type: String},
             nombreCategoria:{type: String},
+            ventaPorCat: {type: Number},
             vendidos: {type: Number},
         }],
-        cortesiaRRPP:[{
-            cantidadDeCortesias: {type: Number},
-            ticketId: {type: String},
-            nombreCategoria:{type: String},
-            entregados: {type: Number},
+        ticketsCortesias:[{
+            ticketIdCortesia: {type: String},
+            cantidadDeCortesias: {type:Number}
         }],
         montoTotalVendidoRRPP: {type: Number}
     }],

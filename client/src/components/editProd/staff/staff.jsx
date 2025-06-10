@@ -7,7 +7,6 @@ const Staff = () => {
     const {prodId} = useParams()
     const [producction, setProducction] = useState([])
     const [quantities, setQuantities] = useState({});
-    const [addState, setAddstate] = useState(1)
 
     useEffect(() => {
         const obtainUserProd = async () => {
@@ -42,21 +41,10 @@ const Staff = () => {
         }
     }
 
-    
-    const addStateFunc = (e, ticketId) => {
-        e.preventDefault()
-        setAddstate(e.target.elements.estado.value)
-        setQuantities(prev => ({
-            ...prev,
-            [ticketId]: (prev[ticketId] || 0) + 1,
-        }));
-    }
-    console.log("state: ", addState)
-
     const addStaff = async (e) => {
         e.preventDefault()
         const mail = e.target.elements.email.value
-        const res = await staffQrRequest(prodId, quantities, mail, addState)
+        const res = await staffQrRequest(prodId, quantities, mail, 3)
     }
 
     return(
@@ -75,13 +63,6 @@ const Staff = () => {
                                 <button onClick={(e) => addQuantity(e, tck._id, tck.precio, tck.nombreTicket)}>+</button>
                                 <p>Precio c/u: {tck.precio}</p>
                             </div>
-                        </div>
-                        <div>
-                            <label>Estado:</label>
-                            <select name="estado" onChange={(e) => addStateFunc(e, tck._id)}>
-                                <option value={1}>Normal</option>
-                                <option value={3}>Cortesia</option>
-                            </select>
                         </div>
                     </div>
                 )
