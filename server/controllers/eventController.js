@@ -435,67 +435,118 @@ export const qrGeneratorController = async (quantities, mail) => {
 };
 
 export const sendQrStaffQrController = async (req, res) => {
+  /*await ticketModel.updateMany(
+  {},                      // sin filtro: aplica a todos los documentos
+  { $set: { rrpp: [] } }   // limpia el array
+);*/
   const {prodId, quantities, mail} = req.body
+  console.log(prodId, quantities, mail)
   const ticketIds = Object.keys(quantities);
-  const findRrPp = await ticketModel.findOne({_id: prodId, "rrpp.mail": mail, "ticketsCortesias.ticketIdCortesia": ticketIds})
+  const findRrPp = await ticketModel.findOne({_id: prodId, "rrpp.mail": mail})
+  let i = 0
+    for (const id of ticketIds) {
+        const verifyQuantity = await ticketModel.find({_id: prodId, "cortesiaRRPP._id": id })
+        
+        if(verifyQuantity[0]?.cortesiaRRPP[i]?.cantidadDeCortesias > 0){
+          const quantityToAdd = quantities[id];
+          console.log(id)
+              await ticketModel.updateOne(
+              { 
+                _id: prodId,
+                "cortesiaRRPP._id": id,
+              },
+              {
+                $inc: {
+                  "cortesiaRRPP.$.cantidadDeCortesias": -quantityToAdd,
+                  "cortesiaRRPP.$.entregados": quantityToAdd,
+                }
+              }
+            );
+          }
+          i++
+    }
 
+    if (findRrPp) {
+  // RRPP exists
   for (const id of ticketIds) {
-       const verifyQuantity = await ticketModel.find({_id: prodId, "cortesiaRRPP._id": id })
+    const quantityToAdd = quantities[id];
 
-        if(verifyQuantity[0]?.cantidadDeCortesias >= quantityToAdd){
-            const quantityToAdd = quantities[id];
-            await ticketModel.updateOne(
-            { 
-              _id: prodId,
-              "cortesiaRRPP._id": new mongoose.Types.ObjectId(id),
-            },
-            {
-              $inc: {
-                "cortesiaRRPP.$.cantidadDeCortesias": -quantityToAdd,
-                "cortesiaRRPP.$.entregados": quantityToAdd,
-              }
-            }
-          );
-        }else{
-          return res.send(200).json({msg: "No quedan mas tickets de cortesia"})
+    const updateResult = await ticketModel.updateOne(
+      { _id: prodId },
+      {
+        $inc: {
+          "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": quantityToAdd
         }
-  }
-
-  if (findRrPp) {
-    // RRPP exists - update existing categoriaRRPP
-      for (const id of ticketIds){
-            await ticketModel.updateOne(
-              {
-                _id: prodId,
-                "rrpp.mail": mail,
-                "ticketsCortesias.ticketIdCortesia": id
-              },
-              {
-                $addToSet:{ "ticketsCortesias.$.ticketIdCortesia": id },
-                $inc: { "ticketsCortesias.$.cantidadDeCortesias": quantityToAdd }
-              }
-            )
+      },
+      {
+        arrayFilters: [
+          { "rrppElem.mail": mail },
+          { "ticketElem.ticketIdCortesia": id }
+        ]
       }
-      return res.send(200).json({msg: "llego en estado 3 a cortesia"}) 
-  }else{
-    /* for (const id of ticketIds){ //actualizar agregando el dato en caso de que el rrpp no exista
-            await ticketModel.updateOne(
-              {
-                _id: prodId,
-              },
-              {
-                $addToSet:{
-                  "rrpp.$.nombre": "aguss",
-                  "rrpp.$. 
-                  "ticketsCortesias.$.ticketIdCortesia": id 
-                },
-                $inc: { "ticketsCortesias.$.cantidadDeCortesias": quantityToAdd }
-              }
-            )
-      }*/
+    );
+
+    // Si no se actualizó (porque el ticket no existía), lo insertamos
+    if (updateResult.modifiedCount === 0) {
+      await ticketModel.updateOne(
+        { _id: prodId },
+        {
+          $push: {
+            "rrpp.$[rrppElem].ticketsCortesias": {
+              ticketIdCortesia: id,
+              cantidadDeCortesias: quantityToAdd
+            }
+          }
+        },
+        {
+          arrayFilters: [
+            { "rrppElem.mail": mail }
+          ]
+        }
+      );
+    }
   }
-  res.sendStatus(200)
+} else {
+  // RRPP no existe - lo creamos
+  await ticketModel.updateOne(
+    {
+      _id: prodId,
+      'rrpp.mail': { $ne: mail }
+    },
+    {
+      $addToSet: {
+        rrpp: {
+          nombre: "aguss",
+          mail: mail,
+          ticketsCortesias: ticketIds.map(id => ({
+            ticketIdCortesia: id,
+            cantidadDeCortesias: quantities[id]
+          }))
+        }
+      }
+    }
+  );
+}
+
 };
+
+
+export const getRRPPInfoController = async (req,res) => {
+    const {mail} = req.params
+
+    const rrppData = await ticketModel.find({"rrpp.mail": mail})
+
+    res.send(rrppData)
+}
+
+export const getEventsFreesController = async (req, res) => {
+   const {prodId, mail} = req.params
+   const result = await ticketModel.findOne(
+      { _id: prodId, "rrpp.mail": mail },
+      { "rrpp.$": 1 }
+    );
+    res.send(result)
+}
 
 const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento) => {
   

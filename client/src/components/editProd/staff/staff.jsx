@@ -1,12 +1,14 @@
 import { useEffect } from "react"
 import { useParams } from "react-router"
-import { getOneProdRequest, getProdsRequest } from "../../../api/eventRequests"
+import { getOneProdRequest, getProdsRequest, staffQrRequest } from "../../../api/eventRequests"
 import { useState } from "react"
 
 const Staff = () => {
     const {prodId} = useParams()
     const [producction, setProducction] = useState([])
     const [quantities, setQuantities] = useState({});
+    const [quantity, setQuantity] = useState(0)
+    const [totalQuantity, setTotalQuantity] = useState(0)
 
     useEffect(() => {
         const obtainUserProd = async () => {
@@ -15,7 +17,7 @@ const Staff = () => {
         }
         obtainUserProd()
     },[])
-    console.log(producction)
+  
       const restQuantity = (e, ticketId) => {
         e.preventDefault()
         setQuantities(prev => {
@@ -30,7 +32,7 @@ const Staff = () => {
         });
     };
 
-    const addQuantity = (e, ticketIdn, nombreTicket) => {
+    const addQuantity = (e, ticketId) => {
         e.preventDefault()
         if(quantity < 20){
             setTotalQuantity(totalQuantity + 1)
@@ -43,24 +45,31 @@ const Staff = () => {
 
     const addStaff = async (e) => {
         e.preventDefault()
-        const mail = e.target.elements.email.value
-        const res = await staffQrRequest(prodId, quantities, mail, 3)
+        const mail = e.target.elements.emailStaff.value
+        const sendData = {
+            prodId, 
+            quantities, 
+            mail
+        }
+        const res = await staffQrRequest(sendData)
+        console.log(res.data)
     }
 
     return(
         <>
-            <form onSubmit={(e) => addStaff(e)}>
+            <form onSubmit={(e) => addStaff(e)} className="mt-30">
                 <label>Agregas mail del colaborador:</label>
                 <input type="email" name="emailStaff"></input>
                   {producction.map((p) =>
-                    p.tickets.map((tck) => 
+                    p.cortesiaRRPP.map((tck) => 
                     <div key={tck._id}>
                         <div className="flex">
+                            l
                             <label>{tck.nombreTicket}: </label>
                             <div className="flex">
-                                <button onClick={(e) => restQuantity(e, tck._id, tck.precio, tck.nombreTicket)}>-</button>
+                                <button onClick={(e) => restQuantity(e, tck._id)}>-</button>
                                 <p>{quantities[tck._id] || 0}</p>
-                                <button onClick={(e) => addQuantity(e, tck._id, tck.precio, tck.nombreTicket)}>+</button>
+                                <button onClick={(e) => addQuantity(e, tck._id)}>+</button>
                                 <p>Precio c/u: {tck.precio}</p>
                             </div>
                         </div>
