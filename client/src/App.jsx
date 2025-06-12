@@ -12,6 +12,8 @@ import EditProd from './components/editProd/editProd'
 import BuyTicket from './components/buyTicket/buyTicket'
 import TicketQr from './components/ticketqr/ticketqr'
 import Staff from './components/editProd/staff/staff'
+import SendFree from './components/sendFree/sendFree'
+import RRPPEvents from './components/rrppEvents/rrppEvents'
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
             <Route path='/editar_evento/:prodId' element={<EditProd/>}></Route>
             <Route path='/buy_tickets/:prodId' element={<BuyTicket/>}></Route>
             <Route path='/editar_evento/staff/:prodId' element={<Staff/>}></Route>
+            <Route path='/get_my_rrpp_events/:mail' element={<RRPPEvents/>}></Route>
+            <Route path='/rrpp_get_event_free/:prodId/:mail' element={<SendFree/>}></Route>
             <Route path='/ticket/validate' element={<TicketQr/>}></Route>
           </Routes>
       </UserContextProvider>

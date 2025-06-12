@@ -42,3 +42,5 @@ export const buyTicketsRequest = async (eventId, nombreEvento, quantities, total
 export const staffQrRequest = async (sendData) => axios.post('http://localhost:4000/sendQrStaff', sendData)
 
 export const getInfoQrRequest = (eventId, ticketId) => axios.get(`http://localhost:4000/ticket/${eventId}/${ticketId}`)
+
+export const getRRPPInfoRequest = (mail) => axios.get(`http://localhost:4000/get_my_rrpp_events/${mail}`)

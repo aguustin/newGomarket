@@ -541,11 +541,15 @@ export const getRRPPInfoController = async (req,res) => {
 
 export const getEventsFreesController = async (req, res) => {
    const {prodId, mail} = req.params
-   const result = await ticketModel.findOne(
-      { _id: prodId, "rrpp.mail": mail },
-      { "rrpp.$": 1 }
-    );
-    res.send(result)
+
+   if(prodId.length > 0 && mail.length > 0){
+     const result = await ticketModel.findOne(
+        { _id: prodId, "rrpp.mail": mail },
+        { "rrpp.$": 1 }
+      );
+      res.send(result)
+   }
+    res.status(200).json({message: "Necesitas loguearte"})
 }
 
 const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento) => {

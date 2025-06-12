@@ -69,7 +69,6 @@ const BuyTicket = () => {
 
     return(
         <>
-        
             {prod.map((p) => 
             <div key={p._id}>
                 <img src={p.imgEvento}></img>

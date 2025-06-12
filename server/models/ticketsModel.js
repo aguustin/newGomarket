@@ -42,7 +42,7 @@ const ticketSchema = new mongoose.Schema({
             fechaDeCierre: {type: Date},
             imgTicket: {type: String},
             visibilidad:{type: String},
-        }],
+    }],
     cortesiaRRPP:[{
             nombreTicket: {type: String},
             descripcionTicket: {type: String},
