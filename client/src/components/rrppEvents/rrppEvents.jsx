@@ -1,6 +1,9 @@
 import { useEffect } from "react"
 import { getRRPPInfoRequest } from "../../api/eventRequests"
 import { useState } from "react"
+import { redirect } from "react-router"
+import CryptoJS from 'crypto-js';
+
 
 const RRPPEvents = () => {
     const [rrppEvents, setEvents] = useState([])
@@ -25,6 +28,13 @@ const RRPPEvents = () => {
         return `${year}/${month}/${day}  ${hours}:${minutes}hs`;
     }
 
+    const buildUrl = (prodId, mail, imgEvento) => {
+        const secretKey = "skulldiver"
+        const imgUrl = imgEvento
+        const encryptedUrl = CryptoJS.AES.encrypt(imgUrl, secretKey).toString()
+        redirect(`/rrpp_get_event_free/${rpe._id}/${rpe.rrpp[0]?.mail}/${encryptedUrl}`)
+    }
+
     return(
         <div>
             {rrppEvents.map((rpe, i) => 
@@ -35,7 +45,7 @@ const RRPPEvents = () => {
                     <div>
                         <h2>{rpe.nombreEvento}</h2>
                         <p>Fecha de cierre: {formatDate(rpe.fechaFin)}</p>
-                        <a href={`/rrpp_get_event_free/${rpe._id}/${rpe.rrpp[0]?.mail}`}>Enviar Cortesias</a>
+                        <button onClick={() => buildUrl(rpe._id, 'agustin.molee@gmail.com'/*rpe.rrpp[0]?.mail*/, rpe.imgEvento)}>Enviar Cortesias</button>
                     </div>
                 </div>
             )}

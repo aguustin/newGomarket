@@ -32,6 +32,7 @@ const TicketQr = () => {
       <img src={ticketInfo.imgEvento} alt="evento" width="300" />
       <p>Ticket: {ticketInfo.nombreTicket}</p>
       <p>Fecha cierre ticket: {new Date(ticketInfo.fechaDeCierreTicket).toLocaleString()}</p>
+      {ticketInfo.state === 3 ? <p>Free</p> : ''}
     </div>
   );
 };

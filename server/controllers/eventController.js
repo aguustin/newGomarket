@@ -289,8 +289,12 @@ export const getEventToBuyController = async (req, res) => {
 }
 
 export const buyEventTicketsController = async (req, res) => {
-  const { eventId, nombreEvento, quantities, total, totalQuantity, mail } = req.body;
-  //qrGeneratorController(quantities, mail) esto va en el webhook creo
+  const { nombreEvento, quantities, mail, state } = req.body;
+  qrGeneratorController(quantities, mail) //esto va en el webhook creo
+  if(state === 3){
+    qrGeneratorController(quantities, mail, state)
+    return res.status(200).json({msg: "entro aca en 3"})
+  }
   try {
   const preference = {
   items: [
@@ -319,7 +323,7 @@ export const buyEventTicketsController = async (req, res) => {
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
-        qrGeneratorController(quantities, mail) // SOLO PARA PROBAR LA GENERACION DE LOS QR SIN TENER QUE PAGAR SI O SI EN MERCADOPAGO
+        qrGeneratorController(quantities, mail, state) // SOLO PARA PROBAR LA GENERACION DE LOS QR SIN TENER QUE PAGAR SI O SI EN MERCADOPAGO
         res.json({
             id: response.body.id,
             init_point: response.body.init_point,
@@ -383,7 +387,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       }
 
       console.log("🎟️ Generating QR for:", mail, "with quantities:", quantities);
-      await qrGeneratorController(quantities, mail);
+      await qrGeneratorController(quantities, mail, 1);
     }
 
     res.sendStatus(200);
@@ -393,15 +397,39 @@ export const mercadoPagoWebhookController = async (req, res) => {
   }
 };
 
-export const qrGeneratorController = async (quantities, mail) => {
+export const qrGeneratorController = async (quantities, mail, state) => {
+  if(state === 3){
+    const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
+      updateOne: {
+        filter: {
+          "rrpp.mail": mail,
+          "rrpp.ticketsCortesias.ticketIdCortesia": ticketId
+        },
+        update: {
+          $inc: {
+            "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantity
+          }
+        },
+        arrayFilters: [
+          { "rrppElem.mail": mail },
+          { "ticketElem.ticketIdCortesia": ticketId }
+        ]
+      }
+    }));
+
+    await ticketModel.bulkWrite(bulkOps);
+  }
   try {
     const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
-
+    
     const event = await ticketModel.findOne({
       "tickets._id": { $in: ticketIds }
     });
 
-    if (!event) return console.log("Evento no encontrado.");
+    const eventCourtesy = await ticketModel.findOne({
+      "cortesiaRRPP._id": { $in: ticketIds }
+    });
+    if (!event || !eventCourtesy) return console.log("Evento no encontrado.");
 
     const filteredTickets = event.tickets.filter(ticket =>
       ticketIds.some(id => id.equals(ticket._id))
@@ -425,7 +453,7 @@ export const qrGeneratorController = async (quantities, mail) => {
         const qrBase64 = qrImage.split(',')[1];
         const qrBuffer = Buffer.from(qrBase64, 'base64');
 
-        await sendQrEmail(mail, qrBuffer, ticket.nombreTicket, event.nombreEvento);
+        await sendQrEmail(mail, qrBuffer, ticket.nombreTicket, event.nombreEvento, state);
       }
     }
     console.log("QRs generados y enviados.");
@@ -539,7 +567,7 @@ export const getRRPPInfoController = async (req,res) => {
     res.send(rrppData)
 }
 
-export const getEventsFreesController = async (req, res) => {
+export const getEventsFreesController = async (req, res) => { //a chequear
    const {prodId, mail} = req.params
 
    if(prodId.length > 0 && mail.length > 0){
@@ -547,7 +575,7 @@ export const getEventsFreesController = async (req, res) => {
         { _id: prodId, "rrpp.mail": mail },
         { "rrpp.$": 1 }
       );
-      res.send(result)
+      return res.send(result)
    }
     res.status(200).json({message: "Necesitas loguearte"})
 }
