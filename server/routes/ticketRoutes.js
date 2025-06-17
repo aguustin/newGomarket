@@ -28,7 +28,7 @@ router.get('/ticket/validate', getInfoQrController);
 
 router.post('/sendQrStaff', sendQrStaffQrController)
 
-//router.post('/webhook/mercadopago/:quantities/:mail', mercadoPagoWebhookController);
+router.post('/webhook/mercadopago', mercadoPagoWebhookController);
 
 router.get('/payment-success', paymentSuccessController);
 

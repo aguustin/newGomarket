@@ -49,11 +49,11 @@ const BuyTicket = () => {
     }, 0);
     
     const buyTickets = async (e) => {
-              
+             
             try {
                 e.preventDefault();
                 const mail = e.target.elements.mail.value;
-                const data = await buyTicketsRequest(prod[0].nombreEvento, quantities, mail, 1);
+                const data = await buyTicketsRequest(prodId.prodId, prod[0].nombreEvento, quantities, mail, 1, total);
 
                 if (!data?.init_point) {
                 console.error("init_point no recibido");

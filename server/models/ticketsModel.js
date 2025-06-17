@@ -60,6 +60,7 @@ const ticketSchema = new mongoose.Schema({
             nombreCategoria:{type: String},
             ventaPorCat: {type: Number},
             vendidos: {type: Number},
+            total: {type: Number}
         }],
         ticketsCortesias:[{
             ticketIdCortesia: {type: String},
@@ -71,7 +72,6 @@ const ticketSchema = new mongoose.Schema({
     totalDevoluciones:{ type: Number},
     totalCortesias: {type: Number},
     totalMontoVendido: {type: Number},
-    totalMontoDevoluciones:{type: Number},
     totalMontoDescuento: {type: Number},
     montoTotal: {type: Number}
 })
