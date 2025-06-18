@@ -8,9 +8,13 @@ import dotenv from 'dotenv';
 import { user_mail, pass } from "../config.js";
 import jwt from 'jsonwebtoken';
 import userModel from "../models/userModel.js";
+import crypto from "crypto"
+
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
+const SECRET_MAIL_KEY = process.env.SECRET_MAIL_KEY || 'mjac32nk12n3123ja7das2'
+const IV_LENGTH = 16
 
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
     const getEvents = await ticketModel.find({})
@@ -293,47 +297,133 @@ if (req.file) {
 
 export const getEventToBuyController = async (req, res) => {
     const {prodId} = req.params
-
+    console.log(prodId)
     const getProd = await ticketModel.find({_id: prodId})
     
     res.send(getProd)
 }
 
-export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities, mail, state, total }) => {
-  await qrGeneratorController(prodId, quantities, mail, state);
+export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities, mail, state, total, emailHash }) => {
+  //await qrGeneratorController(prodId, quantities, mail, state);
 
-  const ticketIds = Object.keys(quantities);
-  const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+const updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.linkHash': emailHash });
+const rrppMatch = updateRRPP[0]?.rrpp.find(r => r.linkHash === emailHash);
+if (!rrppMatch) throw new Error("RRPP no encontrado");
 
-  const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
-    updateOne: {
-      filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
-      update: {
-        $inc: {
-          "tickets.$.ventas": quantity,
-          "tickets.$.cantidad": -quantity,
-        },
+const getDecryptedMail = decrypt(rrppMatch.linkDePago);
+
+const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
+if (!doc) throw new Error("Documento no encontrado");
+
+const rrpp = doc.rrpp.find(r => r.mail === getDecryptedMail);
+const existingTicketIds = rrpp?.ventasRRPP.map(v => v.ticketId) || [];
+
+const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
+const tickets = doc.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
+
+const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+const sumaTotal = tickets.reduce((acc, ticket) => {
+  const ticketId = ticket._id.toString();
+  const vendidos = quantities[ticketId];
+  return acc + vendidos * ticket.precio;
+}, 0);
+
+// Actualiza tickets
+const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
+  updateOne: {
+    filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
+    update: {
+      $inc: {
+        "tickets.$.ventas": quantity,
+        "tickets.$.cantidad": -quantity,
       },
     },
-  }));
+  },
+}));
 
-   await Promise.all([
-    ticketModel.updateOne(
-      { _id: prodId },
-      {
-        $inc: {
-          totalVentas: ventasTotales,
-          totalMontoVendido: total,
+// Actualiza RRPP
+const bulkOpsRRPP = tickets.map(ticket => {
+  const ticketId = ticket._id.toString();
+  const vendidos = quantities[ticketId];
+  const total = vendidos * ticket.precio;
+  const nombreCategoria = ticket.nombreTicket;
+  const alreadyExists = existingTicketIds.includes(ticketId);
+
+  if (alreadyExists) {
+    return {
+      updateOne: {
+        filter: {
+          "rrpp.mail": getDecryptedMail,
+          "rrpp.ventasRRPP.ticketId": ticketId,
         },
+        update: {
+          $inc: {
+            "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].vendidos": vendidos,
+            "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].total": total
+          },
+        },
+        arrayFilters: [
+          { "rrppElem.mail": getDecryptedMail },
+          { "ventaElem.ticketId": ticketId },
+        ],
       }
-    ),
-    ticketModel.bulkWrite(bulkOps),
-  ]);
+    };
+  } else {
+    return {
+      updateOne: {
+        filter: { "rrpp.mail": getDecryptedMail },
+        update: {
+          $push: {
+            "rrpp.$[rrppElem].ventasRRPP": {
+              ticketId,
+              nombreCategoria,
+              vendidos,
+              total
+            }
+          }
+        },
+        arrayFilters: [
+          { "rrppElem.mail": getDecryptedMail },
+        ],
+      }
+    };
+  }
+});
+
+// Sumar montoTotalVendidoRRPP
+bulkOpsRRPP.push({
+  updateOne: {
+    filter: { "rrpp.mail": getDecryptedMail },
+    update: {
+      $inc: {
+        "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal
+      }
+    },
+    arrayFilters: [
+      { "rrppElem.mail": getDecryptedMail }
+    ]
+  }
+});
+
+// Ejecutar operaciones
+await Promise.all([
+  ticketModel.updateOne(
+    { _id: prodId },
+    {
+      $inc: {
+        totalVentas: ventasTotales,
+        totalMontoVendido: total,
+      },
+    }
+  ),
+  ticketModel.bulkWrite([...bulkOps, ...bulkOpsRRPP])
+]);
 };
 
 export const buyEventTicketsController = async (req, res) => {
-  const { prodId, nombreEvento, quantities, mail, state, total } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
+  const { prodId, nombreEvento, quantities, mail, state, total, emailHash } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
  // qrGeneratorController(quantities, mail) //esto va en el webhook creo
+
   if(state === 3){
       qrGeneratorController(prodId, quantities, mail, state)
       return res.status(200).json({msg: "entro aca en 3"})
@@ -370,7 +460,8 @@ export const buyEventTicketsController = async (req, res) => {
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
-      await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total })
+      
+      await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash }) //esto luego hay que quitarlo
         res.json({
             id: response.body.id,
             init_point: response.body.init_point,
@@ -664,6 +755,55 @@ export const getInfoQrController = async (req, res) => {
   }
 }
 
+export function encrypt(rrppMail) {
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const key = crypto.createHash('sha256').update(process.env.SECRET_MAIL_KEY).digest(); // 🔐 32-byte key
+
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+  let encrypted = cipher.update(rrppMail, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+
+  return `${iv.toString('hex')}:${encrypted}`;
+}
+
+export function decrypt(encryptedMail) {
+ const [ivHex, encrypted] = encryptedMail.split(':');
+  const iv = Buffer.from(ivHex, 'hex');
+  const key = crypto.createHash('sha256').update(process.env.SECRET_MAIL_KEY).digest(); // same 32-byte key
+
+  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+
+  return decrypted;
+}
+
+export const hashForSearch = (encryptedMail) => {
+  return crypto.createHash('sha256').update(encryptedMail).digest('hex');
+}
+
+export const generateMyRRPPLinkController = async (req, res) => {  //guardar en la bd linkDePago y linkHash (linkHash para buscarlo)
+  const {prodId, rrppMail} = req.body
+  const encryptedMail = encrypt(rrppMail)
+  const emailHash = hashForSearch(rrppMail);
+  console.log(encryptedMail, emailHash)
+
+  const response = await ticketModel.findOne({_id: prodId, "rrpp.linkHash": emailHash})
+  console.log(response)
+  if(!response){
+    await ticketModel.updateOne(
+      {_id: prodId, "rrpp.mail": rrppMail},
+      {
+        $set:{
+          'rrpp.$.linkDePago': encryptedMail,
+          'rrpp.$.linkHash': emailHash
+        }
+      }
+    )
+   return res.json({message: `http://localhost:5173/buy_tickets/${prodId}/${emailHash}`}).status(200)
+  }
+  return res.json({message: 'Ya tienes tu link de pago'})
+}
 
 export const paymentSuccessController = async (req, res) => {
   /*const paymentId = req.query.payment_id;

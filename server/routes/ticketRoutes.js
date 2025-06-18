@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { buyEventTicketsController, createEventController, createEventTicketsController, getAllEventsController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, sendQrStaffQrController, updateEventController, updateEventTicketsController } from "../controllers/eventController.js";
+import { buyEventTicketsController, createEventController, createEventTicketsController, generateMyRRPPLinkController, getAllEventsController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, sendQrStaffQrController, updateEventController, updateEventTicketsController } from "../controllers/eventController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -35,5 +35,7 @@ router.get('/payment-success', paymentSuccessController);
 router.get('/get_my_rrpp_events/:mail', getRRPPInfoController)
 
 router.get('/rrpp_get_event_free/:prodId/:mail', getEventsFreesController)
+
+router.post('/generate_rrpp_url', generateMyRRPPLinkController)
 
 export default router

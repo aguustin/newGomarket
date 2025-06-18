@@ -3,16 +3,17 @@ import { useParams } from "react-router"
 import { buyTicketsRequest, getEventToBuyRequest } from "../../api/eventRequests"
 
 const BuyTicket = () => {
-    const prodId = useParams()
+    const {prodId, emailHash} = useParams()
     const [prod, setProd] = useState([])
     const [quantity, setQuantity] = useState(0)
     const [quantities, setQuantities] = useState({});
     const [totalQuantity, setTotalQuantity] = useState(0)
     const [ticketsIds, setTicketsIds] = useState()
+    console.log(emailHash)
 
     useEffect(() => {
             const getOneEvent = async () => {
-                const res = await getEventToBuyRequest(prodId.prodId)
+                const res = await getEventToBuyRequest(prodId)
                 setProd(res.data)
             }
             getOneEvent()
@@ -49,11 +50,10 @@ const BuyTicket = () => {
     }, 0);
     
     const buyTickets = async (e) => {
-             
             try {
                 e.preventDefault();
                 const mail = e.target.elements.mail.value;
-                const data = await buyTicketsRequest(prodId.prodId, prod[0].nombreEvento, quantities, mail, 1, total);
+                const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash);
 
                 if (!data?.init_point) {
                 console.error("init_point no recibido");

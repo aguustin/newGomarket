@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { getRRPPInfoRequest } from "../../api/eventRequests"
+import { generateMyRRPPLinkRequest, getRRPPInfoRequest } from "../../api/eventRequests"
 import { useState } from "react"
 import { redirect } from "react-router"
 import CryptoJS from 'crypto-js';
@@ -35,6 +35,11 @@ const RRPPEvents = () => {
         redirect(`/rrpp_get_event_free/${rpe._id}/${rpe.rrpp[0]?.mail}/${encryptedUrl}`)
     }
 
+    const generateMyRRPPLink = async (prodId, rrppMail) => {
+       const res = await generateMyRRPPLinkRequest({prodId, rrppMail})
+       console.log(res)
+    }
+
     return(
         <div>
             {rrppEvents.map((rpe, i) => 
@@ -46,6 +51,7 @@ const RRPPEvents = () => {
                         <h2>{rpe.nombreEvento}</h2>
                         <p>Fecha de cierre: {formatDate(rpe.fechaFin)}</p>
                         <button onClick={() => buildUrl(rpe._id, 'agustin.molee@gmail.com'/*rpe.rrpp[0]?.mail*/, rpe.imgEvento)}>Enviar Cortesias</button>
+                        <button onClick={() => generateMyRRPPLink(rpe._id, 'agustin.molee@gmail.com')}></button>
                     </div>
                 </div>
             )}

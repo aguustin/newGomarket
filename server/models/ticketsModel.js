@@ -55,10 +55,10 @@ const ticketSchema = new mongoose.Schema({
         nombre: {type: String},
         mail:{type: String},
         linkDePago: {type:String},
+        linkHash: {type: String},
         ventasRRPP:[{
             ticketId: {type: String},
             nombreCategoria:{type: String},
-            ventaPorCat: {type: Number},
             vendidos: {type: Number},
             total: {type: Number}
         }],

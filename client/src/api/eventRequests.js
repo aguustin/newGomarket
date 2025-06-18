@@ -20,7 +20,7 @@ export const getEventToBuyRequest = (prodId) => axios.get(`http://localhost:4000
 
 //export const buyTicketsRequest = (quantities, total, totalQuantity, mail, nombreEvento) => axios.post('http://localhost:4000/buy', {quantities, total, totalQuantity, mail, nombreEvento})
 
-export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, state, total) => { 
+export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, state, total, emailHash) => { 
   try {
     const response = await axios.post('http://localhost:4000/buy', {
       prodId,
@@ -28,7 +28,8 @@ export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, 
       quantities,
       mail,
       state,
-      total
+      total, 
+      emailHash
     });
 
     return response.data;
@@ -46,3 +47,5 @@ export const getInfoQrRequest = (eventId, ticketId) => axios.get(`http://localho
 export const getRRPPInfoRequest = (mail) => axios.get(`http://localhost:4000/get_my_rrpp_events/${mail}`)
 
 export const getEventsFreesRequest = (prodId, mail) => axios.get(`http://localhost:4000/rrpp_get_event_free/${prodId}/${mail}`)
+
+export const generateMyRRPPLinkRequest = ({prodId, rrppMail}) => axios.post('http://localhost:4000/generate_rrpp_url', {prodId, rrppMail})
