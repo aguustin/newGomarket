@@ -1,9 +1,66 @@
 @import "tailwindcss";
 
-.nav{
+
+*{
+  list-style: none;
+}
+
+.nav, footer{
   z-index: 3;
+  background-color: #23103b;
+  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
 .productions{
   top: 90px;
+}
+
+p, label, input{
+  color: #cfcfd4;
+}
+
+input{
+  background-color: #18182b;
+  border-color: #2a2a31;
+}
+
+.home-events-container img{
+  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
+.categories-container button{
+    border: 2px solid transparent;
+  border-top: transparent;
+  border-right: transparent;
+  border-left: transparent;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s;
+  border-color: #726bff;
+}
+
+.search-form button{
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background-color: #726bff;
+}
+
+.search-form button:hover{
+  transform: translateY(-2px);
+  background-color: #5b52ff;
+  transition: all .3s;
 }

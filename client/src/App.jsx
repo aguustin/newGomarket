@@ -6,6 +6,7 @@ import { UserContextProvider } from './context/userContext'
 import CreateEventForm from './components/createEventForm/createEventForm'
 import Home from './components/home/home'
 import Nav from './components/nav/nav'
+import Footer from './components/footer/footer'
 import Profile from './components/profile/profile'
 import Productions from './components/productions/productions'
 import EditProd from './components/editProd/editProd'
@@ -35,6 +36,7 @@ function App() {
             <Route path='/rrpp_get_event_free/:prodId/:mail' element={<SendFree/>}></Route>
             <Route path='/ticket/validate' element={<TicketQr/>}></Route>
           </Routes>
+          <Footer></Footer>
       </UserContextProvider>
     </BrowserRouter>
     </>

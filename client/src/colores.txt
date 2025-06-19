@@ -1,0 +1,20 @@
+Fondo principal
+Color: #0f0f12 (muy oscuro, casi negro con un matiz violáceo)
+
+Texto principal (blanco)
+Color: #ffffff
+
+Texto secundario (gris claro)
+Color: #cfcfd4
+
+Botón (color de fondo)
+Color: #726bff (violeta suave)
+
+Texto del botón
+Color: #ffffff
+
+Fondo del input
+Color: #1c1c21
+
+Borde de los inputs y contenedores
+Color: #2a2a31 (gris oscuro)
