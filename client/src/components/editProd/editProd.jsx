@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
 import { createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
+import downArrow from '../../assets/botones/down_arrow.png'
 
 const EditProd = () => {
     const prodId = useParams()
@@ -21,6 +22,17 @@ const EditProd = () => {
         }
         getOneProd()
     }, [])
+
+    const formatDate = (isoString) => {
+        const date = new Date(isoString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}/${month}/${day}  ${hours}:${minutes}`;
+    };
 
     const updateEvent = async (e, eventId, imgEvento, nombreEvento, descripcionEvento, eventoEdad, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento) => {
         e.preventDefault()
@@ -110,35 +122,38 @@ const EditProd = () => {
 
     return(
         <>
-            <div className="flex mt-30 p-8">
+            <div className="mt-30 p-8">
                     <div>
                         {prod.map((p) => 
-                        <form key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, p.categorias, p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
-                            <img src={p.imgEvento} alt=""></img>
-                            <div>
-                                <label>Cambiar imagen del evento:</label><br></br>
-                                <input type="file" name="imgEvento" ref={fileRef} />
+                        <form className="form-edit-event flex relative" key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, p.categorias, p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
+                            <img className="w-[350px] h-[380px]" src={p.imgEvento} alt=""></img>
+                            <div className="ml-10">
+                                <div>
+                                    <label>Cambiar imagen del evento:</label><br></br>
+                                    <input className="border-none" type="file" name="imgEvento" ref={fileRef} />
+                                </div>
+                                <div>
+                                    <label>Nombre del evento:</label><br></br>
+                                    <input type="text" value={eventosEditados[p._id]?.nombreEvento ?? p.nombreEvento} onChange={(e) => handleChangeEvento(e, p._id, 'nombreEvento')}></input>
+                                </div>
+                                <div>
+                                    <label>Descripcion</label><br></br>
+                                    <input type="text" value={eventosEditados[p._id]?.descripcionEvento ??  p.descripcionEvento} onChange={(e) => handleChangeEvento(e, p._id, 'descripcionEvento')}></input>
+                                </div>
+                                <div>
+                                    <label>Edad minima</label><br></br>
+                                    <input type="text" value={eventosEditados[p._id]?.eventoEdad ??  p.eventoEdad} onChange={(e) => handleChangeEvento(e, p._id, 'eventoEdad')}></input>
+                                </div>
+                                <div>
+                                    <label>Categorias del evento:</label><br></br>
+                                    <input type="text"  placeholder="..." value={eventosEditados[p._id]?.categorias ??  p.categorias} onChange={(e) => handleChangeEvento(e, p._id, 'categorias')} name="categorias"></input>
+                                </div>
+                                <div>
+                                    <label>Artistas que participan:</label><br></br>
+                                    <input type="text"  placeholder="..." value={eventosEditados[p._id]?.artistas ??  p.artistas} onChange={(e) => handleChangeEvento(e, p._id, 'artistas')} name="artistas"></input>
+                                </div>
                             </div>
-                            <div>
-                                <label>Nombre del evento:</label><br></br>
-                                <input type="text" value={eventosEditados[p._id]?.nombreEvento ?? p.nombreEvento} onChange={(e) => handleChangeEvento(e, p._id, 'nombreEvento')}></input>
-                            </div>
-                            <div>
-                                <label>Descripcion</label><br></br>
-                                <input type="text" value={eventosEditados[p._id]?.descripcionEvento ??  p.descripcionEvento} onChange={(e) => handleChangeEvento(e, p._id, 'descripcionEvento')}></input>
-                            </div>
-                            <div>
-                                <label>Edad minima</label><br></br>
-                                <input type="text" value={eventosEditados[p._id]?.eventoEdad ??  p.eventoEdad} onChange={(e) => handleChangeEvento(e, p._id, 'eventoEdad')}></input>
-                            </div>
-                            <div>
-                                <label>Categorias del evento:</label><br></br>
-                                <input type="text"  placeholder="..." value={eventosEditados[p._id]?.categorias ??  p.categorias} onChange={(e) => handleChangeEvento(e, p._id, 'categorias')} name="categorias"></input>
-                            </div>
-                            <div>
-                                <label>Artistas que participan:</label><br></br>
-                                <input type="text"  placeholder="..." value={eventosEditados[p._id]?.artistas ??  p.artistas} onChange={(e) => handleChangeEvento(e, p._id, 'artistas')} name="artistas"></input>
-                            </div>
+                            <div className="ml-6">
                             <div>
                                 <label>Monto de ventas estimado</label><br></br>
                                 <input type="number" placeholder="0" value={eventosEditados[p._id]?.montoVentas ??  p.montoVentas} onChange={(e) => handleChangeEvento(e, p._id, 'montoVentas')} name="montoVentas"></input>
@@ -154,13 +169,13 @@ const EditProd = () => {
                             <div className="flex items-center">
                                 <div>
                                     <label>Provincia:</label><br></br>
-                                    <select name="provincia" onChange={(e) => setEventProv(e.target.value)}>
+                                    <select className="bg-violet-900 pr-2 pl-2 rounded-lg"name="provincia" onChange={(e) => setEventProv(e.target.value)}>
                                         <option value="provincia" defaultValue={eventosEditados[p._id]?.provincia ??  p.provincia}>mostrar provincias</option>
                                     </select>
                                 </div>
-                                <div>
+                                <div className="ml-5">
                                     <label>Localidad</label><br></br>
-                                    <select name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
+                                    <select className="bg-violet-900 pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
                                         <option value="localidad" defaultValue={eventosEditados[p._id]?.localidad ??  p.localidad}>mostrar localidad</option>
                                     </select>
                                 </div>
@@ -173,15 +188,63 @@ const EditProd = () => {
                                 <label>Lugar del evento:</label><br></br>
                                 <input type="text" value={eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento} onChange={(e) => handleChangeEvento(e, p._id, 'lugarEvento')} name="lugarEvento"></input>
                             </div>
-                            <button type="submit">Actualizar evento</button>
+                            </div>
+                            <button className="absolute bg-indigo-900 right-50 h-[40px] pr-6 pl-6" type="submit">Actualizar evento</button>
                         </form>)}
+                        <form onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
+                            <div className="mt-9">
+                                <h3>Crear nuevo ticket</h3>
+                                <div>
+                                    <label>Nombre del ticket</label>
+                                    <input type="text" placeholder="..." name="nombreTicket" required></input>
+                                </div>
+                                <div>
+                                    <label>Descripcion del ticket</label>
+                                    <input type="text" placeholder="..." name="descripcionTicket" required></input>
+                                </div>
+                                <div className="flex items-center">
+                                    <div>
+                                        <label>Precio del ticket</label>
+                                        <input className="w-[120px]" type="number" placeholder="..." name="precio" required></input>
+                                    </div>
+                                    <div>
+                                        <label>Cantidad</label>
+                                        <input  className="w-[120px]" type="number" placeholder="..." name="cantidad" required></input>
+                                    </div>
+                                    <div>
+                                        <label>Estado:</label>
+                                        <select className="bg-violet-900 pr-2 pl-2 rounded-lg" name="estado">
+                                            <option defaultValue={1}>Activo</option>
+                                            <option value={2}>No visible</option>
+                                            <option value={3}>Cortesia</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>Fecha y hora de fin:</label>
+                                    <input type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
+                                </div>
+                                <div>
+                                        <label>Visibilidad</label><br></br>
+                                        <input type="checkbox" name="visibilidad" onChange={(e) => setVisibilidad(e.target.value)}/>
+                                </div>
+                                <div>
+                                    <label>Imagen del ticket</label>
+                                    <input type="file" name="imgTicket"></input>
+                                </div>
+                            </div>
+                            <div className="flex items-center">
+                                <button type="submit">Agregar tickets</button>
+                            </div>
+                        </form>
                     </div>
+                    <button className="flex items-center text-xl"><p>Editar tickets</p><img className="w-[20px] h-[20px] ml-3" src={downArrow} alt=""></img></button>
+                    <div className="flex flex-wrap justify-between">
                     {prod.map((pr) => 
                         pr.tickets.map((tick) => 
-                            <div key={tick._id}>
-                                <div>
-                                    <img src={tick.imgTicket} alt=""></img>
-                                    <div>
+                                <div className="form-edit-ticket w-[400px] mt-20 text-center" key={tick._id}>
+                                    <img className="mx-auto mb-5 w-[124px] h-[124px] object-cover" src={tick.imgTicket} alt=""></img>
+                                    <div className="mb-3">
                                         <label>Cambiar imagen del ticket:</label><br></br>
                                         <input type="file" name="imgTicket" ref={el => fileRefsB.current[tick._id] = el} />
                                     </div>
@@ -233,25 +296,28 @@ const EditProd = () => {
                                     }))
                                     }></input>
                                     </div>
-                                    <div>
-                                        <div className="flex items-center">
+                                    <div className="mt-3">
+                                        <div className="items-center">
                                         <label>Fecha de cierre: </label><br></br>
-                                        <label>{tick.fechaDeCierre}</label>
-                                        <label>Cambiar fecha a:</label>
-                                        <input type="datetime-local" value={ticketData[tick._id]?.fechaDeCierre ?? tick.fechaDeCierre}  onChange={(e) =>
-                                        setTicketData(prev => ({
-                                        ...prev,
-                                        [tick._id]: {
-                                            ...prev[tick._id],
-                                            fechaDeCierre: e.target.value
-                                            }
-                                         }))
-                                    }></input>
+                                        <label>{formatDate(tick.fechaDeCierre)}</label><br></br>
+                                        <div className="mt-3">
+                                            <label>Cambiar fecha a:</label><br></br>
+                                            <input type="datetime-local" value={ticketData[tick._id]?.fechaDeCierre ?? tick.fechaDeCierre}  onChange={(e) =>
+                                            setTicketData(prev => ({
+                                            ...prev,
+                                            [tick._id]: {
+                                                ...prev[tick._id],
+                                                fechaDeCierre: e.target.value
+                                                }
+                                            }))
+                                        }></input>
+
+                                        </div>
                                         </div>
                                     </div>
-                                     <div>
-                                        <label>Visibilidad</label><br></br>
-                                        <input type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>
+                                     <div className="flex justify-center items-center mt-3">
+                                        <label>Visibilidad</label>
+                                        <input className="ml-2" type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>
                                         setTicketData(prev => ({
                                         ...prev,
                                         [tick._id]: {
@@ -261,66 +327,20 @@ const EditProd = () => {
                                          }))
                                     }></input>
                                     </div>
-                                    <div>
+                                    <div className="mt-3 mb-3">
                                         <label>Estado:</label>
-                                        <select name="estado" ref={estadoRef}>
-                                            <option defaultValue={tick.estado} value={tick.estado}>{tick.estado}</option>
+                                        <select className="bg-violet-900 pr-2 pl-2 rounded-lg"name="estado" ref={estadoRef}>
+                                            <option defaultValue={tick.estado}>{tick.estado}</option>
                                             <option value={1}>Activo</option>
                                             <option value={2}>No visible</option>
                                             <option value={3}>Cortesia</option>
                                         </select>
                                     </div>
-                                    <button onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.fechaDeCierre, tick.visibilidad)}>Editar</button>
+                                    <button className="mt-5 p-3 w-[100px] rounded-lg" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.fechaDeCierre, tick.visibilidad)}>Editar</button>
                                 </div>
-                            </div> 
                         )
                     )}
-                        <form onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
-                            <div className="mt-9">
-                                <h3>Crear nuevo ticket</h3>
-                                <div>
-                                    <label>Nombre del ticket</label>
-                                    <input type="text" placeholder="..." name="nombreTicket" required></input>
-                                </div>
-                                <div>
-                                    <label>Descripcion del ticket</label>
-                                    <input type="text" placeholder="..." name="descripcionTicket" required></input>
-                                </div>
-                                <div className="flex items-center">
-                                    <div>
-                                        <label>Precio del ticket</label>
-                                        <input type="number" placeholder="..." name="precio" required></input>
-                                    </div>
-                                    <div>
-                                        <label>Cantidad</label>
-                                        <input type="number" placeholder="..." name="cantidad" required></input>
-                                    </div>
-                                    <div>
-                                        <label>Estado:</label>
-                                        <select name="estado">
-                                            <option defaultValue={1} value={1}>Activo</option>
-                                            <option value={2}>No visible</option>
-                                            <option value={3}>Cortesia</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label>Fecha y hora de fin:</label>
-                                    <input type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
-                                </div>
-                                <div>
-                                        <label>Visibilidad</label><br></br>
-                                        <input type="checkbox" name="visibilidad" onChange={(e) => setVisibilidad(e.target.value)}/>
-                                </div>
-                                <div>
-                                    <label>Imagen del ticket</label>
-                                    <input type="file" name="imgTicket"></input>
-                                </div>
-                            </div>
-                            <div className="flex items-center">
-                                <button type="submit">Agregar tickets</button>
-                            </div>
-                        </form>
+                    </div>
                         <div className="flex items-center">
                             <Link href={`/staff/${prod[0]?.nombreEvento}`}>Enviar tickets</Link>
                         </div>

@@ -6,28 +6,39 @@ const Productions = () => {
 
     const {session, productions, setProductions} = useContext(UserContext)
     //console.log(session.userFinded[0]?._id)
-useEffect(() => {
-    const getProds = async () => {
-        try {
-            const userId = session?.userFinded?.[0]?._id;
-            if (!userId) return; // Wait until session is ready
+    useEffect(() => {
+        const getProds = async () => {
+            try {
+                const userId =   "682230196086949adb9b9c77"   //session?.userFinded?.[0]?._id;
+                if (!userId) return; // Wait until session is ready
 
-            const res = await getProdsRequest(userId);
-            setProductions(res.data);
-        } catch (err) {
-            console.error("Failed to fetch productions:", err);
-        }
+                const res = await getProdsRequest(userId);
+                setProductions(res.data);
+            } catch (err) {
+                console.error("Failed to fetch productions:", err);
+            }
+        };
+
+        getProds();
+    }, [session]);
+    
+    const formatDate = (isoString) => {
+        const date = new Date(isoString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}/${month}/${day}  ${hours}:${minutes}`;
     };
-
-    getProds();
-}, [session]);
-    console.log(productions)
 
 return(
         <>
-            <div className="productions relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div className="h-screen">
+            <div className="productions relative overflow-x-auto shadow-md sm:rounded-lg p-10">
                 <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-violet-900 dark:text-white">
                         <tr>
                             <th scope="col" className="px-6 py-3">
                                 Nombre del evento
@@ -50,6 +61,9 @@ return(
                             <th scope="col" className="px-6 py-3">
                                 Ganancias totales
                             </th>
+                             <th scope="col" className="px-6 py-3">
+                    
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,16 +79,16 @@ return(
                                 {prod.lugarEvento}
                             </td>
                             <td className="px-6 py-4">
-                                {prod.fechaInicio}
+                                {formatDate(prod.fechaInicio)}
                             </td>
                              <td className="px-6 py-4">
-                                {prod.fechaFin}
+                                {formatDate(prod.fechaFin)}
                             </td>
                               <td className="px-6 py-4">
-                                {prod.totalVentas}
+                                {prod.totalVentas || 0}
                             </td>
                               <td className="px-6 py-4">
-                                {prod.montoTotal}
+                                {prod.totalMontoVendido || 0}
                             </td>
                             <td className="px-6 py-4">
                                 <a href={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
@@ -83,6 +97,8 @@ return(
                     </tbody>
                 </table>
             </div>
+
+        </div>
 
         </>
     )

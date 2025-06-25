@@ -9,8 +9,8 @@
   z-index: 3;
   background-color: #23103b;
   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
--webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
--moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
 .productions{
@@ -23,7 +23,6 @@ p, label, input{
 
 input{
   background-color: #18182b;
-  border-color: #2a2a31;
 }
 
 .home-events-container img{
@@ -63,4 +62,81 @@ input{
   transform: translateY(-2px);
   background-color: #5b52ff;
   transition: all .3s;
+}
+
+
+
+
+
+/* ------------------------------------------------------------ CREATE EVENT ---------------------------------------------------------------------------*/
+.create-form input, .create-form textarea, .form-edit-event input{
+  border: 1px solid #302e5f;
+  background-color: transparent;
+  border-radius: 5px;
+  padding-left: 3px;
+  height: 40px;
+  min-width: 400px;
+  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
+.create-form textarea{
+  height: 200px !important;
+}
+
+.create-form > div > form > div{
+  margin-top: 14px;
+}
+
+#terminos-condiciones input{
+  width: 22px !important;
+  height: 22px !important;
+  box-shadow: none;
+}
+
+.portal-evento label{
+  margin-top: 10px !important;
+}
+
+.create-form img{
+    box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
+.continuar-button{
+  right: 0px;
+  background-color: #726bff;
+}
+
+.continuar-button img{
+  box-shadow:none !important;
+}
+
+
+/*------------------------------------------------------------------- EDITAR EVENTRO ------------------------------------------------------------------------*/
+.form-edit-event div{
+  margin-top: -20px;
+}
+
+.form-edit-event div > div{
+  margin-top: 15px;
+}
+
+.form-edit-event input[type="file"]{
+  border: transparent !important;
+  background-color:#5b52ff;
+  box-shadow: none;
+}
+
+.form-edit-event button{
+  bottom: -60px;
+}
+
+.form-edit-ticket button{
+  background-color:#5b52ff;
+  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }

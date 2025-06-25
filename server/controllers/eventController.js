@@ -23,7 +23,7 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
     const {userId, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento, linkEvento} = req.body
-    
+      console.log(req.body)
     if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
             const createdEvent = await ticketModel.create({
                     userId: userId,

@@ -25,8 +25,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Login/>}></Route>
             <Route path="/register" element={<Register/>}></Route>
-            <Route path="/home" element={<Home/>}></Route>
-            <Route path="/create_event" element={<CreateEventForm/>}></Route>
+            <Route path="/Home" element={<Home/>}></Route>
+            <Route path="/Create_event" element={<CreateEventForm/>}></Route>
             <Route path="/profile" element={<Profile/>}></Route>
             <Route path='/productions' element={<Productions/>}></Route>
             <Route path='/editar_evento/:prodId' element={<EditProd/>}></Route>
