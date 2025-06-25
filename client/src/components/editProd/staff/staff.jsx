@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useParams } from "react-router"
 import { getOneProdRequest, getProdsRequest, staffQrRequest } from "../../../api/eventRequests"
 import { useState } from "react"
+import { formatDate } from "../../../globalscomp/globalscomp"
 
 const Staff = () => {
     const {prodId} = useParams()
@@ -58,25 +59,37 @@ const Staff = () => {
     return(
         <>
             <form onSubmit={(e) => addStaff(e)} className="mt-30">
-                <label>Agregas mail del colaborador:</label>
-                <input type="email" name="emailStaff"></input>
                   {producction.map((p) =>
-                    p.cortesiaRRPP.map((tck) => 
-                    <div key={tck._id}>
-                        <div className="flex">
-                            l
-                            <label>{tck.nombreTicket}: </label>
-                            <div className="flex">
-                                <button onClick={(e) => restQuantity(e, tck._id)}>-</button>
-                                <p>{quantities[tck._id] || 0}</p>
-                                <button onClick={(e) => addQuantity(e, tck._id)}>+</button>
-                                <p>Precio c/u: {tck.precio}</p>
+                  <div className="text-center" key={p._id}>
+                    <div className="mx-auto text-center">
+                        <img className="w-[350px] h-[380px] mx-auto object-cover" src={p.imgEvento} alt=""></img>   
+                        <h3 className="mt-2 mb-6 text-4xl">Evento: {p.nombreEvento}</h3>
+                        <p className="mt-2 text-xl">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
+                        <p className="mt-2 text-xl">Fecha de cierre: {formatDate(p.fechaFin) }</p>
+                        
+                    </div>
+                    <div className="mt-10 text-center">
+                        <p className="text-2xl underline">Enviar Cortesias:</p>
+                        {p.cortesiaRRPP.map((tck) => 
+                        <div className="flex justify-center mx-auto mt-3 mb-6 text-center" key={tck._id}>
+                            <div className="flex mt-3">
+                                <label className="text-xl">{tck.nombreTicket}: </label>
+                                <div className="flex items-center">
+                                    <button className="w-[100px] ml-3 mr-3 text-xl bg-violet-900 cursor-pointer rounded-lg" onClick={(e) => restQuantity(e, tck._id)}>-</button>
+                                    <p className="text-xl w-[100px]">{quantities[tck._id] || 0}</p>
+                                    <button className="w-[100px] ml-3 mr-3 text-xl bg-violet-900 cursor-pointer rounded-lg" onClick={(e) => addQuantity(e, tck._id)}>+</button>
+                                </div>
                             </div>
                         </div>
+                        )}
                     </div>
-                )
+                    <div className="mt-8">
+                        <label className="">Agregas mail del colaborador:</label>
+                        <input className="email-staff w-[350px] ml-2 pl-3" type="email" name="emailStaff"></input>
+                    </div>
+                    <button className="mt-10 mb-18 p-4 pl-9 pr-9 bg-indigo-900 rounded-lg cursor-pointer" type="submit">Confirmar</button>
+                  </div>
                 )}
-                <button type="submit">Enviar tickets</button>
             </form>
         </>
     )
