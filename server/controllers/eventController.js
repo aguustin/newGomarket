@@ -306,11 +306,11 @@ export const getEventToBuyController = async (req, res) => {
 export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities, mail, state, total, emailHash }) => {
   //await qrGeneratorController(prodId, quantities, mail, state);
 
-const updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.linkHash': emailHash });
-const rrppMatch = updateRRPP[0]?.rrpp.find(r => r.linkHash === emailHash);
+const updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
+const rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
 if (!rrppMatch) throw new Error("RRPP no encontrado");
 
-const getDecryptedMail = decrypt(rrppMatch.linkDePago);
+const getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
 
 const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
 if (!doc) throw new Error("Documento no encontrado");
@@ -782,21 +782,22 @@ export const hashForSearch = (encryptedMail) => {
   return crypto.createHash('sha256').update(encryptedMail).digest('hex');
 }
 
-export const generateMyRRPPLinkController = async (req, res) => {  //guardar en la bd linkDePago y linkHash (linkHash para buscarlo)
+export const generateMyRRPPLinkController = async (req, res) => {  //guardar en la bd mailEncriptado y mailHash (mailHash para buscarlo)
   const {prodId, rrppMail} = req.body
   const encryptedMail = encrypt(rrppMail)
   const emailHash = hashForSearch(rrppMail);
   console.log(encryptedMail, emailHash)
 
-  const response = await ticketModel.findOne({_id: prodId, "rrpp.linkHash": emailHash})
-  console.log(response)
+  const response = await ticketModel.findOne({_id: prodId, "rrpp.mailHash": emailHash})
+
   if(!response){
     await ticketModel.updateOne(
       {_id: prodId, "rrpp.mail": rrppMail},
       {
         $set:{
-          'rrpp.$.linkDePago': encryptedMail,
-          'rrpp.$.linkHash': emailHash
+          'rrpp.$.mailEncriptado': encryptedMail,
+          'rrpp.$.mailHash': emailHash,
+          'rrpp.$.linkDePago': `http://localhost:5173/buy_tickets/${prodId}/${emailHash}`
         }
       }
     )

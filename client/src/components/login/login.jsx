@@ -28,25 +28,23 @@ const Login = () => {
         }
             
     }
-
     console.log(showMsg)
 
-
     return(
-           <>
+        <>
             {showMsg && <Message text={message}/>}
-            <form onSubmit={(e) => loginUser(e)}>
-                 <div>
-                    <label>Correo electrónico</label>
-                    <input type="mail" placeholder="..." name="mail"></input>
-                </div>
-                 <div>
-                    <label>Ingresa tu contraseña</label>
-                    <input type="password" placeholder="..." name="contrasenia"></input>
-                </div>
-            
-                <div>
-                    <button type="submit">Ingresar</button>
+            <form className="register-form h-full mt-42 mb-38 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => loginUser(e)}>
+                    <div className="text-center p-4">
+                        <h3 className="text-5xl">Ingresar</h3>
+                        <p className="mt-3">Ingresa tu cuenta de Goticket y disfruta de tus eventos favoritos</p>
+                    </div>
+                    <input className="p-3 mt-3 w-full" type="mail" placeholder="Ingresa tu email" name="mail"></input>
+                    <input className="p-3 mt-3 w-full" type="password" placeholder="Tu contraseña" name="contrasenia"></input>
+                    <div className="flex items-center justify-center mt-6">
+                        <p>O registrate haciendo click aqui: </p><a className="text-blue-400! ml-2 underline!" href="/register"> Registrarse</a>
+                    </div>
+                <div className="text-center">
+                    <button className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>
                 </div>
             </form>
         </>

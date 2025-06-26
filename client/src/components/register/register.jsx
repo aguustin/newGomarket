@@ -24,33 +24,22 @@ const Register = () => {
 
     return(
         <>
-            <form onSubmit={() => registerUser()}>
-                <div>
-                    <label>Nombre completo</label>
-                    <input type="text" placeholder="..." name="nombreCompleto"></input>
+            <form className="register-form mt-22 mb-6 mx-auto w-[450px] p-6 rounded-lg" onSubmit={() => registerUser()}>
+                <div className="text-center p-4">
+                    <h3 className="text-5xl">Registrate</h3>
+                    <p className="mt-3">Registra tu cuenta de Goticket y disfruta de tus eventos favoritos</p>
                 </div>
-                 <div>
-                    <label>Correo electrónico</label>
-                    <input type="mail" placeholder="..." name="mail"></input>
+                    <input className="p-3 mt-3 w-full" type="text" placeholder="Nombre completo" name="nombreCompleto"></input>
+                    <input className="p-3 mt-3 w-full" type="mail" placeholder="Tu email" name="mail"></input>
+                    <input className="p-3 mt-3 w-full" type="number" placeholder="Celular" name="celular"></input>
+                    <input className="p-3 mt-3 w-full" type="text" placeholder="Tu pais" name="pais"></input>
+                    <input className="p-3 mt-3 w-full" type="text" placeholder="Ingresa una contraseña" name="contrasenia"></input>
+                    <input className="p-3 mt-3 w-full" type="text" placeholder="Repite la contraseña" name="repetirContrasenia"></input>
+                <div className="text-center">
+                <div className="flex items-center justify-center mt-6">
+                        <p>O ingresa haciendo click aqui: </p><a className="text-blue-400! ml-2 underline!" href="/">Ingresar</a>
                 </div>
-                 <div>
-                    <label>Teléfono</label>
-                    <input type="number" placeholder="..." name="celular"></input>
-                </div>
-                 <div>
-                    <label>Tu País</label>
-                    <input type="text" placeholder="..." name="pais"></input>
-                </div>
-                 <div>
-                    <label>Ingresa tu contraseña</label>
-                    <input type="text" placeholder="..." name="contrasenia"></input>
-                </div>
-                 <div>
-                    <label>Repite tu contraseña</label>
-                    <input type="text" placeholder="..." name="repetirContrasenia"></input>
-                </div>
-                <div>
-                    <button type="submit">Registrarme</button>
+                    <button className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>
                 </div>
             </form>
         </>

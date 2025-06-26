@@ -1,17 +1,18 @@
 import { useEffect } from "react"
 import { generateMyRRPPLinkRequest, getRRPPInfoRequest } from "../../api/eventRequests"
 import { useState } from "react"
-import { redirect } from "react-router"
+import { redirect, useNavigate } from "react-router"
 import CryptoJS from 'crypto-js';
 import { formatDate } from "../../globalscomp/globalscomp";
 
 
 const RRPPEvents = () => {
     const [rrppEvents, setEvents] = useState([])
+    const nav = useNavigate()
     
     useEffect(() => {
         const getRRPPInfo = async () => {
-            const res = await getRRPPInfoRequest('agustin.molee@gmail.com')
+            const res = await getRRPPInfoRequest('agustin.molee@gmail.com') //meter mail de la session
             setEvents(res.data)
         }
         getRRPPInfo()
@@ -22,7 +23,8 @@ const RRPPEvents = () => {
         const secretKey = "skulldiver"
         const imgUrl = imgEvento
         const encryptedUrl = CryptoJS.AES.encrypt(imgUrl, secretKey).toString()
-        redirect(`/rrpp_get_event_free/${prodId}/${mail}/${encryptedUrl}`)
+        console.log(prodId, ' ', mail)
+        nav(`/rrpp_get_event_free/${prodId}/${mail}`) ///${encryptedUrl}
     }
 
     const generateMyRRPPLink = async (prodId, rrppMail) => {
@@ -73,8 +75,8 @@ const RRPPEvents = () => {
                     <div>
                         <h2>{rpe.nombreEvento}</h2>
                         <p>Fecha de cierre: {formatDate(rpe.fechaFin)}</p>
-                        <button onClick={() => buildUrl(rpe._id, 'agustin.molee@gmail.com'/*rpe.rrpp[0]?.mail*/, rpe.imgEvento)}>Generar mi link de pago</button>
-                        <button onClick={() => generateMyRRPPLink(rpe._id, 'agustin.molee@gmail.com')}>Confirmar</button>
+                        <button onClick={() => generateMyRRPPLink(rpe._id, 'agustin.molee@gmail.com')}>Generar mi link de pago</button>
+                        <button onClick={() => buildUrl(rpe._id, 'agustin.molee@gmail.com'/*rpe.rrpp[0]?.mail*/, rpe.imgEvento)}>Confirmar</button>
                     </div>
                 </div>
             )}

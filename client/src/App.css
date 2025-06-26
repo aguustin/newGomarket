@@ -13,6 +13,22 @@
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
+/*------------------------------------------------------- REGISTER FORM --------------------------------------------*/
+
+.register-form{
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background: linear-gradient(135deg, #1a0c2c, #1d0b0a);
+  background-size: cover;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
 .productions{
   top: 90px;
 }
@@ -164,3 +180,24 @@ input{
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
+/* ------------------------------------------------------------------------------- ENVIAR TICKETS DE CORTESIA ----------------------------------------------------------------*/
+
+.free-ticket-cont{
+  border: 1px solid #201d3d;
+}
+
+.free-ticket-cont > div button{
+  background-color: #161750;
+  cursor: pointer;
+  outline: none;
+}
+
+.free-ticket-cont > div button:hover{
+  background-color: #262785;
+  transform: translateY(-2px);
+  transition: all .2s;
+}
+
+.free-ticket-cont p {
+  color: #aeb0c4;
+}

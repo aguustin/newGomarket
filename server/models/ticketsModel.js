@@ -54,8 +54,9 @@ const ticketSchema = new mongoose.Schema({
     rrpp:[{
         nombre: {type: String},
         mail:{type: String},
+        mailEncriptado: {type:String},
+        mailHash: {type: String},
         linkDePago: {type:String},
-        linkHash: {type: String},
         ventasRRPP:[{
             ticketId: {type: String},
             nombreCategoria:{type: String},
