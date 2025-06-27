@@ -16,7 +16,6 @@ const SendFree = () => {
             const res = await getOneProdRequest(prodId) /*await getEventsFreesRequest(prodId, mail)*/
             setFreeTickets(res.data)
         }
-        
         getEventsFrees()
     }, [])
 
