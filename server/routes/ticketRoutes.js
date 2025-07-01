@@ -18,7 +18,7 @@ router.post('/updateTickets', upload.single('imgTicket'), updateEventTicketsCont
 
 router.get('/my_productions/:userId', getMyProdsController)
 
-router.get('/get_prod/:prodId', getOneProdController)
+router.get('/get_prod/:prodId/:userId', getOneProdController)
 
 router.get('/buy_tickets/:prodId', getEventToBuyController)
 

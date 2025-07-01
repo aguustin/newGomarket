@@ -14,7 +14,7 @@ export const getProdsRequest = (userId) => axios.get(`http://localhost:4000/my_p
 
 //export const getStaffProdRequest = (prodId, userId) => axios.get((`http://localhost:4000/my_productions/${userId}`))
 
-export const getOneProdRequest = (prodId) => axios.get(`http://localhost:4000/get_prod/${prodId}`)
+export const getOneProdRequest = (prodId, userId) => axios.get(`http://localhost:4000/get_prod/${prodId}/${userId}`)
 
 export const getEventToBuyRequest = (prodId) => axios.get(`http://localhost:4000/buy_tickets/${prodId}`)
 

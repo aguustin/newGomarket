@@ -10,10 +10,11 @@ const Staff = () => {
     const [quantities, setQuantities] = useState({});
     const [quantity, setQuantity] = useState(0)
     const [totalQuantity, setTotalQuantity] = useState(0)
-
+    console.log(prodId)
     useEffect(() => {
         const obtainUserProd = async () => {
-            const res = await getOneProdRequest(prodId)  //despues reemplazar el valor por userId de la session
+            const userId = '682230196086949adb9b9c77'
+            const res = await getOneProdRequest(prodId, userId)  //despues reemplazar el valor por userId de la session
             setProducction(res.data)
         }
         obtainUserProd()

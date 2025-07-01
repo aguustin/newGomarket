@@ -93,6 +93,7 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
   const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
   let fechaParsed = new Date(fechaDeCierre);
   let estadoToInt = Number(estado)
+  console.log(prodId)
   const buildPayload = (imgUrl) => {
     if (estadoToInt !== 3) {  // SI EL ESTADO ES DIFERENTE DE 3 (DE CORTESIA) SE LE AGREGA EL ESTADO PARA DIFERENCIAR LOS TICKETS NORMALES A LOS DE CORTESIA
       return {
@@ -165,8 +166,9 @@ export const getMyProdsController = async (req, res) => {  //OBTENER MIS PRODUCC
 }
 
 export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO DE UNA SOLA PRODUCCION
-    const {prodId} = req.params
-    const getProd = await ticketModel.find({_id: prodId})
+    const {prodId, userId} = req.params
+    console.log(prodId, ' ', userId)
+    const getProd = await ticketModel.find({_id: prodId, userId: userId})
     
     res.send(getProd)
 }

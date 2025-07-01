@@ -9,7 +9,7 @@ import backArrowPng from '../../assets/images/back-arrow.png'
 import { formatDate } from "../../globalscomp/globalscomp"
 
 const EditProd = () => {
-    const prodId = useParams()
+    const {prodId} = useParams()
     const fileRef = useRef(null);
     const fileRefsB = useRef({})
     const estadoRef = useRef()
@@ -18,10 +18,11 @@ const EditProd = () => {
     const [ticketData, setTicketData] = useState({});
     const [eventosEditados, setEventosEditados] = useState({});
     const [visibilidad, setVisibilidad] = useState()
-
+    console.log(prodId)
+    const userId = '682230196086949adb9b9c77'
     useEffect(() => {
         const getOneProd = async () => {
-            const res = await getOneProdRequest(prodId.prodId)
+            const res = await getOneProdRequest(prodId, userId) //userId va la session del usuario
             setProd(res.data)
         }
         getOneProd()
@@ -98,9 +99,9 @@ const EditProd = () => {
 
       const createEventTickets = (e) => {
             e.preventDefault()
-            console.log('entro', prodId.prodId)
+            console.log('entro', prodId)
             const formData = new FormData()
-            formData.append('prodId', prodId.prodId)
+            formData.append('prodId', prodId)
             formData.append('nombreTicket', e.target.elements.nombreTicket.value)
             formData.append('descripcionTicket', e.target.elements.descripcionTicket.value)
             formData.append('precio', e.target.elements.precio.value)

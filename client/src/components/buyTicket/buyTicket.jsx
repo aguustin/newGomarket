@@ -100,7 +100,7 @@ const BuyTicket = () => {
                             </div>
                         </div>
                     </div>
-                )
+                    )
                 )}
                 <p>Total:${total}</p>
                 <button type="submit">Comprar</button>

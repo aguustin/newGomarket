@@ -51,7 +51,7 @@ const CreateEventForm = () => {
     const createEventTickets = (e) => { //agregar estado a los tickets
         e.preventDefault()
         const formData = new FormData()
-        formData.append('eventId', saveEventId)
+        formData.append('prodId', saveEventId)
         formData.append('nombreTicket', e.target.elements.nombreTicket.value)
         formData.append('descripcionTicket', e.target.elements.descripcionTicket.value)
         formData.append('precio', e.target.elements.precio.value)
