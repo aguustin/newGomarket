@@ -1,33 +1,41 @@
-// cron/cleanup.js
 import cron from 'node-cron';
 import ticketModel from '../models/ticketsModel.js';
 
 cron.schedule('0 * * * *', async () => {
     const now = new Date();
 
-    const events = await ticketModel.find({});
+    try {
+        const events = await ticketModel.find({});
 
-    for (const event of events) {
-        let updated = false;
+        for (const event of events) {
+            let updated = false;
 
-        // Desactivar tickets caducados
-        event.tickets.forEach(ticket => {
-            if (ticket.isActive && now > ticket.fechaDeCierre) {
-                ticket.isActive = false;
-                updated = true;
+            // Log para depuración: fechas del evento
+            console.log(`\n---\nRevisando evento ${event._id}`);
+            console.log(`Now (UTC):       ${now.toISOString()}`);
+            console.log(`Fecha de cierre: ${new Date(event.fechaFin).toISOString()}`);
+
+            // Verifica si el evento ya caducó
+            if (now > new Date(event.fechaFin)) {
+                console.log(`Evento ${event._id} eliminado por caducidad`);
+                await ticketModel.findByIdAndDelete(event._id);
+                continue;
             }
-        });
 
-        // Eliminar eventos caducados
-        if (now > event.fechaFin) {
-            await ticketModel.findByIdAndDelete(event._id);
-            console.log(`Evento ${event._id} eliminado por caducidad`);
-            continue;
-        }
+            // Desactivar tickets caducados
+            event.tickets.forEach(ticket => {
+                if (ticket.isActive && now > new Date(ticket.fechaDeCierre)) {
+                    ticket.isActive = false;
+                    updated = true;
+                }
+            });
 
-        if (updated) {
-            await event.save();
-            console.log(`Evento ${event._id}: tickets caducados desactivados`);
+            if (updated) {
+                await event.save();
+                console.log(`Evento ${event._id}: tickets caducados desactivados`);
+            }
         }
+    } catch (err) {
+        console.error('Error en cron de tickets:', err);
     }
 });

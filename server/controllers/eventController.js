@@ -23,7 +23,7 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
     const {userId, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento, linkEvento} = req.body
-      console.log(req.body)
+      console.log(fechaInicio, fechaFin)
     if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
             const createdEvent = await ticketModel.create({
                     userId: userId,
@@ -35,8 +35,8 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     categorias: categorias,
                     artistas: artistas,
                     montoVentas: montoVentas,
-                    fechaInicio: new Date(), //fechaInicio
-                    fechaFin: new Date(), //fechaFin
+                    fechaInicio: fechaInicio, //fechaInicio
+                    fechaFin: fechaFin, //fechaFin
                     provincia: provincia,
                     localidad: localidad,
                     direccion: direccion,
@@ -68,8 +68,8 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 categorias: categorias,
                 artistas: artistas,
                 montoVentas: montoVentas,
-                fechaInicio: new Date(), //fechaInicio
-                fechaFin: new Date(), //fechaFin
+                fechaInicio: fechaInicio, //fechaInicio
+                fechaFin: fechaFin, //fechaFin
                 provincia: provincia,
                 localidad: localidad,
                 direccion: direccion,
@@ -91,9 +91,8 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
 export const createEventTicketsController = async (req, res) => {  //CREA TICKETS DEL EVENTO
   const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado} = req.body
   const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
-  let fechaParsed = new Date(fechaDeCierre);
   let estadoToInt = Number(estado)
-  console.log(prodId)
+  
   const buildPayload = (imgUrl) => {
     if (estadoToInt !== 3) {  // SI EL ESTADO ES DIFERENTE DE 3 (DE CORTESIA) SE LE AGREGA EL ESTADO PARA DIFERENCIAR LOS TICKETS NORMALES A LOS DE CORTESIA
       return {
@@ -102,7 +101,7 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
           descripcionTicket,
           precio,
           cantidad,
-          fechaDeCierre: fechaParsed,
+          fechaDeCierre: fechaDeCierre,
           visibilidad,
           estadoToInt,
           imgTicket: imgUrl
@@ -115,7 +114,7 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
           descripcionTicket,
           cantidadDeCortesias: cantidad,
           entregados: 0,
-          fechaDeCierre: fechaParsed,
+          fechaDeCierre: fechaDeCierre,
           imgTicket: imgUrl
         }
       };
@@ -578,10 +577,6 @@ await Promise.all(qrTasks);
 };
 
 export const sendQrStaffQrController = async (req, res) => {
-  /*await ticketModel.updateMany(
-  {},                      // sin filtro: aplica a todos los documentos
-  { $set: { rrpp: [] } }   // limpia el array
-);*/
   const {prodId, quantities, mail} = req.body
   console.log(prodId, quantities, mail)
   const ticketIds = Object.keys(quantities);

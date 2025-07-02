@@ -20,6 +20,7 @@ const EditProd = () => {
     const [visibilidad, setVisibilidad] = useState()
     console.log(prodId)
     const userId = '682230196086949adb9b9c77'
+
     useEffect(() => {
         const getOneProd = async () => {
             const res = await getOneProdRequest(prodId, userId) //userId va la session del usuario
@@ -50,8 +51,8 @@ const EditProd = () => {
         formData.append('categorias', editedValues[0]?.categorias ??  categorias)
         formData.append('artistas', editedValues[0]?.artistas ??  artistas)
         formData.append('montoVentas', editedValues[0]?.montoVentas ??  montoVentas)
-        formData.append('fechaInicio', editedValues[0]?.fechaInicio ??  fechaInicio)
-        formData.append('fechaFin', editedValues[0]?.fechaFin ??  fechaFin)
+        formData.append('fechaInicio', new Date(editedValues[0]?.fechaInicio).toISOString() ??  new Date(fechaInicio).toISOString())
+        formData.append('fechaFin', new Date(editedValues[0]?.fechaFin).toISOString() ??  new Date(fechaFin).toISOString())
         formData.append('provincia', editedValues[0]?.provincia ??  provincia)
         formData.append('localidad', editedValues[0]?.localidad ??  localidad)
         formData.append('direccion', editedValues[0]?.direccion ??  direccion)
@@ -165,7 +166,7 @@ const EditProd = () => {
                                 <div className="flex items-center">
                                     <div>
                                         <label>Provincia:</label><br></br>
-                                        <select className="bg-violet-900 pr-2 pl-2 rounded-lg"name="provincia" onChange={(e) => setEventProv(e.target.value)}>
+                                        <select className="bg-violet-900 pr-2 pl-2 rounded-lg" name="provincia" onChange={(e) => setEventProv(e.target.value)}>
                                             <option value="provincia" defaultValue={eventosEditados[p._id]?.provincia ??  p.provincia}>mostrar provincias</option>
                                         </select>
                                     </div>

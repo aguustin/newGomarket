@@ -11,7 +11,6 @@ const Statistics = () => {
     const [graphic, setGraphic] = useState()
     const [productions, setProductions] = useState([]);
     const [currentView, setCurrentView] = useState('general'); // 'general', 'tickets', 'rrpp', 'courtesys'
-
     const chartRef = useRef(null);
     const chartInstanceRef = useRef(null);
 
@@ -28,6 +27,7 @@ const Statistics = () => {
         };
         getProds();
     }, [userId]);
+    
     console.log(productions)
     // Generar el gráfico dinámicamente
     useEffect(() => {
@@ -44,26 +44,34 @@ const Statistics = () => {
             case 'rrpp':
                 chartLabels = ['Vendidos RRPP', 'Total vendido', 'Promedio por venta', 'Devoluciones'];
                 chartData = productions.flatMap((prod) =>
-                    (prod.ventasRRPP || []).map((venta) => ({
-                        label: venta.nombreCategoria,
-                        data: [
-                            venta.vendidos,
-                            venta.total,
-                            venta.total / (venta.vendidos || 1),
-                            0
-                        ]
-                    }))
+                    (prod.rrpp || []).flatMap((pdr) => 
+                        (pdr.ventasRRPP || []).map((pdrVent) => ({
+                            label: pdrVent.nombreCategoria,
+                            data: [
+                                pdrVent.vendidos,
+                                pdrVent.total,
+                                pdrVent.total / (pdrVent.vendidos || 1),
+                                0
+                            ]
+                        }))
+                    )
                 );
                 break;
 
             case 'courtesys':
-                chartLabels = ['Cortesías dadas', 'Monto', 'N/A', 'N/A'];
+                chartLabels = ['Nombre cortesía', 'Cantidad de cortesías', 'Cortesías entregadas'];
                 chartData = productions.flatMap((prod) =>
                     (prod.rrpp || []).flatMap((rrpp) =>
-                        (rrpp.ticketsCortesias || []).map((_, idx) => ({
-                            label: `Cortesía ${idx + 1}`,
-                            data: [1, 0, 0, 0]
+                        (rrpp.ticketsCortesias || []).flatMap((rtc) => 
+                        (rtc.cortesiaRRPP || []).map((ctrp) => ({
+                            label: `Tickets de Cortesía`,
+                            data: [
+                                ctrp.nombreTicket,
+                                ctrp.cantidadCortesias,
+                                ctrp.entregados
+                            ]
                         }))
+                        )
                     )
                 );
                 break;
@@ -97,7 +105,7 @@ const Statistics = () => {
         }
 
         chartInstanceRef.current = new Chart(chartRef.current, {
-            type: 'bar',
+            type: graphic, /*'bar'*/
             data: {
                 labels: chartLabels,
                 datasets: chartData.map((item) => ({
@@ -153,8 +161,21 @@ const Statistics = () => {
                             <p className="text-xl mt-2">{prod.descripcionEvento}</p>
                             <p className="mt-5">Fecha de inicio: {formatDate(prod.fechaInicio)}</p>
                             <p className="mt-3">Fecha de fin: {formatDate(prod.fechaFin)}</p>
+                            <p className="mt-3">país:{prod.paisDestino}, provincia: {prod.provincia}</p>
+                        </div>
+                        <div className="p-6">
+                            <h2 className="text-3xl">Datos generales</h2>
+                            <p className="text-xl mt-2">Categorias: {prod.categorias}</p>
+                            <p className="mt-5">Edad minima del evento: {prod.eventoEdad || 'Sin especificar'}</p>
+                            <p className="mt-3">Monto esperado: {prod.montoVentas}</p>
+                            <p className="mt-3">Total vendido: {prod.totalMontoVendido}</p>
                         </div>
                     </div>
+                    <select name="graph" onChange={(e) => setGraphic(e.target.value)}>
+                        <option value={'bar'}>Grafico de Barras</option>
+                        <option value={'line'}>Grafico Linear</option>
+                        <option value={'pie'}>Grafico Circular</option>
+                    </select>
                 </div>
             ))}
             <div className="mt-8 mb-30 p-6 h-[450px]">

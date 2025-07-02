@@ -6,6 +6,11 @@ export const Message = (props) => {
     )
 }
 
+export const truncarConElipsis = (texto, limite = 100) => {
+  if (texto.length <= limite) return texto; // No se trunca, no hay elipsis
+  return texto.slice(0, limite).trim() + '...';
+}
+
 export const formatDate = (isoString) => {
         const date = new Date(isoString);
         const year = date.getFullYear();

@@ -30,7 +30,7 @@ export const registerController = async (req, res) => {
             contrasenia: encriptContrasenia,
     })
 
-    return res.status(200).json({msj:'Usuario creado'});
+    return res.status(200).json({msj:1});
 }
 
 export const loginController = async (req, res) => {
