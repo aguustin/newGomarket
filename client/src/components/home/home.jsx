@@ -4,6 +4,7 @@ import { getAllEventsRequest } from "../../api/eventRequests"
 import eventoJpg from '../../assets/imgpruebaEventos.jpg'
 import Footer from "../footer/footer"
 import { formatDate, truncarConElipsis } from "../../globalscomp/globalscomp"
+import { Link } from "react-router"
 
 const Home = () => {
     const {session, events} = useContext(UserContext)
@@ -38,10 +39,10 @@ const Home = () => {
                     </div>
                     <div className="home-events-container flex flex-wrap justify-between">
                         {allEvents.filter((allEv) => {
-                            return search.toLowerCase() === '' ? allEv : allEv.nombreEvento.toLowerCase().includes(search)
+                            return search.toLowerCase() === '' ? allEv : allEv.nombreEvento.toLowerCase().includes(search.toLowerCase());
                         }).map((allEv) => 
                         <div key={allEv?._id} className="relative w-[320px] mt-8">
-                            <img className="object-cover h-[500px] rounded-lg brightness-70" src={allEv.imgEvento} alt=""></img>
+                            <Link to={{pathname:`/buy_tickets/${allEv._id}`, hash: "#hash"}} ><img className="object-cover h-[500px] rounded-lg brightness-70" src={allEv.imgEvento} alt=""></img></Link>
                             <div className="absolute bottom-0 p-5">
                                 <h3 className="text-3xl">{allEv.nombreEvento}</h3>
                                 <p className="event-desc">{truncarConElipsis(allEv.descripcionEvento, 80)}</p>

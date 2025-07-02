@@ -40,6 +40,8 @@ export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, 
 
 }
 
+export const addRRPPRequest = async ({prodId, rrppMail}) => axios.post('http://localhost:4000/addRRPP', {prodId, rrppMail})
+
 export const staffQrRequest = async (sendData) => axios.post('http://localhost:4000/sendQrStaff', sendData)
 
 export const getInfoQrRequest = (eventId, ticketId) => axios.get(`http://localhost:4000/ticket/${eventId}/${ticketId}`)

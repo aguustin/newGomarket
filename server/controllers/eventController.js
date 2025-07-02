@@ -576,6 +576,28 @@ await Promise.all(qrTasks);
   }
 };
 
+export const addRRPPController = async (req, res) => { //añadiendo rrpp en el evento si no existe
+    const {prodId, rrppMail} = req.body
+    const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
+    if(rrppExist){
+      return res.status(200).json({msg:'El colaborador ya existe en este evento'})
+    }else{
+
+      await ticketModel.updateOne(
+        {_id: prodId, 'rrpp.mail': {$ne: rrppMail}},
+        {
+          $addToSet:{
+            rrpp:
+              {
+                mail: rrppMail
+              }
+          }
+        }
+      )
+      return res.status(200).json({msg:'Se añadio el colaborador al evento'})
+    }
+}
+
 export const sendQrStaffQrController = async (req, res) => {
   const {prodId, quantities, mail} = req.body
   console.log(prodId, quantities, mail)

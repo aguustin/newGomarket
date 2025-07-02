@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
+import { addRRPPRequest, createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
 import downArrow from '../../assets/botones/down_arrow.png'
 import ticketPng from '../../assets/images/ticket.png'
@@ -114,6 +114,13 @@ const EditProd = () => {
             createEventTicketsRequest(formData)
             setVisibilidad()
         }
+
+    const addRRPP = async (e) => {
+        e.preventDefault()
+        const rrppMail = e.target.elements.rrppMail.value
+        const res = await addRRPPRequest({prodId, rrppMail})
+        console.log(res.data)
+    }
 
     return(
         <>
@@ -344,8 +351,12 @@ const EditProd = () => {
                     )}
                     </div>
                     <div className="relative flex items-center h-[150px]">
-                        <Link className="absolute right-50 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" href={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Enviar tickets</p></Link>
-                        <Link className="absolute right-0 flex items-center mt-12 ml-6 p-4 bg-black rounded-lg" href="/home"><img src={backArrowPng} alt=""></img><p className="ml-3">Volver</p></Link>
+                        <form className="flex items-center" onSubmit={(e) => addRRPP(e)}>
+                             <input type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
+                             <button className="ml-3 cursor-pointer" type="submit">Añadir Colaborador</button>
+                        </form>
+                        <Link className="absolute right-50 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Enviar tickets</p></Link>
+                        <Link className="absolute right-0 flex items-center mt-12 ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt=""></img><p className="ml-3">Volver</p></Link>
                     </div>
                 </div>
         </>
