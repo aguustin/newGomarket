@@ -18,7 +18,7 @@ const EditProd = () => {
     const [ticketData, setTicketData] = useState({});
     const [eventosEditados, setEventosEditados] = useState({});
     const [visibilidad, setVisibilidad] = useState()
-    console.log(prodId)
+    const [message, setMessage] = useState(false)
     const userId = '682230196086949adb9b9c77'
 
     useEffect(() => {
@@ -119,7 +119,10 @@ const EditProd = () => {
         e.preventDefault()
         const rrppMail = e.target.elements.rrppMail.value
         const res = await addRRPPRequest({prodId, rrppMail})
-        console.log(res.data)
+        if(res.data.msg === 1){
+            setMessage(true)
+            setTimeout(() => setMessage(false) , 3000);
+        }
     }
 
     return(
@@ -354,6 +357,7 @@ const EditProd = () => {
                         <form className="flex items-center" onSubmit={(e) => addRRPP(e)}>
                              <input type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
                              <button className="ml-3 cursor-pointer" type="submit">Añadir Colaborador</button>
+                             {message && <p className="ml-3">Se añadio el colaborador al evento!</p>}
                         </form>
                         <Link className="absolute right-50 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Enviar tickets</p></Link>
                         <Link className="absolute right-0 flex items-center mt-12 ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt=""></img><p className="ml-3">Volver</p></Link>

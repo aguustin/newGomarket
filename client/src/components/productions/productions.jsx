@@ -1,6 +1,7 @@
 import { useContext, useEffect } from "react"
 import UserContext from "../../context/userContext"
 import { getProdsRequest } from "../../api/eventRequests"
+import { Link } from "react-router"
 
 const Productions = () => {
 
@@ -91,7 +92,8 @@ return(
                                 {prod.totalMontoVendido || 0}
                             </td>
                             <td className="px-6 py-4">
-                                <a href={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                                <a href={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a><br></br>
+                                <Link to={`/statistics/${prod._id}/682230196086949adb9b9c77`}>Estadisticas</Link>
                             </td>
                         </tr>)}
                     </tbody>

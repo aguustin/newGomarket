@@ -22,11 +22,13 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento, linkEvento} = req.body
-      console.log(fechaInicio, fechaFin)
+    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento, linkEvento} = req.body
+    const encryptedMail = encrypt(prodMail)
+
     if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
             const createdEvent = await ticketModel.create({
                     userId: userId,
+                    prodMail: encryptedMail,
                     paisDestino: paisDestino,
                     tipoEvento: tipoEvento,
                     eventoEdad: eventoEdad,
@@ -60,6 +62,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
         }
            const createdEvent = await ticketModel.create({   //SE CREA EL EVENTO SI HAY UNA IMAGEN SUBIDA
                 userId: userId,
+                prodMail: encryptedMail,
                 paisDestino: paisDestino,
                 tipoEvento: tipoEvento,
                 eventoEdad: eventoEdad,
@@ -307,11 +310,18 @@ export const getEventToBuyController = async (req, res) => {
 export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities, mail, state, total, emailHash }) => {
   //await qrGeneratorController(prodId, quantities, mail, state);
 
-const updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
-const rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
-if (!rrppMatch) throw new Error("RRPP no encontrado");
-
-const getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
+let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
+let rrppMatch;
+let getDecryptedMail
+if(updateRRPP.length <= 0){
+ updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
+ rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
+ console.log(rrppMatch.prodMail)
+ getDecryptedMail = decrypt(rrppMatch.prodMail);
+}else{
+  rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
+  getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
+}
 
 const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
 if (!doc) throw new Error("Documento no encontrado");
@@ -576,7 +586,7 @@ await Promise.all(qrTasks);
   }
 };
 
-export const addRRPPController = async (req, res) => { //añadiendo rrpp en el evento si no existe
+export const addRRPPController = async (req, res) => { //añadiendo rrpp en el evento si no existe y enviar mail al mail del rrpp con el link para que ingrese a generar su linkDePago
     const {prodId, rrppMail} = req.body
     const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
     if(rrppExist){
@@ -594,7 +604,7 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
           }
         }
       )
-      return res.status(200).json({msg:'Se añadio el colaborador al evento'})
+      return res.status(200).json({msg:1})
     }
 }
 
@@ -786,10 +796,9 @@ export function encrypt(rrppMail) {
 }
 
 export function decrypt(encryptedMail) {
- const [ivHex, encrypted] = encryptedMail.split(':');
+  const [ivHex, encrypted] = encryptedMail.split(':');
   const iv = Buffer.from(ivHex, 'hex');
   const key = crypto.createHash('sha256').update(process.env.SECRET_MAIL_KEY).digest(); // same 32-byte key
-
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');

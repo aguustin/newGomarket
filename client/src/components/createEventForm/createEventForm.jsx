@@ -22,6 +22,7 @@ const CreateEventForm = () => {
             const localidad = e.target.elements.localidad.value
             const formData = new FormData()
             formData.append('userId', "682230196086949adb9b9c77")
+            formData.append('prodMail', 'agustin.molee@gmail.com') //aca va el mail de la session
             formData.append('paisDestino', paisDestino)
             formData.append('tipoEvento', tipoEvento)
             formData.append('eventoEdad', eventoEdad)

@@ -66,17 +66,19 @@ const RRPPEvents = () => {
                 )}
             </form>*/
     return(
-        <div>
+        <div className="w-screen h-screen flex justify-around mt-20 p-10">
             {rrppEvents.map((rpe, i) => 
-                <div className="text-center" key={rpe._id}>
-                    <div className="w-[350px] h-[380px] mx-auto object-cover">
-                        <img src={rpe.imgEvento} alt=""></img>
-                    </div>
+                <div key={rpe._id} className="cursor-pointer">
                     <div>
-                        <h2>{rpe.nombreEvento}</h2>
-                        <p>Fecha de cierre: {formatDate(rpe.fechaFin)}</p>
-                        <button onClick={() => generateMyRRPPLink(rpe._id, 'agustin.molee@gmail.com')}>Generar mi link de pago</button>
-                        <button onClick={() => buildUrl(rpe._id, 'agustin.molee@gmail.com'/*rpe.rrpp[0]?.mail*/, rpe.imgEvento)}>Confirmar</button>
+                        <div className="w-[350px] h-[380px] mx-auto">
+                            <img className="object-cover h-[500px] rounded-lg brightness-70" src={rpe.imgEvento} alt=""></img>
+                        </div>
+                        <div>
+                            <h2>{rpe.nombreEvento}</h2>
+                            <p>Fecha de cierre: {formatDate(rpe.fechaFin)}</p>
+                            <button onClick={() => generateMyRRPPLink(rpe._id, 'agustin.molee@gmail.com')}>Generar mi link de pago</button>
+                            <button onClick={() => buildUrl(rpe._id, 'agustin.molee@gmail.com'/*rpe.rrpp[0]?.mail*/, rpe.imgEvento)}>Confirmar</button>
+                        </div>
                     </div>
                 </div>
             )}

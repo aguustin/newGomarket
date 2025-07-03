@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 
 const ticketSchema = new mongoose.Schema({
-    userId: {type: String}, 
+    userId: {type: String},
+    prodMail: {type: String}, 
     numeroEvento:{type: Number},
     paisDestino: {type: String},
     tipoEvento: {type: String},

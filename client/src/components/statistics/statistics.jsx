@@ -28,7 +28,7 @@ const Statistics = () => {
         getProds();
     }, [userId]);
     
-    console.log(productions)
+    console.log(graphic)
     // Generar el gráfico dinámicamente
     useEffect(() => {
         if (!chartRef.current || productions.length === 0) return;
@@ -105,7 +105,7 @@ const Statistics = () => {
         }
 
         chartInstanceRef.current = new Chart(chartRef.current, {
-            type: graphic, /*'bar'*/
+            type: graphic.toString(), /*'bar'*/
             data: {
                 labels: chartLabels,
                 datasets: chartData.map((item) => ({
@@ -148,7 +148,7 @@ const Statistics = () => {
             }
         });
 
-    }, [currentView, productions]);
+    }, [currentView, productions, graphic]);
 
     return (
         <>
