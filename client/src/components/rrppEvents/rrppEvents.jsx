@@ -26,7 +26,7 @@ const RRPPEvents = () => {
         console.log(prodId, ' ', mail)
         nav(`/rrpp_get_event_free/${prodId}/${mail}`) ///${encryptedUrl}
     }
-
+   
     const generateMyRRPPLink = async (prodId, rrppMail) => {
        const res = await generateMyRRPPLinkRequest({prodId, rrppMail})
        console.log(res)
@@ -66,22 +66,53 @@ const RRPPEvents = () => {
                 )}
             </form>*/
     return(
-        <div className="w-screen h-screen flex justify-around mt-20 p-10">
-            {rrppEvents.map((rpe, i) => 
-                <div key={rpe._id} className="cursor-pointer">
-                    <div>
-                        <div className="w-[350px] h-[380px] mx-auto">
-                            <img className="object-cover h-[500px] rounded-lg brightness-70" src={rpe.imgEvento} alt=""></img>
-                        </div>
-                        <div>
-                            <h2>{rpe.nombreEvento}</h2>
-                            <p>Fecha de cierre: {formatDate(rpe.fechaFin)}</p>
-                            <button onClick={() => generateMyRRPPLink(rpe._id, 'agustin.molee@gmail.com')}>Generar mi link de pago</button>
-                            <button onClick={() => buildUrl(rpe._id, 'agustin.molee@gmail.com'/*rpe.rrpp[0]?.mail*/, rpe.imgEvento)}>Confirmar</button>
-                        </div>
-                    </div>
+    <div className="w-screen h-screen flex  justify-around mt-20 p-10">
+    {rrppEvents.map((rpe, i) => {
+    // Filtramos el RRPP que coincide con el mail
+        const rrppCoincidente = rpe.rrpp.find(linkP => linkP.mail === 'agustin.molee@gmail.com');
+
+        return (
+        <div key={rpe._id} className="w-[350px] cursor-pointer">
+            <div>
+            <div className="mx-auto">
+                <img className="object-cover h-[500px] rounded-lg brightness-70" src={rpe.imgEvento} alt="" />
+            </div>
+            <div className="text-center mt-2">
+                <h2 className="text-3xl">Evento: {rpe.nombreEvento}</h2>
+                <p className="text-xl mt-2 mb-3">Fecha de cierre: {formatDate(rpe.fechaFin)}</p>
+                <div className="pl-6 pr-6">
+                {rrppCoincidente && (
+                    <form className="aca">
+                    <p className="mb-2 break-words">{rrppCoincidente.linkDePago}</p>
+                    <button
+                        type="button"
+                        onClick={() => navigator.clipboard.writeText(rrppCoincidente.linkDePago)}
+                        className="bg-blue-600 text-white px-3 py-1 rounded"
+                    >
+                        Copiar
+                    </button>
+                    </form>
+                )}
+                <button
+                    className="w-full p-3 mt-2 bg-violet-900 rounded-lg"
+                    onClick={() => generateMyRRPPLink(rpe._id, 'agustin.molee@gmail.com')}
+                >
+                    Generar mi link de pago
+                </button>
+                {/* 
+                <button
+                    className="w-full p-3 mt-2 bg-violet-900 rounded-lg"
+                    onClick={() => buildUrl(rpe._id, rrppMail)}
+                >
+                    Confirmar
+                </button> 
+                */}
                 </div>
-            )}
+            </div>
+            </div>
+        </div>
+        );
+    })}
         </div>
     )
 }

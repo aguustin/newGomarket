@@ -98,7 +98,7 @@ const EditProd = () => {
         console.log(eventosEditados?.nombreEvento)
     };
 
-      const createEventTickets = (e) => {
+    const createEventTickets = (e) => {
             e.preventDefault()
             console.log('entro', prodId)
             const formData = new FormData()
@@ -113,12 +113,14 @@ const EditProd = () => {
             formData.append('estado', e.target.elements.estado.value)
             createEventTicketsRequest(formData)
             setVisibilidad()
-        }
+    }
 
     const addRRPP = async (e) => {
         e.preventDefault()
         const rrppMail = e.target.elements.rrppMail.value
-        const res = await addRRPPRequest({prodId, rrppMail})
+        const nombreEvento = prod[0]?.nombreEvento
+        const eventImg = prod[0]?.imgEvento
+        const res = await addRRPPRequest({prodId, rrppMail, nombreEvento, eventImg})
         if(res.data.msg === 1){
             setMessage(true)
             setTimeout(() => setMessage(false) , 3000);
@@ -247,6 +249,11 @@ const EditProd = () => {
                                 <button className="w-[180px] bg-indigo-900 p-2" type="submit">Agregar tickets</button>
                             </div>
                         </form>
+                         <form className="flex items-center mt-9" onSubmit={(e) => addRRPP(e)}>
+                             <input type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
+                             <button className="ml-3 cursor-pointer" type="submit">Añadir Colaborador</button>
+                             {message && <p className="ml-3">Se añadio el colaborador al evento!</p>}
+                        </form>
                     </div>
                     <div className="flex items-center">
                         {/*<button className="flex items-center text-xl mt-16 bg-violet-900 pl-6 pr-6 pt-3 pb-3 rounded-lg cursor-pointer"><p>Editar tickets</p><img className="w-[15px] h-[15px] ml-3" src={downArrow} alt=""></img></button> */}
@@ -254,7 +261,7 @@ const EditProd = () => {
                     <div className="flex flex-wrap justify-between">
                     {prod.map((pr) => 
                         pr.tickets.map((tick) => 
-                                <div className="form-edit-ticket w-[400px] mt-20 text-center" key={tick._id}>
+                                <div className="form-edit-ticket w-[400px] mt-18 text-center" key={tick._id}>
                                     <img className="mx-auto mb-5 w-[124px] h-[124px] object-cover" src={tick.imgTicket} alt=""></img>
                                     <div className="mb-3">
                                         <label>Cambiar imagen del ticket:</label><br></br>
@@ -354,11 +361,6 @@ const EditProd = () => {
                     )}
                     </div>
                     <div className="relative flex items-center h-[150px]">
-                        <form className="flex items-center" onSubmit={(e) => addRRPP(e)}>
-                             <input type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
-                             <button className="ml-3 cursor-pointer" type="submit">Añadir Colaborador</button>
-                             {message && <p className="ml-3">Se añadio el colaborador al evento!</p>}
-                        </form>
                         <Link className="absolute right-50 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Enviar tickets</p></Link>
                         <Link className="absolute right-0 flex items-center mt-12 ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt=""></img><p className="ml-3">Volver</p></Link>
                     </div>

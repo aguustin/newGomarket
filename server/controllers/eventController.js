@@ -587,9 +587,27 @@ await Promise.all(qrTasks);
 };
 
 export const addRRPPController = async (req, res) => { //añadiendo rrpp en el evento si no existe y enviar mail al mail del rrpp con el link para que ingrese a generar su linkDePago
-    const {prodId, rrppMail} = req.body
+    const {prodId, rrppMail, nombreEvento, eventImg} = req.body
     const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
     if(rrppExist){
+         const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+      auth: {
+        user: user_mail,
+        pass: pass
+      }
+    });
+    await transporter.sendMail({
+    from: '"GoTickets" <no-reply@gotickets.com>',
+    to: rrppMail,
+    subject: `Ya eres colaborador en: ${nombreEvento}`,
+    html: `
+        <h3>Ya eres parte del staff del evento ${nombreEvento}</h3>
+        <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`http://localhost:5173/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+        <p>Evento:</p>
+        <img src="${eventImg}"  alt="${nombreEvento}" style="width:200px;height:200px;"/>
+    `,
+    });
       return res.status(200).json({msg:'El colaborador ya existe en este evento'})
     }else{
 
@@ -604,6 +622,25 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
           }
         }
       )
+
+   const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+      auth: {
+        user: user_mail,
+        pass: pass
+      }
+    });
+    await transporter.sendMail({
+    from: '"GoTickets" <no-reply@gotickets.com>',
+    to: rrppMail,
+    subject: `Ya eres colaborador en: ${nombreEvento}`,
+    html: `
+        <h3>Ya eres parte del staff del evento ${nombreEvento}</h3>
+        <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`http://localhost:5173//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+        <p>Evento:</p>
+        <img src="${eventImg}"  alt="${nombreTicket}" style="width:200px;height:200px;"/>
+    `,
+    });
       return res.status(200).json({msg:1})
     }
 }
