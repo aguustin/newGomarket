@@ -1,5 +1,8 @@
+import { pass, user_mail } from "../config.js"
 import userModel from "../models/userModel.js"
 import bcrypt from "bcrypt"
+import nodemailer from 'nodemailer'; 
+import jwt from "jsonwebtoken"
 
 export const getAllUsersController = async (req, res) => {
     const getUsers = await userModel.find({})
@@ -48,5 +51,52 @@ export const loginController = async (req, res) => {
     }else{
        return  res.status(200).json(3);
     }
+}
 
+export const recoverPassController = async (req, res) => {
+    const {mail} = req.body
+
+    const secret = process.env.JWT_SECRET
+
+    const token = jwt.sign(mail, secret, {expiresIn: '300'});
+
+    console.log("token generated", token)
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: user_mail,
+            pass: pass,
+        },
+    });
+    
+    await transporter.sendMail({
+        from: '"GoTickets" <no-reply@gotickets.com>',
+        to: mail,
+        subject: `Recuperar contraseña para ${mail} - Gotickets`,
+        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="http://localhost:4000/${token}" />`,
+        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="http://localhost:4000/${token}" />`
+    });
+}
+
+export const contactController = async (req, res) => {
+    const {pais, nombreCompleto, correo, celular, nombreEvento, mensaje} = req.body
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: user_mail,
+            pass: pass,
+        },
+    });
+    
+    await transporter.sendMail({
+        from: correo,
+        to: "agustin.molee@gmail.com",
+        subject: `${nombreCompleto} - ${nombreEvento} - País: ${pais}`,
+        text: mensaje,
+        html: `<b>${mensaje}</b>`
+    });
+
+    res.status(200).json(1)
 }

@@ -3,8 +3,10 @@ import UserContext from "../../context/userContext"
 import { getAllEventsRequest } from "../../api/eventRequests"
 import eventoJpg from '../../assets/imgpruebaEventos.jpg'
 import Footer from "../footer/footer"
+import homeImgPng from "../../assets/para prueba/homeImg.png"
 import { formatDate, truncarConElipsis } from "../../globalscomp/globalscomp"
 import { Link } from "react-router"
+import FadeInImage from "../../globalscomp/globalscomp"
 
 const Home = () => {
     const {session, events} = useContext(UserContext)
@@ -19,14 +21,10 @@ const Home = () => {
         getAllEventsFunc()
     },[])
 
-    const searchEvent = (e) => {
-        e.preventDefault()
-        const eventToSearch =  e.target.elements.searchEvent.value
-    }
-    console.log(search)
+
     return(
         <>
-            <div className="w-full h-full mt-[90px] p-16 flex">
+            <div className="w-full h-full mt-[70px] p-16 pt-0 flex">
                 <div className="w-[74vw]">
                     <div>
                         <h1>Encuentra tu evento:</h1>
@@ -40,15 +38,24 @@ const Home = () => {
                     <div className="home-events-container flex flex-wrap justify-between">
                         {allEvents.filter((allEv) => {
                             return search.toLowerCase() === '' ? allEv : allEv.nombreEvento.toLowerCase().includes(search.toLowerCase());
-                        }).map((allEv) => 
-                        <div key={allEv?._id} className="relative w-[320px] mt-8">
-                            <Link to={{pathname:`/buy_tickets/${allEv._id}/${allEv.prodMail}`}} ><img className="object-cover h-[500px] rounded-lg brightness-70" src={allEv.imgEvento} alt=""></img></Link>
-                            <div className="absolute bottom-0 p-5">
-                                <h3 className="text-3xl">{allEv.nombreEvento}</h3>
-                                <p className="event-desc">{truncarConElipsis(allEv.descripcionEvento, 80)}</p>
-                                <label className="text-xl">{formatDate(allEv.fechaInicio)}</label>
-                            </div>
-                        </div>)}
+                        }).map((allEv) =>(
+            <div key={allEv?._id} className="relative w-[300px] mt-8">
+                <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
+                    <FadeInImage
+                        src={allEv.imgEvento}
+                        alt={allEv.nombreEvento}
+                        className="h-[300px] brightness-70"
+                    />
+                </Link>
+                <div className="event-desc rounded-b-lg bottom-0 p-5">
+                    <h3 className="text-2xl">{allEv.nombreEvento}</h3>
+                    <p className="event-desc-text">
+                        {truncarConElipsis(allEv.descripcionEvento, 80)}
+                    </p>
+                    <label className="text-lg">{formatDate(allEv.fechaInicio)}</label>
+                </div>
+            </div>
+        ))}
                     </div>
                 </div>
                     <div className="categories-container w-[370px] mx-6 mt-24">

@@ -5,12 +5,32 @@
   list-style: none;
 }
 
+
+/*------------------------------------------------------------------------------------- NAV -------------------------------------------------------------*/
+
 .nav, footer{
   z-index: 3;
   background-color: #23103b;
   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
+.settings{
+   background-color: #1f0f33;
+   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
+.settings > div:hover, .settings > button:hover{
+  background-color: #321852 !important;
+  transition: background-color .5s;
+}
+
+.link-profile{
+  border-bottom: 1px solid white;
+   border-color: #726bff;
 }
 
 /*------------------------------------------------------- REGISTER FORM --------------------------------------------*/
@@ -83,9 +103,18 @@ input{
 
 /*------------------------------------------------------------------ HOME -------------------------------------------------------------------------------*/
 
+.event-desc, .contact-textarea{
+  background: rgba(0, 0, 0, 0.377)
+}
+
+/*---------------------------------------------------------------- BUY TICKET ------------------------------------------------------------------------------*/
+
+.buy-ticket input{
+  width: 280px !important;
+}
 
 /* ------------------------------------------------------------ CREATE EVENT ---------------------------------------------------------------------------*/
-.create-form input, .create-form textarea, .form-edit-event input, .email-staff{
+.create-form input, .create-form textarea, .form-edit-event input, .email-staff, .buy-ticket input {
   border: 1px solid #302e5f;
   background-color: transparent;
   border-radius: 5px;
@@ -200,4 +229,13 @@ input{
 
 .free-ticket-cont p {
   color: #aeb0c4;
+}
+
+/*----------------------------------------------------------------------------- MIS PRODUCCIONES -------------------------------------------------------------------------*/
+
+.productions{
+  max-height: 70vw !important;
+}
+.productions > table{
+  overflow-y: scroll !important;
 }

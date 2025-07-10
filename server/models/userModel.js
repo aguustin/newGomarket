@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
     celular: {type: Number},
     pais: {type: String},
     contrasenia: {type: String},
+    rol: {type: Number},
     misTickets:[{
         categoriaId: {type: String}
     }],

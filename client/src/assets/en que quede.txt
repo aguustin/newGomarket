@@ -1,0 +1,3 @@
+hacer función que conecte con el backend para enviar el enlace con el mail encriptado, una vez el usuario le di click e ingreso al panel de recuperar contraseña tomar el token por parameto y al darle a recuperar decodificar el token en el backend, ubicar al usuario por el mail, encriptar la nueva contraseña y actualizar la contraseña vieja por la nueva.
+
+hacer un recaptcha de "no soy un robot" para el ingreso y registro de usuarios

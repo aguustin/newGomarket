@@ -16,6 +16,8 @@ import Staff from './components/editProd/staff/staff'
 import SendFree from './components/sendFree/sendFree'
 import RRPPEvents from './components/rrppEvents/rrppEvents'
 import Statistics from './components/statistics/statistics'
+import Contact from './components/contact/contact'
+import RecoverPass from './components/recoverPass/recoverPass'
 
 function App() {
   return (
@@ -26,7 +28,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Login/>}></Route>
             <Route path="/register" element={<Register/>}></Route>
+            <Route path="/recover_password" element={<RecoverPass/>}/>
             <Route path="/Home" element={<Home/>}></Route>
+            <Route path="/Contact" element={<Contact/>}></Route>
             <Route path="/Create_event" element={<CreateEventForm/>}></Route>
             <Route path="/profile" element={<Profile/>}></Route>
             <Route path='/productions' element={<Productions/>}></Route>

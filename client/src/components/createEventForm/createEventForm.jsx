@@ -2,9 +2,11 @@ import { useState } from "react"
 import { createEventRequest, createEventTicketsRequest } from "../../api/eventRequests"
 import eventoJpg from '../../assets/imgpruebaEventos.jpg'
 import continueArrowPng from '../../assets/botones/continue_arrow.png'
+import { useContext } from "react"
+import UserContext from "../../context/userContext"
 
 const CreateEventForm = () => {
-
+    const {session} = useContext(UserContext)
     const [startDate, setStartDate] = useState()
     const [endDate, setEndDate] = useState()
     const [showTickets, setShowTickets] = useState(0)
@@ -21,7 +23,7 @@ const CreateEventForm = () => {
             const provincia = e.target.elements.provincia.value
             const localidad = e.target.elements.localidad.value
             const formData = new FormData()
-            formData.append('userId', "682230196086949adb9b9c77")
+            formData.append('userId', session?.userFinded?.[0]?._id)
             formData.append('prodMail', 'agustin.molee@gmail.com') //aca va el mail de la session
             formData.append('paisDestino', paisDestino)
             formData.append('tipoEvento', tipoEvento)
@@ -66,29 +68,29 @@ const CreateEventForm = () => {
 
     return(
         <>
-        <div className="create-form flex justify-around mt-[70px] pl-12 pr-12">
+        <div className="create-form flex justify-around mt-[20px] pl-12 pr-12">
             <div className="w-[450px]">
                 <form className="create-event-form mt-9" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
                     <div>
                         <label>Pais del evento</label>
                         <select name="paisDestino">
-                            <option defaultValue={"argentina"} value="Argentina">Argentina</option>
-                            <option value="chile">Chile</option>
-                            <option value="uruguay">Uruguay</option>
+                            <option value="Argentina">Argentina</option>
+                            <option value="Chile">Chile</option>
+                            <option value="Uruguay">Uruguay</option>
                         </select>
                     </div>
                     <div>
                         <label>Privacidad del evento:</label>
                         <select name="tipoEvento">
-                            <option defaultValue={"publico"} value="publico" selected>Publico</option>
+                            <option value="publico" defaultValue>Publico</option>
                             <option value="privado">Privado</option>
                         </select>
                     </div>
                     <div>
                         <label>Evento para mayores de edad:</label>
                         <select name="eventoEdad">
-                            <option defaultValue={1} value={1}>Si</option>
-                            <option value={2} selected>No</option>
+                            <option value={1}>Si</option>
+                            <option value={2} defaultValue>No</option>
                         </select>
                     </div>
                     <div>
@@ -141,8 +143,8 @@ const CreateEventForm = () => {
                         <div>
                             <label>Provincia:</label>
                             <select name="provincia">
-                                <option value="prov" defaultValue={"prov"} selected> Elegir</option>
-                                <option defaultValue={"argentina"} value="Argentina">Argentina</option>
+                                <option value="prov" defaultValue> Elegir</option>
+                                <option value="Argentina">Argentina</option>
                                 <option value="chile">Chile</option>
                                 <option value="uruguay">Uruguay</option>
                             </select>
@@ -150,8 +152,8 @@ const CreateEventForm = () => {
                         <div>
                             <label>Localidad</label>
                             <select name="localidad">
-                                <option value="locald" defaultValue={"locald"} selected>Elegir</option>
-                                <option defaultValue={"argentina"} value="Argentina">Centro</option>
+                                <option value="locald" defaultValue>Elegir</option>
+                                <option value="Argentina">Centro</option>
                                 <option value="chile">Godoy Cruz</option>
                                 <option value="uruguay">Guaymallen</option>
                             </select>
@@ -219,7 +221,7 @@ const CreateEventForm = () => {
                                 <div className="mt-3">
                                     <label>Estado:</label>
                                     <select name="estado">
-                                        <option defaultValue={1} value={1}>Activo</option>
+                                        <option value={1}>Activo</option>
                                         <option value={2}>No visible</option>
                                         <option value={3}>Cortesia</option>
                                     </select>
