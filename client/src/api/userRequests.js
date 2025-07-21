@@ -6,6 +6,8 @@ export const registerUserRequest = (userData) => axios.post('http://localhost:40
 
 export const loginUserRequest = (userData) => axios.post('http://localhost:4000/login', userData)
 
-export const recoverPassRequest = ({mail}) => axios.post('http://localhost:4000/recover_password', {mail}) 
+export const recoverPassRequest = ({mail}) => axios.post('http://localhost:4000/recover_password', {mail})
+
+export const confirmNewPassRequest = ({token, nuevaContrasenia}) => axios.post('http://localhost:4000/new_password', {token, nuevaContrasenia})
 
 export const contactarRequest = (mailData) => axios.post('http://localhost:4000/contactar', mailData)

@@ -7,8 +7,10 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { user_mail, pass } from "../config.js";
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid'
 import userModel from "../models/userModel.js";
 import crypto from "crypto"
+import tokenModel from "../models/tokenModel.js";
 
 dotenv.config();
 
@@ -22,7 +24,7 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento, linkEvento} = req.body
+    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkEvento } = req.body
     const encryptedMail = encrypt(prodMail)
 
     if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
@@ -45,6 +47,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     lugarEvento: lugarEvento,
                     linkEvento: linkEvento,
                     imgEvento: 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg',
+                    tipoMoneda: tipoMoneda,
                     totalVentas: 0,
                     totalDevoluciones:0,
                     totalMontoVendido: 0,
@@ -76,6 +79,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 provincia: provincia,
                 localidad: localidad,
                 direccion: direccion,
+                tipoMoneda: tipoMoneda,
                 lugarEvento: lugarEvento,
                 linkEvento: linkEvento,
                 imgEvento:  result.secure_url,
@@ -92,10 +96,12 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
 };
 
 export const createEventTicketsController = async (req, res) => {  //CREA TICKETS DEL EVENTO
-  const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado} = req.body
+  const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado, distribution, limit} = req.body
   const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
   let estadoToInt = Number(estado)
-  
+  let distributionToInt = Number(distribution)
+  let limitToInt = Number(limit)
+  console.log(distributionToInt, ' ', limitToInt)
   const buildPayload = (imgUrl) => {
     if (estadoToInt !== 3) {  // SI EL ESTADO ES DIFERENTE DE 3 (DE CORTESIA) SE LE AGREGA EL ESTADO PARA DIFERENCIAR LOS TICKETS NORMALES A LOS DE CORTESIA
       return {
@@ -118,7 +124,9 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
           cantidadDeCortesias: cantidad,
           entregados: 0,
           fechaDeCierre: fechaDeCierre,
-          imgTicket: imgUrl
+          imgTicket: imgUrl,
+          distribution: distributionToInt,
+          limit: limitToInt || 0
         }
       };
     }
@@ -301,55 +309,53 @@ if (req.file) {
 
 export const getEventToBuyController = async (req, res) => {
     const {prodId} = req.params
-    console.log(prodId)
     const getProd = await ticketModel.find({_id: prodId})
     
     res.send(getProd)
 }
 
-export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities, mail, state, total, emailHash }) => {
-  //await qrGeneratorController(prodId, quantities, mail, state);
+export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {
+    await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
+    let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
+    let rrppMatch;
+    let getDecryptedMail
+    if(updateRRPP.length <= 0){
+    updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
+    rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
+    console.log(rrppMatch.prodMail)
+    getDecryptedMail = decrypt(rrppMatch.prodMail);
+    }else{
+      rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
+      getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
+    }
 
-let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
-let rrppMatch;
-let getDecryptedMail
-if(updateRRPP.length <= 0){
- updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
- rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
- console.log(rrppMatch.prodMail)
- getDecryptedMail = decrypt(rrppMatch.prodMail);
-}else{
-  rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
-  getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
-}
+    const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
+    if (!doc) throw new Error("Documento no encontrado");
 
-const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
-if (!doc) throw new Error("Documento no encontrado");
+    const rrpp = doc.rrpp.find(r => r.mail === getDecryptedMail);
+    const existingTicketIds = rrpp?.ventasRRPP.map(v => v.ticketId) || [];
 
-const rrpp = doc.rrpp.find(r => r.mail === getDecryptedMail);
-const existingTicketIds = rrpp?.ventasRRPP.map(v => v.ticketId) || [];
+    const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
+    const tickets = doc.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
 
-const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
-const tickets = doc.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
+    const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+    const sumaTotal = tickets.reduce((acc, ticket) => {
+      const ticketId = ticket._id.toString();
+      const vendidos = quantities[ticketId];
+      return acc + vendidos * ticket.precio;
+    }, 0);
 
-const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
-const sumaTotal = tickets.reduce((acc, ticket) => {
-  const ticketId = ticket._id.toString();
-  const vendidos = quantities[ticketId];
-  return acc + vendidos * ticket.precio;
-}, 0);
-
-// Actualiza tickets
-const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
-  updateOne: {
-    filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
-    update: {
-      $inc: {
-        "tickets.$.ventas": quantity,
-        "tickets.$.cantidad": -quantity,
+    // Actualiza tickets
+    const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
+      updateOne: {
+        filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
+        update: {
+          $inc: {
+            "tickets.$.ventas": quantity,
+            "tickets.$.cantidad": -quantity,
+          },
+        },
       },
-    },
-  },
 }));
 
 // Actualiza RRPP
@@ -432,13 +438,11 @@ await Promise.all([
 };
 
 export const buyEventTicketsController = async (req, res) => {
-  const { prodId, nombreEvento, quantities, mail, state, total, emailHash } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
- // qrGeneratorController(quantities, mail) //esto va en el webhook creo
-
-  if(state === 3){
-      qrGeneratorController(prodId, quantities, mail, state)
-      return res.status(200).json({msg: "entro aca en 3"})
-  }
+  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
+ 
+ // qrGeneratorController(prodId, quantities, mail, state, dni)
+  //return res.status(200).json({msg: "entro aca en 3"})
+ console.log(quantities)
   try {
       const preference = {
       items: [
@@ -450,6 +454,8 @@ export const buyEventTicketsController = async (req, res) => {
         },
       ],
       payer: {
+        name: nombreCompleto,
+        surname: nombreCompleto,
         email: mail,
       },
       back_urls: {
@@ -457,22 +463,24 @@ export const buyEventTicketsController = async (req, res) => {
         failure: 'https://d775-200-32-101-183.ngrok-free.app/payment-failure',
         pending: 'https://d775-200-32-101-183.ngrok-free.app/payment-pending',
       },
+      external_reference: "164382724",
       auto_return: 'approved',
-      //notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',  esto descomentarlo 
+      //notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',
       metadata: {
             prodId,
             nombreEvento,
             quantities,
             mail,
             state,
-            total
+            total,
+            nombreCompleto,
+            dni
       },
     };
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
-      
-      await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash }) //esto luego hay que quitarlo
+     await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash }) //esto tiene que estar comentado o quitado para la ultima version
         res.json({
             id: response.body.id,
             init_point: response.body.init_point,
@@ -486,7 +494,7 @@ export const buyEventTicketsController = async (req, res) => {
 
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
-    const paymentId = req.body?.data?.id;
+    const paymentId = String(req.body?.data?.id || req.query?.['data.id']);
 
     if (!paymentId) {
       console.error("❌ No payment ID found");
@@ -497,14 +505,14 @@ export const mercadoPagoWebhookController = async (req, res) => {
     const status = payment.body?.status;
 
     if (status === 'approved') {
-      const { prodId, nombreEvento, quantities, mail, state, total } = payment.body.metadata;
+      const { prodId, nombreEvento, quantities, mail, state, total, nombreCompleto, dni } = payment.body.metadata;
 
       if (!quantities || !mail || !prodId || !total) {
         console.error("❌ Metadata incompleta:", payment.body.metadata);
         return res.sendStatus(500);
       }
 
-      await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total });
+      await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, nombreCompleto, dni });
     }
 
     return res.sendStatus(200);
@@ -514,7 +522,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
   }
 };
 
-export const qrGeneratorController = async (prodId, quantities, mail, state) => {
+export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
     const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
       updateOne: {
@@ -537,53 +545,70 @@ export const qrGeneratorController = async (prodId, quantities, mail, state) => 
     await ticketModel.bulkWrite(bulkOps);
   }
   try {
-    
-    const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
-    
-    const event = await ticketModel.findById(prodId);
-   
-    const eventCourtesy = await ticketModel.find({
-      "cortesiaRRPP._id": { $in: ticketIds }
-    });
-    
-    if (!event || !eventCourtesy) return console.log("Evento no encontrado.");
+  const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
+  const event = await ticketModel.findById(prodId);
 
-    const filteredTickets = event.tickets.filter(ticket =>
-    ticketIds.some(id => id.equals(ticket._id))
-    );
+  if (!event) {
+    console.log("Evento no encontrado.");
+    return;
+  }
+
+  // Combinamos los dos tipos de tickets: pagos y cortesías
+  const filteredTickets = [
+    ...event.tickets
+      .filter(ticket => ticketIds.some(id => id.equals(ticket._id)))
+      .map(ticket => ({ ...ticket.toObject(), tipo: 'ticket' })),
+    ...event.cortesiaRRPP
+      .filter(cortesia => ticketIds.some(id => id.equals(cortesia._id)))
+      .map(cortesia => ({ ...cortesia.toObject(), tipo: 'cortesia' }))
+  ];
 
   const qrTasks = [];
 
-    for (const ticket of filteredTickets) {
-      const quantity = quantities[ticket._id.toString()];
-      for (let i = 0; i < quantity; i++) {
-        const payload = {
-          eventId: event._id,
-          ticketId: ticket._id,
-          iat: Math.floor(Date.now() / 1000),
-        };
+  for (const ticket of filteredTickets) {
+    const quantity = quantities[ticket._id.toString()];
+    for (let i = 0; i < quantity; i++) {
+      const payload = {
+        nombreCompleto,
+        dni,
+        eventId: event._id,
+        ticketId: ticket._id,
+        iat: Math.floor(Date.now() / 1000),
+        jti: uuidv4()
+      };
 
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
-        const qrUrl = `http://localhost:5173/ticket/validate?token=${token}`;
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 
-        // ⏱️ Agregamos la tarea (no await todavía)
-        qrTasks.push(
-          QRCode.toDataURL(qrUrl)
-            .then(qrImage => {
-              const qrBase64 = qrImage.split(',')[1];
-              const qrBuffer = Buffer.from(qrBase64, 'base64');
-              return sendQrEmail(mail, qrBuffer, ticket.nombreTicket, event.nombreEvento, state);
-            })
-        );
-      }
+      const saveToken = new tokenModel({ token });
+      await saveToken.save();
+
+      const qrUrl = `http://localhost:5173/ticket/validate/${token}`;
+
+      qrTasks.push(
+        QRCode.toDataURL(qrUrl).then(qrImage => {
+          const qrBase64 = qrImage.split(',')[1];
+          const qrBuffer = Buffer.from(qrBase64, 'base64');
+
+          // Usamos el mismo sistema de envío para ambos tipos, pero podés diferenciar si querés
+          return sendQrEmail(
+            mail,
+            qrBuffer,
+            ticket.nombreTicket,
+            event.nombreEvento,
+            state,
+            ticket.tipo
+          );
+        })
+      );
     }
-
-// ⚡ Esperá todas las tareas en paralelo
-await Promise.all(qrTasks);
-    console.log("QRs generados y enviados.");
-  } catch (err) {
-    console.error("Error generando QRs: ", err);
   }
+
+  await Promise.all(qrTasks);
+  console.log("QRs generados y enviados.");
+
+} catch (err) {
+  console.error("❌ Error generando QRs:", err);
+}
 };
 
 export const addRRPPController = async (req, res) => { //añadiendo rrpp en el evento si no existe y enviar mail al mail del rrpp con el link para que ingrese a generar su linkDePago
@@ -759,67 +784,109 @@ export const getEventsFreesController = async (req, res) => { //a chequear
     res.status(200).json({message: "Necesitas loguearte"})
 }
 
-const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento, state) => {
-  
+const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento, state, tipo) => {
+
   const transporter = nodemailer.createTransport({
-    service: 'gmail', 
+    service: 'gmail',
     auth: {
       user: user_mail,
       pass: pass
-    }
+  }
   });
-    await transporter.sendMail({
-    from: '"GoTickets" <no-reply@gotickets.com>',
-    to: email,
-    subject: `Tu entrada para ${nombreEvento} - ${nombreTicket}`,
-    html: `
+   try {
+    const info = await transporter.sendMail({
+      from: '"GoTickets" <no-reply@gotickets.com>',
+      to: email,
+      subject: `Tu entrada para ${nombreEvento} - ${nombreTicket}`,
+      html: `
         <h3>Gracias por tu compra</h3>
-        <p>Entrada: <strong>${nombreTicket}</strong> ${state === 3 ? 'Cortesia' : ''} </p>
+        <p>Entrada: <strong>${nombreTicket}</strong></p>
         <p>Escaneá este QR en la entrada:</p>
         <img src="cid:qrcodeimg" alt="QR para ${nombreTicket}" style="width:200px;height:200px;"/>
-    `,
-    attachments: [
+      `,
+      attachments: [
         {
-        filename: 'qrcode.png',
-        content: qrBuffer,         
-        cid: 'qrcodeimg'      
+          filename: 'qrcode.png',
+          content: qrBuffer,
+          cid: 'qrcodeimg'
         }
-    ]
+      ]
     });
+
+    console.log('📧 Email enviado:', info.messageId);
+  } catch (err) {
+    console.error('❌ Error al enviar el email:', err);
+    throw err; // Importante para propagar al controller si lo necesitás
+  }
 };
 
 export const getInfoQrController = async (req, res) => {
-    const { token } = req.query;
+  const { token } = req.params;
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const { eventId, ticketId } = decoded;
 
-    const event = await ticketModel.findOne(
-      { _id: eventId, 'tickets._id': ticketId },
-      { 'tickets.$': 1, nombreEvento: 1, fechaInicio: 1, fechaFin: 1, imgEvento: 1 }
-    );
-
-    if (!event) return res.status(404).json({ message: 'Evento no encontrado' });
-
-    const ticket = event.tickets[0];
-
-    if (!ticket || !ticket.isActive || new Date() > ticket.fechaDeCierre) {
-      return res.status(400).json({ message: 'Ticket caducado o inactivo' });
-    }
-
-    return res.json({
-      nombreEvento: event.nombreEvento,
-      nombreTicket: ticket.nombreTicket,
-      fechaInicioEvento: event.fechaInicio,
-      fechaCierreEvento: event.fechaFin,
-      fechaDeCierreTicket: ticket.fechaDeCierre,
-      imgEvento: event.imgEvento,
+    const event = await ticketModel.findById(eventId, {
+      tickets: 1,
+      cortesiaRRPP: 1,
+      nombreEvento: 1,
+      fechaInicio: 1,
+      fechaFin: 1,
+      imgEvento: 1,
+      localidad: 1,
+      direccion: 1,
+      eventoEdad: 1
     });
+
+    if (!event) return res.status(404).json({ error: 1 });
+
+    const ticketbyId = event.tickets.find(t => t._id.equals(ticketId));
+    const cortesia = event.cortesiaRRPP.find(c => c._id.equals(ticketId));
+
+    // Validar existencia
+    const entrada = ticketbyId || cortesia;
+    const tipo = ticketbyId ? 'Ticket' : cortesia ? 'Cortesia' : null;
+
+    if (!entrada) return res.status(404).json({ error: 1 });
+
+    const tokenValidation = await tokenModel.findOne({ token });
+    console.log('token Validation: ', tokenValidation)
+
+    if (!tokenValidation) return res.json({ error: 1 });
+    console.log(event)
+    if (tokenValidation.used) {
+       return res.status(200).json({ error: 1 });
+    }else{
+      tokenValidation.used = true;
+      await tokenValidation.save();
+  
+      // Validación de fecha de cierre
+      if (!entrada.fechaDeCierre || new Date() > entrada.fechaDeCierre) {
+        console.log('asdasdsaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd ss')
+        return res.status(400).json({ error: 1 });
+      }
+  
+      return res.status(200).json({
+        tipo,
+        nombreEvento: event.nombreEvento,
+        nombreTicket: entrada.nombreTicket,
+        direccion: event.direccion,
+        localidad: event.localidad,
+        eventoEdad: event.eventoEdad,
+        fechaInicioEvento: event.fechaInicio,
+        fechaCierreEvento: event.fechaFin,
+        fechaDeCierreTicket: entrada.fechaDeCierre,
+        imgEvento: event.imgEvento,
+      });
+    }
+    
+
   } catch (err) {
-    return res.status(401).json({ message: 'Token inválido o expirado' });
+    console.error('❌ Error en getInfoQrController:', err);
+    return res.status(401).json({ error: 1 });
   }
-}
+};
 
 export function encrypt(rrppMail) {
   const iv = crypto.randomBytes(IV_LENGTH);
@@ -872,7 +939,7 @@ export const generateMyRRPPLinkController = async (req, res) => {  //guardar en 
 }
 
 export const paymentSuccessController = async (req, res) => {
-  /*const paymentId = req.query.payment_id;
+  const paymentId = req.query.payment_id;
 
   try {
     const payment = await mercadopago.payment.findById(paymentId);
@@ -886,5 +953,10 @@ export const paymentSuccessController = async (req, res) => {
   } catch (error) {
     console.error('Error al verificar pago:', error);
     res.status(500).send('Error interno');
-  }*/
+  }
 };
+
+export const verTokensController = async (req , res) => {
+  const response = await tokenModel.find()
+  res.send(response)
+}

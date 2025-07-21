@@ -3,8 +3,11 @@ import { useParams } from "react-router"
 import { getOneProdRequest, getProdsRequest, staffQrRequest } from "../../../api/eventRequests"
 import { useState } from "react"
 import { formatDate } from "../../../globalscomp/globalscomp"
+import { useContext } from "react"
+import UserContext from "../../../context/userContext"
 
 const Staff = () => {
+    const {session} = useContext(UserContext)
     const {prodId} = useParams()
     const [producction, setProducction] = useState([])
     const [quantities, setQuantities] = useState({});
@@ -13,7 +16,7 @@ const Staff = () => {
     console.log(prodId)
     useEffect(() => {
         const obtainUserProd = async () => {
-            const userId = '682230196086949adb9b9c77'
+            const userId = session?.userFinded?.[0]?._id
             const res = await getOneProdRequest(prodId, userId)  //despues reemplazar el valor por userId de la session
             setProducction(res.data)
         }
@@ -64,7 +67,7 @@ const Staff = () => {
                   <div className="text-center" key={p._id}>
                     <div className="mx-auto text-center">
                         <img className="w-[350px] h-[380px] mx-auto object-cover" src={p.imgEvento} alt=""></img>   
-                        <h3 className="mt-2 mb-6 text-4xl">Evento: {p.nombreEvento}</h3>
+                        <h3 className="mt-6 mb-6 text-4xl">Evento: {p.nombreEvento}</h3>
                         <p className="mt-2 text-xl">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
                         <p className="mt-2 text-xl">Fecha de cierre: {formatDate(p.fechaFin) }</p>
                         

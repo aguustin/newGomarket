@@ -20,7 +20,7 @@ export const getEventToBuyRequest = (prodId) => axios.get(`http://localhost:4000
 
 //export const buyTicketsRequest = (quantities, total, totalQuantity, mail, nombreEvento) => axios.post('http://localhost:4000/buy', {quantities, total, totalQuantity, mail, nombreEvento})
 
-export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, state, total, emailHash) => { 
+export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni) => { 
   try {
     const response = await axios.post('http://localhost:4000/buy', {
       prodId,
@@ -29,7 +29,9 @@ export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, 
       mail,
       state,
       total, 
-      emailHash
+      emailHash, 
+      nombreCompleto,
+      dni
     });
 
     return response.data;

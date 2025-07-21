@@ -5,7 +5,7 @@ const ticketSchema = new mongoose.Schema({
     prodMail: {type: String}, 
     numeroEvento:{type: Number},
     paisDestino: {type: String},
-    tipoEvento: {type: String},
+    tipoEvento: {type: Number},
     eventoEdad: {type: String},
     consumoDeCarta: {type: String},
     nombreEvento:{type: String},
@@ -50,7 +50,10 @@ const ticketSchema = new mongoose.Schema({
             cantidadDeCortesias: {type: Number},
             entregados: {type: Number},
             fechaDeCierre: {type: Date},
-            imgTicket: {type: String}
+            imgTicket: {type: String},
+            estado: {type: Number},
+            distribution: {type: Number},
+            limit:{type: Number}
     }],
     rrpp:[{
         nombre: {type: String},

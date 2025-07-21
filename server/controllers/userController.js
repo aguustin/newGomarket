@@ -4,6 +4,8 @@ import bcrypt from "bcrypt"
 import nodemailer from 'nodemailer'; 
 import jwt from "jsonwebtoken"
 
+const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
+
 export const getAllUsersController = async (req, res) => {
     const getUsers = await userModel.find({})
     res.send(getUsers)
@@ -74,9 +76,31 @@ export const recoverPassController = async (req, res) => {
         from: '"GoTickets" <no-reply@gotickets.com>',
         to: mail,
         subject: `Recuperar contraseña para ${mail} - Gotickets`,
-        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="http://localhost:4000/${token}" />`,
-        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="http://localhost:4000/${token}" />`
+        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="http://localhost:4000/recover_password/${token}" />`,
+        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="http://localhost:4000/recover_password/${token}" />`
     });
+
+    res.sendStatus(200)
+}
+
+export const newPasswordController = async (req, res) => {
+    const {token, nuevaContrasenia} = req.body
+
+       const decoded = jwt.verify(token, JWT_SECRET);
+       const { mail } = decoded;
+
+       const encryptPass = await bcrypt.hash(nuevaContrasenia, 12)
+
+       await userModel.updateOne(
+            {mail: mail},
+            {
+                $set:{
+                    contrasenia: encryptPass
+                }
+            }
+       )
+
+       res.status(200).json(1)
 }
 
 export const contactController = async (req, res) => {

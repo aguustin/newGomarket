@@ -6,10 +6,8 @@ import { formatDate } from "../../globalscomp/globalscomp"
 const BuyTicket = () => {
     const {prodId, emailHash} = useParams()
     const [prod, setProd] = useState([])
-    const [quantity, setQuantity] = useState(0)
     const [quantities, setQuantities] = useState({});
     const [totalQuantity, setTotalQuantity] = useState(0)
-    const [ticketsIds, setTicketsIds] = useState()
     console.log(emailHash)
 
     useEffect(() => {
@@ -20,45 +18,57 @@ const BuyTicket = () => {
             getOneEvent()
     }, [])
 
-    const restQuantity = (e, ticketId) => {
-        e.preventDefault()
-        setQuantities(prev => {
-            const current = prev[ticketId] || 0;
-            if (current > 0) {
-                setTotalQuantity(totalQuantity - 1)
-                return {
-                    ...prev,
-                    [ticketId]: current - 1
-                };
-            }
-        });
-    };
-
-    const addQuantity = (e, ticketId) => {
-        e.preventDefault()
-        if(quantity < 20){
-            setTotalQuantity(totalQuantity + 1)
-            setQuantities(prev => ({
+ const restQuantity = (e, ticketId) => {
+    e.preventDefault();
+    setQuantities(prev => {
+        const current = prev[ticketId] || 0;
+        if (current > 0) {
+            setTotalQuantity(totalQuantity - 1);
+            return {
                 ...prev,
-                [ticketId]: (prev[ticketId] || 0) + 1,
-            }));
+                [ticketId]: current - 1
+            };
         }
-    }
+
+        return prev;
+    });
+};
+    const addQuantity = (e, ticketId, limit) => {
+    e.preventDefault();
+    setQuantities(prev => {
+        const current = prev[ticketId] || 0;
+        const maxLimit = limit !== undefined ? limit : 20; // Usa 20 si no hay limit (tickets pagos)
+
+        if (current < maxLimit) {
+            setTotalQuantity(totalQuantity + 1);
+
+            return {
+                ...prev,
+                [ticketId]: current + 1,
+            };
+        }
+
+        console.warn(`No se pueden seleccionar más de ${maxLimit} entradas para este ticket.`);
+        return prev;
+    });
+};
 
     const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => {
         const qty = quantities[tck._id] || 0;
         return acc + qty * tck.precio;
     }, 0);
-    
+
     const buyTickets = async (e) => {
             try {
                 e.preventDefault();
                 const mail = e.target.elements.mail.value;
-                const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash);
+                const nombreCompleto = e.target.elements.nombreCompleto.value
+                const dni = e.target.elements.dni.value
+                const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);
 
                 if (!data?.init_point) {
-                console.error("init_point no recibido");
-                return;
+                    console.error("init_point no recibido");
+                    return;
                 }
 
                 window.location.href = data.init_point;
@@ -88,24 +98,62 @@ const BuyTicket = () => {
                     <input type="email" name="mail" placeholder="example@gmail.com"></input>
                 </div>
                 <div className="mt-4">
-                    <label className="text-xl">Celular:</label><br></br>
-                    <input type="number" name="celular" placeholder="..."></input>
+                    <label className="text-xl">dni:</label><br></br>
+                    <input type="number" name="dni" placeholder="..."></input>
                 </div>
-               {prod.map((p) =>
-                    p.tickets.map((tck) => 
-                    <div key={tck._id}>
-                        <div className="flex justify-center mt-6">
-                            <label className="text-xl">{tck.nombreTicket}: </label>
-                            <div className="flex items-center ">
-                                <button className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3" onClick={(e) => restQuantity(e, tck._id, tck.precio, tck.nombreTicket)}>-</button>
-                                <p className="text-xl">{quantities[tck._id] || 0}</p>
-                                <button className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3" onClick={(e) => addQuantity(e, tck._id, tck.precio, tck.nombreTicket)}>+</button>
-                                <p className="text-xl">Precio c/u: {tck.precio}</p>
-                            </div>
+              {prod.map((p) => {
+    return (
+        <>
+            {p.tickets.map((tck) => (
+                <div key={tck._id}>
+                    <div className="flex justify-center mt-6">
+                        <label className="text-xl">{tck.nombreTicket}: </label>
+                        <div className="flex items-center ">
+                            <button
+                                className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
+                                onClick={(e) => restQuantity(e, tck._id)}
+                            >
+                                -
+                            </button>
+                            <p className="text-xl">{quantities[tck._id] || 0}</p>
+                            <button
+                                className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
+                                onClick={(e) => addQuantity(e, tck._id)}
+                            >
+                                +
+                            </button>
+                            <p className="text-xl">Precio c/u: {tck.precio}</p>
                         </div>
                     </div>
-                    )
-                )}
+                </div>
+            ))}
+            {p.cortesiaRRPP.map((crt) => (
+                <div key={crt._id}>
+                    <div className="flex justify-center mt-6">
+                        <label className="text-xl">{crt.nombreTicket}: </label>
+                        <div className="flex items-center ">
+                            <button
+                                className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
+                                onClick={(e) => restQuantity(e, crt._id, crt.limit)}
+                            >
+                                -
+                            </button>
+                            <p className="text-xl">{quantities[crt._id] || 0}</p>
+                            <button
+                                className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
+                                onClick={(e) => addQuantity(e, crt._id, crt.limit)}
+                            >
+                                +
+                            </button>
+                            <p className="text-xl">Precio c/u: {crt.precio}</p>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </>
+    );
+})}
+
                 <p className="text-2xl mt-6">Total:${total}</p>
                 <button className="bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">Comprar</button>
             </form>

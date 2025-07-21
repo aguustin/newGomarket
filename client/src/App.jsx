@@ -39,7 +39,7 @@ function App() {
             <Route path='/editar_evento/staff/:prodId' element={<Staff/>}></Route>
             <Route path='/get_my_rrpp_events/:mail' element={<RRPPEvents/>}></Route>
             <Route path='/rrpp_get_event_free/:prodId/:mail' element={<SendFree/>}></Route>
-            <Route path='/ticket/validate' element={<TicketQr/>}></Route>
+            <Route path='/ticket/validate/:token' element={<TicketQr/>}></Route>
             <Route path='/statistics/:prodId/:userId' element={<Statistics/>}></Route>
           </Routes>
           <Footer></Footer>

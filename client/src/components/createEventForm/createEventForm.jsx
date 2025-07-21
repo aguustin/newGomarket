@@ -4,28 +4,39 @@ import eventoJpg from '../../assets/imgpruebaEventos.jpg'
 import continueArrowPng from '../../assets/botones/continue_arrow.png'
 import { useContext } from "react"
 import UserContext from "../../context/userContext"
+import {Country, State, City} from "country-state-city"
 
 const CreateEventForm = () => {
     const {session} = useContext(UserContext)
     const [startDate, setStartDate] = useState()
     const [endDate, setEndDate] = useState()
     const [showTickets, setShowTickets] = useState(0)
+    const [estado, setEstado] = useState(1)
+    const [distribution, setDistribution] = useState(0)
     const [closeDate, setCloseDate] = useState()
     const [disabledButton, setDisabledButton] = useState(true)
     const [saveEventId, setSaveEventId] = useState()
+    const [estadoEdad, setEstadoEdad] = useState()
+    const [countries, setCountries] = useState(Country.getAllCountries())
+    const [currency, setCurrency] = useState(null)
+    const [states, setStates] = useState([])
+    const [cities, setCities] = useState([])
+    const [selectedCountry, setSelectedCountry] = useState(null)
+    const [selectedState, setSelectedState] = useState(null)
+    const [selectedCity, setSelectedCity] = useState(null)
+    console.log(countries)
 
     const createEvent = async (e) => {
         e.preventDefault()
-        
-            const paisDestino = e.target.elements.paisDestino.value
+            currency
+            selectedState.name
+            selectedCity.name
             const tipoEvento = e.target.elements.tipoEvento.value
             const eventoEdad = e.target.elements.eventoEdad.value
-            const provincia = e.target.elements.provincia.value
-            const localidad = e.target.elements.localidad.value
             const formData = new FormData()
             formData.append('userId', session?.userFinded?.[0]?._id)
-            formData.append('prodMail', 'agustin.molee@gmail.com') //aca va el mail de la session
-            formData.append('paisDestino', paisDestino)
+            formData.append('prodMail', session?.userFinded?.[0]?.mail) //aca va el mail de la session
+            formData.append('paisDestino', selectedCountry.name)
             formData.append('tipoEvento', tipoEvento)
             formData.append('eventoEdad', eventoEdad)
             formData.append('nombreEvento', e.target.elements.nombreEvento.value)
@@ -35,13 +46,13 @@ const CreateEventForm = () => {
             formData.append('montoVentas', e.target.elements.montoVentas.value)
             formData.append('fechaInicio',  new Date(startDate).toISOString())
             formData.append('fechaFin', new Date(endDate).toISOString())
-            formData.append('provincia', provincia)
-            formData.append('localidad', localidad)
+            formData.append('provincia', selectedState.name)
+            formData.append('localidad', selectedCity.name)
+            formData.append('tipoMoneda', currency),
             formData.append('direccion', e.target.elements.direccion.value)
             formData.append('lugarEvento', e.target.elements.lugarEvento.value)
             formData.append('linkEvento', e.target.elements.linkEvento.value)
             formData.append('imgEvento', e.target.elements.imgEvento.files[0])
-    
             const res = await createEventRequest(formData)
 
             if(res.data.estado === 1){
@@ -61,11 +72,29 @@ const CreateEventForm = () => {
         formData.append('cantidad', e.target.elements.cantidad.value)
         formData.append('fechaDeCierre', new Date(closeDate).toISOString())
         formData.append('imgTicket', e.target.elements.imgTicket.files[0])
-        formData.append('estado', e.target.elements.estado.value)
+        formData.append('estado', estado)
+        formData.append('distribution', distribution)
+        formData.append('limit', e.target.elements?.limit?.value)
         createEventTicketsRequest(formData)
         setDisabledButton(false)
     }
 
+    const handleCountryChange = (country) => {
+        setSelectedCountry(country)
+        setCurrency(country.currency)
+        setStates(State.getStatesOfCountry(country.isoCode))
+        setCities([])
+    }
+
+    const handleStateChange = (state) => {
+        setSelectedState(state)
+        setCities(City.getCitiesOfState(selectedCountry.isoCode, state.isoCode))
+    }
+
+    const handleCityChange = (city) => {
+        setSelectedCity(city)
+    }
+    console.log(states, ' ', cities)
     return(
         <>
         <div className="create-form flex justify-around mt-[20px] pl-12 pr-12">
@@ -73,25 +102,25 @@ const CreateEventForm = () => {
                 <form className="create-event-form mt-9" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
                     <div>
                         <label>Pais del evento</label>
-                        <select name="paisDestino">
-                            <option value="Argentina">Argentina</option>
-                            <option value="Chile">Chile</option>
-                            <option value="Uruguay">Uruguay</option>
+                        <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))}>
+                            <option value=''>Elegir país</option>
+                            {countries.map((cts) => (<option key={cts.isoCode} value={cts.isoCode} className="text-black">{cts.name}</option>))}
                         </select>
                     </div>
                     <div>
                         <label>Privacidad del evento:</label>
                         <select name="tipoEvento">
-                            <option value="publico" defaultValue>Publico</option>
-                            <option value="privado">Privado</option>
+                            <option value={1}>Publico</option>
+                            <option value={2}>Privado</option>
                         </select>
                     </div>
                     <div>
                         <label>Evento para mayores de edad:</label>
-                        <select name="eventoEdad">
-                            <option value={1}>Si</option>
-                            <option value={2} defaultValue>No</option>
+                        <select onChange={(e) => setEstadoEdad(e.target.value)}>
+                            <option value={1}>NO</option>
+                            <option value={2}>SI</option>
                         </select>
+                        {estadoEdad && <input type="text" placeholder="A partir de que edad" name="eventoEdad"></input>}
                     </div>
                     <div>
                         <label>Nombre del evento:</label>
@@ -108,8 +137,7 @@ const CreateEventForm = () => {
                     <div>
                         <label>Categorias del evento:</label>
                         <div>
-
-                        <input type="text"  placeholder="..." name="categorias"></input>
+                            <input type="text"  placeholder="..." name="categorias"></input>
                         </div>
                     </div>
                     <div>
@@ -142,20 +170,20 @@ const CreateEventForm = () => {
                     <div className="flex items-center">
                         <div>
                             <label>Provincia:</label>
-                            <select name="provincia">
-                                <option value="prov" defaultValue> Elegir</option>
-                                <option value="Argentina">Argentina</option>
-                                <option value="chile">Chile</option>
-                                <option value="uruguay">Uruguay</option>
+                            <select name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))}>
+                                <option value=''>Elegir</option>
+                                {states.map((st) => (
+                                    <option className="text-black" key={st.isoCode} value={st.isoCode}>{st.name}</option>
+                                ))}
                             </select>
                         </div>
-                        <div>
+                        <div className="ml-6">
                             <label>Localidad</label>
-                            <select name="localidad">
-                                <option value="locald" defaultValue>Elegir</option>
-                                <option value="Argentina">Centro</option>
-                                <option value="chile">Godoy Cruz</option>
-                                <option value="uruguay">Guaymallen</option>
+                            <select name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))}>
+                               <option value=''>Elegir</option>
+                               {cities.map((city) => (
+                                <option className="text-black" key={city.name} value={city.name}>{city.name}</option>
+                               ))}
                             </select>
                         </div>
                     </div>
@@ -185,9 +213,9 @@ const CreateEventForm = () => {
                         <input type="file" placeholder="..." name="imgEvento"></input>
                     </div>
                 <div id="terminos-condiciones">
-                    <div>
+                    <div className="relative mt-10">
                         <label>Acepto términos y condiciones</label>
-                        <input type="checkbox"></input>
+                        <input className="absolute left-18" type="checkbox"></input>
                     </div>
                 </div>
                 <button className="bg-violet-900 p-4 rounded-lg w-full mt-10 mb-20" type="submit">CREAR EVENTO</button>
@@ -219,12 +247,32 @@ const CreateEventForm = () => {
                                     <input type="number" placeholder="..." name="cantidad" required></input>
                                 </div>
                                 <div className="mt-3">
-                                    <label>Estado:</label>
-                                    <select name="estado">
-                                        <option value={1}>Activo</option>
-                                        <option value={2}>No visible</option>
-                                        <option value={3}>Cortesia</option>
-                                    </select>
+                                    <div className="flex items-center">
+                                        <label>Estado:</label>
+                                        <select className="ml-1" name="estado" onChange={(e) => setEstado(e.target.value)}>
+                                            <option value={1}>Activo</option>
+                                            <option value={2}>No visible</option>
+                                            <option value={3}>Cortesia</option>
+                                        </select>
+                                    </div>
+                                   {estado === '3' &&
+                                    <>
+                                            <div className="flex items-center mt-3">
+                                                <label>Para:</label>
+                                                <select className="ml-1" name="distribution" onChange={(e) => setDistribution(e.target.value)}>
+                                                    <option value={1}>RRPP</option>
+                                                    <option value={2}>Clientes</option>
+                                                </select>
+                                            </div>
+                                        
+                                           {distribution === '2' &&
+                                                <div className="mt-3">
+                                                    <label>Limite a sacar por persona:</label>
+                                                    <input type="number" name="limit" placeholder="Ej: 3"></input>
+                                                </div>
+                                           } 
+                                        </>
+                                   } 
                                 </div>
                             </div>
                             <div className="mt-3">
@@ -239,7 +287,7 @@ const CreateEventForm = () => {
                         <div className="flex justify-between items-center mt-6">
                             <button className="bg-violet-700 p-3 rounded-lg" type="submit">+ Agregar tickets</button>
                         </div>
-                        {disabledButton ? <a className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" disabled>Continuar<img src={continueArrowPng} alt=""></img></a> : <a className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" href="/">Continuar<img src={continueArrowPng} alt=""></img></a>}
+                        {disabledButton ? <a className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" disabled>Continuar<img src={continueArrowPng} alt=""></img></a> : <a className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" href="/Home">Continuar<img src={continueArrowPng} alt=""></img></a>}
                     </form>
                 }
                 </div>

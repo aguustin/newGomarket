@@ -100,11 +100,16 @@ input{
   transition: all .3s;
 }
 
-
 /*------------------------------------------------------------------ HOME -------------------------------------------------------------------------------*/
 
 .event-desc, .contact-textarea{
   background: rgba(0, 0, 0, 0.377)
+}
+
+.event-desc{
+   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75)
 }
 
 /*---------------------------------------------------------------- BUY TICKET ------------------------------------------------------------------------------*/
@@ -238,4 +243,23 @@ input{
 }
 .productions > table{
   overflow-y: scroll !important;
+}
+
+/*--------------------------------------------------------------------------------- TICKET QR ----------------------------------------------------------------------------*/
+
+
+@media screen and  (max-width:500px) {
+  .evento-desc h1{
+    font-size: 21px;
+  }
+
+  .evento-desc{
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .evento-desc b, .evento-desc p{
+    font-size: 17px;
+  }
+  
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
 import { addRRPPRequest, createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
@@ -7,8 +7,10 @@ import ticketPng from '../../assets/images/ticket.png'
 import qrCodePng from '../../assets/images/qr-code.png'
 import backArrowPng from '../../assets/images/back-arrow.png'
 import { formatDate } from "../../globalscomp/globalscomp"
+import UserContext from "../../context/userContext"
 
 const EditProd = () => {
+    const {session} = useContext(UserContext)
     const {prodId} = useParams()
     const fileRef = useRef(null);
     const fileRefsB = useRef({})
@@ -19,15 +21,18 @@ const EditProd = () => {
     const [eventosEditados, setEventosEditados] = useState({});
     const [visibilidad, setVisibilidad] = useState()
     const [message, setMessage] = useState(false)
-    const userId = '682230196086949adb9b9c77'
+    const [estado, setEstado] = useState(1)
+    const [distribution, setDistribution] = useState(0)
 
     useEffect(() => {
+        const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
+            console.log(userId)
             const res = await getOneProdRequest(prodId, userId) //userId va la session del usuario
             setProd(res.data)
         }
         getOneProd()
-    }, [])
+    }, [session])
 
     const updateEvent = async (e, eventId, imgEvento, nombreEvento, descripcionEvento, eventoEdad, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento) => {
         e.preventDefault()
@@ -100,7 +105,7 @@ const EditProd = () => {
 
     const createEventTickets = (e) => {
             e.preventDefault()
-            console.log('entro', prodId)
+            console.log('entro', distribution)
             const formData = new FormData()
             formData.append('prodId', prodId)
             formData.append('nombreTicket', e.target.elements.nombreTicket.value)
@@ -110,6 +115,8 @@ const EditProd = () => {
             formData.append('fechaDeCierre', new Date(closeDate))
             formData.append('imgTicket', e.target.elements.imgTicket.files[0])
             formData.append('visibilidad', visibilidad)
+            formData.append('distribution', distribution)
+            formData.append('limit', e.target.elements?.limit?.value)
             formData.append('estado', e.target.elements.estado.value)
             createEventTicketsRequest(formData)
             setVisibilidad()
@@ -225,13 +232,31 @@ const EditProd = () => {
                                     </div>
                                     <div className="ml-5">
                                         <label>Estado:</label>
-                                        <select className="bg-violet-900 pr-2 pl-2 rounded-lg" name="estado">
-                                            <option defaultValue={1}>Activo</option>
+                                        <select className="bg-violet-900 pr-2 pl-2 rounded-lg" name="estado" onChange={(e) => setEstado(e.target.value)}>
+                                            <option value={1}>Activo</option>
                                             <option value={2}>No visible</option>
                                             <option value={3}>Cortesia</option>
                                         </select>
                                     </div>
                                 </div>
+                                 {estado === '3' && 
+                                            <div className="flex items-center">
+                                            <div className="flex items-center mt-3">
+                                                <label>Para:</label>
+                                                <select className="ml-1" name="distribution" onChange={(e) => setDistribution(e.target.value)}>
+                                                    <option value={1}>RRPP</option>
+                                                    <option value={2}>Clientes</option>
+                                                </select>
+                                            </div>
+                                        
+                                           {distribution === '2' &&
+                                                <div className="mt-3 ml-6 h-[50px]">
+                                                    <label>Limite a sacar por persona:</label>
+                                                    <input type="number" name="limit" placeholder="Ej: 3"></input>
+                                                </div>
+                                           } 
+                                        </div>
+                                    }
                                 <div>
                                     <label>Fecha y hora de fin:</label>
                                     <input type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
@@ -240,7 +265,7 @@ const EditProd = () => {
                                         <label>Visibilidad</label><br></br>
                                         <input type="checkbox" name="visibilidad" onChange={(e) => setVisibilidad(e.target.value)}/>
                                 </div>*/ }
-                                <div>
+                                <div className="mt-1">
                                     <label>Imagen del ticket</label>
                                     <input type="file" name="imgTicket"></input>
                                 </div>

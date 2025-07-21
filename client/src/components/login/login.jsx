@@ -3,41 +3,47 @@ import UserContext from "../../context/userContext"
 import {Link, useNavigate} from 'react-router'
 import { Message } from "../../globalscomp/globalscomp"
 import { recoverPassRequest } from "../../api/userRequests"
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Login = () => {
     const {session, setSession, message, setMessage, loginContext} = useContext(UserContext)
     const [showMsg, setShowMsg] = useState(false)
     const [recoverPass, setRecoverPass] = useState(false)
+    const [captchaStatus, setCaptchaStatus] = useState(false)
 
     useEffect(() => {
         setSession('')
         localStorage.clear()
     }, [])
+
+    const onSuccess = () => {
+        setCaptchaStatus(true)
+    }
    // let timeout = null
     let navigate = useNavigate()
 
     const loginUser = async (e) => {
         e.preventDefault()
-
-        const userData = {
-            mail: e.target.elements.mail.value,
-            contrasenia: e.target.elements.contrasenia.value
-        }   
-        const res = await loginContext(userData)
-        //console.log('eseaes', res.data.estado)
-        if(res.data.estado === 1){
-            navigate('/home')
-        }else{
-             setShowMsg(true)
-             /*setMessage('Las credenciales son incorrectas')
-             timeout = setTimeout(() => setShowMsg(false) , 3000);*/
+        if(captchaStatus){
+            const userData = {
+                mail: e.target.elements.mail.value,
+                contrasenia: e.target.elements.contrasenia.value
+            }   
+            const res = await loginContext(userData)
+            //console.log('eseaes', res.data.estado)
+            if(res.data.estado === 1){
+                navigate('/home')
+            }else{
+                 setShowMsg(true)
+            }
         }
             
     }
     
-    const recoverPassFunc = (e) => {
+    const recoverPassFunc = async (e) => {
         e.preventDefault()
-        recoverPassRequest()
+        const mail = e.target.elements.mail.value
+        const res = await recoverPassRequest({mail})
     }
 
     return(
@@ -77,6 +83,12 @@ const Login = () => {
                             <div className="flex"><p>¿Has olvidado tu contraseña?</p><button className="text-violet-400! ml-2 underline!" onClick={() => setRecoverPass(true)}>Haz click aqui!</button></div>
                             <div className="flex mt-5 items-center"> <p>O registrate haciendo click aqui: </p><a className="text-blue-400! ml-2 underline!" href="/register"> Registrarse</a></div>
                         </div>
+                    </div>
+                    <div className="flex justify-center mt-5">
+                      <ReCAPTCHA
+                        sitekey="6Ld9o4YrAAAAAPs8SCHOKFd4UJx9t8DWAvXeO_9-"
+                        onChange={onSuccess}
+                      />
                     </div>
                 <div className="text-center">
                     <button className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>
