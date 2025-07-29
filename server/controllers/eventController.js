@@ -617,7 +617,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
       const saveToken = new tokenModel({ token });
       await saveToken.save();
 
-      const qrUrl = `http://localhost:5173/ticket/validate/${token}`;
+      const qrUrl = `${process.env.URL_FRONT}/ticket/validate/${token}`;
 
       qrTasks.push(
         QRCode.toDataURL(qrUrl).then(qrImage => {
@@ -663,7 +663,7 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
         subject: `Ya eres colaborador en: ${nombreEvento}`,
         html: `
             <h3>Ya eres parte del staff del evento ${nombreEvento}</h3>
-            <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`http://localhost:5173/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+            <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
             <p>Evento:</p>
             <img src="${eventImg}"  alt="${nombreEvento}" style="width:200px;height:200px;"/>
           `,
@@ -696,7 +696,7 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
     subject: `Ya eres colaborador en: ${nombreEvento}`,
     html: `
         <h3>Ya eres parte del staff del evento ${nombreEvento}</h3>
-        <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`http://localhost:5173//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+        <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
         <p>Evento:</p>
         <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
     `,
@@ -898,7 +898,6 @@ export const getInfoQrController = async (req, res) => {
   
       // Validación de fecha de cierre
       if (!entrada.fechaDeCierre || new Date() > entrada.fechaDeCierre) {
-        console.log('asdasdsaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd ss')
         return res.status(400).json({ error: 1 });
       }
   
@@ -964,11 +963,11 @@ export const generateMyRRPPLinkController = async (req, res) => {  //guardar en 
         $set:{
           'rrpp.$.mailEncriptado': encryptedMail,
           'rrpp.$.mailHash': emailHash,
-          'rrpp.$.linkDePago': `http://localhost:5173/buy_tickets/${prodId}/${emailHash}`
+          'rrpp.$.linkDePago': `${process.env.URL_FRONT}/buy_tickets/${prodId}/${emailHash}`
         }
       }
     )
-   return res.json({message: `http://localhost:5173/buy_tickets/${prodId}/${emailHash}`}).status(200)
+   return res.json({message: `${process.env.URL_FRONT}/buy_tickets/${prodId}/${emailHash}`}).status(200)
   }
   return res.json({message: 'Ya tienes tu link de pago'})
 }

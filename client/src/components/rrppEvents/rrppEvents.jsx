@@ -1,18 +1,20 @@
-import { useEffect } from "react"
+import { useContext, useEffect } from "react"
 import { generateMyRRPPLinkRequest, getRRPPInfoRequest } from "../../api/eventRequests"
 import { useState } from "react"
 import { redirect, useNavigate } from "react-router"
 import CryptoJS from 'crypto-js';
 import { formatDate } from "../../globalscomp/globalscomp";
+import UserContext from "../../context/userContext";
 
 
 const RRPPEvents = () => {
+    const {session} = useContext(UserContext)
     const [rrppEvents, setEvents] = useState([])
     const nav = useNavigate()
     
     useEffect(() => {
         const getRRPPInfo = async () => {
-            const res = await getRRPPInfoRequest('agustin.molee@gmail.com') //meter mail de la session
+            const res = await getRRPPInfoRequest(session?.userFinded?.[0]?.mail) //meter mail de la session
             setEvents(res.data)
         }
         getRRPPInfo()

@@ -76,8 +76,8 @@ export const recoverPassController = async (req, res) => {
         from: '"GoTickets" <no-reply@gotickets.com>',
         to: mail,
         subject: `Recuperar contraseña para ${mail} - Gotickets`,
-        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="http://localhost:4000/recover_password/${token}" />`,
-        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="http://localhost:4000/recover_password/${token}" />`
+        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="https://newgomarket.onrender.com/recover_password/${token}" />`,
+        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="https://newgomarket.onrender.com/recover_password/${token}" />`
     });
 
     res.sendStatus(200)
