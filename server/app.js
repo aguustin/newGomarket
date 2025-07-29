@@ -27,18 +27,14 @@ app.use(morgan("tiny"))
 app.use(cors())
 //routes
 // Rutas de tu API
-import apiRoutes from './routes/api.js';  // Asegúrate de usar .js si tu archivo es un módulo ES //agregado el 29/07
-app.use('/api', apiRoutes);  //agregado el 29/07
-
-// Servir archivos estáticos de Vite
-app.use(express.static(path.resolve(__dirname, 'client', 'dist')));  //agregado el 29/07
-
-// Ruta catch-all para manejar rutas del frontend (React)
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'client', 'dist', 'index.html'));  //agregado el 29/07
-});
 app.use(userRoutes)
 app.use(ticketRoutes)
 
+app.use(express.static(path.resolve(__dirname, 'client', 'dist')));
+
+// Catch-all: devolver index.html para rutas del frontend (React SPA)
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'client', 'dist', 'index.html'));
+});
 //listeng
 app.listen(port)
