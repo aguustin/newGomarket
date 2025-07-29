@@ -27,7 +27,8 @@ app.use(morgan("tiny"))
 app.use(cors())
 //routes
 // Rutas de tu API
-app.use('/api', require('./routes/api'));  //agregado el 29/07
+import apiRoutes from './routes/api.js';  // Asegúrate de usar .js si tu archivo es un módulo ES //agregado el 29/07
+app.use('/api', apiRoutes);  //agregado el 29/07
 
 // Servir archivos estáticos de Vite
 app.use(express.static(path.resolve(__dirname, 'client', 'dist')));  //agregado el 29/07
