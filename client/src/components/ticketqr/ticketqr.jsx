@@ -11,7 +11,7 @@ const TicketQr = ({params}) => {
   console.log(token.token)
   useEffect(() => {
     if (token) {
-      fetch(`${process.env.URL}/ticket/validate/${token?.token}`)
+      fetch(`${import.meta.env.VITE_URL}/ticket/validate/${token?.token}`)
         .then(res => res.json())
         .then(data => {
           console.log(data)

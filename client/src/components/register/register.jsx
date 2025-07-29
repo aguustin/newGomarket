@@ -58,7 +58,7 @@ const Register = () => {
                         {showMsg ? <p className="text-red-600! mb-3">Las contraseñas no coinciden</p> : ''}
                         <div className="flex justify-center mt-4 mb-5">
                             <ReCAPTCHA
-                                sitekey={process.env.RECAPTCHA_KEY}
+                                sitekey={import.meta.env.RECAPTCHA_KEY}
                                 onChange={onSuccess}
                             />
                         </div>
