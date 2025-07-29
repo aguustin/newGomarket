@@ -9,7 +9,8 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js --ignore client"
+    "dev": "nodemon app.js --ignore client",
+    "start": "node app.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
