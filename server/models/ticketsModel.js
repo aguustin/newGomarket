@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const ticketSchema = new mongoose.Schema({
     userId: {type: String},
@@ -35,25 +36,28 @@ const ticketSchema = new mongoose.Schema({
     imgEvento: {type: String},
     linkVideo:{type:String},
     tickets:[{
-            nombreTicket: {type: String},
-            descripcionTicket: {type: String},
-            precio: {type: Number},
-            cantidad: {type: Number},
-            ventas:{type:Number},
-            fechaDeCierre: {type: Date},
-            imgTicket: {type: String},
-            visibilidad:{type: String},
+        nombreTicket: {type: String},
+        descripcionTicket: {type: String},
+        precio: {type: Number},
+        cantidad: {type: Number},
+        ventas:{type:Number},
+        fechaDeCierre: {type: Date},
+        visibilidad:{type: String},
+        estado:{type:Number},
+        imgTicket: {type: String},
+        limit:{type: Number}
     }],
     cortesiaRRPP:[{
-            nombreTicket: {type: String},
-            descripcionTicket: {type: String},
-            cantidadDeCortesias: {type: Number},
-            entregados: {type: Number},
-            fechaDeCierre: {type: Date},
-            imgTicket: {type: String},
-            estado: {type: Number},
-            distribution: {type: Number},
-            limit:{type: Number}
+        nombreTicket: {type: String},
+        descripcionTicket: {type: String},
+        cantidadDeCortesias: {type: Number},
+        entregados: {type: Number},
+        fechaDeCierre: {type: Date},
+        imgTicket: {type: String},
+        estado: {type: Number},
+        distribution: {type: Number},
+        email:{type: String},
+        limit:{type: Number}
     }],
     rrpp:[{
         nombre: {type: String},

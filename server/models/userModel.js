@@ -11,6 +11,10 @@ const userSchema = new mongoose.Schema({
     misTickets:[{
         categoriaId: {type: String}
     }],
+    cortesias:[{
+        cortesiaId:{type:String},
+        limit:{type:Number}
+    }],
     redes:[{
         instagram:{type: String},
         facebook:{type: String},

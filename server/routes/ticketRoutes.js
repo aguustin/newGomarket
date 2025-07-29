@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addRRPPController, buyEventTicketsController, createEventController, createEventTicketsController, generateMyRRPPLinkController, getAllEventsController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, sendQrStaffQrController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
+import { addRRPPController, buyEventTicketsController, createEventController, createEventTicketsController, generateMyRRPPLinkController, getAllEventsController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, qrGeneratorController, sendQrStaffQrController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });

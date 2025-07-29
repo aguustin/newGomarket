@@ -5,10 +5,14 @@
   list-style: none;
 }
 
+select{
+  background-color: #1a0c2c;
+  color: white;
+}
 
 /*------------------------------------------------------------------------------------- NAV -------------------------------------------------------------*/
 
-.nav, footer{
+.nav, footer, .nav-mobile-options{
   z-index: 3;
   background-color: #23103b;
   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
@@ -37,7 +41,7 @@
 
 .register-form{
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: rgba(255, 255, 255, 0.871);
   background: linear-gradient(135deg, #1a0c2c, #1d0b0a);
   background-size: cover;
   font-synthesis: none;
@@ -63,24 +67,24 @@ input{
 
 .home-events-container img{
   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
--webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
--moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
 .categories-container button, .filter-statics-button button{
-    border: 2px solid transparent;
-  border-top: transparent;
-  border-right: transparent;
-  border-left: transparent;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  border: 1px solid transparent;
   padding: 0.6em 1.2em;
-  font-size: 1em;
+  font-size: 1.4em;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.25s;
-  border-color: #726bff;
+  border-color: #2b2749;
+}
+
+.categories-container img{
+  width: 40px;
+  height: 40px;
 }
 
 .search-form button{
@@ -119,6 +123,15 @@ input{
 }
 
 /* ------------------------------------------------------------ CREATE EVENT ---------------------------------------------------------------------------*/
+.create-form{
+  max-width: 70vw;
+  min-width: 1000px;
+}
+
+.create-event-form select{
+  height: 40px;
+}
+
 .create-form input, .create-form textarea, .form-edit-event input, .email-staff, .buy-ticket input {
   border: 1px solid #302e5f;
   background-color: transparent;
@@ -214,6 +227,13 @@ input{
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
+.ticket-img{
+  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
+
 /* ------------------------------------------------------------------------------- ENVIAR TICKETS DE CORTESIA ----------------------------------------------------------------*/
 
 .free-ticket-cont{
@@ -248,6 +268,270 @@ input{
 /*--------------------------------------------------------------------------------- TICKET QR ----------------------------------------------------------------------------*/
 
 
+@media screen and (max-width:1375px) {
+  .home{
+   margin: 0 auto;
+   flex-direction: column-reverse;
+  }
+
+  .home > div{
+    width: 900px;
+    margin: auto;
+    text-align: center;
+  }
+
+  .home > div > div h1{
+    margin-top: 30px;
+  }
+
+  .home-events-container{
+    text-align: left;
+  }
+
+  .categories-container{
+    width: 900px;
+    margin: auto;
+  }
+
+  .categories-container > div{
+    display: flex ;
+    align-items: center;
+  }
+
+  .categories-container button{
+    width: auto !important;
+    background-color: #0d0b1f;
+    border-color: #271649;
+    font-size: 18px !important;
+  }
+
+  .categories-container img{ 
+      width: 30px;
+      height: 30px;
+   }
+}
+
+@media screen and (max-width:1290px) {
+  .form-edit-event button{
+    position: relative;
+    top: 20px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: auto;
+  }
+
+  .add-tickets-form{
+    width: 400px;
+    margin: auto;
+  }
+
+  .add-tickets-form{
+    margin-top: 80px !important;
+  }
+
+  .add-tickets-form button{
+    margin: auto !important;
+  }
+
+  .add-tickets-form input{
+    width: 100%;
+    margin: auto;
+  }
+
+  .edit-form-date{
+    margin-top: 10px !important;
+  }
+
+  .add-colab-form{
+    justify-content: center;
+  }
+
+  .add-colab-form input{
+    height: 50px;
+    padding-left: 5px;
+    border-radius: 10px;
+    width: 250px;
+  }
+}
+
+@media screen and (max-width:1000px) {
+  .create-form{
+    margin: 0 auto;
+    flex-direction: column-reverse;
+    min-width: 90vw !important;
+  }
+  .create-form > div{
+    margin: auto;
+    margin-top: 30px;
+  }
+  .create-event-form input, .create-event-form textarea, .create-event-form select{
+    width: 100%;
+    min-width: 100%;
+  }
+}
+
+@media screen and (max-width:950px) { 
+  .home{
+    padding: 15px;
+  }
+  .home > div{
+    width: 100%;
+    margin: auto;
+  }
+
+  .search-form {
+   justify-content: center;
+  }
+
+  .categories-container button{
+    width: auto !important;
+    background-color: #0d0b1f;
+    border-color: #271649;
+    font-size: 14px !important;
+    margin: auto;
+  }
+}
+
+@media screen and (max-width: 890px) {
+  .edit-info-event{
+    flex-wrap: wrap;
+  }
+
+  .edit-info-event div:nth-of-type(2){
+    margin-left: -2px;
+  }
+
+  .add-tickets-form{
+    width: 400px;
+    margin: auto;
+  }
+
+  .add-tickets-form input{
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .add-tickets-form > div > div  /*deja los input precio ticket, cantidad y estado con el aspecto actual que tienen*/
+
+  .edit-form-date{
+    margin-top: 20px !important;
+  }
+
+  .price-qty-state{
+    display: block;
+  }
+
+  .price-qty-state > input{
+    margin-left: 0px !important;
+  }
+
+  .qty, .state{
+    margin-left: 0px;
+  }
+
+  .state{
+    margin-top: 12px;
+  }
+
+  .edit-tickets-container{
+    display: block;
+    margin: auto;
+  }
+
+  .edit-tickets-container > div{
+    margin: auto;
+    margin-top: 50px;
+  }
+
+  .send-back a{
+    position: relative;
+    margin: auto;
+    right: auto;
+  }
+
+  .send-back{
+    justify-content: center !important;
+  }
+}
+
+@media screen and (max-width:750px) { 
+  .nav > div{
+    width: 100% !important;
+  }
+  .home{
+    margin-bottom: 40px;
+  }
+  .home h1{
+    font-size: 34px;
+  }
+  .categories-container > div{
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .categories-container button{
+    width: 170px !important;
+    margin-top: 10px;
+  }
+  .search-form{
+    display: block !important;
+  }
+}
+
+@media screen and (max-width:700px) { 
+  footer{
+    display: block;
+    height: auto;
+    padding: 20px;
+    text-align: center;
+  }
+
+  footer img, footer > div{
+    margin: auto;
+  }
+
+  footer p{
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  footer > div a{
+    margin: auto;
+  }
+
+  .gmail-img{
+    margin-top: 7px;
+  }
+}
+
+@media screen and (max-width:670px) { 
+  .home-events-container{
+    justify-content: center !important;
+  }
+}
+
+@media screen and (max-width: 610px) {
+  .create-form{
+    width: 100vw;
+    padding: 5px !important;
+  }
+  .create-form > div{
+    width: 100%;
+  }
+  .create-form > div img{
+   width: 90vw; 
+   margin: auto;
+  }
+
+
+}
+
+@media screen and (max-width:540px) { 
+  .categories-container button{
+    width: 200px !important;
+  }
+}
+
 @media screen and  (max-width:500px) {
   .evento-desc h1{
     font-size: 21px;
@@ -258,8 +542,53 @@ input{
     padding-right: 10px;
   }
 
+  .edit-info-event{
+    width: 100% !important;
+  }
+
+  .edit-info-event h3{
+    font-size: 20px;
+  }
+
   .evento-desc b, .evento-desc p{
     font-size: 17px;
   }
-  
+}
+
+@media screen and (max-width:495px) {
+  .register-form{
+    width: 100%;
+  }
+  .register-form h2{
+    font-size: 22px;
+  }
+  .register-form p{
+    font-size: 18px;
+  }
+}
+
+
+@media screen and (max-width:470px) {
+ .form-edit-event{
+  padding: 0 !important;
+ }
+}
+
+@media screen and (max-width:450px) {
+  #terminos-condiciones input{
+    left: 130px !important;
+    right: 0px !important;
+  }
+  .profile-container{
+    margin-top: 50px;
+    margin-bottom: 100px;
+    padding: 0px;
+  }
+  .profile{
+    width: 100vw;
+  }
+
+  footer p{
+    font-size: 16px;
+  }
 }

@@ -12,9 +12,9 @@ const Profile = () => {
 
     return(
         <>
-        <div className="flex h-full justify-center p-9 mt-6">
+        <div className="profile-container flex h-full justify-center p-9 mt-6">
             {session?.userFinded?.map((user) => 
-            <div className="text-center bg-[#1e1530] p-9 rounded-xl">
+            <div className="profile text-center bg-[#1e1530] p-9 rounded-xl">
                 <img className="mx-auto w-[150px] rounded-lg" src={noprofilePng} alt=""></img>
                     <p className="text-3xl mt-1">{user.nombreCompleto}</p>
                     <p className="text-lg mt-6">Perfil: Productora</p>

@@ -101,7 +101,7 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
   let estadoToInt = Number(estado)
   let distributionToInt = Number(distribution)
   let limitToInt = Number(limit)
-  console.log(distributionToInt, ' ', limitToInt)
+  console.log('asdasdsa', estadoToInt)
   const buildPayload = (imgUrl) => {
     if (estadoToInt !== 3) {  // SI EL ESTADO ES DIFERENTE DE 3 (DE CORTESIA) SE LE AGREGA EL ESTADO PARA DIFERENCIAR LOS TICKETS NORMALES A LOS DE CORTESIA
       return {
@@ -112,8 +112,9 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
           cantidad,
           fechaDeCierre: fechaDeCierre,
           visibilidad,
-          estadoToInt,
-          imgTicket: imgUrl
+          estado: estadoToInt,
+          imgTicket: imgUrl,
+          limit: limitToInt || 30
         }
       };
     } else {  
@@ -125,8 +126,9 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
           entregados: 0,
           fechaDeCierre: fechaDeCierre,
           imgTicket: imgUrl,
+          estado: estadoToInt,
           distribution: distributionToInt,
-          limit: limitToInt || 0
+          limit: limitToInt || 30
         }
       };
     }
@@ -235,7 +237,7 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
     visibilidad,
     estado
   } = req.body;
-  
+  console.log(req.body)
 let estadoInt = Number(estado)     
 const parseId = new mongoose.Types.ObjectId(ticketId);
 
@@ -244,6 +246,7 @@ const buildUpdateFields = (imgUrl = null) => {
   const commonFields = {
     nombreTicket,
     descripcionTicket,
+    cantidad,
     fechaDeCierre,
     visibilidad,
   };
@@ -266,15 +269,14 @@ const updateTicket = async (imgUrl = null) => {
   const cantidadField = estadoInt === 3 ? "cantidadDeCortesias" : "cantidad";
 
   const updateResult = await ticketModel.updateOne(
-    { [`${pathPrefix}._id`]: parseId },
+    { [`${pathPrefix}._id`]: ticketId },
     {
       $set: Object.fromEntries(
         Object.entries(updateFields).map(([key, value]) => [
           `${pathPrefix}.$.${key}`,
           value
         ])
-      ),
-      $set: { [`${pathPrefix}.$.${cantidadField}`]: cantidad }
+      )
     }
   );
 
@@ -314,23 +316,51 @@ export const getEventToBuyController = async (req, res) => {
     res.send(getProd)
 }
 
-export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {
+export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {
     await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
     let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
     let rrppMatch;
     let getDecryptedMail
+
     if(updateRRPP.length <= 0){
-    updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
-    rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
-    console.log(rrppMatch.prodMail)
-    getDecryptedMail = decrypt(rrppMatch.prodMail);
+      updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
+      rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
+      console.log(rrppMatch.prodMail)
+      getDecryptedMail = decrypt(rrppMatch.prodMail);
     }else{
       rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
       getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
     }
 
     const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
-    if (!doc) throw new Error("Documento no encontrado");
+    
+    if (!doc){
+      const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
+        updateOne: {
+          filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
+          update: {
+            $inc: {
+              "tickets.$.ventas": quantity,
+              "tickets.$.cantidad": -quantity,
+            },
+          },
+        },
+      }));
+      const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+      await Promise.all([
+        ticketModel.updateOne(
+          { _id: prodId },
+          {
+            $inc: {
+              totalVentas: ventasTotales,
+              totalMontoVendido: total,
+            },
+          }
+        ),
+        ticketModel.bulkWrite([...bulkOps])
+      ]);
+      return 1
+    }
 
     const rrpp = doc.rrpp.find(r => r.mail === getDecryptedMail);
     const existingTicketIds = rrpp?.ventasRRPP.map(v => v.ticketId) || [];
@@ -339,6 +369,7 @@ export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities
     const tickets = doc.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
 
     const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+
     const sumaTotal = tickets.reduce((acc, ticket) => {
       const ticketId = ticket._id.toString();
       const vendidos = quantities[ticketId];
@@ -356,10 +387,10 @@ export const handleSuccessfulPayment = async ({ prodId, nombreEvento, quantities
           },
         },
       },
-}));
+    }));
 
 // Actualiza RRPP
-const bulkOpsRRPP = tickets.map(ticket => {
+  const bulkOpsRRPP = tickets.map(ticket => {
   const ticketId = ticket._id.toString();
   const vendidos = quantities[ticketId];
   const total = vendidos * ticket.precio;
@@ -387,62 +418,64 @@ const bulkOpsRRPP = tickets.map(ticket => {
     };
   } else {
     return {
-      updateOne: {
-        filter: { "rrpp.mail": getDecryptedMail },
-        update: {
-          $push: {
-            "rrpp.$[rrppElem].ventasRRPP": {
-              ticketId,
-              nombreCategoria,
-              vendidos,
-              total
-            }
+        updateOne: {
+            filter: { "rrpp.mail": getDecryptedMail },
+            update: {
+              $push: {
+                "rrpp.$[rrppElem].ventasRRPP": {
+                  ticketId,
+                  nombreCategoria,
+                  vendidos,
+                  total
+                }
+              }
+            },
+            arrayFilters: [
+              { "rrppElem.mail": getDecryptedMail },
+            ],
           }
-        },
-        arrayFilters: [
-          { "rrppElem.mail": getDecryptedMail },
-        ],
+        };
       }
-    };
-  }
-});
+    });
 
 // Sumar montoTotalVendidoRRPP
-bulkOpsRRPP.push({
-  updateOne: {
-    filter: { "rrpp.mail": getDecryptedMail },
-    update: {
-      $inc: {
-        "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal
-      }
-    },
-    arrayFilters: [
-      { "rrppElem.mail": getDecryptedMail }
-    ]
-  }
-});
+  bulkOpsRRPP.push({
+    updateOne: {
+      filter: { "rrpp.mail": getDecryptedMail },
+      update: {
+        $inc: {
+          "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal
+        }
+      },
+      arrayFilters: [
+        { "rrppElem.mail": getDecryptedMail }
+      ]
+    }
+  });
 
 // Ejecutar operaciones
-await Promise.all([
-  ticketModel.updateOne(
-    { _id: prodId },
-    {
-      $inc: {
-        totalVentas: ventasTotales,
-        totalMontoVendido: total,
-      },
-    }
-  ),
-  ticketModel.bulkWrite([...bulkOps, ...bulkOpsRRPP])
-]);
+  await Promise.all([
+    ticketModel.updateOne(
+      { _id: prodId },
+      {
+        $inc: {
+          totalVentas: ventasTotales,
+          totalMontoVendido: total,
+        },
+      }
+    ),
+    ticketModel.bulkWrite([...bulkOps, ...bulkOpsRRPP])
+  ]);
 };
 
 export const buyEventTicketsController = async (req, res) => {
   const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
+  
+  if(total <= 0){
+    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
+    return res.status(200).json(3)
+  }
  
- // qrGeneratorController(prodId, quantities, mail, state, dni)
-  //return res.status(200).json({msg: "entro aca en 3"})
- console.log(quantities)
   try {
       const preference = {
       items: [
@@ -465,7 +498,7 @@ export const buyEventTicketsController = async (req, res) => {
       },
       external_reference: "164382724",
       auto_return: 'approved',
-      //notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',
+      //notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
       metadata: {
             prodId,
             nombreEvento,
@@ -523,6 +556,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 };
 
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
+  
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
     const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
       updateOne: {
@@ -542,6 +576,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
       }
     }));
 
+    
     await ticketModel.bulkWrite(bulkOps);
   }
   try {
@@ -663,7 +698,7 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
         <h3>Ya eres parte del staff del evento ${nombreEvento}</h3>
         <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`http://localhost:5173//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
         <p>Evento:</p>
-        <img src="${eventImg}"  alt="${nombreTicket}" style="width:200px;height:200px;"/>
+        <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
     `,
     });
       return res.status(200).json({msg:1})

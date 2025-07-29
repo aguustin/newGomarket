@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
 import { buyTicketsRequest, getEventToBuyRequest } from "../../api/eventRequests"
-import { formatDate } from "../../globalscomp/globalscomp"
+import { formatDate, formatNumber, Message } from "../../globalscomp/globalscomp"
 
 const BuyTicket = () => {
     const {prodId, emailHash} = useParams()
     const [prod, setProd] = useState([])
     const [quantities, setQuantities] = useState({});
     const [totalQuantity, setTotalQuantity] = useState(0)
+    const [showMsg, setShowMsg] = useState(false)
     console.log(emailHash)
 
     useEffect(() => {
@@ -34,36 +35,45 @@ const BuyTicket = () => {
     });
 };
     const addQuantity = (e, ticketId, limit) => {
-    e.preventDefault();
-    setQuantities(prev => {
-        const current = prev[ticketId] || 0;
-        const maxLimit = limit !== undefined ? limit : 20; // Usa 20 si no hay limit (tickets pagos)
+        e.preventDefault();
+        setQuantities(prev => {
+            const current = prev[ticketId] || 0;
+            const maxLimit = limit !== undefined ? limit : 20; // Usa 20 si no hay limit (tickets pagos)
 
-        if (current < maxLimit) {
-            setTotalQuantity(totalQuantity + 1);
+            if (current < maxLimit) {
+                setTotalQuantity(totalQuantity + 1);
 
-            return {
-                ...prev,
-                [ticketId]: current + 1,
-            };
-        }
+                return {
+                    ...prev,
+                    [ticketId]: current + 1,
+                };
+            }
 
-        console.warn(`No se pueden seleccionar más de ${maxLimit} entradas para este ticket.`);
-        return prev;
-    });
-};
+            console.warn(`No se pueden seleccionar más de ${maxLimit} entradas para este ticket.`);
+            return prev;
+        });
+
+    };
 
     const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => {
         const qty = quantities[tck._id] || 0;
-        return acc + qty * tck.precio;
+        return acc + qty * tck.precio + (qty * tck.precio) / 10;
     }, 0);
 
+    console.log(total)
+
     const buyTickets = async (e) => {
-            try {
-                e.preventDefault();
-                const mail = e.target.elements.mail.value;
-                const nombreCompleto = e.target.elements.nombreCompleto.value
-                const dni = e.target.elements.dni.value
+        e.preventDefault();
+        const mail = e.target.elements.mail.value;
+        const nombreCompleto = e.target.elements.nombreCompleto.value
+        const dni = e.target.elements.dni.value
+
+        if(total <= 0){
+            setShowMsg(true)
+        } 
+       
+
+        try {
                 const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);
 
                 if (!data?.init_point) {
@@ -75,17 +85,18 @@ const BuyTicket = () => {
             } catch (error) {
                 console.error("Error en handlePayment:", error);
             }
+        
     }
 
 
     return(
-        <div className="buy-ticket mx-auto mt-10 mb-10 text-center max-w-[500px]">
+        <div className="buy-ticket mx-auto mt-10 mb-10 text-center">
             {prod.map((p) => 
             <div key={p._id}>
                 <h2 className="text-3xl mb-3">{p.nombreEvento}</h2>
                 <p className="mb-1">{p.direccion}</p>
                 <p className="text-lg mb-5">{formatDate(p.fechaInicio)}</p>
-                <img className="rounded-lg" src={p.imgEvento}></img>
+                <img className="rounded-lg max-w-[500px] mx-auto" src={p.imgEvento}></img>
             </div>
             )}
             <form onSubmit={(e) => buyTickets(e)}>
@@ -104,30 +115,32 @@ const BuyTicket = () => {
               {prod.map((p) => {
     return (
         <>
-            {p.tickets.map((tck) => (
+            {p.tickets.filter((tck) => tck.estado !== 2).map((tck) => (
                 <div key={tck._id}>
                     <div className="flex justify-center mt-6">
-                        <label className="text-xl">{tck.nombreTicket}: </label>
-                        <div className="flex items-center ">
+                        <div className="text-left">
+                            <label className="text-xl">{tck.nombreTicket}: </label>
+                        </div>
+                        <div className="flex items-center">
                             <button
                                 className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
-                                onClick={(e) => restQuantity(e, tck._id)}
+                                onClick={(e) => restQuantity(e, tck._id, tck.limit)}
                             >
                                 -
                             </button>
                             <p className="text-xl">{quantities[tck._id] || 0}</p>
                             <button
                                 className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
-                                onClick={(e) => addQuantity(e, tck._id)}
+                                onClick={(e) => addQuantity(e, tck._id, tck.limit)}
                             >
                                 +
                             </button>
-                            <p className="text-xl">Precio c/u: {tck.precio}</p>
                         </div>
+                            <p className="text-xl">Precio c/u: {tck.precio}</p>
                     </div>
                 </div>
             ))}
-            {p.cortesiaRRPP.map((crt) => (
+            {p.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
                 <div key={crt._id}>
                     <div className="flex justify-center mt-6">
                         <label className="text-xl">{crt.nombreTicket}: </label>
@@ -154,10 +167,14 @@ const BuyTicket = () => {
     );
 })}
 
-                <p className="text-2xl mt-6">Total:${total}</p>
+                <p className="text-2xl mt-6">Total:${formatNumber(total)}</p>
                 <button className="bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">Comprar</button>
             </form>
-       
+            {/*setShowMsg && 
+                <div className="w-screen">
+                    <p>Se han  enviaron las cortesias a tu mail!</p>
+                </div>*/
+            }
         </div>
     )
 }

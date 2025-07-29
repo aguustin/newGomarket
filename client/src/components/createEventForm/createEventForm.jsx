@@ -72,6 +72,7 @@ const CreateEventForm = () => {
         formData.append('cantidad', e.target.elements.cantidad.value)
         formData.append('fechaDeCierre', new Date(closeDate).toISOString())
         formData.append('imgTicket', e.target.elements.imgTicket.files[0])
+        formData.append('visibilidad', e.target.elements.estado.value)
         formData.append('estado', estado)
         formData.append('distribution', distribution)
         formData.append('limit', e.target.elements?.limit?.value)
@@ -94,17 +95,17 @@ const CreateEventForm = () => {
     const handleCityChange = (city) => {
         setSelectedCity(city)
     }
-    console.log(states, ' ', cities)
+   
     return(
         <>
-        <div className="create-form flex justify-around mt-[20px] pl-12 pr-12">
+        <div className="create-form mx-auto flex justify-around mt-[20px] pl-12 pr-12">
             <div className="w-[450px]">
                 <form className="create-event-form mt-9" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
                     <div>
                         <label>Pais del evento</label>
                         <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))}>
                             <option value=''>Elegir país</option>
-                            {countries.map((cts) => (<option key={cts.isoCode} value={cts.isoCode} className="text-black">{cts.name}</option>))}
+                            {countries.map((cts) => (<option key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
                         </select>
                     </div>
                     <div>
@@ -143,22 +144,20 @@ const CreateEventForm = () => {
                     <div>
                         <label>Artistas que participan:</label>
                         <div>
-
-                        <input type="text"  placeholder="..." name="artistas"></input>
+                            <input type="text"  placeholder="..." name="artistas"></input>
                         </div>
                     </div>
                     <div>
                         <label>Monto de ventas estimado</label>
                         <div>
-
-                        <input type="number" placeholder="0" name="montoVentas"></input>
+                            <input type="number" placeholder="0" name="montoVentas"></input>
                         </div>
                     </div>
                     <div>
                         <label>Fecha y hora de inicio:</label>
                         <div>
 
-                        <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)}></input>
+                            <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)}></input>
                         </div>
                     </div>
                     <div>
@@ -173,16 +172,16 @@ const CreateEventForm = () => {
                             <select name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))}>
                                 <option value=''>Elegir</option>
                                 {states.map((st) => (
-                                    <option className="text-black" key={st.isoCode} value={st.isoCode}>{st.name}</option>
+                                    <option key={st.isoCode} value={st.isoCode}>{st.name}</option>
                                 ))}
                             </select>
                         </div>
                         <div className="ml-6">
-                            <label>Localidad</label>
+                            <label>Localidad:</label>
                             <select name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))}>
                                <option value=''>Elegir</option>
                                {cities.map((city) => (
-                                <option className="text-black" key={city.name} value={city.name}>{city.name}</option>
+                                <option key={city.name} value={city.name}>{city.name}</option>
                                ))}
                             </select>
                         </div>
@@ -190,22 +189,19 @@ const CreateEventForm = () => {
                     <div>
                         <label>Direccion:</label>
                         <div>
-
-                        <input name="direccion" placeholder="..."></input>
+                            <input name="direccion" placeholder="..."></input>
                         </div>
                     </div>
                     <div>
                         <label>Lugar del evento:</label>
                         <div>
-
-                        <input name="lugarEvento" placeholder="..."></input>
+                            <input name="lugarEvento" placeholder="..."></input>
                         </div>
                     </div>
                     <div>
                         <label>Video del evento (opcional):</label>
                         <div>
-
-                        <input name="linkEvento" placeholder="..."></input>
+                            <input name="linkEvento" placeholder="..."></input>
                         </div>
                     </div>
                     <div className="portal-evento">

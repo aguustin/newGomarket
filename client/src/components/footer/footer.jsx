@@ -9,7 +9,7 @@ const Footer = () => {
             <p className='text-xl'>Derechos reservados por @GoTicket</p>
             <div className='flex items-center w-[100px]'>
                 <a href="/"><img src={instagramPng} alt=""></img></a>
-                <a href="/"><img className='mt-2 ml-10' src={gmailPng} alt=""></img></a>
+                <a href="/"><img className='gmail-img mt-2 ml-10' src={gmailPng} alt=""></img></a>
             </div>
         </footer>
     )

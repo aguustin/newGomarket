@@ -7,7 +7,8 @@ const Productions = () => {
 
     const {session, productions, setProductions} = useContext(UserContext)
     const [showRRPPData, setShowRRPPData] = useState(false)
-    //console.log(session.userFinded[0]?._id)
+    const [width, setWidth] = useState(null)
+
     useEffect(() => {
         const getProds = async () => {
             try {
@@ -20,9 +21,19 @@ const Productions = () => {
                 console.error("Failed to fetch productions:", err);
             }
         };
-
         getProds();
+        const mediaQuery = window.matchMedia("(min-width: 1110px)");
+        const handleResize = () => {
+           setWidth(mediaQuery.matches ? 1110 : 1109);
+       };
+       
+       handleResize(); // valor inicial
+       mediaQuery.addEventListener("change", handleResize);
+       
+       return () => mediaQuery.removeEventListener("change", handleResize);
     }, [session]);
+    
+    if (width === null) return null;
     
     const formatDate = (isoString) => {
         const date = new Date(isoString);
@@ -34,29 +45,29 @@ const Productions = () => {
 
         return `${year}/${month}/${day}  ${hours}:${minutes}`;
     };
-console.log(productions)
+
 return(
         <>
-        <div className="h-screen">
-            <div className="productions relative overflow-x-auto shadow-md sm:rounded-lg pl-10 pr-10 pb-10 pt-0">
+        <div className="h-screen overflow-y-scroll">
+            <div className={`productions relative overflow-x-auto shadow-md sm:rounded-lg ${width >= 1110 ? 'pl-10 pr-10 pb-10 pt-0' : 'pt-0'}`}>
                 <table className="w-full max-h-[900px] text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-violet-900 dark:text-white">
                         <tr>
                             <th scope="col" className="px-6 py-3">
                                 Nombre del evento
                             </th>
-                            <th scope="col" className="px-6 py-3">
+                            {width >= 1110 && <th scope="col" className="px-6 py-3">
                                 Destino
-                            </th>
-                             <th scope="col" className="px-6 py-3">
+                            </th>}
+                            {width >= 1110 &&  <th scope="col" className="px-6 py-3">
                                 Lugar
-                            </th>
-                            <th scope="col" className="px-6 py-3">
+                            </th>}
+                            {width >= 1110 && <th scope="col" className="px-6 py-3">
                                 Fecha de inicio
-                            </th>
-                            <th scope="col" className="px-6 py-3">
+                            </th>}
+                            {width >= 1110 && <th scope="col" className="px-6 py-3">
                                 Fecha de fin
-                            </th>
+                            </th>}
                             <th scope="col" className="px-6 py-3">
                                 Entradas Vendidas
                             </th>
@@ -75,18 +86,18 @@ return(
                             <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                {prod.nombreEvento}
                             </th>
-                            <td className="px-6 py-4">
+                            {width >= 1110 && <td className="px-6 py-4">
                                 {prod.paisDestino}, {prod.provincia}, {prod.localidad}
-                            </td>
-                            <td className="px-6 py-4">
+                            </td>}
+                            {width >= 1110 && <td className="px-6 py-4">
                                 {prod.lugarEvento}
-                            </td>
-                            <td className="px-6 py-4">
+                            </td>}
+                            {width >= 1110 && <td className="px-6 py-4">
                                 {formatDate(prod.fechaInicio)}
-                            </td>
-                             <td className="px-6 py-4">
+                            </td>}
+                            {width >= 1110 && <td className="px-6 py-4">
                                 {formatDate(prod.fechaFin)}
-                            </td>
+                            </td>}
                               <td className="px-6 py-4">
                                 {prod.totalVentas || 0}
                             </td>

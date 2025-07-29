@@ -19,17 +19,17 @@ const RRPPEvents = () => {
     }, [])
     console.log("rrppEvents: ", rrppEvents)
 
-    const buildUrl = (prodId, mail, imgEvento) => {
+    /*const buildUrl = (prodId, mail, imgEvento) => {
         const secretKey = "skulldiver"
         const imgUrl = imgEvento
         const encryptedUrl = CryptoJS.AES.encrypt(imgUrl, secretKey).toString()
         console.log(prodId, ' ', mail)
         nav(`/rrpp_get_event_free/${prodId}/${mail}`) ///${encryptedUrl}
-    }
+    }*/
    
     const generateMyRRPPLink = async (prodId, rrppMail) => {
        const res = await generateMyRRPPLinkRequest({prodId, rrppMail})
-       console.log(res)
+        getRRPPInfo()
     }
 
             /*<form onSubmit={(e) => addStaff(e)} className="mt-30">
