@@ -24,19 +24,19 @@ const Login = () => {
 
     const loginUser = async (e) => {
         e.preventDefault()
-       // if(captchaStatus){
+       if(captchaStatus){
             const userData = {
                 mail: e.target.elements.mail.value,
                 contrasenia: e.target.elements.contrasenia.value
             }   
             const res = await loginContext(userData)
-            navigate('/home')
-            //console.log('eseaes', res.data.estado)
+           
             if(res.data.estado === 1){
+                navigate('/home')
             }else{
                  setShowMsg(true)
             }
-       // }
+        }
             
     }
     
