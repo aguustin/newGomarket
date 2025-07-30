@@ -85,13 +85,12 @@ const Login = () => {
                         </div>
                     </div>
                     <div className="flex justify-center mt-5">
-                     {/**
-                      * 
+                     {
                       <ReCAPTCHA
                         sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
                         onChange={onSuccess}
                       />
-                      */} 
+                      } 
                     </div>
                 <div className="text-center">
                     <button className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>
