@@ -21,7 +21,7 @@ const Register = () => {
                 const userData = {
                     nombreCompleto: e.target.elements.nombreCompleto.value,
                     mail: e.target.elements.mail.value,
-                    celular: e.target.elements.celular.value,
+                    dni: e.target.elements.dni.value,
                     pais: e.target.elements.pais.value,
                     contrasenia: e.target.elements.contrasenia.value,
                     repetirContrasenia: e.target.elements.repetirContrasenia.value
@@ -48,7 +48,7 @@ const Register = () => {
                 </div>
                     <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="text" placeholder="Nombre completo" name="nombreCompleto" required></input>
                     <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="mail" placeholder="Tu email" name="mail" required></input>
-                    <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="number" placeholder="Celular" name="celular" required></input>
+                    <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="number" placeholder="DNI" name="dni" required></input>
                     <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="text" placeholder="Tu pais" name="pais" required></input>
                     <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="password" placeholder="Ingresa una contraseña" name="contrasenia" required></input>
                     <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="password" placeholder="Repite la contraseña" name="repetirContrasenia" required></input>

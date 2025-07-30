@@ -63,9 +63,9 @@ export const createEventTicketsRequest = (formData) => axios.post(`${process.env
 
 export const updateEventRequest = (formData) => axios.post(`${process.env.URL}/updateEvent`, formData)
 
-export const updateTicketsRequest = (formData) => axios.post(`${process.env.URL}/updateTickets`, formData)
-
 export const getProdsRequest = (userId) => axios.get(`${process.env.URL}/my_productions/${userId}`)
+
+export const updateTicketsRequest = (formData) => axios.post(`${process.env.URL}/updateTickets`, formData)
 
 //export const getStaffProdRequest = (prodId, userId) => axios.get((`${process.env.URL}/my_productions/${userId}`))
 

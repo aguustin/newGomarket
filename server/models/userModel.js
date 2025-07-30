@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
     imagenProductora: {type: String},
     nombreCompleto: {type: String},
     mail: {type: String},
-    celular: {type: Number},
+    dni: {type: Number},
     pais: {type: String},
     contrasenia: {type: String},
     rol: {type: Number},

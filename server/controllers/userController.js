@@ -12,7 +12,7 @@ export const getAllUsersController = async (req, res) => {
 }
 
 export const registerController = async (req, res) => {
-    const {nombreCompleto, mail, celular, pais, contrasenia, repetirContrasenia} = req.body
+    const {nombreCompleto, mail, dni, pais, contrasenia, repetirContrasenia} = req.body
     
     const findUser = await userModel.find({mail: mail})
     console.log(nombreCompleto, contrasenia)
@@ -30,7 +30,7 @@ export const registerController = async (req, res) => {
     await userModel.create({
             nombreCompleto: nombreCompleto,
             mail: mail,
-            celular: celular,
+            dni: dni,
             pais: pais,
             contrasenia: encriptContrasenia,
     })
@@ -104,7 +104,7 @@ export const newPasswordController = async (req, res) => {
 }
 
 export const contactController = async (req, res) => {
-    const {pais, nombreCompleto, correo, celular, nombreEvento, mensaje} = req.body
+    const {pais, nombreCompleto, correo, dni, nombreEvento, mensaje} = req.body
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
