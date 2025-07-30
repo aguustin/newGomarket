@@ -105,7 +105,7 @@ return(
                                 {prod.totalMontoVendido || 0}
                             </td>
                             <td className="px-6 py-4">
-                                <a href={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a><br></br>
+                                <Link to={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</Link><br></br>
                                 <Link to={`/statistics/${prod._id}/${session?.userFinded?.[0]?._id}`}>Estadisticas</Link>
                                 <button onClick={() => setShowRRPPData(showRRPPData === prod._id ? null : prod._id)}>Tus RRPP</button>
                             </td>

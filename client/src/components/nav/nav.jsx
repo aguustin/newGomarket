@@ -41,12 +41,12 @@ const Nav = () => {
                         <img className="w-[100px]" src={logoPruebaJpg} alt=""></img>
                         <Link className="text-lg" to="/Home">Inicio</Link>
                         <Link className="text-lg" to="/Contact">Contacto</Link>
-                        {session?.userFinded?.length > 0 ? <a className="text-lg" href="/Create_event">Crear evento</a> : <a className="text-lg" href="/">Crear evento</a>}
-                        {session?.userFinded?.length > 0 ? <a className="text-lg" href="/productions">Mis producciones</a> : <a className="text-lg" href="/">Mis producciones</a>}
-                        {session?.userFinded?.length > 0 && <a className="text-lg" href="/profile">Mi perfil</a>}
+                        {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event">Crear evento</Link> : <Link className="text-lg" to="/">Crear evento</Link>}
+                        {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/productions">Mis producciones</Link> : <Link className="text-lg" to="/">Mis producciones</Link>}
+                        {session?.userFinded?.length > 0 && <Link className="text-lg" to="/profile">Mi perfil</Link>}
                 </div>
                 {session?.userFinded?.length > 0 ? 
-                <button className="absolute right-9 cursor-pointer" onClick={() => setOpenProfileCong(!openProfileConf)}>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9" href="/">Iniciar sesion</Link>}
+                <button className="absolute right-9 cursor-pointer" onClick={() => setOpenProfileCong(!openProfileConf)}>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9">Iniciar sesion</Link>}
                 {openProfileConf && <div className="settings absolute top-[80px] right-4 w-[200px]">
                         <div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div>
                         <div className=" cursor-pointer"><button onClick={() => logoutFunc()} className="flex items-center h-[60px] text-lg cursor-pointer"><p className="ml-4">Salir</p><img className="ml-3" src={logoutPng} alt=""></img></button></div>
@@ -66,13 +66,13 @@ const Nav = () => {
                             <Link className="text-lg" to="/Contact">Contacto</Link>
                         </div>
                         <div className="text-center p-4 border-b-1">
-                            {session?.userFinded?.length > 0 ? <a className="text-lg" href="/Create_event">Crear evento</a> : <a className="text-lg" href="/">Crear evento</a>}
+                            {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event">Crear evento</Link> : <Link className="text-lg" to="/">Crear evento</Link>}
                         </div>
                         <div className="text-center p-4 border-b-1">
-                            {session?.userFinded?.length > 0 ? <a className="text-lg" href="/productions">Mis producciones</a> : <a className="text-lg" href="/">Mis producciones</a>}
+                            {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/productions">Mis producciones</Link> : <Link className="text-lg" to="/">Mis producciones</Link>}
                         </div>
                         <div className="text-center p-4">
-                            {session?.userFinded?.length > 0 && <a className="text-lg" href="/profile">Mi perfil</a>}
+                            {session?.userFinded?.length > 0 && <Link className="text-lg" to="/profile">Mi perfil</Link>}
                         </div>
                     </div>}
                 

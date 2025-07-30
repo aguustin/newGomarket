@@ -59,7 +59,7 @@ const Login = () => {
                     <div className="flex items-center justify-center mt-6">
                         <div className="text-center">
                             {message ? <p className="text-red-600! mb-3">Las contraseñas no coinciden</p> : ''}
-                            <div className="flex mt-2 items-center"> <p>O registrate haciendo click aqui: </p><a className="text-blue-400! ml-2 underline!" href="/register"> Registrarse</a></div>
+                            <div className="flex mt-2 items-center"> <p>O registrate haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/register"> Registrarse</Link></div>
                         </div>
                     </div>
                 <div className="text-center">

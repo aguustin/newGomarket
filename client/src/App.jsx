@@ -1,8 +1,6 @@
 import './App.css'
 import Register from './components/register/register'
 import Login from './components/login/login'
-import {BrowserRouter, Routes, Route} from 'react-router'
-import { UserContextProvider } from './context/userContext'
 import CreateEventForm from './components/createEventForm/createEventForm'
 import Home from './components/home/home'
 import Nav from './components/nav/nav'
@@ -18,6 +16,8 @@ import RRPPEvents from './components/rrppEvents/rrppEvents'
 import Statistics from './components/statistics/statistics'
 import Contact from './components/contact/contact'
 import RecoverPass from './components/recoverPass/recoverPass'
+import {BrowserRouter, Routes, Route} from 'react-router'
+import { UserContextProvider } from './context/userContext'
 
 function App() {
   return (

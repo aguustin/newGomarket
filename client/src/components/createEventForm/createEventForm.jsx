@@ -5,6 +5,7 @@ import continueArrowPng from '../../assets/botones/continue_arrow.png'
 import { useContext } from "react"
 import UserContext from "../../context/userContext"
 import {Country, State, City} from "country-state-city"
+import { Link } from "react-router"
 
 const CreateEventForm = () => {
     const {session} = useContext(UserContext)
@@ -283,7 +284,7 @@ const CreateEventForm = () => {
                         <div className="flex justify-between items-center mt-6">
                             <button className="bg-violet-700 p-3 rounded-lg" type="submit">+ Agregar tickets</button>
                         </div>
-                        {disabledButton ? <a className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" disabled>Continuar<img src={continueArrowPng} alt=""></img></a> : <a className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" href="/Home">Continuar<img src={continueArrowPng} alt=""></img></a>}
+                        {disabledButton ? <Link className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" disabled>Continuar<img src={continueArrowPng} alt=""></img></Link> : <Link className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" to="/Home">Continuar<img src={continueArrowPng} alt=""></img></Link>}
                     </form>
                 }
                 </div>
