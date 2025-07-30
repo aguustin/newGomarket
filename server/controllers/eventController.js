@@ -492,13 +492,13 @@ export const buyEventTicketsController = async (req, res) => {
         email: mail,
       },
       back_urls: {
-        success: 'https://d775-200-32-101-183.ngrok-free.app/payment-success',
-        failure: 'https://d775-200-32-101-183.ngrok-free.app/payment-failure',
-        pending: 'https://d775-200-32-101-183.ngrok-free.app/payment-pending',
+        success: `${URL_BACK}/payment-success`,
+        failure: `${URL_BACK}/payment-failure`,
+        pending: `${URL_BACK}/payment-pending`,
       },
       external_reference: "164382724",
       auto_return: 'approved',
-      notification_url: 'https://d775-200-32-101-183.ngrok-free.app/webhook/mercadopago',  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
+      notification_url: `${URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
       metadata: {
             prodId,
             nombreEvento,
@@ -512,13 +512,11 @@ export const buyEventTicketsController = async (req, res) => {
     };
     const response = await mercadopago.preferences.create(preference);
 
-    /*if(response.body && response.body.init_point){
-     await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash }) //esto tiene que estar comentado o quitado para la ultima version
-        res.json({
-            id: response.body.id,
-            init_point: response.body.init_point,
-        });
-    }*/
+    if(response.body && response.body.init_point){
+      return res.status(200).json({
+        init_point: response.body.init_point,
+      });
+    }
   } catch (error) {
     console.error('Error al crear preferencia:', error);
     res.status(500).json({ message: 'Error creando la preferencia' });
@@ -526,6 +524,7 @@ export const buyEventTicketsController = async (req, res) => {
 };
 
 export const mercadoPagoWebhookController = async (req, res) => {
+  console.log('asdasd')
   try {
     const paymentId = String(req.body?.data?.id || req.query?.['data.id']);
 

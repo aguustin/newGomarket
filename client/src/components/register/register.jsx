@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { registerUserRequest } from "../../api/userRequests"
-import {useNavigate} from 'react-router';
+import {Link, useNavigate} from 'react-router';
 import ReCAPTCHA from "react-google-recaptcha";
 
 const Register = () => {
@@ -14,7 +14,7 @@ const Register = () => {
 
     const registerUser = async (e) => {
         e.preventDefault()
-        if(captchaStatus){
+      //  if(captchaStatus){
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg(true)
             }else{
@@ -28,15 +28,15 @@ const Register = () => {
                 }
                 const res = await registerUserRequest(userData)
                
+                navigate('/')
                 if(res.data.msj === 1){
                      setTimeout(() => { // Set the timeout
-                        navigate('/')
                     }, 3000)
                 }else{
                     console.log(res.data.msj)
                 }
             }
-        }
+        //}
     }
 
     return(
@@ -57,12 +57,14 @@ const Register = () => {
                     <div>
                         {showMsg ? <p className="text-red-600! mb-3">Las contraseñas no coinciden</p> : ''}
                         <div className="flex justify-center mt-4 mb-5">
+                            {/*
                             <ReCAPTCHA
                                 sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
                                 onChange={onSuccess}
                             />
+                            */} 
                         </div>
-                        <div className="flex items-center"><p>O ingresa haciendo click aqui: </p><a className="text-blue-400! ml-2 underline!" href="/">Ingresar</a></div>
+                        <div className="flex items-center"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/">Ingresar</Link></div>
                     </div>
                 </div>
                     <button className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>

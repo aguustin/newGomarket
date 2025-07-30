@@ -56,7 +56,7 @@ connecDb()
 
 //middleware
 const corsOptions = {
-  origin: "https://goticket-wsy0.onrender.com",//"https://gomarket-1.onrender.com" descomentarlo,
+  origin: "https://goticket-wsy0.onrender.com",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   preflightContinue: false,
   optionsSuccessStatus: 204
