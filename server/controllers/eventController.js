@@ -492,13 +492,13 @@ export const buyEventTicketsController = async (req, res) => {
         email: mail,
       },
       back_urls: {
-        success: `${URL_BACK}/payment-success`,
-        failure: `${URL_BACK}/payment-failure`,
-        pending: `${URL_BACK}/payment-pending`,
+        success: `${process.env.URL_BACK}/payment-success`,
+        failure: `${process.env.URL_BACK}/payment-failure`,
+        pending: `${process.env.URL_BACK}/payment-pending`,
       },
       external_reference: "164382724",
       auto_return: 'approved',
-      notification_url: `${URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
+      notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
       metadata: {
             prodId,
             nombreEvento,
