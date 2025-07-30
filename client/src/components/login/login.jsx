@@ -81,7 +81,7 @@ const Login = () => {
                         <div className="text-center">
                             {message ? <p className="text-red-600! mb-3">Las contraseñas no coinciden</p> : ''}
                             <div className="flex"><p>¿Has olvidado tu contraseña?</p><button className="text-violet-400! ml-2 underline!" onClick={() => setRecoverPass(true)}>Haz click aqui!</button></div>
-                            <div className="flex mt-5 items-center"> <p>O registrate haciendo click aqui: </p><a className="text-blue-400! ml-2 underline!" href="/register"> Registrarse</a></div>
+                            <div className="flex mt-5 items-center"> <p>O registrate haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/register"> Registrarse</Link></div>
                         </div>
                     </div>
                     <div className="flex justify-center mt-5">
