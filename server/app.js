@@ -55,11 +55,17 @@ connecDb()
 //setting
 
 //middleware
+const corsOptions = {
+  origin: "https://goticket-wsy0.onrender.com",//"https://gomarket-1.onrender.com" descomentarlo,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+}
+app.use(cors(corsOptions))
 app.use(express.text())
 app.use(express.json())
 app.use(urlencoded({extended:true}))
 app.use(morgan("tiny"))
-app.use(cors())
 //routes
 app.use(userRoutes)
 app.use(ticketRoutes)
