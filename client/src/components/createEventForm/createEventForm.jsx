@@ -6,6 +6,7 @@ import { useContext } from "react"
 import UserContext from "../../context/userContext"
 import {Country, State, City} from "country-state-city"
 import { Link } from "react-router"
+import ticketPng from '../../assets/images/ticket.png'
 
 const CreateEventForm = () => {
     const {session} = useContext(UserContext)
@@ -25,7 +26,7 @@ const CreateEventForm = () => {
     const [selectedCountry, setSelectedCountry] = useState(null)
     const [selectedState, setSelectedState] = useState(null)
     const [selectedCity, setSelectedCity] = useState(null)
-    console.log(countries)
+    const [showEventInfo, setShowEventInfo] = useState(true)
 
     const createEvent = async (e) => {
         e.preventDefault()
@@ -61,6 +62,7 @@ const CreateEventForm = () => {
                 setSaveEventId(res.data.eventId)
             }
             console.log(showTickets)
+            setShowEventInfo(false)
     }
 
     const createEventTickets = (e) => { //agregar estado a los tickets
@@ -100,8 +102,9 @@ const CreateEventForm = () => {
     return(
         <>
         <div className="create-form mx-auto flex justify-around mt-[20px] pl-12 pr-12">
+               {showEventInfo &&
             <div className="w-[450px]">
-                <form className="create-event-form mt-9" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
+               <form className="create-event-form mt-9" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
                     <div>
                         <label>Pais del evento</label>
                         <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))}>
@@ -216,16 +219,21 @@ const CreateEventForm = () => {
                     </div>
                 </div>
                 <button className="bg-violet-900 p-4 rounded-lg w-full mt-10 mb-20" type="submit">CREAR EVENTO</button>
-            </form>
+            </form> 
             </div>
-            <div className="mt-9">
+               } 
+            <div className="mt-9 mb-25 mx-auto">
                 <div>
                     <img className="w-[430px] h-[450px] object-cover rounded-lg" src={eventoJpg} alt=""></img>
                 </div>
                 <div className="w-[430px] relative">
                 {showTickets >= 1 && 
-                    <form onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
+                    <form className="create-ticket-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
                         <div className="mt-9">
+                            <div className="flex items-center">
+                                <h3 className="text-violet-500! text-xl">Crear nuevo ticket:</h3>
+                                <img className="ml-5" src={ticketPng} alt=""></img>
+                            </div>
                             <div className="mt-3">
                                 <label>Nombre del ticket</label>
                                 <input type="text" placeholder="..." name="nombreTicket" required></input>
@@ -281,10 +289,12 @@ const CreateEventForm = () => {
                                 <input type="file" name="imgTicket"></input>
                             </div>
                         </div>
-                        <div className="flex justify-between items-center mt-6">
-                            <button className="bg-violet-700 p-3 rounded-lg" type="submit">+ Agregar tickets</button>
+                        <div className="relative flex items-center w-[430px] justify-around">
+                            <div className="flex justify-between items-center mt-6">
+                                <button className="bg-violet-700 p-3 rounded-lg" type="submit">+ Agregar tickets</button>
+                            </div>
+                            {disabledButton ? <Link className="continuar-button mt-6 p-2 rounded-lg flex items-center w-[160px] justify-between" disabled>Continuar<img src={continueArrowPng} alt=""></img></Link> : <Link className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" to="/Home">Continuar<img src={continueArrowPng} alt=""></img></Link>}
                         </div>
-                        {disabledButton ? <Link className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" disabled>Continuar<img src={continueArrowPng} alt=""></img></Link> : <Link className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" to="/Home">Continuar<img src={continueArrowPng} alt=""></img></Link>}
                     </form>
                 }
                 </div>

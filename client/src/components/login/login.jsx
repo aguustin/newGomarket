@@ -24,7 +24,7 @@ const Login = () => {
 
     const loginUser = async (e) => {
         e.preventDefault()
-       if(captchaStatus){
+        if(captchaStatus){ 
             const userData = {
                 mail: e.target.elements.mail.value,
                 contrasenia: e.target.elements.contrasenia.value
@@ -93,7 +93,7 @@ const Login = () => {
                       } 
                     </div>
                 <div className="text-center">
-                    <button className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>
+                    <button className="login-b bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>
                 </div>
             </form>  }
         </>

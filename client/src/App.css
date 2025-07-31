@@ -57,6 +57,16 @@ select{
   top: 90px;
 }
 
+.productions-container::-webkit-scrollbar{
+  background-color: transparent !important;
+  color: transparent !important;
+}
+
+.productions-container::-webkit-scrollbar-thumb{
+  background-color: transparent !important;
+  color: transparent !important;
+}
+
 p, label, input{
   color: #cfcfd4;
 }
@@ -153,6 +163,10 @@ input{
   margin-top: 14px;
 }
 
+.create-ticket-form input{
+  width: 100%;
+}
+
 #terminos-condiciones input{
   width: 22px !important;
   height: 22px !important;
@@ -171,6 +185,7 @@ input{
 
 .continuar-button{
   right: 0px;
+  top: -7px;
   background-color: #726bff;
 }
 
@@ -309,6 +324,19 @@ input{
       width: 30px;
       height: 30px;
    }
+   .home{
+    width: 90vw;
+   }
+   .home-events-container{
+    overflow-y: scroll;
+    height: 100vh;
+   }
+   .home-events-container::-webkit-scrollbar{
+    background-color: transparent;
+   }
+   .event-desc h3{
+    font-size: 20px;
+   }
 }
 
 @media screen and (max-width:1290px) {
@@ -355,6 +383,19 @@ input{
   }
 }
 
+@media screen and (max-width: 1150px) {
+  .home{
+    width: 100vw;
+    padding: 10px;
+  }
+}
+
+@media screen and (max-width: 1061px) {
+  .statistics-event-info > div{
+    justify-content: center;
+  }
+}
+
 @media screen and (max-width:1000px) {
   .create-form{
     margin: 0 auto;
@@ -368,6 +409,12 @@ input{
   .create-event-form input, .create-event-form textarea, .create-event-form select{
     width: 100%;
     min-width: 100%;
+  }
+
+  .continuar-button{
+    position: relative !important;
+    margin-top:10px ;
+
   }
 }
 
@@ -384,12 +431,34 @@ input{
    justify-content: center;
   }
 
+  .categories-container{
+    width: 90vw;
+  }
+
   .categories-container button{
-    width: auto !important;
+    width: 170px !important;
     background-color: #0d0b1f;
     border-color: #271649;
     font-size: 14px !important;
     margin: auto;
+  }
+
+  .statistics > div {
+    display: block;
+  }
+
+  .change-statistics{
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .statistics-categories p{
+    font-size: 22px;
+  }
+
+  .statistics-categories button{
+    font-size: 16px !important;
   }
 }
 
@@ -465,6 +534,9 @@ input{
   .home h1{
     font-size: 34px;
   }
+  .search-form p{
+    margin-bottom: 10px;
+  }
   .categories-container > div{
     display: flex;
     flex-wrap: wrap;
@@ -477,6 +549,17 @@ input{
     display: block !important;
   }
 }
+
+@media screen and (max-width:710px) {
+  .statistics-event-info > div > div{
+   justify-content: center !important;
+  }
+
+  .info{
+    width: 90vw !important;
+    text-align: center;
+  }
+} 
 
 @media screen and (max-width:700px) { 
   footer{
@@ -502,11 +585,19 @@ input{
   .gmail-img{
     margin-top: 7px;
   }
-}
 
-@media screen and (max-width:670px) { 
   .home-events-container{
     justify-content: center !important;
+  }
+
+  .buy-ticket p, .buy-ticket label{
+    font-size: 16px;
+  }
+
+  .buy-button{
+    font-size: 18px;
+    width: 200px;
+    margin-top: 50px;
   }
 }
 
@@ -522,13 +613,29 @@ input{
    width: 90vw; 
    margin: auto;
   }
+  .statistics-categories{
+    margin-top: 10px;
+  }
+  .filter-statics-button{
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .filter-statics-button button{
+    width: 200px;
+    margin: 10px;
+    font-size: 13px !important;
+  }
 
-
+ 
 }
 
 @media screen and (max-width:540px) { 
   .categories-container button{
     width: 200px !important;
+  }
+   .sum-rest-qty button{
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }
 
@@ -553,6 +660,19 @@ input{
   .evento-desc b, .evento-desc p{
     font-size: 17px;
   }
+
+  .buy-ticket{
+    width: 90vw;
+    padding: 0 !important;
+  }
+
+  .buy-ticket img{
+    width: 90vw;
+  }
+
+  .form-buy-inputs input{
+    min-width: 300px !important;
+  }
 }
 
 @media screen and (max-width:495px) {
@@ -565,6 +685,9 @@ input{
   .register-form p{
     font-size: 18px;
   }
+  .canvas{
+    margin-bottom: 50px !important;
+  }
 }
 
 
@@ -575,6 +698,12 @@ input{
 }
 
 @media screen and (max-width:450px) {
+   .categories-container button{
+    width: 150px !important;
+    font-size: 12px !important;
+    padding: 10px;
+  }
+
   #terminos-condiciones input{
     left: 130px !important;
     right: 0px !important;
@@ -590,5 +719,18 @@ input{
 
   footer p{
     font-size: 16px;
+  }
+
+  .register-form{
+    margin-top: 50px;
+    margin-bottom: 50px;
+  }
+
+  .register-form p, .register-form a, .register-form button {
+    font-size: 14px;
+  }
+
+  .login-b{
+    font-size: 17px !important;
   }
 }

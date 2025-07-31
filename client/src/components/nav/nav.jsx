@@ -21,7 +21,6 @@ const Nav = () => {
        
        handleResize(); // valor inicial
        mediaQuery.addEventListener("change", handleResize);
-       
        return () => mediaQuery.removeEventListener("change", handleResize);
     }, [session]);
         
@@ -33,6 +32,8 @@ const Nav = () => {
         navigate("/")
     }
 
+    const closeMenu = () => setShowMobileNav(false)
+
     return(
         <nav className="nav relative w-screen flex fixed items-center top-0 p-6 h-[80px]">
            { width >= 950 ? 
@@ -41,9 +42,9 @@ const Nav = () => {
                         <img className="w-[100px]" src={logoPruebaJpg} alt=""></img>
                         <Link className="text-lg" to="/Home">Inicio</Link>
                         <Link className="text-lg" to="/Contact">Contacto</Link>
-                        {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event">Crear evento</Link> : <Link className="text-lg" to="/">Crear evento</Link>}
-                        {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/productions">Mis producciones</Link> : <Link className="text-lg" to="/">Mis producciones</Link>}
-                        {session?.userFinded?.length > 0 && <Link className="text-lg" to="/profile">Mi perfil</Link>}
+                        {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event" onClick={closeMenu}>Crear evento</Link> : <Link className="text-lg" to="/" onClick={closeMenu}>Crear evento</Link>}
+                        {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/productions" onClick={closeMenu}>Mis producciones</Link> : <Link className="text-lg" to="/" onClick={closeMenu}>Mis producciones</Link>}
+                        {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/profile" onClick={closeMenu}>Mi perfil</Link> : ''}
                 </div>
                 {session?.userFinded?.length > 0 ? 
                 <button className="absolute right-9 cursor-pointer" onClick={() => setOpenProfileCong(!openProfileConf)}>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9">Iniciar sesion</Link>}
@@ -59,20 +60,20 @@ const Nav = () => {
                     <button className="absolute right-8" onClick={() => setShowMobileNav(!showMobileNav)}><img className="w-[40px]" src={menuPng} alt=""></img></button>
                     {showMobileNav && 
                     <div className="nav-mobile-options absolute right-0 top-[80px] ">
-                        <div className="text-center p-4 border-b-1">
+                        <div className="text-center p-4 pl-10 pr-10 border-b-1">
                             <Link className="text-lg" to="/Home">Inicio</Link>
                         </div>
-                        <div className="text-center p-4 border-b-1">
+                        <div className="text-center p-4 pl-10 pr-10 border-b-1">
                             <Link className="text-lg" to="/Contact">Contacto</Link>
                         </div>
-                        <div className="text-center p-4 border-b-1">
+                        <div className="text-center p-4 pl-10 pr-10 border-b-1">
                             {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event">Crear evento</Link> : <Link className="text-lg" to="/">Crear evento</Link>}
                         </div>
-                        <div className="text-center p-4 border-b-1">
+                        <div className="text-center p-4 pl-10 pr-10 border-b-1">
                             {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/productions">Mis producciones</Link> : <Link className="text-lg" to="/">Mis producciones</Link>}
                         </div>
                         <div className="text-center p-4">
-                            {session?.userFinded?.length > 0 && <Link className="text-lg" to="/profile">Mi perfil</Link>}
+                            {session?.userFinded?.length > 0 && <Link className="text-lg pl-10 pr-10" to="/profile">Mi perfil</Link>}
                         </div>
                     </div>}
                 

@@ -60,8 +60,6 @@ const BuyTicket = () => {
         return acc + qty * tck.precio + (qty * tck.precio) / 10;
     }, 0);
 
-    console.log(total)
-
     const buyTickets = async (e) => {
         e.preventDefault();
         const mail = e.target.elements.mail.value;
@@ -92,14 +90,14 @@ const BuyTicket = () => {
     return(
         <div className="buy-ticket mx-auto mt-10 mb-10 text-center">
             {prod.map((p) => 
-            <div key={p._id}>
+            <div className="mx-auto" key={p._id}>
                 <h2 className="text-3xl mb-3">{p.nombreEvento}</h2>
                 <p className="mb-1">{p.direccion}</p>
                 <p className="text-lg mb-5">{formatDate(p.fechaInicio)}</p>
                 <img className="rounded-lg max-w-[500px] mx-auto" src={p.imgEvento}></img>
             </div>
             )}
-            <form onSubmit={(e) => buyTickets(e)}>
+            <form className="form-buy-inputs" onSubmit={(e) => buyTickets(e)}>
                 <div className="mt-4">
                     <label className="text-xl">Nombre completo:</label><br></br>
                     <input type="text" name="nombreCompleto" placeholder="..."></input>
@@ -117,11 +115,12 @@ const BuyTicket = () => {
         <>
             {p.tickets.filter((tck) => tck.estado !== 2).map((tck) => (
                 <div key={tck._id}>
-                    <div className="flex justify-center mt-6">
-                        <div className="text-left">
+                    <div className="buy-t max-w-[700px] mx-auto flex justify-between pl-6 pr-6 mt-6">
+                        <div className="flex items-center text-left">
                             <label className="text-xl">{tck.nombreTicket}: </label>
+                            <p className="ml-2 text-xl">${tck.precio}</p>
                         </div>
-                        <div className="flex items-center">
+                        <div className="sum-rest-qty flex items-center justify-center">
                             <button
                                 className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
                                 onClick={(e) => restQuantity(e, tck._id, tck.limit)}
@@ -136,15 +135,14 @@ const BuyTicket = () => {
                                 +
                             </button>
                         </div>
-                            <p className="text-xl">Precio c/u: {tck.precio}</p>
                     </div>
                 </div>
             ))}
             {p.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
                 <div key={crt._id}>
-                    <div className="flex justify-center mt-6">
+                    <div className="buy-t max-w-[700px] mx-auto flex justify-between pl-6 pr-6 mt-6">
                         <label className="text-xl">{crt.nombreTicket}: </label>
-                        <div className="flex items-center ">
+                        <div className="sum-rest-qty flex items-center ">
                             <button
                                 className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
                                 onClick={(e) => restQuantity(e, crt._id, crt.limit)}
@@ -158,7 +156,7 @@ const BuyTicket = () => {
                             >
                                 +
                             </button>
-                            <p className="text-xl">Precio c/u: {crt.precio}</p>
+                            <p className="ml-2 text-xl">${crt.precio}</p>
                         </div>
                     </div>
                 </div>
@@ -168,7 +166,7 @@ const BuyTicket = () => {
 })}
 
                 <p className="text-2xl mt-6">Total:${formatNumber(total)}</p>
-                <button className="bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">Comprar</button>
+                <button className="buy-button bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">Comprar</button>
             </form>
             {/*setShowMsg && 
                 <div className="w-screen">

@@ -18,11 +18,9 @@ export const UserContextProvider = ({children}) => {
 
     const loginContext = async (userData) => {
         const res = await loginUserRequest(userData)
-        console.log(res.data.estado)
         if(res.data.estado === 2 || res.data.estado === 3){
             return res.data
         }else if(res.data.estado === 1){
-            console.log('entro aca')
             await localStorage.setItem('session', JSON.stringify(res.data))
         }
         const sess = JSON.parse(localStorage.getItem('session'))

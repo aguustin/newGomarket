@@ -28,7 +28,6 @@ const Statistics = () => {
         getProds();
     }, [userId]);
     
-    console.log(graphic)
     // Generar el gráfico dinámicamente
     useEffect(() => {
         if (!chartRef.current || productions.length === 0) return;
@@ -151,34 +150,36 @@ const Statistics = () => {
     }, [currentView, productions, graphic]);
 
     return (
-        <>
+        <div className="statistics w-[100vw]">
             {productions.map((prod) => (
-                <div className="flex items-center mt-[100px] p-4" key={prod._id}>
-                    <div className="flex">
+                <div className="statistics-event-info mx-auto relative flex items-center p-4" key={prod._id}>
+                    <div className="flex flex-wrap mx-auto">
                         <img className="w-[350px] h-[350px] object-cover rounded-lg" src={prod.imgEvento} alt="" />
-                        <div className="p-6">
+                        <div className="flex flex-wrap items-center">
+                        <div className="info p-6 w-[340px]">
                             <h2 className="text-3xl">{prod.nombreEvento}</h2>
                             <p className="text-xl mt-2">{prod.descripcionEvento}</p>
                             <p className="mt-5">Fecha de inicio: {formatDate(prod.fechaInicio)}</p>
                             <p className="mt-3">Fecha de fin: {formatDate(prod.fechaFin)}</p>
                             <p className="mt-3">país:{prod.paisDestino}, provincia: {prod.provincia}</p>
                         </div>
-                        <div className="p-6">
+                        <div className="info p-6 w-[340px]">
                             <h2 className="text-3xl">Datos generales</h2>
                             <p className="text-xl mt-2">Categorias: {prod.categorias}</p>
                             <p className="mt-5">Edad minima del evento: {prod.eventoEdad || 'Sin especificar'}</p>
                             <p className="mt-3">Monto esperado: {prod.montoVentas}</p>
                             <p className="mt-3">Total vendido: {prod.totalMontoVendido}</p>
                         </div>
+                        </div>
                     </div>
-                    <select name="graph" onChange={(e) => setGraphic(e.target.value)}>
+                    <select className="change-statistics absolute bottom-0 right-5 mt-11 bg-violet-900! p-3 mr-6" name="graph" onChange={(e) => setGraphic(e.target.value)}>
                         <option value={'bar'}>Grafico de Barras</option>
                         <option value={'line'}>Grafico Linear</option>
                         <option value={'pie'}>Grafico Circular</option>
                     </select>
                 </div>
             ))}
-            <div className="mt-8 mb-30 p-6 h-[450px]">
+            <div className="statistics-categories mt-8 mb-60 p-6 h-[550px]">
                 <p className="text-3xl">Estadísticas:</p>
                 <div className="filter-statics-button flex justify-around mt-5">
                     <button onClick={() => setCurrentView('general')} className="bg-violet-900 pl-4 pr-4 pt-2 pb-2 text-white rounded">Datos generales</button>   
@@ -186,130 +187,10 @@ const Statistics = () => {
                     <button onClick={() => setCurrentView('rrpp')} className="bg-violet-900 pl-4 pr-4 pt-2 pb-2 text-white rounded">Ventas RRPP</button>
                     <button onClick={() => setCurrentView('courtesys')} className="bg-violet-900 pl-4 pr-4 pt-2 pb-2 text-white rounded">Cortesías</button>
                 </div>
-                <canvas className="mt-6" ref={chartRef}></canvas>
+                <canvas className="canvas mt-6" ref={chartRef}></canvas>
             </div>
-        </>
+        </div>
     );
 };
 
 export default Statistics;
-
-
-/*import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router";
-import { getOneProdRequest, getProdsRequest } from "../../api/eventRequests";
-import { Chart, registerables } from 'chart.js';
-import { formatDate } from "../../globalscomp/globalscomp";
-
-// Register Chart.js components
-Chart.register(...registerables);
-
-const Statistics = () => {
-    const { prodId, userId } = useParams();
-    const [productions, setProductions] = useState([]);
-    const [tickets, setTickets] = useState([]);
-    const [rrpp, setRRPP] = useState([]);
-    const [courtesys, setCourtesys] = useState([]);
-    const chartRef = useRef(null); // useRef to get canvas element
-    const chartInstanceRef = useRef(null); // to store chart instance
-
-    // Fetch data
-    useEffect(() => {
-        const getProds = async () => {
-            try {
-                if (!userId) return;
-                const res = await getOneProdRequest(prodId, userId);
-                setProductions(res.data);
-            } catch (err) {
-                console.error("Failed to fetch productions:", err);
-            }
-        };
-        getProds();
-    }, [userId]);
-    console.log(productions)
-
-    const filterByTickets = () => {
-        setTickets(productions.map((p) => p.tickets))
-    }
-
-    console.log('tickets: ', tickets)
-    // Create chart
-    useEffect(() => {
-        if (!chartRef.current) return;
-
-        // Destroy existing chart instance before creating a new one
-        if (chartInstanceRef.current) {
-            chartInstanceRef.current.destroy();
-        }
-{
-    productions.map((prod) => {
-
-        chartInstanceRef.current = new Chart(chartRef.current, {
-            type: 'bar',
-            data: {
-                labels: ['Ventas totales', 'Monto total vendido', 'Monto de ventas esperadas', 'Devoluciones'],
-                datasets: [{
-                    label: ['$ '],
-                    data: [prod.totalVentas, prod.totalMontoVendido, prod.montoVentas, prod.totalDevoluciones],
-                    backgroundColor: [
-                        'rgba(240, 3, 54, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(255, 14, 14, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    })
-}
-    }, [productions]); // re-create chart when data changes
-
-    return (
-        <>
-            {productions.map((prod) => 
-            <div className="flex items-center mt-[100px] p-4" key={prod._id}>
-                <div className="flex">
-                    <img className="w-[350px] h-[350px] object-cover rounded-lg" src={prod.imgEvento} alt=""></img>
-                    <div className="p-6">
-                        <h2 className="text-3xl">{prod.nombreEvento}</h2>
-                        <p className="text-xl mt-2">{prod.descripcionEvento}</p>
-                        <p className="mt-5">Fecha de inicio: {formatDate(prod.fechaInicio)}</p>
-                        <p className="mt-3">Fecha de fin: {formatDate(prod.fechaFin)}</p>
-                    </div>
-                </div>
-            </div>)}
-            <div className="mt-8 mb-30 p-6 h-[450px]">
-                <p className="text-3xl">Estadisticas:</p>
-                <div className="filter-statics-button flex justify-around mt-5">
-                    <button onClick={() => filterByEvento()} className="bg-violet-900 pl-4 pr-4 pt-2 pb-2">Datos generales</button>   
-                    <button onClick={() => filterByTickets()} className="bg-violet-900 pl-4 pr-4 pt-2 pb-2">Tickets</button>   
-                    <button onClick={() => filterByRRPP()} className="bg-violet-900 pl-4 pr-4 pt-2 pb-2">Ventas RRPP</button>
-                    <button onClick={() => filterByCourtesys()} className="bg-violet-900 pl-4 pr-4 pt-2 pb-2">Cortesias</button>
-                </div>
-                <canvas className="mt-6" ref={chartRef}></canvas>
-            </div>
-        </>
-    );
-};
-
-export default Statistics;*/

@@ -48,7 +48,7 @@ const Productions = () => {
 
 return(
         <>
-        <div className="h-screen overflow-y-scroll">
+        <div className="productions-container h-screen">
             <div className={`productions relative overflow-x-auto shadow-md sm:rounded-lg ${width >= 1110 ? 'pl-10 pr-10 pb-10 pt-0' : 'pt-0'}`}>
                 <table className="w-full max-h-[900px] text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-violet-900 dark:text-white">
@@ -100,13 +100,13 @@ return(
                             </td>}
                               <td className="px-6 py-4">
                                 {prod.totalVentas || 0}
-                            </td>
+                              </td>
                               <td className="px-6 py-4">
                                 {prod.totalMontoVendido || 0}
                             </td>
                             <td className="px-6 py-4">
-                                <Link to={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</Link><br></br>
-                                <Link to={`/statistics/${prod._id}/${session?.userFinded?.[0]?._id}`}>Estadisticas</Link>
+                                <Link to={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>
+                                <Link to={`/statistics/${prod._id}/${session?.userFinded?.[0]?._id}`}>Estadisticas</Link><br></br>
                                 <button onClick={() => setShowRRPPData(showRRPPData === prod._id ? null : prod._id)}>Tus RRPP</button>
                             </td>
                          </tr>

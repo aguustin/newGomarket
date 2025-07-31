@@ -51,7 +51,6 @@ const SendFree = () => {
         e.preventDefault()
         const clientMail = e.target.elements.clientMail.value
         const res = await buyTicketsRequest(freeTickets[0]?.nombreEvento, quantities, clientMail, 3);
-        console.log(res.msg)
     }
     return (
         <>

@@ -14,7 +14,7 @@ const Register = () => {
 
     const registerUser = async (e) => {
         e.preventDefault()
-        if(captchaStatus){
+        if(captchaStatus){ 
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg(true)
             }else{
