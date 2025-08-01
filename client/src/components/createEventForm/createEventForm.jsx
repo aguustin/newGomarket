@@ -34,7 +34,7 @@ const CreateEventForm = () => {
             selectedState.name
             selectedCity.name
             const tipoEvento = e.target.elements.tipoEvento.value
-            const eventoEdad = e.target.elements.eventoEdad.value
+            const eventoEdad = e?.target?.elements?.eventoEdad?.value || null
             const formData = new FormData()
             formData.append('userId', session?.userFinded?.[0]?._id)
             formData.append('prodMail', session?.userFinded?.[0]?.mail) //aca va el mail de la session
