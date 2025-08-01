@@ -27,6 +27,7 @@ const CreateEventForm = () => {
     const [selectedState, setSelectedState] = useState(null)
     const [selectedCity, setSelectedCity] = useState(null)
     const [showEventInfo, setShowEventInfo] = useState(true)
+    const [previewImage, setPreviewImage] = useState(null)
 
     const createEvent = async (e) => {
         e.preventDefault()
@@ -56,6 +57,7 @@ const CreateEventForm = () => {
             formData.append('linkEvento', e.target.elements.linkEvento.value)
             formData.append('imgEvento', e.target.elements.imgEvento.files[0])
             const res = await createEventRequest(formData)
+            console.log(res.data)
 
             if(res.data.estado === 1){
                 setShowTickets(1)
@@ -79,7 +81,7 @@ const CreateEventForm = () => {
         formData.append('distribution', distribution)
         formData.append('limit', e.target.elements?.limit?.value)
         createEventTicketsRequest(formData)
-        setDisabledButton(false)
+        setDisabledButton(true)
     }
 
     const handleCountryChange = (country) => {
@@ -97,6 +99,14 @@ const CreateEventForm = () => {
     const handleCityChange = (city) => {
         setSelectedCity(city)
     }
+
+    const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewImage(imageUrl);
+    }
+  };
    
     return(
         <>
@@ -209,7 +219,7 @@ const CreateEventForm = () => {
                     </div>
                     <div className="portal-evento">
                         <label>Portada del evento:</label>
-                        <input type="file" placeholder="..." name="imgEvento"></input>
+                        <input type="file" placeholder="..." name="imgEvento" onChange={handleImageChange}></input>
                     </div>
                 <div id="terminos-condiciones">
                     <div className="relative mt-10">
@@ -223,15 +233,16 @@ const CreateEventForm = () => {
                } 
             <div className="mt-9 mb-25 mx-auto">
                 <div>
-                    <img className="w-[430px] h-[450px] object-cover rounded-lg" src={eventoJpg} alt=""></img>
+                    <img className="event-img w-[430px] h-[450px] object-cover rounded-lg" src={previewImage ?? eventoJpg} alt=""></img>
                 </div>
                 <div className="w-[430px] relative">
                 {showTickets >= 1 && 
                     <form className="create-ticket-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
                         <div className="mt-9">
+                            <p className="text-violet-400! mb-2 underline">Crea al menos un ticket para continuar:</p>
                             <div className="flex items-center">
                                 <h3 className="text-violet-500! text-xl">Crear nuevo ticket:</h3>
-                                <img className="ml-5" src={ticketPng} alt=""></img>
+                                <img id="img-create-ticket" className="ml-5" src={ticketPng} alt=""></img>
                             </div>
                             <div className="mt-3">
                                 <label>Nombre del ticket</label>
@@ -288,11 +299,12 @@ const CreateEventForm = () => {
                                 <input type="file" name="imgTicket"></input>
                             </div>
                         </div>
-                        <div className="relative flex items-center w-[430px] justify-around">
-                            <div className="flex justify-between items-center mt-6">
-                                <button className="bg-violet-700 p-3 rounded-lg" type="submit">+ Agregar tickets</button>
+                        <div className="relative flex items-center w-full">
+                            <div className="items-center mt-6">
+                                <button className="bg-violet-700 p-3 rounded-lg mb-6" type="submit">{disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
+                                {disabledButton && <><p className="text-xl! text-violet-400!">Tu ticket fue creado con exito!</p><br></br></>}
+                                {disabledButton && <Link className="continuar-button absolute right-0 mt-36 p-4 rounded-lg flex items-center w-[180px] justify-between " to="/Home">Continuar<img src={continueArrowPng} alt=""></img></Link>}
                             </div>
-                            {disabledButton ? <Link className="continuar-button mt-6 p-2 rounded-lg flex items-center w-[160px] justify-between" disabled>Continuar<img src={continueArrowPng} alt=""></img></Link> : <Link className="continuar-button absolute mt-30 p-4 rounded-lg flex items-center w-[180px] justify-between" to="/Home">Continuar<img src={continueArrowPng} alt=""></img></Link>}
                         </div>
                     </form>
                 }

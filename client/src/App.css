@@ -414,7 +414,7 @@ input{
   .continuar-button{
     position: relative !important;
     margin-top:10px ;
-
+    transform: translateX(137%);
   }
 }
 
@@ -609,7 +609,7 @@ input{
   .create-form > div{
     width: 100%;
   }
-  .create-form > div img{
+  .event-img{
    width: 90vw; 
    margin: auto;
   }
@@ -625,7 +625,6 @@ input{
     margin: 10px;
     font-size: 13px !important;
   }
-
  
 }
 
