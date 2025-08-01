@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid'
 import userModel from "../models/userModel.js";
 import crypto from "crypto"
 import tokenModel from "../models/tokenModel.js";
+import { formatDateB } from "../lib/dates.js";
 
 dotenv.config();
 
@@ -317,6 +318,7 @@ export const getEventToBuyController = async (req, res) => {
 }
 
 export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {
+    console.log(emailHash)
     await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
     let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
     let rrppMatch;
@@ -325,7 +327,6 @@ export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state,
     if(updateRRPP.length <= 0){
       updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
       rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
-      console.log(rrppMatch.prodMail)
       getDecryptedMail = decrypt(rrppMatch.prodMail);
     }else{
       rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
@@ -478,41 +479,43 @@ export const buyEventTicketsController = async (req, res) => {
  
   try {
       const preference = {
-      items: [
-        {
-          title: `Ticket para ${nombreEvento}`,
-          quantity: 1,
-          unit_price: 1, // aca va "total"
-          currency_id: 'ARS',
+        items: [
+          {
+            title: `Ticket para ${nombreEvento}`,
+            quantity: 1,
+            unit_price: 1, // aca va "total"
+            currency_id: 'ARS',
+          },
+        ],
+        payer: {
+          name: nombreCompleto,
+          surname: nombreCompleto,
+          email: mail,
         },
-      ],
-      payer: {
-        name: nombreCompleto,
-        surname: nombreCompleto,
-        email: mail,
-      },
-      back_urls: {
-        success: `${process.env.URL_BACK}/payment-success`,
-        failure: `${process.env.URL_BACK}/payment-failure`,
-        pending: `${process.env.URL_BACK}/payment-pending`,
-      },
-      external_reference: "164382724",
-      auto_return: 'approved',
-      notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
-      metadata: {
-            prodId,
-            nombreEvento,
-            quantities,
-            mail,
-            state,
-            total,
-            nombreCompleto,
-            dni
-      },
+        back_urls: {
+          success: `${process.env.URL_BACK}/payment-success`,
+          failure: `${process.env.URL_BACK}/payment-failure`,
+          pending: `${process.env.URL_BACK}/payment-pending`,
+        },
+        external_reference: "164382724",
+        auto_return: 'approved',
+        notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
+        metadata: {
+              prodId,
+              nombreEvento,
+              quantities,
+              mail,
+              state,
+              total,
+              emailHash,
+              nombreCompleto,
+              dni
+        },
     };
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
+      //await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });
       return res.status(200).json({
         init_point: response.body.init_point,
       });
@@ -524,7 +527,7 @@ export const buyEventTicketsController = async (req, res) => {
 };
 
 export const mercadoPagoWebhookController = async (req, res) => {
-  console.log('asdasd')
+  await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });
   try {
     const paymentId = String(req.body?.data?.id || req.query?.['data.id']);
 
@@ -544,7 +547,6 @@ export const mercadoPagoWebhookController = async (req, res) => {
         return res.sendStatus(500);
       }
 
-      await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, nombreCompleto, dni });
     }
 
     return res.sendStatus(200);
@@ -617,20 +619,27 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
       await saveToken.save();
 
       const qrUrl = `${process.env.URL_FRONT}/ticket/validate/${token}`;
-
+      const ticketDate = formatDateB(ticket.fechaDeCierre)
+      const eventDate = formatDateB(event.fechaInicio)
+console.log(nombreCompleto)
       qrTasks.push(
         QRCode.toDataURL(qrUrl).then(qrImage => {
           const qrBase64 = qrImage.split(',')[1];
           const qrBuffer = Buffer.from(qrBase64, 'base64');
-
+          
           // Usamos el mismo sistema de envío para ambos tipos, pero podés diferenciar si querés
           return sendQrEmail(
             mail,
             qrBuffer,
-            ticket.nombreTicket,
             event.nombreEvento,
+            eventDate,
+            event.direccion,
+            ticket.nombreTicket,
+            ticket.precio,
+            ticketDate,
             state,
-            ticket.tipo
+            ticket.tipo,
+            nombreCompleto
           );
         })
       );
@@ -818,8 +827,8 @@ export const getEventsFreesController = async (req, res) => { //a chequear
     res.status(200).json({message: "Necesitas loguearte"})
 }
 
-const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento, state, tipo) => {
-
+const sendQrEmail = async (email, qrBuffer, nombreEvento, eventoFechaInicio, direccionEvento, nombreTicket, ticketPrecio, ticketFechaCierre, state, tipo, nombreCompleto) => {
+  
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -833,10 +842,41 @@ const sendQrEmail = async (email, qrBuffer, nombreTicket, nombreEvento, state, t
       to: email,
       subject: `Tu entrada para ${nombreEvento} - ${nombreTicket}`,
       html: `
-        <h3>Gracias por tu compra</h3>
-        <p>Entrada: <strong>${nombreTicket}</strong></p>
-        <p>Escaneá este QR en la entrada:</p>
-        <img src="cid:qrcodeimg" alt="QR para ${nombreTicket}" style="width:200px;height:200px;"/>
+         <html>
+            <head>
+              <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+              </style>
+            </head>
+            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
+        <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+          <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
+          </div>
+                <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#1a0c2c; color:white;">
+                    <h3 style="font-size:20px">${nombreCompleto}, Aqui tienes tu ticket/s !</h3>
+                    <p style="font-size:17px">Entrada: <strong>ticket numero A</strong></p>
+                    <p style="font-size:17px">Escaneá este QR en la entrada:</p>
+                    <img src="https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/9559/production/_90533283_aurorabirdjanrolsen.jpg.webp" alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
+                    <img src="cid:qrcodeimg" alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
+                    <div>
+                       <h2 style="font-size:20px">${nombreEvento}</h2>
+                       <p style="font-size:17px">${nombreTicket} - $ ${ticketPrecio}</p>
+                       <p style="font-size:17px">Fecha del evento: ${eventoFechaInicio}</p>
+                       <p style="font-size:17px">Entrada valida hasta: ${ticketFechaCierre}</p>
+                       <p style="font-size:17px">${direccionEvento}</p>
+                    </div>
+                </div>
+              <div style="background-color:#0c0614; color:white; padding:20px; text-align:center">
+                <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
+                <p style="font-size:13px">- Recuerda presentar tu eTicket en el acceso del evento con tu teléfono.</p>
+                <p style="font-size:13px">- Siempre podrás acceder a tus compras o eTickets desde nuestra web.</p>
+                <p style="font-size:13px">- Recuerda llevar tus eTickets abiertos en tu celular.</p>
+              </div>
+              <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center;">
+                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
+              </footer>
+          </body>
+        </html>
       `,
       attachments: [
         {

@@ -30,7 +30,6 @@ const EditProd = () => {
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
-            console.log(userId)
             const res = await getOneProdRequest(prodId, userId) //userId va la session del usuario
             setProd(res.data)
         }
@@ -78,8 +77,6 @@ const EditProd = () => {
         formData.append('localidad', editedValues[0]?.localidad ??  localidad)
         formData.append('direccion', editedValues[0]?.direccion ??  direccion)
         formData.append('lugarEvento', editedValues[0]?.lugarEvento ??  lugarEvento)
-
-        console.log('Contenido real de FormData:');
         const res = await updateEventRequest(formData)
 
     }
@@ -106,8 +103,6 @@ const EditProd = () => {
         formData.append('fechaDeCierre', dataToUpdate?.fechaDeCierre ?? fechaDeCierre)
         formData.append('visibilidad', dataToUpdate?.visibilidad ?? visibilidad)
         formData.append('estado', estado)
-
-        console.log(dataToUpdate?.fechaDeCierre)
         const res = await updateTicketsRequest(formData)
     }
 

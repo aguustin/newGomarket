@@ -13,7 +13,7 @@ const Staff = () => {
     const [quantities, setQuantities] = useState({});
     const [quantity, setQuantity] = useState(0)
     const [totalQuantity, setTotalQuantity] = useState(0)
-    console.log(prodId)
+ 
     useEffect(() => {
         const obtainUserProd = async () => {
             const userId = session?.userFinded?.[0]?._id
@@ -57,7 +57,6 @@ const Staff = () => {
             mail
         }
         const res = await staffQrRequest(sendData)
-        console.log(res.data)
     }
 
     return(
@@ -70,7 +69,6 @@ const Staff = () => {
                         <h3 className="mt-6 mb-6 text-4xl">Evento: {p.nombreEvento}</h3>
                         <p className="mt-2 text-xl">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
                         <p className="mt-2 text-xl">Fecha de cierre: {formatDate(p.fechaFin) }</p>
-                        
                     </div>
                     <div className="mt-10 text-center">
                         <p className="text-2xl underline">Enviar Cortesias:</p>

@@ -9,7 +9,6 @@ const BuyTicket = () => {
     const [quantities, setQuantities] = useState({});
     const [totalQuantity, setTotalQuantity] = useState(0)
     const [showMsg, setShowMsg] = useState(false)
-    console.log(emailHash)
 
     useEffect(() => {
             const getOneEvent = async () => {

@@ -61,7 +61,6 @@ const CreateEventForm = () => {
                 setShowTickets(1)
                 setSaveEventId(res.data.eventId)
             }
-            console.log(showTickets)
             setShowEventInfo(false)
     }
 
