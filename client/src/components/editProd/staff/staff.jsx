@@ -66,12 +66,12 @@ const Staff = () => {
                   <div className="text-center" key={p._id}>
                     <div className="mx-auto text-center">
                         <img className="w-[350px] h-[380px] mx-auto object-cover" src={p.imgEvento} alt=""></img>   
-                        <h3 className="mt-6 mb-6 text-4xl">Evento: {p.nombreEvento}</h3>
+                        <h3 className="mt-6 mb-6 text-4xl underline">Evento: {p.nombreEvento}</h3>
                         <p className="mt-2 text-xl">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
                         <p className="mt-2 text-xl">Fecha de cierre: {formatDate(p.fechaFin) }</p>
                     </div>
                     <div className="mt-10 text-center">
-                        <p className="text-2xl underline">Enviar Cortesias:</p>
+                        <p className="text-2xl text-violet-600!">Enviar Invitaciónes:</p>
                         {p.cortesiaRRPP.map((tck) => 
                         <div className="flex justify-center mx-auto mt-3 mb-6 text-center" key={tck._id}>
                             <div className="flex mt-3">

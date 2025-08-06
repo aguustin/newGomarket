@@ -44,6 +44,7 @@ import { port } from "./config.js"
 import { connecDb } from "./connection.js"
 import userRoutes from "./routes/userRoutes.js"
 import ticketRoutes from "./routes/ticketRoutes.js"
+import cortesieRoutes from "./routes/cortesieRoutes.js"
 import cors from "cors"
 import dotenv from "dotenv"
 import './lib/cron.js'
@@ -69,6 +70,6 @@ app.use(morgan("tiny"))
 //routes
 app.use(userRoutes)
 app.use(ticketRoutes)
-
+app.use(cortesieRoutes)
 //listeng
 app.listen(port)

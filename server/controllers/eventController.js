@@ -621,7 +621,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
       const qrUrl = `${process.env.URL_FRONT}/ticket/validate/${token}`;
       const ticketDate = formatDateB(ticket.fechaDeCierre)
       const eventDate = formatDateB(event.fechaInicio)
-console.log(nombreCompleto)
+
       qrTasks.push(
         QRCode.toDataURL(qrUrl).then(qrImage => {
           const qrBase64 = qrImage.split(',')[1];
@@ -854,23 +854,23 @@ const sendQrEmail = async (email, qrBuffer, nombreEvento, eventoFechaInicio, dir
           </div>
                 <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#1a0c2c; color:white;">
                     <h3 style="font-size:20px">${nombreCompleto}, Aqui tienes tu ticket/s !</h3>
-                    <p style="font-size:17px">Entrada: <strong>ticket numero A</strong></p>
-                    <p style="font-size:17px">Escaneá este QR en la entrada:</p>
+                    <p style="font-size:18px">Entrada: <strong>ticket numero A</strong></p>
+                    <p style="font-size:18px">Escaneá este QR en la entrada:</p>
                     <img src="https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/9559/production/_90533283_aurorabirdjanrolsen.jpg.webp" alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
                     <img src="cid:qrcodeimg" alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
                     <div>
                        <h2 style="font-size:20px">${nombreEvento}</h2>
-                       <p style="font-size:17px">${nombreTicket} - $ ${ticketPrecio}</p>
-                       <p style="font-size:17px">Fecha del evento: ${eventoFechaInicio}</p>
-                       <p style="font-size:17px">Entrada valida hasta: ${ticketFechaCierre}</p>
-                       <p style="font-size:17px">${direccionEvento}</p>
+                       <p style="font-size:18px">${nombreTicket} - $ ${ticketPrecio}</p>
+                       <p style="font-size:18px">Fecha del evento: ${eventoFechaInicio}</p>
+                       <p style="font-size:18px">Entrada valida hasta: ${ticketFechaCierre}</p>
+                       <p style="font-size:18px">${direccionEvento}</p>
                     </div>
                 </div>
               <div style="background-color:#0c0614; color:white; padding:20px; text-align:center">
                 <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
-                <p style="font-size:13px">- Recuerda presentar tu eTicket en el acceso del evento con tu teléfono.</p>
-                <p style="font-size:13px">- Siempre podrás acceder a tus compras o eTickets desde nuestra web.</p>
-                <p style="font-size:13px">- Recuerda llevar tus eTickets abiertos en tu celular.</p>
+                <p style="font-size:16px">- Recuerda presentar tu eTicket en el acceso del evento con tu teléfono.</p>
+                <p style="font-size:16px">- Siempre podrás acceder a tus compras o eTickets desde nuestra web.</p>
+                <p style="font-size:16px">- Recuerda llevar tus eTickets abiertos en tu celular.</p>
               </div>
               <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center;">
                 <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>

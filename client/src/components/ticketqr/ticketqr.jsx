@@ -1,6 +1,7 @@
 import { useParams, useSearchParams } from "react-router";
 import { useState, useEffect } from "react";
 import warningPng from "../../assets/warning.png"
+import { formatDateB } from "../../globalscomp/globalscomp";
 
 const TicketQr = ({params}) => {
   const [searchParams] = useSearchParams();
@@ -8,13 +9,12 @@ const TicketQr = ({params}) => {
 
   const [ticketInfo, setTicketInfo] = useState(null);
   const [error, setError] = useState(false);
-  console.log(token.token)
+
   useEffect(() => {
     if (token) {
       fetch(`${import.meta.env.VITE_URL}/ticket/validate/${token?.token}`)
         .then(res => res.json())
         .then(data => {
-          console.log(data)
           if (data.error === 1) {
             setError(true);
           } else {
@@ -33,7 +33,6 @@ const TicketQr = ({params}) => {
           </div>
   )
   
-  console.log(ticketInfo)
   if (!ticketInfo) return <p>Cargando ticket...</p>;
   return (
       <div className='evento-desc mt-[110px] mb-[240px] flex justify-center'>
@@ -43,7 +42,7 @@ const TicketQr = ({params}) => {
                 <p className='text-2xl mt-9'><b className="text-violet-500">Ticket: </b>{ticketInfo.nombreTicket} - {ticketInfo.tipo} - Edad: +{ticketInfo.eventoEdad}</p>
                 <p className="text-2xl mt-3"><b className="text-violet-500">Lugar: </b>{ticketInfo.localidad} </p>
                 <p className='text-2xl mt-3'><b className="text-violet-500">Dirección: </b>{ticketInfo.direccion}</p>
-                <p className='text-2xl mt-3'><b className="text-violet-500">Fecha: </b>{ticketInfo.fechaInicioEvento}</p>
+                <p className='text-2xl mt-3'><b className="text-violet-500">Fecha: </b>{formatDateB(ticketInfo.fechaInicioEvento)}</p>
           </div>
       </div>
    

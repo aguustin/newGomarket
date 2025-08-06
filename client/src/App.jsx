@@ -18,6 +18,8 @@ import Contact from './components/contact/contact'
 import RecoverPass from './components/recoverPass/recoverPass'
 import {BrowserRouter, Routes, Route} from 'react-router'
 import { UserContextProvider } from './context/userContext'
+import Cortesies from './components/cortesies/cortesies'
+import NewCortesie from './components/newCortesie/newCortesie'
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
             <Route path='/rrpp_get_event_free/:prodId/:mail' element={<SendFree/>}></Route>
             <Route path='/ticket/validate/:token' element={<TicketQr/>}></Route>
             <Route path='/statistics/:prodId/:userId' element={<Statistics/>}></Route>
+            <Route path='/cortesies/:prodId' element={<Cortesies/>}></Route>
+            <Route path='/new_excel/:cortesieId' element={<NewCortesie/>}></Route>
           </Routes>
           <Footer></Footer>
       </UserContextProvider>

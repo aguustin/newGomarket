@@ -424,7 +424,8 @@ const EditProd = () => {
                     )}
                     </div>
                     <div className="send-back relative flex items-center h-[150px]">
-                        <Link className="absolute right-50 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Enviar tickets</p></Link>
+                        <Link className="absolute right-120 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Enviar Invitaciónes</p></Link>
+                        <Link className="absolute right-40 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
                         <Link className="absolute right-0 flex items-center mt-12 ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt=""></img><p className="ml-3">Volver</p></Link>
                     </div>
                 </div>
