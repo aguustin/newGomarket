@@ -43,8 +43,8 @@ function App() {
             <Route path='/rrpp_get_event_free/:prodId/:mail' element={<SendFree/>}></Route>
             <Route path='/ticket/validate/:token' element={<TicketQr/>}></Route>
             <Route path='/statistics/:prodId/:userId' element={<Statistics/>}></Route>
-            <Route path='/cortesies/:prodId' element={<Cortesies/>}></Route>
-            <Route path='/new_excel/:cortesieId' element={<NewCortesie/>}></Route>
+            <Route path='/cortesies/:userId/:prodId' element={<Cortesies/>}></Route>
+            <Route path='/new_excel/:prodId' element={<NewCortesie/>}></Route>
           </Routes>
           <Footer></Footer>
       </UserContextProvider>

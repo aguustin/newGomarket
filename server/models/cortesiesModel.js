@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 
 const cortesieSchema = mongoose.Schema({
-    eventId:{type:String},
+    prodId:{type:String},
     userId:{type:String},
+    eventName:{type:String},
     excelName:{type:String},
-    dateT:{type:Date},
-    fechaCierre:{type:Date},
+    fechaCreacion:{type:String},
     people:[{
         clientName:{type: String},
         email: {type:String},
     }],
     courtesy:{type:Number},
-})
+}, { strict: true })
 
 const cortesieModel = mongoose.model("cortesieModel", cortesieSchema)
 
