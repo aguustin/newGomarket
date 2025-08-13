@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 *{
   list-style: none;
 }
@@ -54,7 +53,7 @@ select{
 }
 
 .productions{
-  top: 90px;
+  top: 40px;
 }
 
 .productions-container::-webkit-scrollbar{
@@ -122,8 +121,21 @@ input{
 
 .event-desc{
    box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
--webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
--moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75)
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75)
+}
+
+.home-events-container{
+  overflow-y: scroll;
+}
+
+.home-events-container::-webkit-scrollbar{
+  background-color: transparent;
+  width: 5px;
+}
+
+.productions-container::-webkit-scrollbar-thumb{
+  background-color: transparent;
 }
 
 /*---------------------------------------------------------------- BUY TICKET ------------------------------------------------------------------------------*/
@@ -418,6 +430,18 @@ input{
   }
 }
 
+@media screen and (max-width:976px) { 
+  .new-cortesie button{
+    margin-top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .new-cortesie img{
+    margin-top: 70px;
+  }
+}
+
 @media screen and (max-width:950px) { 
   .home{
     padding: 15px;
@@ -599,6 +623,25 @@ input{
     width: 200px;
     margin-top: 50px;
   }
+
+  .new-cortesie{
+    text-align: center;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .new-cortesie h2{
+    font-size: 25px;
+  }
+
+  .new-cortesie p, .new-cortesie label{
+    margin-top: 10px;
+    font-size: 17px;
+  }
+
+  .new-cortesie img{
+    margin-top: 110px !important;
+  }
 }
 
 @media screen and (max-width: 610px) {
@@ -635,6 +678,12 @@ input{
    .sum-rest-qty button{
     padding-left: 10px;
     padding-right: 10px;
+  }
+}
+
+@media screen and (max-width:515px) {
+  .new-cortesie button{
+    margin-top: 30px;
   }
 }
 

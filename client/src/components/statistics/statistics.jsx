@@ -150,11 +150,11 @@ const Statistics = () => {
     }, [currentView, productions, graphic]);
 
     return (
-        <div className="statistics w-[100vw]">
+        <div className="statistics w-[100vw] mt-6">
             {productions.map((prod) => (
                 <div className="statistics-event-info mx-auto relative flex items-center p-4" key={prod._id}>
                     <div className="flex flex-wrap mx-auto">
-                        <img className="w-[350px] h-[350px] object-cover rounded-lg" src={prod.imgEvento} alt="" />
+                        <img className="w-[350px] h-[350px] object-cover rounded-lg" src={prod.imgEvento} alt="" loading="lazy"/>
                         <div className="flex flex-wrap items-center">
                         <div className="info p-6 w-[340px]">
                             <h2 className="text-3xl">{prod.nombreEvento}</h2>

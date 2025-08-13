@@ -210,7 +210,7 @@ export const updateEventController = async (req, res) => {  //ACTUALIZA LA INFO 
             { $set: updateFields }
         );
 
-        return res.status(200).json({ url: result.secure_url, updated: updateResult.modifiedCount > 0 });
+        return res.status(200).json({ url: result.secure_url, updated: updateResult.modifiedCount > 0, state: 1});
         }
     ).end(req.file.buffer);
     } else {  //SE ACTUALIZA LA INFO SIN IMAGEN NUEVA
@@ -220,9 +220,9 @@ export const updateEventController = async (req, res) => {  //ACTUALIZA LA INFO 
         );
 
         if (updateResult.modifiedCount > 0) {
-            return res.status(200).json(1);
+            return res.status(200).json({state:1});
         } else {
-            return res.status(204).json(2); // No se modificó ningún documento
+            return res.status(204).json({state:2}); // No se modificó ningún documento
         }
     }
 }
@@ -297,7 +297,8 @@ if (req.file) {
       const updateResult = await updateTicket(result.secure_url);
       return res.status(200).json({
         url: result.secure_url,
-        updated: updateResult.modifiedCount > 0
+        updated: updateResult.modifiedCount > 0,
+        state: 1
       });
     }
   ).end(req.file.buffer);
@@ -305,7 +306,8 @@ if (req.file) {
   // Sin imagen
   const updateResult = await updateTicket();
   return res.status(200).json({
-    updated: updateResult.modifiedCount > 0
+    updated: updateResult.modifiedCount > 0,
+    state: 1
   });
 }
 }
@@ -634,6 +636,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
             event.nombreEvento,
             eventDate,
             event.direccion,
+            event.imgEvento,  //se agrego al final 12/08/2025
             ticket.nombreTicket,
             ticket.precio,
             ticketDate,
@@ -670,11 +673,28 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
         to: rrppMail,
         subject: `Ya eres colaborador en: ${nombreEvento}`,
         html: `
-            <h3>Ya eres parte del staff del evento ${nombreEvento}</h3>
-            <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-            <p>Evento:</p>
-            <img src="${eventImg}"  alt="${nombreEvento}" style="width:200px;height:200px;"/>
-          `,
+          <html>
+            <head>
+              <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+              </style>
+            </head>
+            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
+              <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+                <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
+              </div>
+              <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#1a0c2c; color:white;">
+                  <h3 style="font-size:30px; color:white; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p style="font-size:18px">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p style="font-size:18px">Evento: ${nombreEvento} </p>
+                  <img src="${eventImg}"  alt="${nombreEvento}" style="width:230px; height:230px;"/>
+              </div>
+              <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center;">
+                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
+              </footer>
+            </body>
+          </html>
+        `,
       });
       return res.status(200).json({msg:'El colaborador ya existe en este evento'})
     }else{
@@ -703,11 +723,28 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
     to: rrppMail,
     subject: `Ya eres colaborador en: ${nombreEvento}`,
     html: `
-        <h3>Ya eres parte del staff del evento ${nombreEvento}</h3>
-        <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-        <p>Evento:</p>
-        <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
-    `,
+          <html>
+            <head>
+              <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+              </style>
+            </head>
+            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
+                <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+                  <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
+                </div>
+                <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+                  <h3 style="font-size:30px; color:white; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p>Evento:</p>
+                  <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
+                </div>
+                <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center;">
+                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
+              </footer>
+            </body>
+          </html>
+        `,
     });
       return res.status(200).json({msg:1})
     }
@@ -715,10 +752,10 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
 
 export const sendQrStaffQrController = async (req, res) => {
   const {prodId, quantities, mail} = req.body
-  console.log(prodId, quantities, mail)
   const ticketIds = Object.keys(quantities);
   const findRrPp = await ticketModel.findOne({_id: prodId, "rrpp.mail": mail})
   let i = 0
+
     for (const id of ticketIds) {
         const verifyQuantity = await ticketModel.find({_id: prodId, "cortesiaRRPP._id": id })
         
@@ -737,6 +774,8 @@ export const sendQrStaffQrController = async (req, res) => {
                 }
               }
             );
+          }else{
+            return res.status(200).json({state: 2})
           }
           i++
     }
@@ -803,6 +842,7 @@ export const sendQrStaffQrController = async (req, res) => {
   );
 }
 
+return res.status(200).json({state: 1})
 };
 
 
@@ -827,7 +867,7 @@ export const getEventsFreesController = async (req, res) => { //a chequear
     res.status(200).json({message: "Necesitas loguearte"})
 }
 
-const sendQrEmail = async (email, qrBuffer, nombreEvento, eventoFechaInicio, direccionEvento, nombreTicket, ticketPrecio, ticketFechaCierre, state, tipo, nombreCompleto) => {
+const sendQrEmail = async (email, qrBuffer, nombreEvento, eventoFechaInicio, direccionEvento, imagenEvento, nombreTicket, ticketPrecio, ticketFechaCierre, state, tipo, nombreCompleto) => { //se agrego imagenEvento 12/08/2025
   
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -849,14 +889,14 @@ const sendQrEmail = async (email, qrBuffer, nombreEvento, eventoFechaInicio, dir
               </style>
             </head>
             <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
-        <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
-          <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
-          </div>
+            <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+              <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
+            </div>
                 <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#1a0c2c; color:white;">
                     <h3 style="font-size:20px">${nombreCompleto}, Aqui tienes tu ticket/s !</h3>
                     <p style="font-size:18px">Entrada: <strong>ticket numero A</strong></p>
                     <p style="font-size:18px">Escaneá este QR en la entrada:</p>
-                    <img src="https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/9559/production/_90533283_aurorabirdjanrolsen.jpg.webp" alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
+                    <img src=${imagenEvento} alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
                     <img src="cid:qrcodeimg" alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
                     <div>
                        <h2 style="font-size:20px">${nombreEvento}</h2>
@@ -963,7 +1003,7 @@ export const getInfoQrController = async (req, res) => {
 
 export function encrypt(rrppMail) {
   const iv = crypto.randomBytes(IV_LENGTH);
-  const key = crypto.createHash('sha256').update(process.env.SECRET_MAIL_KEY).digest(); // 🔐 32-byte key
+  const key = crypto.createHash('sha256').update(SECRET_MAIL_KEY).digest(); // 🔐 32-byte key
 
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
   let encrypted = cipher.update(rrppMail, 'utf8', 'hex');
@@ -975,7 +1015,7 @@ export function encrypt(rrppMail) {
 export function decrypt(encryptedMail) {
   const [ivHex, encrypted] = encryptedMail.split(':');
   const iv = Buffer.from(ivHex, 'hex');
-  const key = crypto.createHash('sha256').update(process.env.SECRET_MAIL_KEY).digest(); // same 32-byte key
+  const key = crypto.createHash('sha256').update(SECRET_MAIL_KEY).digest(); // same 32-byte key
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');

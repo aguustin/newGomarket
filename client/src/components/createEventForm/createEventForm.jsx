@@ -7,6 +7,7 @@ import UserContext from "../../context/userContext"
 import {Country, State, City} from "country-state-city"
 import { Link } from "react-router"
 import ticketPng from '../../assets/images/ticket.png'
+import { LoadingButton } from "../../globalscomp/globalscomp"
 
 const CreateEventForm = () => {
     const {session} = useContext(UserContext)
@@ -28,9 +29,11 @@ const CreateEventForm = () => {
     const [selectedCity, setSelectedCity] = useState(null)
     const [showEventInfo, setShowEventInfo] = useState(true)
     const [previewImage, setPreviewImage] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     const createEvent = async (e) => {
         e.preventDefault()
+            setLoading(true)
             currency
             selectedState.name
             selectedCity.name
@@ -60,14 +63,16 @@ const CreateEventForm = () => {
             console.log(res.data)
 
             if(res.data.estado === 1){
+                setLoading(false)
                 setShowTickets(1)
                 setSaveEventId(res.data.eventId)
             }
             setShowEventInfo(false)
     }
 
-    const createEventTickets = (e) => { //agregar estado a los tickets
+    const createEventTickets = async (e) => { //agregar estado a los tickets
         e.preventDefault()
+        setLoading(true)
         const formData = new FormData()
         formData.append('prodId', saveEventId)
         formData.append('nombreTicket', e.target.elements.nombreTicket.value)
@@ -80,8 +85,11 @@ const CreateEventForm = () => {
         formData.append('estado', estado)
         formData.append('distribution', distribution)
         formData.append('limit', e.target.elements?.limit?.value)
-        createEventTicketsRequest(formData)
-        setDisabledButton(true)
+        const res = await createEventTicketsRequest(formData)
+        if(res.data.estado === 1){
+            setLoading(false)
+            setDisabledButton(true)
+        }
     }
 
     const handleCountryChange = (country) => {
@@ -227,13 +235,13 @@ const CreateEventForm = () => {
                         <input className="absolute left-18" type="checkbox"></input>
                     </div>
                 </div>
-                <button className="bg-violet-900 p-4 rounded-lg w-full mt-10 mb-20" type="submit">CREAR EVENTO</button>
+                <button className="bg-violet-900 p-4 rounded-lg w-full mt-10 mb-20" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
             </form> 
             </div>
                } 
             <div className="mt-9 mb-25 mx-auto">
                 <div>
-                    <img className="event-img w-[430px] h-[450px] object-cover rounded-lg" src={previewImage ?? eventoJpg} alt=""></img>
+                    <img className="event-img w-[430px] h-[450px] object-cover rounded-lg" src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
                 </div>
                 <div className="w-[430px] relative">
                 {showTickets >= 1 && 
@@ -242,7 +250,7 @@ const CreateEventForm = () => {
                             <p className="text-violet-400! mb-2 underline">Crea al menos un ticket para continuar:</p>
                             <div className="flex items-center">
                                 <h3 className="text-violet-500! text-xl">Crear nuevo ticket:</h3>
-                                <img id="img-create-ticket" className="ml-5" src={ticketPng} alt=""></img>
+                                <img id="img-create-ticket" className="ml-5" src={ticketPng} alt="" loading="lazy"></img>
                             </div>
                             <div className="mt-3">
                                 <label>Nombre del ticket</label>
@@ -301,9 +309,9 @@ const CreateEventForm = () => {
                         </div>
                         <div className="relative flex items-center w-full">
                             <div className="items-center mt-6">
-                                <button className="bg-violet-700 p-3 rounded-lg mb-6" type="submit">{disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
+                                <button className="bg-violet-700 p-3 rounded-lg mb-6" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
                                 {disabledButton && <><p className="text-xl! text-violet-400!">Tu ticket fue creado con exito!</p><br></br></>}
-                                {disabledButton && <Link className="continuar-button absolute right-0 mt-36 p-4 rounded-lg flex items-center w-[180px] justify-between " to="/Home">Continuar<img src={continueArrowPng} alt=""></img></Link>}
+                                {disabledButton && <Link className="continuar-button absolute right-0 mt-36 p-4 rounded-lg flex items-center w-[180px] justify-between " to="/Home">Continuar<img src={continueArrowPng} alt="" loading="lazy"></img></Link>}
                             </div>
                         </div>
                     </form>

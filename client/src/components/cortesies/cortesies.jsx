@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import UserContext from "../../context/userContext";
 import { getAllExcelsRequest, sendCortesiesRequest } from "../../api/cortesieRequest";
+import { formatDateB } from "../../globalscomp/globalscomp";
 
 const Cortesies = () => {
     const {session} = useContext(UserContext)
@@ -22,13 +23,12 @@ const Cortesies = () => {
 
     return(
         <>
-            <div className="productions-container h-full mb-24">
-            <div className='productions relative overflow-x-auto shadow-md sm:rounded-lg'>
-                <Link to={`/new_excel/${prodId}`}>Crear nueva lista de cortesias</Link>
+            <div className="productions-container  mb-24">
+            <div className='productions text-center relative overflow-x-auto shadow-md sm:rounded-lg'>
+                <div className="p-10"><Link className="bg-indigo-900 p-4 rounded-lg cursor-pointer" to={`/new_excel/${prodId}`}>Crear nueva lista de cortesias</Link></div>
                 <table className="w-full max-h-[900px] text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-violet-900 dark:text-white">
                         <tr>
-                        
                             <th scope="col" className="px-6 py-3">
                                 Evento
                             </th>
@@ -54,7 +54,7 @@ const Cortesies = () => {
                                 {cort.eventName}
                             </td>
                             <td className="px-6 py-4">
-                                {cort.lugarEvento}
+                                {cort.fechaCreacion}
                             </td>
                             <td className="px-6 py-4">
                                 {cort.courtesy}
@@ -63,7 +63,7 @@ const Cortesies = () => {
                                 {cort.excelName}
                             </td>
                             <td className="px-6 py-4">
-                                <button onClick={(e) => handleSendCortesies(cort._id)}>Enviar</button>
+                                <button onClick={(e) => handleSendCortesies(cort._id)}>Enviar</button><br></br>
                                 <Link to={`/get_cortesie/${cort._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>
                                 <button onClick={(e) => deleteExcel(e)}>Eliminar</button>
                             </td>

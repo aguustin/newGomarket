@@ -1,9 +1,15 @@
+import { useState } from "react"
 import { contactarRequest } from "../../api/userRequests"
+import { useNavigate } from "react-router"
 
 const Contact = () => {
+    const navigate = useNavigate()
+    const [loading, setLoading] = useState(false)
+    const [showMsg, setShowMsg] = useState(false)
 
     const contactarFunc = async (e) => {
         e.preventDefault()
+        setLoading(true)
         const mailData = {
             pais: e.target.elements.pais.value,
             nombreCompleto: e.target.elements.nombreCompleto.value,
@@ -13,6 +19,12 @@ const Contact = () => {
             mensaje: e.target.elements.mensaje.value,
         }
         const res = await contactarRequest(mailData)
+        console.log(res)
+        if(res.data.state === 1){
+            setLoading(false)
+            setShowMsg(true)
+            setTimeout(() => navigate('/home'), 3000)
+        }
     }
 
     return(
@@ -22,13 +34,13 @@ const Contact = () => {
                     <h2 className="text-4xl">Comunicate con nosotros</h2>
                 </div>
                 <p className="text-2xl text-center">Llena el formulario y nos pondremos en contacto contigo</p>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="País" name="pais" type="text"/>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="Nombre completo" name="nombreCompleto" type="text"/>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="50" placeholder="Correo electronico" name="correo" type="mail"/>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="20" placeholder="Teléfono" name="celular" type="number" />
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="Nombre del evento (opcional)" name="nombreEvento" type="text" />
-                <textarea className="contact-textarea mt-3 w-full" rows={10} placeholder="Mensaje" name="mensaje" />
-                <button className="w-full mt-3 bg-violet-900 h-[40px] rounded-lg" type="submit">Enviar</button>
+                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="País" name="pais" type="text"required/>
+                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="Nombre completo" name="nombreCompleto" type="text"required/>
+                <input className="p-3 mt-3 w-full" minLength="5" maxLength="50" placeholder="Correo electronico" name="correo" type="mail"required/>
+                <input className="p-3 mt-3 w-full" minLength="5" maxLength="20" placeholder="Teléfono" name="celular" type="number" required/>
+                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="Nombre del evento (opcional)" name="nombreEvento" type="text" required/>
+                <textarea className="contact-textarea mt-3 w-full" rows={10} placeholder="Mensaje" name="mensaje" required/>
+                {showMsg ? <p className="text-lg text-violet-600! text-center">Tu mensaje fue enviado con exito!</p> : <button className="w-full mt-3 bg-violet-900 h-[40px] rounded-lg" type="submit">Enviar</button>}
             </form>
         </>
     )

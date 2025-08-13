@@ -62,7 +62,7 @@ const SendFree = () => {
          );
          return(
         <div key={freeT._id}>
-            <img src={freeT.imgEvento} alt="" className="w-[800px] mx-auto mt-30"/>
+            <img src={freeT.imgEvento} alt="" className="w-[800px] mx-auto mt-30" loading="lazy"/>
             <h3 className="text-4xl text-center mt-4 mb-5">{freeT.nombreEvento}</h3>
             <p className="text-center mt-2">De: {formatDate(freeT.fechaInicio)} hs</p>
             <p className="text-center mt-2">Hasta: {formatDate(freeT.fechaFin)} hs</p>
@@ -76,7 +76,7 @@ const SendFree = () => {
                 
                 return (
                         <div className="free-ticket-cont flex p-5 rounded-lg mb-9" key={ticketsCortesia._id}>
-                            <img className="w-[250px] rounded-lg" src={ticketsCortesia.imgTicket} alt="" />
+                            <img className="w-[250px] rounded-lg" src={ticketsCortesia.imgTicket} alt="" loading="lazy"/>
                             <div className="ml-6">
                                 <label className="text-xl">{ticketsCortesia.nombreTicket}</label>
                                 <form onSubmit={(e) => sendFreeFunc(e, ticketsCortesia._id)}>                         

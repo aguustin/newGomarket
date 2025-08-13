@@ -28,7 +28,7 @@ const TicketQr = ({params}) => {
  if (error) 
       return (
           <div className="h-screen text-center mt-[110px] pt-10 pr-3 pl-3">
-            <img className="mx-auto" src={warningPng}></img>
+            <img className="mx-auto" src={warningPng} loading="lazy"></img>
             <p className="text-red-500! text-center mt-6 text-3xl">El ticket no existe o ya fue escaneado</p>
           </div>
   )
@@ -38,7 +38,7 @@ const TicketQr = ({params}) => {
       <div className='evento-desc mt-[110px] mb-[240px] flex justify-center'>
           <div className="mx-auto text-center h-full">
                 <h1 className="text-white text-4xl underline">{ticketInfo.nombreEvento}</h1>
-                <img className="mx-auto mt-6" src={ticketInfo.imgEvento} alt="evento" width="300" />
+                <img className="mx-auto mt-6" src={ticketInfo.imgEvento} alt="evento" width="300" loading="lazy"/>
                 <p className='text-2xl mt-9'><b className="text-violet-500">Ticket: </b>{ticketInfo.nombreTicket} - {ticketInfo.tipo} - Edad: +{ticketInfo.eventoEdad}</p>
                 <p className="text-2xl mt-3"><b className="text-violet-500">Lugar: </b>{ticketInfo.localidad} </p>
                 <p className='text-2xl mt-3'><b className="text-violet-500">Dirección: </b>{ticketInfo.direccion}</p>

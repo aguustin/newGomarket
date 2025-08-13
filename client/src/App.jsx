@@ -20,6 +20,7 @@ import {BrowserRouter, Routes, Route} from 'react-router'
 import { UserContextProvider } from './context/userContext'
 import Cortesies from './components/cortesies/cortesies'
 import NewCortesie from './components/newCortesie/newCortesie'
+import 'react-loading-skeleton/dist/skeleton.css';
 
 function App() {
   return (
@@ -43,7 +44,7 @@ function App() {
             <Route path='/rrpp_get_event_free/:prodId/:mail' element={<SendFree/>}></Route>
             <Route path='/ticket/validate/:token' element={<TicketQr/>}></Route>
             <Route path='/statistics/:prodId/:userId' element={<Statistics/>}></Route>
-            <Route path='/cortesies/:userId/:prodId' element={<Cortesies/>}></Route>
+            <Route path='/cortesies/:prodId' element={<Cortesies/>}></Route>
             <Route path='/new_excel/:prodId' element={<NewCortesie/>}></Route>
           </Routes>
           <Footer></Footer>

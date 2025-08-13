@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
 import { buyTicketsRequest, getEventToBuyRequest } from "../../api/eventRequests"
-import { formatDate, formatNumber, Message } from "../../globalscomp/globalscomp"
+import { formatDate, formatNumber, LoadingButton, Message } from "../../globalscomp/globalscomp"
 
 const BuyTicket = () => {
     const {prodId, emailHash} = useParams()
@@ -9,6 +9,7 @@ const BuyTicket = () => {
     const [quantities, setQuantities] = useState({});
     const [totalQuantity, setTotalQuantity] = useState(0)
     const [showMsg, setShowMsg] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
             const getOneEvent = async () => {
@@ -64,25 +65,25 @@ const BuyTicket = () => {
         const mail = e.target.elements.mail.value;
         const nombreCompleto = e.target.elements.nombreCompleto.value
         const dni = e.target.elements.dni.value
-
-        if(total <= 0){
-            setShowMsg(true)
-        } 
-       
-
-        try {
-                const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);
-
-                if (!data?.init_point) {
-                    console.error("init_point no recibido");
-                    return;
-                }
-
-                window.location.href = data.init_point;
-            } catch (error) {
-                console.error("Error en handlePayment:", error);
-            }
         
+        if(total <= 0 || mail.length <= 0 || nombreCompleto.length <= 0 || dni.length <= 0){
+            setShowMsg(true)
+        }else{
+            setLoading(true)
+        } 
+        
+        try {
+            const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);
+
+            if (!data?.init_point) {
+                console.error("init_point no recibido");
+                return;
+            }
+            setLoading(false)
+            window.location.href = data.init_point;
+        } catch (error) {
+            console.error("Error en handlePayment:", error);
+        }
     }
 
 
@@ -93,7 +94,7 @@ const BuyTicket = () => {
                 <h2 className="text-3xl mb-3">{p.nombreEvento}</h2>
                 <p className="mb-1">{p.direccion}</p>
                 <p className="text-lg mb-5">{formatDate(p.fechaInicio)}</p>
-                <img className="rounded-lg max-w-[500px] mx-auto" src={p.imgEvento}></img>
+                <img className="rounded-lg max-w-[500px] mx-auto" loading="lazy" src={p.imgEvento}></img>
             </div>
             )}
             <form className="form-buy-inputs" onSubmit={(e) => buyTickets(e)}>
@@ -165,7 +166,8 @@ const BuyTicket = () => {
 })}
 
                 <p className="text-2xl mt-6">Total:${formatNumber(total)}</p>
-                <button className="buy-button bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">Comprar</button>
+                {showMsg && <p className="text-lg text-violet-600! mt-2">Debes llenar todos los campos</p>}
+                <button className="buy-button bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">{ loading ? <LoadingButton/> : 'Comprar'}</button>
             </form>
             {/*setShowMsg && 
                 <div className="w-screen">

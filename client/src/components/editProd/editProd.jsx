@@ -6,7 +6,7 @@ import downArrow from '../../assets/botones/down_arrow.png'
 import ticketPng from '../../assets/images/ticket.png'
 import qrCodePng from '../../assets/images/qr-code.png'
 import backArrowPng from '../../assets/images/back-arrow.png'
-import { formatDate } from "../../globalscomp/globalscomp"
+import { formatDate, LoadingButton } from "../../globalscomp/globalscomp"
 import UserContext from "../../context/userContext"
 
 const EditProd = () => {
@@ -26,6 +26,9 @@ const EditProd = () => {
     const [width, setWidth] = useState(null)
     const [showEventInfo, setShowEventInfo] = useState(true)
     const [openTicketId, setOpenTicketId] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const [ticketLoading, setTicketLoading] = useState(false)
+    const [loadingCreateTicket, setLoadingCreateTicket] = useState(false)
 
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
@@ -51,7 +54,7 @@ const EditProd = () => {
     
     const updateEvent = async (e, eventId, imgEvento, nombreEvento, descripcionEvento, eventoEdad, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento) => {
         e.preventDefault()
-      
+        setLoading(true)
         const editedValues = Object.entries(eventosEditados).map(([id, values]) => ({
             id,
             ...values,
@@ -63,7 +66,6 @@ const EditProd = () => {
         } else {
             formData.append('imgEvento', imgEvento); // string (url existente)
         }
-        //formData.append('imgEvento', )
         formData.append('eventId', eventId)
         formData.append('nombreEvento',  editedValues[0]?.nombreEvento ??  nombreEvento)
         formData.append('descripcionEvento', editedValues[0]?.descripcionEvento ??  descripcionEvento)
@@ -79,10 +81,15 @@ const EditProd = () => {
         formData.append('lugarEvento', editedValues[0]?.lugarEvento ??  lugarEvento)
         const res = await updateEventRequest(formData)
 
+        if(res.data.state > 0){
+            setLoading(false)
+        }
+
     }
     
     const editEventTicket = async (e, ticketId, imgTicket, nombreTicket, descripcionTicket, precio, cantidad, limit, fechaDeCierre, visibilidad) => {
         e.preventDefault()
+       setTicketLoading(true)
        const formData = new FormData()
        const fileInput = fileRefsB.current[ticketId];
        const estado = parseInt(estadoRef.current.value);
@@ -104,6 +111,10 @@ const EditProd = () => {
         formData.append('visibilidad', dataToUpdate?.visibilidad ?? visibilidad)
         formData.append('estado', estado)
         const res = await updateTicketsRequest(formData)
+
+          if(res.data.state > 0){
+            setTicketLoading(false)
+        }
     }
 
     const handleChangeEvento = (e, id, field) => {
@@ -119,6 +130,7 @@ const EditProd = () => {
 
     const createEventTickets = (e) => {
             e.preventDefault()
+            setLoadingCreateTicket(true)
             const formData = new FormData()
             formData.append('prodId', prodId)
             formData.append('nombreTicket', e.target.elements.nombreTicket.value)
@@ -131,8 +143,12 @@ const EditProd = () => {
             formData.append('distribution', distribution)
             formData.append('limit', e.target.elements?.limit?.value)
             formData.append('estado', estado)
-            createEventTicketsRequest(formData)
+            const res = createEventTicketsRequest(formData)
             setVisibilidad()
+
+            if(res.data.state > 0){
+                setLoadingCreateTicket(false)
+            }
     }
 
     const addRRPP = async (e) => {
@@ -160,7 +176,7 @@ const EditProd = () => {
                         <>
                            
                            <form className={`form-edit-event ${width >= 1290 ? 'flex relative' : 'block'}`} key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, p.categorias, p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
-                                <img className={`${width >= 1290 ? 'w-[350px] h-[380px]' : 'mx-auto w-[350px] h-[380px] mb-9'}`} src={p.imgEvento} alt=""></img>
+                                <img className={`${width >= 1290 ? 'w-[350px] h-[380px]' : 'mx-auto w-[350px] h-[380px] mb-9'}`} src={p.imgEvento} alt="" loading="lazy"></img>
                                 <div className="edit-info-event flex justify-center">
                                     <div className={`${width >= 1290 ? 'ml-10' : 'ml-0'}`}>
                                         <h3 className={`${width >= 1290 ? 'ml-10 text-2xl' : 'text-2xl text-center'}`}>Edita la informarcion de tu evento:</h3>
@@ -197,11 +213,11 @@ const EditProd = () => {
                                         </div>
                                         <div>
                                             <label>Fecha y hora de inicio:</label><br></br>
-                                            <input type="datetime-local" value={formatDate(eventosEditados[p._id]?.fechaInicio) ??  formatDate(p.fechaInicio)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
+                                            <input type="datetime-local" value={eventosEditados[p._id]?.fechaInicio ??  p.fechaInicio} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
                                         </div>
                                         <div>
                                             <label>Fecha y hora de fin:</label><br></br>
-                                            <input type="datetime-local" value={formatDate(eventosEditados[p._id]?.fechaFin) ??  formatDate(p.fechaFin)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
+                                            <input type="datetime-local" value={eventosEditados[p._id]?.fechaFin ??  p.fechaFin} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
                                         </div>
                                         <div className="flex items-center">
                                             <div>
@@ -227,7 +243,7 @@ const EditProd = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <button className="absolute bg-indigo-900 right-50 h-[40px] pr-6 pl-6" type="submit">Actualizar evento</button>
+                                <button className="absolute bg-indigo-900 right-50 h-[40px] pr-6 pl-6" type="submit">{loading ? <LoadingButton/> : 'Actualizar evento'}</button>
                             </form>
                            
                             </>
@@ -236,7 +252,7 @@ const EditProd = () => {
                             <div className="mt-9">
                                 <div className="flex items-center">
                                     <h3 className="text-xl">Crear nuevo ticket:</h3>
-                                    <img className="ml-5" src={ticketPng} alt=""></img>
+                                    <img className="ml-5" src={ticketPng} alt="" loading="lazy"></img>
                                 </div>
                                 <div>
                                     <label>Nombre del ticket:</label>
@@ -293,12 +309,12 @@ const EditProd = () => {
                                 </div>
                             </div>
                             <div className="flex justify-center items-center w-[180px] mt-5">
-                                <button className="w-[180px] bg-indigo-900 p-2" type="submit">Agregar tickets</button>
+                                <button className="w-[180px] bg-indigo-900 p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar tickets'}</button>
                             </div>
                         </form>
                          <form className="add-colab-form flex items-center mt-9" onSubmit={(e) => addRRPP(e)}>
                              <input type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
-                             <button className="ml-3 cursor-pointer" type="submit">Añadir Colaborador</button>
+                             <button className="ml-3 cursor-pointer bg-violet-900 p-2 rounded-lg" type="submit">Añadir Colaborador</button>
                              {message && <p className="ml-3">Se añadio el colaborador al evento!</p>}
                         </form>
                     </div>
@@ -308,12 +324,12 @@ const EditProd = () => {
                     <div className="edit-tickets-container flex flex-wrap justify-around">
                     {prod.map((pr) => 
                         pr.tickets.map((tick) => 
-                            <div className="form-edit-ticket w-[350px] mt-18 text-center" key={tick._id}>
-                                    <img className="ticket-img mx-auto mb-5 w-[185px] h-[185px] object-cover rounded-sm" src={tick.imgTicket} alt=""></img>
+                            <div className="form-edit-ticket w-[370px] mt-18 text-center" key={tick._id}>
+                                    <img className="ticket-img mx-auto mb-5 w-[185px] h-[185px] object-cover rounded-sm" src={tick.imgTicket} alt="" loading="lazy"></img>
                                     <button className="pb-3 pt-3 pl-2 pr-2 bg-indigo-900! rounded-lg max-w-[350px] cursor-pointer" onClick={(e) => showTicketFunc(e, tick._id)}>Editar: {tick.nombreTicket}</button>
                                     {openTicketId === tick._id && ( 
                                     <>
-                                        <div className="mb-3">
+                                        <div className="mt-3 mb-3">
                                             <label>Cambiar imagen del ticket:</label><br></br>
                                             <input type="file" name="imgTicket" ref={el => fileRefsB.current[tick._id] = el} />
                                         </div>
@@ -417,16 +433,16 @@ const EditProd = () => {
                                                 <option value={3}>Cortesia</option>
                                             </select>
                                         </div>
-                                        <button className="mt-5 p-3 w-[100px] rounded-lg cursor-pointer" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.cantidad, tick.limit, tick.fechaDeCierre, tick.visibilidad)}>Editar</button>
+                                        <button className="mt-5 p-3 w-[100px] rounded-lg cursor-pointer" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.cantidad, tick.limit, tick.fechaDeCierre, tick.visibilidad)}>{ticketLoading ? <LoadingButton/> : 'Editar'}</button>
                                     </>) }
                                 </div>
                         )
                     )}
                     </div>
                     <div className="send-back relative flex items-center h-[150px]">
-                        <Link className="absolute right-120 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Enviar Invitaciónes</p></Link>
-                        <Link className="absolute right-40 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt=""></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
-                        <Link className="absolute right-0 flex items-center mt-12 ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt=""></img><p className="ml-3">Volver</p></Link>
+                        <Link className="absolute right-120 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Enviar Invitaciónes</p></Link>
+                        <Link className="absolute right-40 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
+                        <Link className="absolute right-0 flex items-center mt-12 ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
                     </div>
                 </div>
         </>

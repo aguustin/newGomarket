@@ -39,7 +39,7 @@ const Nav = () => {
            { width >= 950 ? 
             <>
                 <div className="absolute w-[760px] left-6 mx-auto flex justify-between items-center">
-                        <img className="w-[100px]" src={logoPruebaJpg} alt=""></img>
+                        <img className="w-[100px]" src={logoPruebaJpg} alt="" loading="lazy"></img>
                         <Link className="text-lg" to="/Home">Inicio</Link>
                         <Link className="text-lg" to="/Contact">Contacto</Link>
                         {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event" onClick={closeMenu}>Crear evento</Link> : <Link className="text-lg" to="/" onClick={closeMenu}>Crear evento</Link>}
@@ -50,14 +50,14 @@ const Nav = () => {
                 <button className="absolute right-9 cursor-pointer" onClick={() => setOpenProfileCong(!openProfileConf)}>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9">Iniciar sesion</Link>}
                 {openProfileConf && <div className="settings absolute top-[80px] right-4 w-[200px]">
                         <div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div>
-                        <div className=" cursor-pointer"><button onClick={() => logoutFunc()} className="flex items-center h-[60px] text-lg cursor-pointer"><p className="ml-4">Salir</p><img className="ml-3" src={logoutPng} alt=""></img></button></div>
+                        <div className=" cursor-pointer"><button onClick={() => logoutFunc()} className="flex items-center h-[60px] text-lg cursor-pointer"><p className="ml-4">Salir</p><img className="ml-3" src={logoutPng} alt="" loading="lazy"></img></button></div>
                 </div>}
             </>
             :
             <>
                 
-                    <img className="w-[100px]" src={logoPruebaJpg} alt=""></img>
-                    <button className="absolute right-8" onClick={() => setShowMobileNav(!showMobileNav)}><img className="w-[40px]" src={menuPng} alt=""></img></button>
+                    <img className="w-[100px]" src={logoPruebaJpg} alt="" loading="lazy"></img>
+                    <button className="absolute right-8" onClick={() => setShowMobileNav(!showMobileNav)}><img className="w-[40px]" src={menuPng} alt="" loading="lazy"></img></button>
                     {showMobileNav && 
                     <div className="nav-mobile-options absolute right-0 top-[80px] ">
                         <div className="text-center p-4 pl-10 pr-10 border-b-1">

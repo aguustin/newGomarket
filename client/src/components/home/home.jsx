@@ -9,12 +9,14 @@ import theaterPng from '../../assets/botones/theater.png'
 import adultsPng from '../../assets/botones/adults.png'
 import musicPng from '../../assets/botones/music.png'
 import dancePng from '../../assets/botones/dance.png'
+import Skeleton from 'react-loading-skeleton';
 
 const Home = () => {
     const {session, events} = useContext(UserContext)
     const [allEvents, setAllEvents] = useState([])
     const [search, setSearch] = useState('')
     const [width, setWidth] = useState(null)
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => { 
         const getAllEventsFunc = async () => {
@@ -33,6 +35,8 @@ const Home = () => {
        
         return () => mediaQuery.removeEventListener("change", handleResize);
     },[])
+
+  
     
     if (width === null) return null;
 
@@ -41,7 +45,7 @@ const Home = () => {
             <div className="home w-full h-full mt-[70px] p-16 pt-0 flex">
                 <div className="w-[70vw] relative">
                     <div>
-                        <h1>Encuentra tu evento:</h1>
+                        <h1>Encuentra tu evento:</h1> 
                     </div>
                     <div className="mt-10">
                         <form className="search-form flex items-center" >
@@ -52,15 +56,15 @@ const Home = () => {
                     {width < 1376 &&
                         <div className="categories-container relative right-0 w-[300px] mx-6 mt-37">
                             <div className="max-h-[500px] mt-7">
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={1} name="categoriaA"><img src={dancerPng} alt=""></img><p className="ml-4">Baile</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={2} name="musica"><img src={musicPng} alt=""></img><p className="ml-4">Musica</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={3} name="arte"><img src={theaterPng} alt=""></img><p className="ml-4">Arte</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={4} name="mayores"><img src={adultsPng} alt=""></img><p className="ml-4">Mayores +18</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={5} name="menores"><img src={dancePng} alt=""></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={1} name="categoriaA"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={2} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={3} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={4} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={5} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
                             </div>
                         </div>
                     }
-                    <div className="home-events-container flex flex-wrap justify-between">
+                    <div className="home-events-container flex flex-wrap justify-between max-h-[1200px]">
                         {allEvents.filter((allEv) => {
                             //return search.toLowerCase() === '' ? allEv : allEv.nombreEvento.toLowerCase().includes(search.toLowerCase());
                             const matchesSearch =
@@ -93,11 +97,11 @@ const Home = () => {
                     {width > 1375 &&
                         <div className="categories-container relative right-0 w-[300px] mx-6 mt-37">
                             <div className="max-h-[500px] mt-7">
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={1} name="categoriaA"><img src={dancerPng} alt=""></img><p className="ml-4">Baile</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={2} name="musica"><img src={musicPng} alt=""></img><p className="ml-4">Musica</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={3} name="arte"><img src={theaterPng} alt=""></img><p className="ml-4">Arte</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={4} name="mayores"><img src={adultsPng} alt=""></img><p className="ml-4">Mayores +18</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={5} name="menores"><img src={dancePng} alt=""></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={1} name="categoriaA"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={2} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={3} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={4} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={5} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
                             </div>
                         </div>
                     }

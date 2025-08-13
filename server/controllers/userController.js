@@ -105,7 +105,6 @@ export const newPasswordController = async (req, res) => {
 
 export const contactController = async (req, res) => {
     const {pais, nombreCompleto, correo, dni, nombreEvento, mensaje} = req.body
-
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -122,5 +121,5 @@ export const contactController = async (req, res) => {
         html: `<b>${mensaje}</b>`
     });
 
-    res.status(200).json(1)
+    res.status(200).json({state:1})
 }
