@@ -52,7 +52,7 @@ const EditProd = () => {
     
     if (width === null) return null;
     
-    const updateEvent = async (e, eventId, imgEvento, nombreEvento, descripcionEvento, eventoEdad, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento) => {
+    const updateEvent = async (e, eventId, imgEvento, nombreEvento, descripcionEvento, eventoEdad,/* categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento) => {
         e.preventDefault()
         setLoading(true)
         const editedValues = Object.entries(eventosEditados).map(([id, values]) => ({
@@ -70,7 +70,7 @@ const EditProd = () => {
         formData.append('nombreEvento',  editedValues[0]?.nombreEvento ??  nombreEvento)
         formData.append('descripcionEvento', editedValues[0]?.descripcionEvento ??  descripcionEvento)
         formData.append('eventoEdad', editedValues[0]?.eventoEdad ??  eventoEdad)
-        formData.append('categorias', editedValues[0]?.categorias ??  categorias)
+        //formData.append('categorias', editedValues[0]?.categorias ??  categorias)
         formData.append('artistas', editedValues[0]?.artistas ??  artistas)
         formData.append('montoVentas', editedValues[0]?.montoVentas ??  montoVentas)
         formData.append('fechaInicio', new Date(editedValues[0]?.fechaInicio).toISOString() ??  new Date(fechaInicio).toISOString())
@@ -175,7 +175,7 @@ const EditProd = () => {
                         {prod.map((p) => 
                         <>
                            
-                           <form className={`form-edit-event ${width >= 1290 ? 'flex relative' : 'block'}`} key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, p.categorias, p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
+                           <form className={`form-edit-event ${width >= 1290 ? 'flex relative' : 'block'}`} key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
                                 <img className={`${width >= 1290 ? 'w-[350px] h-[380px]' : 'mx-auto w-[350px] h-[380px] mb-9'}`} src={p.imgEvento} alt="" loading="lazy"></img>
                                 <div className="edit-info-event flex justify-center">
                                     <div className={`${width >= 1290 ? 'ml-10' : 'ml-0'}`}>
@@ -196,10 +196,10 @@ const EditProd = () => {
                                             <label>Edad minima</label><br></br>
                                             <input type="text" value={eventosEditados[p._id]?.eventoEdad ??  p.eventoEdad} onChange={(e) => handleChangeEvento(e, p._id, 'eventoEdad')}></input>
                                         </div>
-                                        <div>
+                                        {/*<div>
                                             <label>Categorias del evento:</label><br></br>
                                             <input type="text"  placeholder="..." value={eventosEditados[p._id]?.categorias ??  p.categorias} onChange={(e) => handleChangeEvento(e, p._id, 'categorias')} name="categorias"></input>
-                                        </div>
+                                        </div>*/}
                                         <div>
                                             <label>Artistas que participan:</label><br></br>
                                             <input type="text"  placeholder="..." value={eventosEditados[p._id]?.artistas ??  p.artistas} onChange={(e) => handleChangeEvento(e, p._id, 'artistas')} name="artistas"></input>

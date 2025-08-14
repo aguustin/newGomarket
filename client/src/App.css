@@ -642,6 +642,28 @@ input{
   .new-cortesie img{
     margin-top: 110px !important;
   }
+
+  .event-img-container{
+    width: 100vw;
+    object-fit: fill;
+    box-shadow: transparent;
+  }
+  
+  .event-img-container img{
+    height: auto !important;
+    object-fit: contain;
+  }
+  .event-desc{
+    padding: 7px;
+    padding-left: 15px;
+  }
+
+  .event-desc h3{
+    font-size: 18px;
+  }
+  .event-desc p, .event-desc label{
+    font-size: 16px;
+  }
 }
 
 @media screen and (max-width: 610px) {
@@ -668,7 +690,10 @@ input{
     margin: 10px;
     font-size: 13px !important;
   }
- 
+  .space-text{
+    font-size: 20px;
+    margin-top: 10px;
+  }
 }
 
 @media screen and (max-width:540px) { 

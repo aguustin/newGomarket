@@ -26,8 +26,8 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
     const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkEvento } = req.body
+    const parsedCategorias = JSON.parse(categorias)
     const encryptedMail = encrypt(prodMail)
-
     if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
             const createdEvent = await ticketModel.create({
                     userId: userId,
@@ -37,7 +37,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     eventoEdad: eventoEdad,
                     nombreEvento: nombreEvento,
                     descripcionEvento: descripcionEvento,
-                    categorias: categorias,
+                    categorias: parsedCategorias,
                     artistas: artistas,
                     montoVentas: montoVentas,
                     fechaInicio: fechaInicio, //fechaInicio
@@ -72,7 +72,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 eventoEdad: eventoEdad,
                 nombreEvento: nombreEvento,
                 descripcionEvento: descripcionEvento,
-                categorias: categorias,
+                categorias: parsedCategorias,
                 artistas: artistas,
                 montoVentas: montoVentas,
                 fechaInicio: fechaInicio, //fechaInicio
@@ -188,11 +188,10 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
 
 
 export const updateEventController = async (req, res) => {  //ACTUALIZA LA INFO DEL EVENTO
-    const { eventId, nombreEvento, descripcionEvento, eventoEdad, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento} = req.body;
-
+    const { eventId, nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento} = req.body;
     // Construir los campos que siempre se actualizan
-    const updateFields = { nombreEvento, descripcionEvento, eventoEdad, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento};
-
+    const updateFields = { nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento};
+    
     if (req.file) {      //SE ACTUALIZAN LOS DATOS CON UNA IMAGEN NUEVA
     cloudinary.uploader.upload_stream(
         { resource_type: 'auto', folder: 'eventsGoTicket' },
@@ -751,98 +750,149 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
 }
 
 export const sendQrStaffQrController = async (req, res) => {
-  const {prodId, quantities, mail} = req.body
+  const { prodId, quantities, mail } = req.body;
   const ticketIds = Object.keys(quantities);
-  const findRrPp = await ticketModel.findOne({_id: prodId, "rrpp.mail": mail})
-  let i = 0
 
-    for (const id of ticketIds) {
-        const verifyQuantity = await ticketModel.find({_id: prodId, "cortesiaRRPP._id": id })
-        
-        if(verifyQuantity[0]?.cortesiaRRPP[i]?.cantidadDeCortesias > 0){
-          const quantityToAdd = quantities[id];
-          
-              await ticketModel.updateOne(
-              { 
-                _id: prodId,
-                "cortesiaRRPP._id": id,
-              },
-              {
-                $inc: {
-                  "cortesiaRRPP.$.cantidadDeCortesias": -quantityToAdd,
-                  "cortesiaRRPP.$.entregados": quantityToAdd,
-                }
-              }
-            );
-          }else{
-            return res.status(200).json({state: 2})
-          }
-          i++
-    }
+  // Buscar si el RRPP ya existe
+  const findRrPp = await ticketModel.findOne({ _id: prodId, "rrpp.mail": mail });
 
-    if (findRrPp) {
-  // RRPP exists
+  let i = 0;
   for (const id of ticketIds) {
-    const quantityToAdd = quantities[id];
+    const verifyQuantity = await ticketModel.find({ _id: prodId, "cortesiaRRPP._id": id });
 
-    const updateResult = await ticketModel.updateOne(
-      { _id: prodId },
-      {
-        $inc: {
-          "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": quantityToAdd
-        }
-      },
-      {
-        arrayFilters: [
-          { "rrppElem.mail": mail },
-          { "ticketElem.ticketIdCortesia": id }
-        ]
-      }
-    );
+    if (verifyQuantity[0]?.cortesiaRRPP[i]?.cantidadDeCortesias > 0) {
+      const quantityToAdd = quantities[id];
 
-    // Si no se actualizó (porque el ticket no existía), lo insertamos
-    if (updateResult.modifiedCount === 0) {
       await ticketModel.updateOne(
+        {
+          _id: prodId,
+          "cortesiaRRPP._id": id,
+        },
+        {
+          $inc: {
+            "cortesiaRRPP.$.cantidadDeCortesias": -quantityToAdd,
+            "cortesiaRRPP.$.entregados": quantityToAdd,
+          }
+        }
+      );
+    } else {
+      return res.status(200).json({ state: 2 }); // No hay suficientes cortesías
+    }
+    i++;
+  }
+
+  // Si existe RRPP, actualizamos su listado
+  if (findRrPp) {
+    for (const id of ticketIds) {
+      const quantityToAdd = quantities[id];
+
+      const updateResult = await ticketModel.updateOne(
         { _id: prodId },
         {
-          $push: {
-            "rrpp.$[rrppElem].ticketsCortesias": {
-              ticketIdCortesia: id,
-              cantidadDeCortesias: quantityToAdd
-            }
+          $inc: {
+            "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": quantityToAdd
           }
         },
         {
           arrayFilters: [
-            { "rrppElem.mail": mail }
+            { "rrppElem.mail": mail },
+            { "ticketElem.ticketIdCortesia": id }
           ]
         }
       );
-    }
-  }
-} else {
-  // RRPP no existe - lo creamos
-  await ticketModel.updateOne(
-    {
-      _id: prodId,
-      'rrpp.mail': { $ne: mail }
-    },
-    {
-      $addToSet: {
-        rrpp: {
-          nombre: "aguss",
-          mail: mail,
-          ticketsCortesias: ticketIds.map(id => ({
-            ticketIdCortesia: id,
-            cantidadDeCortesias: quantities[id]
-          }))
-        }
+
+      if (updateResult.modifiedCount === 0) {
+        await ticketModel.updateOne(
+          { _id: prodId },
+          {
+            $push: {
+              "rrpp.$[rrppElem].ticketsCortesias": {
+                ticketIdCortesia: id,
+                cantidadDeCortesias: quantityToAdd
+              }
+            }
+          },
+          {
+            arrayFilters: [
+              { "rrppElem.mail": mail }
+            ]
+          }
+        );
       }
     }
-  );
-}
+  } else {
+    // Si no existe, lo agregamos
+    await ticketModel.updateOne(
+      {
+        _id: prodId,
+        'rrpp.mail': { $ne: mail }
+      },
+      {
+        $addToSet: {
+          rrpp: {
+            nombre: "",
+            mail: mail,
+            ticketsCortesias: ticketIds.map(id => ({
+              ticketIdCortesia: id,
+              cantidadDeCortesias: quantities[id]
+            }))
+          }
+        }
+      }
+    );
+  }
 
-return res.status(200).json({state: 1})
+  // Enviar correo
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: user_mail,
+      pass: pass
+    }
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: '"GoTickets" <no-reply@gotickets.com>',
+      to: mail,
+      subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
+      html: `
+        <html>
+          <head>
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+            </style>
+          </head>
+          <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
+            <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center;">
+              <h1 style="font-size:30px; color:white;">Go Ticket</h1>
+            </div>
+            <div style="padding:20px; background-color:#1a0c2c; color:white;">
+              <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
+              ${findRrPp ? `
+                <a href=https://goticket-wsy0.onrender.com/get_my_rrpp_events/${mail}></a>
+                <img src="${findRrPp.imagenEvento || ''}" alt="" style="width:230px; height:230px;"/>
+                <div>
+                  <h2>${findRrPp.nombreEvento}</h2>
+                  <p>Fecha del evento: ${findRrPp.eventoFechaInicio}</p>
+                  <p>Entrada válida hasta: ${findRrPp.ticketFechaCierre}</p>
+                  <p>${findRrPp.direccionEvento}</p>
+                </div>
+              ` : ''}
+            </div>
+            <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center;">
+              <h2 style="font-size:27px; color:white;">Go Ticket</h2>
+            </footer>
+          </body>
+        </html>
+      `
+    });
+
+    return res.status(200).json({ state: 1 }); // Éxito
+  } catch (error) {
+    console.error("Error al enviar el correo:", error);
+    return res.status(500).json({ state: 0, error: "Error al enviar el correo" });
+  }
 };
 
 

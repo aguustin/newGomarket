@@ -44,12 +44,12 @@ const Nav = () => {
                         <Link className="text-lg" to="/Contact">Contacto</Link>
                         {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event" onClick={closeMenu}>Crear evento</Link> : <Link className="text-lg" to="/" onClick={closeMenu}>Crear evento</Link>}
                         {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/productions" onClick={closeMenu}>Mis producciones</Link> : <Link className="text-lg" to="/" onClick={closeMenu}>Mis producciones</Link>}
-                        {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/profile" onClick={closeMenu}>Mi perfil</Link> : ''}
+                        {/*session?.userFinded?.length > 0 ? <Link className="text-lg" to="/profile" onClick={closeMenu}>Mi perfil</Link> : ''*/}
                 </div>
                 {session?.userFinded?.length > 0 ? 
                 <button className="absolute right-9 cursor-pointer" onClick={() => setOpenProfileCong(!openProfileConf)}>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9">Iniciar sesion</Link>}
                 {openProfileConf && <div className="settings absolute top-[80px] right-4 w-[200px]">
-                        <div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div>
+                        {/*<div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div> */}
                         <div className=" cursor-pointer"><button onClick={() => logoutFunc()} className="flex items-center h-[60px] text-lg cursor-pointer"><p className="ml-4">Salir</p><img className="ml-3" src={logoutPng} alt="" loading="lazy"></img></button></div>
                 </div>}
             </>
@@ -61,20 +61,20 @@ const Nav = () => {
                     {showMobileNav && 
                     <div className="nav-mobile-options absolute right-0 top-[80px] ">
                         <div className="text-center p-4 pl-10 pr-10 border-b-1">
-                            <Link className="text-lg" to="/Home">Inicio</Link>
+                            <Link className="text-lg" to="/Home" onClick={() => setShowMobileNav(!showMobileNav)}>Inicio</Link>
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-1">
-                            <Link className="text-lg" to="/Contact">Contacto</Link>
+                            <Link className="text-lg" to="/Contact" onClick={() => setShowMobileNav(!showMobileNav)}>Contacto</Link>
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-1">
-                            {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event">Crear evento</Link> : <Link className="text-lg" to="/">Crear evento</Link>}
+                            {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/Create_event" onClick={() => setShowMobileNav(!showMobileNav)}>Crear evento</Link> : <Link className="text-lg" to="/">Crear evento</Link>}
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-1">
-                            {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/productions">Mis producciones</Link> : <Link className="text-lg" to="/">Mis producciones</Link>}
+                            {session?.userFinded?.length > 0 ? <Link className="text-lg" to="/productions" onClick={() => setShowMobileNav(!showMobileNav)}>Mis producciones</Link> : <Link className="text-lg" to="/">Mis producciones</Link>}
                         </div>
-                        <div className="text-center p-4">
+                        {/*<div className="text-center p-4">
                             {session?.userFinded?.length > 0 && <Link className="text-lg pl-10 pr-10" to="/profile">Mi perfil</Link>}
-                        </div>
+                        </div> */ }
                     </div>}
                 
             </>

@@ -30,6 +30,7 @@ const CreateEventForm = () => {
     const [showEventInfo, setShowEventInfo] = useState(true)
     const [previewImage, setPreviewImage] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [categorias, setCategorias] = useState([])
 
     const createEvent = async (e) => {
         e.preventDefault()
@@ -47,7 +48,7 @@ const CreateEventForm = () => {
             formData.append('eventoEdad', eventoEdad)
             formData.append('nombreEvento', e.target.elements.nombreEvento.value)
             formData.append('descripcionEvento', e.target.elements.descripcionEvento.value)
-            formData.append('categorias', e.target.elements.categorias.value)
+            formData.append('categorias', JSON.stringify(categorias))
             formData.append('artistas', e.target.elements.artistas.value)
             formData.append('montoVentas', e.target.elements.montoVentas.value)
             formData.append('fechaInicio',  new Date(startDate).toISOString())
@@ -115,6 +116,15 @@ const CreateEventForm = () => {
       setPreviewImage(imageUrl);
     }
   };
+
+    const handleChange = (e) => {
+    const selected = e.target.value;
+
+    // Agregamos si no está ya en el array
+    if (!categorias.includes(selected)) {
+            setCategorias((prev) => [...prev, selected]);
+        }
+    };
    
     return(
         <>
@@ -159,7 +169,20 @@ const CreateEventForm = () => {
                     <div>
                         <label>Categorias del evento:</label>
                         <div>
-                            <input type="text"  placeholder="..." name="categorias"></input>
+                            <select onChange={handleChange} defaultValue="">
+                                <option value="" disabled>Selecciona una categoría</option>
+                                <option value="baile">Baile</option>
+                                <option value="musica">Música</option>
+                                <option value="arte">Arte</option>
+                                <option value="teatro">Teatro</option>
+                            </select>
+                            {/*<input type="text"  placeholder="..." name="categorias"></input>*/ }
+                        </div>
+                        <div className="flex items-center mt-2 mb-2">
+                        {categorias.map((cat, i) => ( 
+                        <div key={i} className="ml-1">
+                            <label className="p-2 bg-violet-600! rounded-xl">{cat}</label>
+                        </div>))}
                         </div>
                     </div>
                     <div>

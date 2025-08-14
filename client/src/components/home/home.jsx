@@ -75,12 +75,12 @@ const Home = () => {
 
                             return matchesSearch && matchesType;
                         }).map((allEv) =>(
-                            <div key={allEv?._id} className="relative w-[300px] mt-8 mx-3">
+                            <div key={allEv?._id} className="event-img-container relative w-[300px] mt-8 mx-3">
                                 <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
                                     <FadeInImage
                                         src={allEv.imgEvento}
                                         alt={allEv.nombreEvento}
-                                        className="h-[300px] brightness-70"
+                                        className="event-img mx-auto brightness-70"
                                     />
                                 </Link>
                                 <div className="event-desc rounded-b-lg bottom-0 p-5">

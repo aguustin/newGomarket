@@ -109,7 +109,7 @@ export const sendCortesiesController = async (req, res) => {
         await saveToken.save();
 
         // 2. Generar QR
-        const qrData = `${process.env.URL_FRONT_DEV}/ticket/validate/${token}`;
+        const qrData = `${process.env.URL_FRONT}/ticket/validate/${token}`;
         const qrBase64 = await generateQr(qrData);
         const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64');
 
