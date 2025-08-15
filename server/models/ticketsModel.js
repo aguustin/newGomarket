@@ -26,7 +26,7 @@ const ticketSchema = new mongoose.Schema({
     }],
     artistas: {type: String},
     descripcionEvento: {type: String},
-    categorias: {type: String},
+    categorias: [String],
     fechaInicio: {type: Date},
     fechaFin: {type: Date},
     provincia: {type: String},
