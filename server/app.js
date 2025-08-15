@@ -69,6 +69,7 @@ app.use(express.json())
 app.use(urlencoded({extended:true}))
 app.use(morgan("tiny"))
 //routes
+app.options('*', cors(corsOptions))
 app.use(userRoutes)
 app.use(ticketRoutes)
 app.use(cortesieRoutes)
