@@ -59,6 +59,7 @@ connecDb()
 const corsOptions = {
   origin: "https://goticket-wsy0.onrender.com", //https://goticket-wsy0.onrender.com",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
 }
