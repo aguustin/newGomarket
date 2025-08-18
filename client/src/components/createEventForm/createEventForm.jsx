@@ -40,9 +40,12 @@ const CreateEventForm = () => {
             setLoading(true)
             if(startDate > endDate){
                 setLoading(false)
-                setDateMsg(1)
+                setDateMsg(2)
                 console.log(message)
                 message = 'La fecha de inicio no puede ser mayor a la fecha de fin'
+            }else if(startDate < Date.now()){
+                setDateMsg(1)
+                message = 'La fecha de inicio no puede ser menor a la fecha actual'
             }else{
                 currency
                 selectedState.name
@@ -79,6 +82,7 @@ const CreateEventForm = () => {
                 }
                 setShowEventInfo(false)
             }
+            
     }
 
     const createEventTickets = async (e) => { //agregar estado a los tickets
@@ -86,11 +90,11 @@ const CreateEventForm = () => {
         setLoading(true)
         if(startDate > closeDate){
             setLoading(false)
-            setDateMsg(2)
+            setDateMsg(3)
             message = 'La fecha de cierre del ticket no puede ser menor a la de inicio del evento'
         }else if(endDate < closeDate){
             setLoading(false)
-            setDateMsg(3)
+            setDateMsg(4)
             message = 'La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento'
         }else{
             setDateMsg(0)
@@ -236,7 +240,7 @@ const CreateEventForm = () => {
                     <div>
                         <label>Fecha y hora de fin:</label>
                         <div>
-                            <input type="datetime-local" onChange={(e) => setEndDate(e.target.value)}></input>
+                            <input type="datetime-local" onChange={(e) => setEndDate(e.target.value)}></input> {dateMsg === 2 && <p className="text-red-600">{message}</p>}
                         </div>
                     </div>
                     <div className="flex items-center">
@@ -353,7 +357,7 @@ const CreateEventForm = () => {
                             <div className="mt-3">
                                 <label>Fecha y hora de fin:</label>
                                 <input className="reset-inp" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
-                                {dateMsg === 2 || dateMsg === 3 && <p className="text-red-600!">{message}</p>}
+                                {dateMsg === 3 || dateMsg === 4 && <p className="text-red-600!">{message}</p>}
                             </div>
                             <div className="mt-3">
                                 <label>Imagen del ticket</label>
