@@ -8,6 +8,7 @@ import {Country, State, City} from "country-state-city"
 import { Link } from "react-router"
 import ticketPng from '../../assets/images/ticket.png'
 import { LoadingButton } from "../../globalscomp/globalscomp"
+import closePng from '../../assets/botones/close.png'
 
 const CreateEventForm = () => {
     const {session} = useContext(UserContext)
@@ -17,7 +18,7 @@ const CreateEventForm = () => {
     const [estado, setEstado] = useState(1)
     const [distribution, setDistribution] = useState(0)
     const [closeDate, setCloseDate] = useState()
-    const [disabledButton, setDisabledButton] = useState(true)
+    const [disabledButton, setDisabledButton] = useState(false)
     const [saveEventId, setSaveEventId] = useState()
     const [estadoEdad, setEstadoEdad] = useState()
     const [countries, setCountries] = useState(Country.getAllCountries())
@@ -31,66 +32,89 @@ const CreateEventForm = () => {
     const [previewImage, setPreviewImage] = useState(null)
     const [loading, setLoading] = useState(false)
     const [categorias, setCategorias] = useState([])
+    const [dateMsg, setDateMsg] = useState(0)
+    let message = ''
 
     const createEvent = async (e) => {
-        e.preventDefault()
+            e.preventDefault()
             setLoading(true)
-            currency
-            selectedState.name
-            selectedCity.name
-            const tipoEvento = e.target.elements.tipoEvento.value
-            const eventoEdad = e?.target?.elements?.eventoEdad?.value || null
-            const formData = new FormData()
-            formData.append('userId', session?.userFinded?.[0]?._id)
-            formData.append('prodMail', session?.userFinded?.[0]?.mail) //aca va el mail de la session
-            formData.append('paisDestino', selectedCountry.name)
-            formData.append('tipoEvento', tipoEvento)
-            formData.append('eventoEdad', eventoEdad)
-            formData.append('nombreEvento', e.target.elements.nombreEvento.value)
-            formData.append('descripcionEvento', e.target.elements.descripcionEvento.value)
-            formData.append('categorias', JSON.stringify(categorias))
-            formData.append('artistas', e.target.elements.artistas.value)
-            formData.append('montoVentas', e.target.elements.montoVentas.value)
-            formData.append('fechaInicio',  new Date(startDate).toISOString())
-            formData.append('fechaFin', new Date(endDate).toISOString())
-            formData.append('provincia', selectedState.name)
-            formData.append('localidad', selectedCity.name)
-            formData.append('tipoMoneda', currency),
-            formData.append('direccion', e.target.elements.direccion.value)
-            formData.append('lugarEvento', e.target.elements.lugarEvento.value)
-            formData.append('linkEvento', e.target.elements.linkEvento.value)
-            formData.append('imgEvento', e.target.elements.imgEvento.files[0])
-            const res = await createEventRequest(formData)
-            console.log(res.data)
-
-            if(res.data.estado === 1){
+            if(startDate > endDate){
                 setLoading(false)
-                setShowTickets(1)
-                setSaveEventId(res.data.eventId)
+                setDateMsg(1)
+                console.log(message)
+                message = 'La fecha de inicio no puede ser mayor a la fecha de fin'
+            }else{
+                currency
+                selectedState.name
+                selectedCity.name
+                const tipoEvento = e.target.elements.tipoEvento.value
+                const eventoEdad = e?.target?.elements?.eventoEdad?.value || null
+                const formData = new FormData()
+                formData.append('userId', session?.userFinded?.[0]?._id)
+                formData.append('prodMail', session?.userFinded?.[0]?.mail) //aca va el mail de la session
+                formData.append('paisDestino', selectedCountry.name)
+                formData.append('tipoEvento', tipoEvento)
+                formData.append('eventoEdad', eventoEdad)
+                formData.append('nombreEvento', e.target.elements.nombreEvento.value)
+                formData.append('descripcionEvento', e.target.elements.descripcionEvento.value)
+                formData.append('categorias', JSON.stringify(categorias))
+                formData.append('artistas', e.target.elements.artistas.value)
+                formData.append('montoVentas', e.target.elements.montoVentas.value)
+                formData.append('fechaInicio',  new Date(startDate).toISOString())
+                formData.append('fechaFin', new Date(endDate).toISOString())
+                formData.append('provincia', selectedState.name)
+                formData.append('localidad', selectedCity.name)
+                formData.append('tipoMoneda', currency),
+                formData.append('direccion', e.target.elements.direccion.value)
+                formData.append('lugarEvento', e.target.elements.lugarEvento.value)
+                formData.append('linkEvento', e.target.elements.linkEvento.value)
+                formData.append('imgEvento', e.target.elements.imgEvento.files[0])
+                const res = await createEventRequest(formData)
+    
+                if(res.data.estado === 1){
+                    setDateMsg(0)
+                    setLoading(false)
+                    setShowTickets(1)
+                    setSaveEventId(res.data.eventId)
+                }
+                setShowEventInfo(false)
             }
-            setShowEventInfo(false)
     }
 
     const createEventTickets = async (e) => { //agregar estado a los tickets
         e.preventDefault()
         setLoading(true)
-        const formData = new FormData()
-        formData.append('prodId', saveEventId)
-        formData.append('nombreTicket', e.target.elements.nombreTicket.value)
-        formData.append('descripcionTicket', e.target.elements.descripcionTicket.value)
-        formData.append('precio', e.target.elements.precio.value)
-        formData.append('cantidad', e.target.elements.cantidad.value)
-        formData.append('fechaDeCierre', new Date(closeDate).toISOString())
-        formData.append('imgTicket', e.target.elements.imgTicket.files[0])
-        formData.append('visibilidad', e.target.elements.estado.value)
-        formData.append('estado', estado)
-        formData.append('distribution', distribution)
-        formData.append('limit', e.target.elements?.limit?.value)
-        const res = await createEventTicketsRequest(formData)
-        if(res.data.estado === 1){
+        if(startDate > closeDate){
             setLoading(false)
-            setDisabledButton(true)
+            setDateMsg(2)
+            message = 'La fecha de cierre del ticket no puede ser menor a la de inicio del evento'
+        }else if(endDate < closeDate){
+            setLoading(false)
+            setDateMsg(3)
+            message = 'La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento'
+        }else{
+            setDateMsg(0)
+            const formData = new FormData()
+            formData.append('prodId', saveEventId)
+            formData.append('nombreTicket', e.target.elements.nombreTicket.value)
+            formData.append('descripcionTicket', e.target.elements.descripcionTicket.value)
+            formData.append('precio', e.target.elements.precio.value)
+            formData.append('cantidad', e.target.elements.cantidad.value)
+            formData.append('fechaDeCierre', new Date(closeDate).toISOString())
+            formData.append('imgTicket', e.target.elements.imgTicket.files[0])
+            formData.append('visibilidad', e.target.elements.estado.value)
+            formData.append('estado', estado)
+            formData.append('distribution', distribution)
+            formData.append('limit', e.target.elements?.limit?.value)
+            const res = await createEventTicketsRequest(formData)
+
+            if(res.data.estado === 1){
+                setLoading(false)
+                setDisabledButton(true)
+                e.target.reset()
+            }
         }
+
     }
 
     const handleCountryChange = (country) => {
@@ -118,13 +142,18 @@ const CreateEventForm = () => {
   };
 
     const handleChange = (e) => {
-    const selected = e.target.value;
+        const selected = e.target.value;
 
-    // Agregamos si no está ya en el array
-    if (!categorias.includes(selected)) {
+        // Agregamos si no está ya en el array
+        if (!categorias.includes(selected)) {
             setCategorias((prev) => [...prev, selected]);
         }
     };
+    
+    const removeCategory = (e, categoryName) => {
+        e.preventDefault()
+        setCategorias(categorias.filter(c => !c.includes(categoryName)))
+    }
    
     return(
         <>
@@ -152,7 +181,7 @@ const CreateEventForm = () => {
                             <option value={1}>NO</option>
                             <option value={2}>SI</option>
                         </select>
-                        {estadoEdad && <input type="text" placeholder="A partir de que edad" name="eventoEdad"></input>}
+                        {estadoEdad && <input type="number" placeholder="A partir de que edad" name="eventoEdad"></input>}
                     </div>
                     <div>
                         <label>Nombre del evento:</label>
@@ -178,10 +207,11 @@ const CreateEventForm = () => {
                             </select>
                             {/*<input type="text"  placeholder="..." name="categorias"></input>*/ }
                         </div>
-                        <div className="flex items-center mt-2 mb-2">
+                        <div className="flex items-center mt-5 mb-2">
                         {categorias.map((cat, i) => ( 
-                        <div key={i} className="ml-1">
-                            <label className="p-2 bg-violet-600! rounded-xl">{cat}</label>
+                        <div key={i} className="flex ml-1 pt-2 pb-2 pl-3 pr-3 rounded-lg bg-violet-600!">
+                            <label className="rounded-xl">{cat}</label>
+                            <button className="remove-cat ml-2 cursor-pointer" type="button" onClick={(e) => removeCategory(e, cat)}><img src={closePng} alt=""></img></button>
                         </div>))}
                         </div>
                     </div>
@@ -200,8 +230,7 @@ const CreateEventForm = () => {
                     <div>
                         <label>Fecha y hora de inicio:</label>
                         <div>
-
-                            <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)}></input>
+                           <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)}></input>  {dateMsg === 1 && <p className="text-red-600">{message}</p>}
                         </div>
                     </div>
                     <div>
@@ -277,25 +306,25 @@ const CreateEventForm = () => {
                             </div>
                             <div className="mt-3">
                                 <label>Nombre del ticket</label>
-                                <input type="text" placeholder="..." name="nombreTicket" required></input>
+                                <input className="reset-inp" type="text" placeholder="..." name="nombreTicket" required></input>
                             </div>
                             <div className="mt-3">
                                 <label>Descripcion del ticket</label>
-                                <input type="text" placeholder="..." name="descripcionTicket" required></input>
+                                <input className="reset-inp" type="text" placeholder="..." name="descripcionTicket" required></input>
                             </div>
                             <div className="flex flex-wrap items-center">
                                 <div className="mt-3">
                                     <label>Precio del ticket</label>
-                                    <input type="number" placeholder="..." name="precio" required></input>
+                                    <input className="reset-inp" type="number" placeholder="..." name="precio" required></input>
                                 </div>
                                 <div className="mt-3">
                                     <label>Cantidad</label>
-                                    <input type="number" placeholder="..." name="cantidad" required></input>
+                                    <input className="reset-inp" type="number" placeholder="..." name="cantidad" required></input>
                                 </div>
                                 <div className="mt-3">
                                     <div className="flex items-center">
                                         <label>Estado:</label>
-                                        <select className="ml-1" name="estado" onChange={(e) => setEstado(e.target.value)}>
+                                        <select className="reset-inp ml-1" name="estado" onChange={(e) => setEstado(e.target.value)}>
                                             <option value={1}>Activo</option>
                                             <option value={2}>No visible</option>
                                             <option value={3}>Cortesia</option>
@@ -314,7 +343,7 @@ const CreateEventForm = () => {
                                            {distribution === '2' &&
                                                 <div className="mt-3">
                                                     <label>Limite a sacar por persona:</label>
-                                                    <input type="number" name="limit" placeholder="Ej: 3"></input>
+                                                    <input className="reset-inp" type="number" name="limit" placeholder="Ej: 3"></input>
                                                 </div>
                                            } 
                                         </>
@@ -323,11 +352,12 @@ const CreateEventForm = () => {
                             </div>
                             <div className="mt-3">
                                 <label>Fecha y hora de fin:</label>
-                                <input type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
+                                <input className="reset-inp" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
+                                {dateMsg === 2 || dateMsg === 3 && <p className="text-red-600!">{message}</p>}
                             </div>
                             <div className="mt-3">
                                 <label>Imagen del ticket</label>
-                                <input type="file" name="imgTicket"></input>
+                                <input className="reset-inp" type="file" name="imgTicket"></input>
                             </div>
                         </div>
                         <div className="relative flex items-center w-full">

@@ -12,11 +12,9 @@ import dancePng from '../../assets/botones/dance.png'
 import Skeleton from 'react-loading-skeleton';
 
 const Home = () => {
-    const {session, events} = useContext(UserContext)
     const [allEvents, setAllEvents] = useState([])
     const [search, setSearch] = useState('')
     const [width, setWidth] = useState(null)
-    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => { 
         const getAllEventsFunc = async () => {
@@ -35,6 +33,7 @@ const Home = () => {
        
         return () => mediaQuery.removeEventListener("change", handleResize);
     },[])
+
 
   
     
@@ -56,11 +55,12 @@ const Home = () => {
                     {width < 1376 &&
                         <div className="categories-container relative right-0 w-[300px] mx-6 mt-37">
                             <div className="max-h-[500px] mt-7">
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={1} name="categoriaA"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={1} name="baile"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
                                 <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={2} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
                                 <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={3} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={4} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={5} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={3} name="teatro"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByAge()} value={4} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByAge()} value={5} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
                             </div>
                         </div>
                     }

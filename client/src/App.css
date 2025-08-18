@@ -2,6 +2,11 @@
 
 *{
   list-style: none;
+  outline: none;
+}
+
+button:focus{
+  outline: none;
 }
 
 select{
@@ -29,6 +34,10 @@ select{
 .settings > div:hover, .settings > button:hover{
   background-color: #321852 !important;
   transition: background-color .5s;
+}
+
+.logout-b:hover{
+  background-color: transparent;
 }
 
 .link-profile{
@@ -189,10 +198,14 @@ input{
   margin-top: 10px !important;
 }
 
-.create-form img{
+.event-img{
     box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
--webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
--moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
+.remove-cat:hover{
+    background-color: transparent;
 }
 
 .continuar-button{

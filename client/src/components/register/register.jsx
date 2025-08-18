@@ -7,13 +7,15 @@ const Register = () => {
     const navigate = useNavigate() 
     const [showMsg, setShowMsg] = useState(false)
     const [captchaStatus, setCaptchaStatus] = useState(false)
-
+    const [loading, setLoading] = useState(false)
+    
      const onSuccess = () => {
         setCaptchaStatus(true)
     }
 
     const registerUser = async (e) => {
         e.preventDefault()
+        setLoading(true)
         if(captchaStatus){ 
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg(true)
@@ -33,10 +35,12 @@ const Register = () => {
                         navigate('/')
                     }, 3000)
                 }else{
+                    setLoading(false)
                     console.log(res.data.msj)
                 }
             }
         }
+        setLoading(false)
     }
 
     return(
@@ -67,7 +71,7 @@ const Register = () => {
                         <div className="flex items-center"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/">Ingresar</Link></div>
                     </div>
                 </div>
-                    <button className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>
+                    {loading ? <button className="login-b w-[130px] h-[56px] bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="w-[130px] bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>}
                 </div>
             </form>
         </>

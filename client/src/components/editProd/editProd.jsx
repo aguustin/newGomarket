@@ -194,7 +194,7 @@ const EditProd = () => {
                                         </div>
                                         <div>
                                             <label>Edad minima</label><br></br>
-                                            <input type="text" value={eventosEditados[p._id]?.eventoEdad ??  p.eventoEdad} onChange={(e) => handleChangeEvento(e, p._id, 'eventoEdad')}></input>
+                                            <input type="number" value={eventosEditados[p._id]?.eventoEdad ??  p.eventoEdad} onChange={(e) => handleChangeEvento(e, p._id, 'eventoEdad')}></input>
                                         </div>
                                         {/*<div>
                                             <label>Categorias del evento:</label><br></br>

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import UserContext from "../../context/userContext"
 import {Link, useNavigate} from 'react-router'
-import { Message } from "../../globalscomp/globalscomp"
+import { LoadingButton, Message } from "../../globalscomp/globalscomp"
 import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
 
@@ -10,6 +10,7 @@ const Login = () => {
     const [showMsg, setShowMsg] = useState(false)
     const [recoverPass, setRecoverPass] = useState(false)
     const [captchaStatus, setCaptchaStatus] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         setSession('')
@@ -24,20 +25,22 @@ const Login = () => {
 
     const loginUser = async (e) => {
         e.preventDefault()
-        if(captchaStatus){ 
-            const userData = {
-                mail: e.target.elements.mail.value,
-                contrasenia: e.target.elements.contrasenia.value
-            }   
-            const res = await loginContext(userData)
-           
-            if(res.data.estado === 1){
-                navigate('/home')
-            }else{
-                 setShowMsg(true)
-            }
+        setLoading(true)
+        const userData = {
+            mail: e.target.elements.mail.value,
+            contrasenia: e.target.elements.contrasenia.value
+        }   
+        const res = await loginContext(userData)
+
+        if(res.data.estado === 1){
+            navigate('/home')
+        }else{
+            setLoading(false)
+            setShowMsg(true)
         }
-            
+        if(captchaStatus){ 
+        }
+        setLoading(false)   
     }
     
     const recoverPassFunc = async (e) => {
@@ -93,7 +96,7 @@ const Login = () => {
                       } 
                     </div>
                 <div className="text-center">
-                    <button className="login-b bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>
+                   {loading ? <button className="login-b w-[98px] h-[56px] bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="login-b w-[98px] h-[56px] bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>}
                 </div>
             </form>  }
         </>
