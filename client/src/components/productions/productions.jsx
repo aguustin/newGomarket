@@ -103,11 +103,19 @@ return(
                               </td>
                               <td className="px-6 py-4">
                                 {prod.totalMontoVendido || 0}
-                            </td>
+                                </td>
                             <td className="px-6 py-4">
                                 <Link to={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>
                                 <Link to={`/statistics/${prod._id}/${session?.userFinded?.[0]?._id}`}>Estadisticas</Link><br></br>
                                 <button onClick={() => setShowRRPPData(showRRPPData === prod._id ? null : prod._id)}>Tus RRPP</button>
+                                <button
+                                    type="button"
+                                    onClick={() => navigator.clipboard.writeText(`http://localhost:5173/buy_tickets/${prod._id}/${prod.prodMail}`)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded w-[99px]!"
+                                >
+                                    Copiar link
+                                </button>
+                  
                             </td>
                          </tr>
                          {showRRPPData === prod._id &&

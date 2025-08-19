@@ -33,23 +33,28 @@ const CreateEventForm = () => {
     const [loading, setLoading] = useState(false)
     const [categorias, setCategorias] = useState([])
     const [dateMsg, setDateMsg] = useState(0)
+    const [pubOrPriv, setPubOrPriv] = useState(1)
     let message = ''
 
     const createEvent = async (e) => {
             e.preventDefault()
             setLoading(true)
-            if(startDate > endDate){
+            const currentDateTime = new Date()
+            const startDateToDate = new Date(startDate)
+            const endDateToDate = new Date(endDate)
+
+            if(startDateToDate > endDateToDate){
                 setLoading(false)
                 setDateMsg(2)
                 console.log(message)
                 message = 'La fecha de inicio no puede ser mayor a la fecha de fin'
-            }else if(startDate < Date.now()){
+            }else if(startDateToDate < currentDateTime){
                 setDateMsg(1)
                 message = 'La fecha de inicio no puede ser menor a la fecha actual'
             }else{
                 currency
-                selectedState.name
-                selectedCity.name
+                selectedState?.name
+                selectedCity?.name
                 const tipoEvento = e.target.elements.tipoEvento.value
                 const eventoEdad = e?.target?.elements?.eventoEdad?.value || null
                 const formData = new FormData()
@@ -65,13 +70,14 @@ const CreateEventForm = () => {
                 formData.append('montoVentas', e.target.elements.montoVentas.value)
                 formData.append('fechaInicio',  new Date(startDate).toISOString())
                 formData.append('fechaFin', new Date(endDate).toISOString())
-                formData.append('provincia', selectedState.name)
-                formData.append('localidad', selectedCity.name)
+                formData.append('provincia', selectedState?.name)
+                formData.append('localidad', selectedCity?.name)
                 formData.append('tipoMoneda', currency),
                 formData.append('direccion', e.target.elements.direccion.value)
                 formData.append('lugarEvento', e.target.elements.lugarEvento.value)
-                formData.append('linkEvento', e.target.elements.linkEvento.value)
+                formData.append('linkVideo', e.target.elements.linkVideo.value)
                 formData.append('imgEvento', e.target.elements.imgEvento.files[0])
+
                 const res = await createEventRequest(formData)
     
                 if(res.data.estado === 1){
@@ -88,11 +94,15 @@ const CreateEventForm = () => {
     const createEventTickets = async (e) => { //agregar estado a los tickets
         e.preventDefault()
         setLoading(true)
-        if(startDate > closeDate){
+        const startDateToDate = new Date(startDate)
+        const clodeDateToDate = new Date(closeDate)
+        const endDateToDate = new Date(endDate)
+
+        if(startDateToDate > clodeDateToDate){
             setLoading(false)
             setDateMsg(3)
             message = 'La fecha de cierre del ticket no puede ser menor a la de inicio del evento'
-        }else if(endDate < closeDate){
+        }else if(endDateToDate < clodeDateToDate){
             setLoading(false)
             setDateMsg(4)
             message = 'La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento'
@@ -158,7 +168,7 @@ const CreateEventForm = () => {
         e.preventDefault()
         setCategorias(categorias.filter(c => !c.includes(categoryName)))
     }
-   
+   console.log(pubOrPriv)
     return(
         <>
         <div className="create-form mx-auto flex justify-around mt-[20px] pl-12 pr-12">
@@ -167,17 +177,18 @@ const CreateEventForm = () => {
                <form className="create-event-form mt-9" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
                     <div>
                         <label>Pais del evento</label>
-                        <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))}>
+                        <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
                             <option value=''>Elegir país</option>
                             {countries.map((cts) => (<option key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
                         </select>
                     </div>
                     <div>
                         <label>Privacidad del evento:</label>
-                        <select name="tipoEvento">
+                        <select name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
                             <option value={1}>Publico</option>
                             <option value={2}>Privado</option>
                         </select>
+                       {pubOrPriv == 2 && <p className="text-violet-600!">El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
                     </div>
                     <div>
                         <label>Evento para mayores de edad:</label>
@@ -185,12 +196,12 @@ const CreateEventForm = () => {
                             <option value={1}>NO</option>
                             <option value={2}>SI</option>
                         </select>
-                        {estadoEdad && <input type="number" placeholder="A partir de que edad" name="eventoEdad"></input>}
+                        {estadoEdad && <input type="number" placeholder="A partir de que edad" name="eventoEdad" required></input>}
                     </div>
                     <div>
                         <label>Nombre del evento:</label>
                         <div>
-                            <input type="text"  placeholder="..." name="nombreEvento"></input>
+                            <input type="text"  placeholder="..." name="nombreEvento" required></input>
                         </div>
                     </div>
                     <div>
@@ -202,14 +213,14 @@ const CreateEventForm = () => {
                     <div>
                         <label>Categorias del evento:</label>
                         <div>
-                            <select onChange={handleChange} defaultValue="">
+                            <select onChange={handleChange} defaultValue="" required>
                                 <option value="" disabled>Selecciona una categoría</option>
                                 <option value="baile">Baile</option>
                                 <option value="musica">Música</option>
                                 <option value="arte">Arte</option>
                                 <option value="teatro">Teatro</option>
                             </select>
-                            {/*<input type="text"  placeholder="..." name="categorias"></input>*/ }
+                            {/*<input type="text"  placeholder="..." name="categorias" required></input>*/ }
                         </div>
                         <div className="flex items-center mt-5 mb-2">
                         {categorias.map((cat, i) => ( 
@@ -220,7 +231,7 @@ const CreateEventForm = () => {
                         </div>
                     </div>
                     <div>
-                        <label>Artistas que participan:</label>
+                        <label>Artistas que participan (opcional):</label>
                         <div>
                             <input type="text"  placeholder="..." name="artistas"></input>
                         </div>
@@ -228,25 +239,25 @@ const CreateEventForm = () => {
                     <div>
                         <label>Monto de ventas estimado</label>
                         <div>
-                            <input type="number" placeholder="0" name="montoVentas"></input>
+                            <input type="number" placeholder="0" name="montoVentas" required></input>
                         </div>
                     </div>
                     <div>
                         <label>Fecha y hora de inicio:</label>
                         <div>
-                           <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)}></input>  {dateMsg === 1 && <p className="text-red-600">{message}</p>}
+                           <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
                         </div>
                     </div>
                     <div>
                         <label>Fecha y hora de fin:</label>
                         <div>
-                            <input type="datetime-local" onChange={(e) => setEndDate(e.target.value)}></input> {dateMsg === 2 && <p className="text-red-600">{message}</p>}
+                            <input type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
                         </div>
                     </div>
                     <div className="flex items-center">
                         <div>
                             <label>Provincia:</label>
-                            <select name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))}>
+                            <select name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))} required>
                                 <option value=''>Elegir</option>
                                 {states.map((st) => (
                                     <option key={st.isoCode} value={st.isoCode}>{st.name}</option>
@@ -255,7 +266,7 @@ const CreateEventForm = () => {
                         </div>
                         <div className="ml-6">
                             <label>Localidad:</label>
-                            <select name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))}>
+                            <select name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))} required>
                                <option value=''>Elegir</option>
                                {cities.map((city) => (
                                 <option key={city.name} value={city.name}>{city.name}</option>
@@ -266,19 +277,19 @@ const CreateEventForm = () => {
                     <div>
                         <label>Direccion:</label>
                         <div>
-                            <input name="direccion" placeholder="..."></input>
+                            <input name="direccion" placeholder="..." required></input>
                         </div>
                     </div>
                     <div>
                         <label>Lugar del evento:</label>
                         <div>
-                            <input name="lugarEvento" placeholder="..."></input>
+                            <input name="lugarEvento" placeholder="..." required></input>
                         </div>
                     </div>
                     <div>
                         <label>Video del evento (opcional):</label>
                         <div>
-                            <input name="linkEvento" placeholder="..."></input>
+                            <input name="linkVideo" placeholder="..."></input>
                         </div>
                     </div>
                     <div className="portal-evento">
@@ -288,7 +299,7 @@ const CreateEventForm = () => {
                 <div id="terminos-condiciones">
                     <div className="relative mt-10">
                         <label>Acepto términos y condiciones</label>
-                        <input className="absolute left-18" type="checkbox"></input>
+                        <input className="absolute left-18" type="checkbox" required></input>
                     </div>
                 </div>
                 <button className="bg-violet-900 p-4 rounded-lg w-full mt-10 mb-20" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
@@ -347,7 +358,7 @@ const CreateEventForm = () => {
                                            {distribution === '2' &&
                                                 <div className="mt-3">
                                                     <label>Limite a sacar por persona:</label>
-                                                    <input className="reset-inp" type="number" name="limit" placeholder="Ej: 3"></input>
+                                                    <input className="reset-inp" type="number" name="limit" placeholder="Ej: 3" required></input>
                                                 </div>
                                            } 
                                         </>
@@ -357,18 +368,20 @@ const CreateEventForm = () => {
                             <div className="mt-3">
                                 <label>Fecha y hora de fin:</label>
                                 <input className="reset-inp" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
-                                {dateMsg === 3 || dateMsg === 4 && <p className="text-red-600!">{message}</p>}
+                                {dateMsg == 3 && <p className="text-red-600!">La fecha de cierre del ticket no puede ser menor a la de inicio del evento</p>}
+                                {dateMsg == 4 && <p className="text-red-600!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
                             </div>
                             <div className="mt-3">
                                 <label>Imagen del ticket</label>
-                                <input className="reset-inp" type="file" name="imgTicket"></input>
+                                <input className="reset-inp" type="file" name="imgTicket" required></input>
                             </div>
                         </div>
                         <div className="relative flex items-center w-full">
                             <div className="items-center mt-6">
                                 <button className="bg-violet-700 p-3 rounded-lg mb-6" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
                                 {disabledButton && <><p className="text-xl! text-violet-400!">Tu ticket fue creado con exito!</p><br></br></>}
-                                {disabledButton && <Link className="continuar-button absolute right-0 mt-36 p-4 rounded-lg flex items-center w-[180px] justify-between " to="/Home">Continuar<img src={continueArrowPng} alt="" loading="lazy"></img></Link>}
+                                <p className="text-violet-600! text-lg mb-10">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
+                                {disabledButton && <Link className="continuar-button absolute right-0 mt-36 mb-10 p-4 rounded-lg flex items-center w-[180px] justify-between " to="/Home">Continuar<img src={continueArrowPng} alt="" loading="lazy"></img></Link>}
                             </div>
                         </div>
                     </form>

@@ -26,15 +26,18 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
     const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkEvento } = req.body
+    const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
+
     const parsedCategorias = JSON.parse(categorias)
     const encryptedMail = encrypt(prodMail)
+
     if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
             const createdEvent = await ticketModel.create({
                     userId: userId,
                     prodMail: encryptedMail,
                     paisDestino: paisDestino,
                     tipoEvento: tipoEvento,
-                    eventoEdad: eventoEdad,
+                    eventoEdad: eventoEdadPush,
                     nombreEvento: nombreEvento,
                     descripcionEvento: descripcionEvento,
                     categorias: parsedCategorias,

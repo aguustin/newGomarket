@@ -176,6 +176,10 @@ input{
   outline: none;
 }
 
+.create-form input, .create-form textarea{
+  width: 100%;
+}
+
 .create-form textarea{
   height: 200px !important;
 }
@@ -315,7 +319,7 @@ input{
   }
 
   .home > div{
-    width: 900px;
+    width: 1020px;
     margin: auto;
     text-align: center;
   }
@@ -329,7 +333,7 @@ input{
   }
 
   .categories-container{
-    width: 900px;
+    width: 100%;
     margin: auto;
   }
 
@@ -342,7 +346,8 @@ input{
     width: auto !important;
     background-color: #0d0b1f;
     border-color: #271649;
-    font-size: 18px !important;
+    font-size: 14px !important;
+    width: 170px !important;
   }
 
   .categories-container img{ 
