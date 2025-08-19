@@ -25,7 +25,7 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkEvento } = req.body
+    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
     const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
 
     const parsedCategorias = JSON.parse(categorias)
@@ -49,7 +49,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     localidad: localidad,
                     direccion: direccion,
                     lugarEvento: lugarEvento,
-                    linkEvento: linkEvento,
+                    linkVideo: linkVideo,
                     imgEvento: 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg',
                     tipoMoneda: tipoMoneda,
                     totalVentas: 0,
@@ -85,7 +85,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 direccion: direccion,
                 tipoMoneda: tipoMoneda,
                 lugarEvento: lugarEvento,
-                linkEvento: linkEvento,
+                linkVideo: linkVideo,
                 imgEvento:  result.secure_url,
                 totalVentas: 0,
                 totalDevoluciones:0,
