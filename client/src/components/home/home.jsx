@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import UserContext from "../../context/userContext"
 import { getAllEventsRequest } from "../../api/eventRequests"
-import { formatDate, formatDateB, truncarConElipsis } from "../../globalscomp/globalscomp"
+import { formatDateB, truncarConElipsis } from "../../globalscomp/globalscomp"
 import { Link } from "react-router"
 import FadeInImage from "../../globalscomp/globalscomp"
 import dancerPng from '../../assets/botones/dancer.png'
@@ -15,7 +15,10 @@ const Home = () => {
     const [allEvents, setAllEvents] = useState([])
     const [search, setSearch] = useState('')
     const [width, setWidth] = useState(null)
+    const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
+    //const [eventosMayores, setEventosMayores] = useState(0);  //continuar con esto para filtrar por edad
 
+    console.log(allEvents)
     useEffect(() => { 
         const getAllEventsFunc = async () => {
             const getEvents = await getAllEventsRequest()
@@ -33,15 +36,7 @@ const Home = () => {
        
         return () => mediaQuery.removeEventListener("change", handleResize);
     },[])
-
-    const filterEventsByCategories = (categoriaBuscada) => {
-        if (!categoriaBuscada) return allEvents; // sin filtro devuelve todo
-
-        console.log(allEvents)
-        return allEvents.filter(evento =>
-            evento.categorias.includes(categoriaBuscada)
-        );
-    }
+    
     if (width === null) return null;
 
     return(
@@ -60,41 +55,53 @@ const Home = () => {
                     {width < 1376 &&
                         <div className="categories-container relative right-0 w-[300px] mx-6 mt-37">
                             <div className="max-h-[500px] mt-7">
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories("baile")} value={1} name="baile"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories("musica")} value={2} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories("arte")} value={3} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories("teatro")} value={3} name="teatro"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByAge(2)} value={2} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByAge(1)} value={1} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("")}><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" value={2} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl"  value={1} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
                             </div>
                         </div>
                     }
                     <div className="home-events-container flex flex-wrap justify-between max-h-[1200px]">
-                        {allEvents.filter((allEv) => {
-                            //return search.toLowerCase() === '' ? allEv : allEv.nombreEvento.toLowerCase().includes(search.toLowerCase());
+                       {allEvents
+                        .filter((allEv) => {
                             const matchesSearch =
                             search.toLowerCase() === '' ||
                             allEv.nombreEvento.toLowerCase().includes(search.toLowerCase());
 
                             const matchesType = allEv.tipoEvento === 1;
 
-                            return matchesSearch && matchesType;
-                        }).map((allEv) =>(
+                            const matchesCategory =
+                            categoriaSeleccionada === '' || // <- esto permite que no filtre si no hay categoría
+                           /* eventosMayores === 0 ||
+                            allEv.eventoEdad.some(mayores =>
+                                mayores > 0
+                            )  continuar aca*/ 
+                            allEv.categoriasEventos.some(cat =>
+                                cat.toLowerCase().trim() === categoriaSeleccionada.toLowerCase().trim()
+                            );
+
+                            return matchesSearch && matchesType && matchesCategory;
+                        })
+                        .map((allEv) => (
                             <div key={allEv?._id} className="event-img-container relative w-[300px] mt-8 mx-3">
-                                <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
-                                    <FadeInImage
-                                        src={allEv.imgEvento}
-                                        alt={allEv.nombreEvento}
-                                        className="event-img mx-auto brightness-70"
-                                    />
-                                </Link>
-                                <div className="event-desc rounded-b-lg bottom-0 p-5">
-                                    <h3 className="text-2xl">{allEv.nombreEvento}</h3>
-                                    <p className="event-desc-text">
-                                        {truncarConElipsis(allEv.descripcionEvento, 80)}
-                                    </p>
-                                    <label className="text-lg">{formatDateB(allEv.fechaInicio)}</label>
-                                </div>
+                            <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
+                                <FadeInImage
+                                src={allEv.imgEvento}
+                                alt={allEv.nombreEvento}
+                                className="event-img mx-auto brightness-70"
+                                />
+                            </Link>
+                            <div className="event-desc rounded-b-lg bottom-0 p-5">
+                                <h3 className="text-2xl">{allEv.nombreEvento}</h3>
+                                <p className="event-desc-text">
+                                {truncarConElipsis(allEv.descripcionEvento, 80)}
+                                </p>
+                                <label className="text-lg">{formatDateB(allEv.fechaInicio)}</label>
+                            </div>
                             </div>
                         ))}
                     </div>
@@ -102,11 +109,12 @@ const Home = () => {
                     {width > 1375 &&
                         <div className="categories-container relative right-0 w-[300px] mx-6 mt-37">
                             <div className="max-h-[500px] mt-7">
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={1} name="categoriaA"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={2} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={3} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={4} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => filterEventsByCategories()} value={5} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("baile")} value={1} name="baile"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("musica")} value={2} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("arte")} value={3} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("teatro")} value={3} name="teatro"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" value={2} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" value={1} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
                             </div>
                         </div>
                     }

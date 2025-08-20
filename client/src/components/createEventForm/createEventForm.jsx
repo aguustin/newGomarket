@@ -21,6 +21,7 @@ const CreateEventForm = () => {
     const [disabledButton, setDisabledButton] = useState(false)
     const [saveEventId, setSaveEventId] = useState()
     const [estadoEdad, setEstadoEdad] = useState()
+    const [eventoEdad, setEventoEdad] = useState()
     const [countries, setCountries] = useState(Country.getAllCountries())
     const [currency, setCurrency] = useState(null)
     const [states, setStates] = useState([])
@@ -56,16 +57,20 @@ const CreateEventForm = () => {
                 selectedState?.name
                 selectedCity?.name
                 const tipoEvento = e.target.elements.tipoEvento.value
-                const eventoEdad = e?.target?.elements?.eventoEdad?.value || null
+                const rawEdad = eventoEdad;
+                // Si hay un número válido, lo agregás al FormData
                 const formData = new FormData()
                 formData.append('userId', session?.userFinded?.[0]?._id)
                 formData.append('prodMail', session?.userFinded?.[0]?.mail) //aca va el mail de la session
                 formData.append('paisDestino', selectedCountry.name)
                 formData.append('tipoEvento', tipoEvento)
-                formData.append('eventoEdad', eventoEdad)
+                if (rawEdad && !isNaN(Number(rawEdad))) {
+                    console.log(rawEdad)
+                formData.append('eventoEdad', rawEdad);
+                }
                 formData.append('nombreEvento', e.target.elements.nombreEvento.value)
                 formData.append('descripcionEvento', e.target.elements.descripcionEvento.value)
-                formData.append('categorias', JSON.stringify(categorias))
+                formData.append('categoriasEventos', JSON.stringify(categorias))
                 formData.append('artistas', e.target.elements.artistas.value)
                 formData.append('montoVentas', e.target.elements.montoVentas.value)
                 formData.append('fechaInicio',  new Date(startDate).toISOString())
@@ -196,7 +201,7 @@ const CreateEventForm = () => {
                             <option value={1}>NO</option>
                             <option value={2}>SI</option>
                         </select>
-                        {estadoEdad && <input type="number" placeholder="A partir de que edad" name="eventoEdad" required></input>}
+                        {estadoEdad && <input type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
                     </div>
                     <div>
                         <label>Nombre del evento:</label>

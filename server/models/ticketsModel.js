@@ -7,13 +7,13 @@ const ticketSchema = new mongoose.Schema({
     numeroEvento:{type: Number},
     paisDestino: {type: String},
     tipoEvento: {type: Number},
-    eventoEdad: { type: Number, required: false},
+    eventoEdad: { type: Number},
     consumoDeCarta: {type: String},
     nombreEvento:{type: String},
     montoVentas:{type: Number},
     efectivo: {type: Number}, /*(es si hay entradas en efectivo o no hay),*/
     linkEvento: {type: String},
-    categorías:[{
+    categorias:[{
         nombreCategoria:{type: String},
         vendidos: {type: Number},
         devoluciones: {type: Number},
@@ -26,7 +26,7 @@ const ticketSchema = new mongoose.Schema({
     }],
     artistas: {type: String},
     descripcionEvento: {type: String},
-    categorias: [String],
+    categoriasEventos: [String],
     fechaInicio: {type: Date},
     fechaFin: {type: Date},
     provincia: {type: String},

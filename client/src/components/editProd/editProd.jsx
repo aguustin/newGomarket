@@ -1,8 +1,7 @@
-import { useContext, useEffect, useLayoutEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
 import { addRRPPRequest, createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
-import downArrow from '../../assets/botones/down_arrow.png'
 import ticketPng from '../../assets/images/ticket.png'
 import qrCodePng from '../../assets/images/qr-code.png'
 import backArrowPng from '../../assets/images/back-arrow.png'
@@ -29,7 +28,7 @@ const EditProd = () => {
     const [loading, setLoading] = useState(false)
     const [ticketLoading, setTicketLoading] = useState(false)
     const [loadingCreateTicket, setLoadingCreateTicket] = useState(false)
-
+    
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
