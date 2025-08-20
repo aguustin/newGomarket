@@ -25,10 +25,10 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categorias, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
-    const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
+    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
+    const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
 
-    const parsedCategorias = JSON.parse(categorias)
+    const parsedCategorias = JSON.parse(categoriasEventos)
     const encryptedMail = encrypt(prodMail)
 
     if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
@@ -40,7 +40,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     eventoEdad: eventoEdadPush,
                     nombreEvento: nombreEvento,
                     descripcionEvento: descripcionEvento,
-                    categorias: parsedCategorias,
+                    categoriasEventos: parsedCategorias,
                     artistas: artistas,
                     montoVentas: montoVentas,
                     fechaInicio: fechaInicio, //fechaInicio
@@ -75,7 +75,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 eventoEdad: eventoEdad,
                 nombreEvento: nombreEvento,
                 descripcionEvento: descripcionEvento,
-                categorias: parsedCategorias,
+                categoriasEventos: parsedCategorias,
                 artistas: artistas,
                 montoVentas: montoVentas,
                 fechaInicio: fechaInicio, //fechaInicio
@@ -105,7 +105,7 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
   let estadoToInt = Number(estado)
   let distributionToInt = Number(distribution)
   let limitToInt = Number(limit)
-  console.log('asdasdsa', estadoToInt)
+  
   const buildPayload = (imgUrl) => {
     if (estadoToInt !== 3) {  // SI EL ESTADO ES DIFERENTE DE 3 (DE CORTESIA) SE LE AGREGA EL ESTADO PARA DIFERENCIAR LOS TICKETS NORMALES A LOS DE CORTESIA
       return {
@@ -322,7 +322,6 @@ export const getEventToBuyController = async (req, res) => {
 }
 
 export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {
-    console.log(emailHash)
     await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
     let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
     let rrppMatch;
@@ -544,7 +543,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
     const status = payment.body?.status;
 
     if (status === 'approved') {
-      const { prodId, nombreEvento, quantities, mail, state, total, nombreCompleto, dni } = payment.body.metadata;
+      const { prodId, quantities, mail, total } = payment.body.metadata;
 
       if (!quantities || !mail || !prodId || !total) {
         console.error("❌ Metadata incompleta:", payment.body.metadata);
@@ -617,7 +616,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
         jti: uuidv4()
       };
 
-      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign(payload, JWT_SECRET);
 
       const saveToken = new tokenModel({ token });
       await saveToken.save();
