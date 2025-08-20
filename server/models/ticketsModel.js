@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { type } from "os";
 
 const ticketSchema = new mongoose.Schema({
     userId: {type: String},
