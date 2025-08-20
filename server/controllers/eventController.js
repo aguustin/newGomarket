@@ -322,6 +322,7 @@ export const getEventToBuyController = async (req, res) => {
 }
 
 export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {
+  
     await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
     let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
     let rrppMatch;
@@ -530,28 +531,31 @@ export const buyEventTicketsController = async (req, res) => {
 };
 
 export const mercadoPagoWebhookController = async (req, res) => {
-  await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });
   try {
-    const paymentId = String(req.body?.data?.id || req.query?.['data.id']);
+   console.log("🔔 Webhook received:");
+    console.log("Query:", req.query);
+    console.log("Body:", req.body);
 
-    if (!paymentId) {
-      console.error("❌ No payment ID found");
+    const topic = req.query.topic || req.query.type;
+    const id = req.query.id || req.query['data.id'];
+
+    if (!id || topic !== 'payment') {
+      console.error("❌ No payment ID or topic !== 'payment'");
       return res.sendStatus(400);
     }
-
-    const payment = await mercadopago.payment.findById(paymentId);
+    const payment = await mercadopago.payment.findById(id);
     const status = payment.body?.status;
-
+    
     if (status === 'approved') {
-      const { prodId, quantities, mail, total } = payment.body.metadata;
-
-      if (!quantities || !mail || !prodId || !total) {
+      const { prod_id, nombre_evento, quantities, mail, state, total, email_hash, nombre_completo, dni } = payment.body.metadata;
+      
+      if (!quantities || !mail || !prod_id || !total) {
         console.error("❌ Metadata incompleta:", payment.body.metadata);
         return res.sendStatus(500);
       }
+      await handleSuccessfulPayment({ prodId:prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni });
 
     }
-
     return res.sendStatus(200);
   } catch (error) {
     console.error('❌ Error en webhook:', error.message);
