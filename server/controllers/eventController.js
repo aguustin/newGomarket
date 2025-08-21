@@ -25,10 +25,11 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categoriasEventosEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
+    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
     const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
 
-    const parsedCategorias = JSON.parse(categoriasEventosEventos)
+    const parsedCategorias = JSON.parse(categoriasEventos)
+    console.log(parsedCategorias)
     const encryptedMail = encrypt(prodMail)
 
     if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
@@ -40,11 +41,11 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     eventoEdad: eventoEdadPush,
                     nombreEvento: nombreEvento,
                     descripcionEvento: descripcionEvento,
-                    categoriasEventosEventos: parsedCategorias,
+                    categoriasEventos: parsedCategorias,
                     artistas: artistas,
                     montoVentas: montoVentas,
-                    fechaInicio: fechaInicio, //fechaInicio
-                    fechaFin: fechaFin, //fechaFin
+                    fechaInicio: fechaInicio,
+                    fechaFin: fechaFin,
                     provincia: provincia,
                     localidad: localidad,
                     direccion: direccion,
@@ -75,7 +76,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 eventoEdad: eventoEdad,
                 nombreEvento: nombreEvento,
                 descripcionEvento: descripcionEvento,
-                categoriasEventosEventos: parsedCategorias,
+                categoriasEventos: parsedCategorias,
                 artistas: artistas,
                 montoVentas: montoVentas,
                 fechaInicio: fechaInicio, //fechaInicio
@@ -532,15 +533,11 @@ export const buyEventTicketsController = async (req, res) => {
 
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
-   console.log("🔔 Webhook received:");
-    console.log("Query:", req.query);
-    console.log("Body:", req.body);
-
     const topic = req.query.topic || req.query.type;
     const id = req.query.id || req.query['data.id'];
 
     if (!id || topic !== 'payment') {
-      console.error("❌ No payment ID or topic !== 'payment'");
+      console.error("No payment ID or topic !== 'payment'");
       return res.sendStatus(400);
     }
     const payment = await mercadopago.payment.findById(id);

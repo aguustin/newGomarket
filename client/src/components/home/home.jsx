@@ -4,11 +4,13 @@ import { getAllEventsRequest } from "../../api/eventRequests"
 import { formatDateB, truncarConElipsis } from "../../globalscomp/globalscomp"
 import { Link } from "react-router"
 import FadeInImage from "../../globalscomp/globalscomp"
+import dancingPng from "../../assets/botones/dancing.png"
 import dancerPng from '../../assets/botones/dancer.png'
 import theaterPng from '../../assets/botones/theater.png'
 import adultsPng from '../../assets/botones/adults.png'
 import musicPng from '../../assets/botones/music.png'
 import dancePng from '../../assets/botones/dance.png'
+import artPng from '../../assets/botones/art.png'
 import Skeleton from 'react-loading-skeleton';
 
 const Home = () => {
@@ -16,9 +18,8 @@ const Home = () => {
     const [search, setSearch] = useState('')
     const [width, setWidth] = useState(null)
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
-    //const [eventosMayores, setEventosMayores] = useState(0);  //continuar con esto para filtrar por edad
+    const [edad, setEdad] = useState(0);  //continuar con esto para filtrar por edad
 
-    console.log(allEvents)
     useEffect(() => { 
         const getAllEventsFunc = async () => {
             const getEvents = await getAllEventsRequest()
@@ -55,13 +56,13 @@ const Home = () => {
                     {width < 1376 &&
                         <div className="categories-container relative right-0 w-[300px] mx-6 mt-37">
                             <div className="max-h-[500px] mt-7">
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("")}><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("")}><img src={dancingPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
                                 <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
                                 <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
                                 <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" value={2} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl"  value={1} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setEdad(1)} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setEdad(2)} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
                             </div>
                         </div>
                     }
@@ -71,20 +72,27 @@ const Home = () => {
                             const matchesSearch =
                             search.toLowerCase() === '' ||
                             allEv.nombreEvento.toLowerCase().includes(search.toLowerCase());
-
                             const matchesType = allEv.tipoEvento === 1;
-
                             const matchesCategory =
                             categoriaSeleccionada === '' || // <- esto permite que no filtre si no hay categoría
-                           /* eventosMayores === 0 ||
-                            allEv.eventoEdad.some(mayores =>
-                                mayores > 0
-                            )  continuar aca*/ 
                             allEv.categoriasEventos.some(cat =>
                                 cat.toLowerCase().trim() === categoriaSeleccionada.toLowerCase().trim()
                             );
+                            const eventoEdad = parseInt(allEv.eventoEdad); // o allEv.edadMinima si ese es el nombre correcto
+                            const hasEdad = !isNaN(eventoEdad);
 
-                            return matchesSearch && matchesType && matchesCategory;
+                            const matchesEdad =
+                                edad === '' || edad === null
+                                    ? true
+                                    : !hasEdad // si no tiene edad, incluirlo
+                                    ? true
+                                    : edad === 1
+                                    ? eventoEdad < 18
+                                    : edad === 2
+                                    ? eventoEdad >= 18
+                                    : true;
+
+                            return matchesSearch && matchesType && matchesCategory && matchesEdad;
                         })
                         .map((allEv) => (
                             <div key={allEv?._id} className="event-img-container relative w-[300px] mt-8 mx-3">
@@ -109,12 +117,13 @@ const Home = () => {
                     {width > 1375 &&
                         <div className="categories-container relative right-0 w-[300px] mx-6 mt-37">
                             <div className="max-h-[500px] mt-7">
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("baile")} value={1} name="baile"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("musica")} value={2} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("arte")} value={3} name="arte"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("teatro")} value={3} name="teatro"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" value={2} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
-                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" value={1} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("")}><img src={dancingPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setEdad(1)} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
+                                <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setEdad(2)} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
                             </div>
                         </div>
                     }
