@@ -147,7 +147,6 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
       { $addToSet: updatePayload }
     );
     
-    console.log(updatePayload)
     return res.status(200).json({ url: defaultImage, estado: 1 });
   }
 
@@ -310,7 +309,7 @@ if (req.file) {
   const updateResult = await updateTicket();
   return res.status(200).json({
     updated: updateResult.modifiedCount > 0,
-    state: 1
+    estado: 1
   });
 }
 }
@@ -607,56 +606,56 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
       .map(cortesia => ({ ...cortesia.toObject(), tipo: 'cortesia' }))
   ];
 
-  const qrTasks = [];
+  const ticketDataArray = [];
 
-  for (const ticket of filteredTickets) {
-    const quantity = quantities[ticket._id.toString()];
-    for (let i = 0; i < quantity; i++) {
-      const payload = {
-        nombreCompleto,
-        dni,
-        eventId: event._id,
-        ticketId: ticket._id,
-        iat: Math.floor(Date.now() / 1000),
-        jti: uuidv4()
-      };
+for (const ticket of filteredTickets) {
+  const quantity = quantities[ticket._id.toString()];
+  for (let i = 0; i < quantity; i++) {
+    const payload = {
+      nombreCompleto,
+      dni,
+      eventId: event._id,
+      ticketId: ticket._id,
+      iat: Math.floor(Date.now() / 1000),
+      jti: uuidv4()
+    };
 
-      const token = jwt.sign(payload, JWT_SECRET);
+    const token = jwt.sign(payload, JWT_SECRET);
+    const saveToken = new tokenModel({ token });
+    await saveToken.save();
 
-      const saveToken = new tokenModel({ token });
-      await saveToken.save();
+    const qrUrl = `${process.env.URL_FRONT}/ticket/validate/${token}`;
+    const ticketDate = formatDateB(ticket.fechaDeCierre);
+    const eventDate = formatDateB(event.fechaInicio);
 
-      const qrUrl = `${process.env.URL_FRONT}/ticket/validate/${token}`;
-      const ticketDate = formatDateB(ticket.fechaDeCierre)
-      const eventDate = formatDateB(event.fechaInicio)
+    const qrImage = await QRCode.toDataURL(qrUrl);
+    const qrBase64 = qrImage.split(',')[1];
+    const qrBuffer = Buffer.from(qrBase64, 'base64');
 
-      qrTasks.push(
-        QRCode.toDataURL(qrUrl).then(qrImage => {
-          const qrBase64 = qrImage.split(',')[1];
-          const qrBuffer = Buffer.from(qrBase64, 'base64');
-          
-          // Usamos el mismo sistema de envío para ambos tipos, pero podés diferenciar si querés
-          return sendQrEmail(
-            mail,
-            qrBuffer,
-            event.nombreEvento,
-            eventDate,
-            event.direccion,
-            event.imgEvento,  //se agrego al final 12/08/2025
-            ticket.nombreTicket,
-            ticket.precio,
-            ticketDate,
-            state,
-            ticket.tipo,
-            nombreCompleto
-          );
-        })
-      );
-    }
+    ticketDataArray.push({
+      qrBuffer,
+      nombreTicket: ticket.nombreTicket,
+      ticketPrecio: ticket.precio,
+      ticketFechaCierre: ticketDate,
+      tipo: ticket.tipo
+    });
   }
+}
 
-  await Promise.all(qrTasks);
-  console.log("QRs generados y enviados.");
+// 👉 Enviamos todos los tickets en un solo mail
+await sendQrEmail(
+  mail,
+  ticketDataArray,
+  event.nombreEvento,
+  formatDateB(event.fechaInicio),
+  event.direccion,
+  event.imgEvento,
+  state,
+  nombreCompleto
+);
+
+console.log("QRs generados y enviados.");
+
 
 } catch (err) {
   console.error("❌ Error generando QRs:", err);
@@ -924,72 +923,93 @@ export const getEventsFreesController = async (req, res) => { //a chequear
     res.status(200).json({message: "Necesitas loguearte"})
 }
 
-const sendQrEmail = async (email, qrBuffer, nombreEvento, eventoFechaInicio, direccionEvento, imagenEvento, nombreTicket, ticketPrecio, ticketFechaCierre, state, tipo, nombreCompleto) => { //se agrego imagenEvento 12/08/2025
-  
+const sendQrEmail = async (
+  email,
+  tickets,
+  nombreEvento,
+  eventoFechaInicio,
+  direccionEvento,
+  imagenEvento,
+  state,
+  nombreCompleto
+) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: user_mail,
-      pass: pass
-  }
+      pass: pass,
+    },
   });
-   try {
+
+  try {
+    const ticketsHTML = tickets.map((ticket, index) => {
+      const qrCid = `qrcodeimg${index}`;
+      return `
+        <div style="margin-bottom:30px; border:1px solid #ccc; padding:20px; border-radius:8px;">
+          <h3 style="font-size:20px">Entrada ${index + 1}</h3>
+          <p style="font-size:18px">Escaneá este QR en la entrada:</p>
+          <img src="cid:${qrCid}" alt="QR para ${ticket.nombreTicket}" style="width:230px; height:230px;"/>
+          <div>
+            <h2 style="font-size:20px">${nombreEvento}</h2>
+            <p style="font-size:18px">${ticket.nombreTicket} - $ ${ticket.ticketPrecio}</p>
+            <p style="font-size:18px">Fecha del evento: ${eventoFechaInicio}</p>
+            <p style="font-size:18px">Entrada válida hasta: ${ticket.ticketFechaCierre}</p>
+            <p style="font-size:18px">${direccionEvento}</p>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const html = `
+      <html>
+        <head>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+          </style>
+        </head>
+        <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
+          <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+            <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
+          </div>
+          <div style="text-align:center; padding:40px; background-color:#1a0c2c; color:white;">
+            <h3 style="font-size:20px">${nombreCompleto}, aquí tienes tus tickets!</h3>
+            <img src="${imagenEvento}" alt="Imagen del evento" style="width:100%; max-width:500px; margin-bottom:20px;" />
+            ${ticketsHTML}
+          </div>
+          <div style="background-color:#0c0614; color:white; padding:20px; text-align:center">
+            <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
+            <p style="font-size:16px">- Presenta tu eTicket en el acceso del evento con tu teléfono.</p>
+            <p style="font-size:16px">- También puedes acceder a tus compras desde nuestra web.</p>
+            <p style="font-size:16px">- Lleva tus eTickets abiertos en tu celular.</p>
+          </div>
+          <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center;">
+            <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
+          </footer>
+        </body>
+      </html>
+    `;
+
+    const attachments = tickets.map((ticket, index) => ({
+      filename: `qrcode-${index + 1}.png`,
+      content: ticket.qrBuffer,
+      cid: `qrcodeimg${index}`,
+    }));
+
     const info = await transporter.sendMail({
       from: '"GoTickets" <no-reply@gotickets.com>',
       to: email,
-      subject: `Tu entrada para ${nombreEvento} - ${nombreTicket}`,
-      html: `
-         <html>
-            <head>
-              <style>
-                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-              </style>
-            </head>
-            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
-            <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
-              <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
-            </div>
-                <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#1a0c2c; color:white;">
-                    <h3 style="font-size:20px">${nombreCompleto}, Aqui tienes tu ticket/s !</h3>
-                    <p style="font-size:18px">Entrada: <strong>ticket numero A</strong></p>
-                    <p style="font-size:18px">Escaneá este QR en la entrada:</p>
-                    <img src=${imagenEvento} alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
-                    <img src="cid:qrcodeimg" alt="QR para ${nombreTicket}" style="width:230px; height:230px;"/>
-                    <div>
-                       <h2 style="font-size:20px">${nombreEvento}</h2>
-                       <p style="font-size:18px">${nombreTicket} - $ ${ticketPrecio}</p>
-                       <p style="font-size:18px">Fecha del evento: ${eventoFechaInicio}</p>
-                       <p style="font-size:18px">Entrada valida hasta: ${ticketFechaCierre}</p>
-                       <p style="font-size:18px">${direccionEvento}</p>
-                    </div>
-                </div>
-              <div style="background-color:#0c0614; color:white; padding:20px; text-align:center">
-                <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
-                <p style="font-size:16px">- Recuerda presentar tu eTicket en el acceso del evento con tu teléfono.</p>
-                <p style="font-size:16px">- Siempre podrás acceder a tus compras o eTickets desde nuestra web.</p>
-                <p style="font-size:16px">- Recuerda llevar tus eTickets abiertos en tu celular.</p>
-              </div>
-              <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center;">
-                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
-              </footer>
-          </body>
-        </html>
-      `,
-      attachments: [
-        {
-          filename: 'qrcode.png',
-          content: qrBuffer,
-          cid: 'qrcodeimg'
-        }
-      ]
+      subject: `Tus entradas para ${nombreEvento}`,
+      html,
+      attachments,
     });
 
     console.log('📧 Email enviado:', info.messageId);
   } catch (err) {
     console.error('❌ Error al enviar el email:', err);
-    throw err; // Importante para propagar al controller si lo necesitás
+    throw err;
   }
 };
+
 
 export const getInfoQrController = async (req, res) => {
   const { token } = req.params;

@@ -7,6 +7,7 @@ import qrCodePng from '../../assets/images/qr-code.png'
 import backArrowPng from '../../assets/images/back-arrow.png'
 import { formatDate, LoadingButton } from "../../globalscomp/globalscomp"
 import UserContext from "../../context/userContext"
+import addedTicket from "../../assets/images/added-ticket.png"
 
 const EditProd = () => {
     const {session} = useContext(UserContext)
@@ -19,7 +20,7 @@ const EditProd = () => {
     const [ticketData, setTicketData] = useState({});
     const [eventosEditados, setEventosEditados] = useState({});
     const [visibilidad, setVisibilidad] = useState()
-    const [message, setMessage] = useState(false)
+    const [message, setMessage] = useState(0)
     const [estado, setEstado] = useState(1)
     const [distribution, setDistribution] = useState(0)
     const [width, setWidth] = useState(null)
@@ -79,8 +80,8 @@ const EditProd = () => {
         formData.append('direccion', editedValues[0]?.direccion ??  direccion)
         formData.append('lugarEvento', editedValues[0]?.lugarEvento ??  lugarEvento)
         const res = await updateEventRequest(formData)
-
-        if(res.data.state > 0){
+        console.log(res)
+        if(res.data.estado > 0){
             setLoading(false)
         }
 
@@ -111,7 +112,8 @@ const EditProd = () => {
         formData.append('estado', estado)
         const res = await updateTicketsRequest(formData)
 
-          if(res.data.state > 0){
+        if(res.data.estado > 0){
+            setMessage(3)
             setTicketLoading(false)
         }
     }
@@ -127,7 +129,7 @@ const EditProd = () => {
         }));
     };
 
-    const createEventTickets = (e) => {
+    const createEventTickets = async (e) => {
             e.preventDefault()
             setLoadingCreateTicket(true)
             const formData = new FormData()
@@ -142,11 +144,14 @@ const EditProd = () => {
             formData.append('distribution', distribution)
             formData.append('limit', e.target.elements?.limit?.value)
             formData.append('estado', estado)
-            const res = createEventTicketsRequest(formData)
+            const res = await createEventTicketsRequest(formData)
             setVisibilidad()
-
-            if(res.data.state > 0){
+            if(res.data.estado > 0){
+                setMessage(2)
                 setLoadingCreateTicket(false)
+                setTimeout(() => {
+                    window.location.reload(false)
+                },2000)
             }
     }
 
@@ -157,8 +162,8 @@ const EditProd = () => {
         const eventImg = prod[0]?.imgEvento
         const res = await addRRPPRequest({prodId, rrppMail, nombreEvento, eventImg})
         if(res.data.msg === 1){
-            setMessage(true)
-            setTimeout(() => setMessage(false) , 3000);
+            setMessage(1)
+            setTimeout(() => setMessage(0) , 3000);
         }
     }
 
@@ -310,11 +315,17 @@ const EditProd = () => {
                             <div className="flex justify-center items-center w-[180px] mt-5">
                                 <button className="w-[180px] bg-indigo-900 p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar tickets'}</button>
                             </div>
+                               {message == 2 && 
+                                    <div className="flex items-center">
+                                            <img className="mt-3" src={addedTicket} alt=""></img>
+                                            <p className="ml-2 mt-3 text-lg text-violet-600!">Se agrego el nuevo ticket!</p>
+                                    </div>
+                               } 
                         </form>
                          <form className="add-colab-form flex items-center mt-9" onSubmit={(e) => addRRPP(e)}>
                              <input type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
                              <button className="ml-3 cursor-pointer bg-violet-900 p-2 rounded-lg" type="submit">Añadir Colaborador</button>
-                             {message && <p className="ml-3">Se añadio el colaborador al evento!</p>}
+                             {message == 1 && <p className="ml-3">Se añadio el colaborador al evento!</p>}
                         </form>
                     </div>
                     <div className="flex items-center">
