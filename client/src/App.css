@@ -262,9 +262,26 @@ input{
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
+.abc{
+  background-color: black;
+  z-index: 4;
+  opacity: .5;
+}
+
+.add-tickets-form{
+  z-index: 4;
+  background: linear-gradient(135deg, #1a0c2c, #1d0b0a);
+  background-size: cover;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
 .add-tickets-form input{
-  margin-top: 10px;
-  margin-left: 8px;
+  width: 100%;
   border: 1px solid #302e5f;
   background-color: transparent;
   border-radius: 5px;
@@ -409,6 +426,10 @@ input{
     margin-top: 10px !important;
   }
 
+  .edit-info-event{
+    margin-bottom: 60px;
+  }
+
   .add-colab-form{
     justify-content: center;
   }
@@ -418,6 +439,28 @@ input{
     padding-left: 5px;
     border-radius: 10px;
     width: 250px;
+  }
+
+  .send-back{
+    justify-content: center;
+  }
+
+  .send-back a{
+    position: relative;
+    right: 0;
+  }
+
+  .open-add-ticket-form{
+    margin: auto;
+  }
+
+  .act-evt-button{
+    font-size: 18px;
+    width: 270px;
+    border-radius: 7px;
+    box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   }
 }
 

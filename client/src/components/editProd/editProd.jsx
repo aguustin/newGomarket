@@ -29,6 +29,7 @@ const EditProd = () => {
     const [loading, setLoading] = useState(false)
     const [ticketLoading, setTicketLoading] = useState(false)
     const [loadingCreateTicket, setLoadingCreateTicket] = useState(false)
+    const [showCreateTicketForm, setShowCreateTicketForm] = useState(false)
     
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
@@ -179,7 +180,10 @@ const EditProd = () => {
                         {prod.map((p) => 
                         <>
                            <form className={`form-edit-event ${width >= 1290 ? 'flex relative' : 'block'}`} key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
-                                <img className={`${width >= 1290 ? 'w-[350px] h-[380px]' : 'mx-auto w-[350px] h-[380px] mb-9'}`} src={p.imgEvento} alt="" loading="lazy"></img>
+                                <div>
+                                    <img className={`mt-6 ${width >= 1290 ? 'w-[350px] h-[380px]' : 'mx-auto w-[350px] h-[380px] mb-9'}`} src={p.imgEvento} alt="" loading="lazy"></img>
+                                    <h2 className="mt-3 text-xl text-center text-violet-500!">{p.nombreEvento}</h2>
+                                </div>
                                 <div className="edit-info-event flex justify-center">
                                     <div className={`${width >= 1290 ? 'ml-10' : 'ml-0'}`}>
                                         <h3 className={`${width >= 1290 ? 'ml-10 text-2xl' : 'text-2xl text-center'}`}>Edita la informarcion de tu evento:</h3>
@@ -244,27 +248,29 @@ const EditProd = () => {
                                             <label>Lugar del evento:</label><br></br>
                                             <input type="text" value={eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento} onChange={(e) => handleChangeEvento(e, p._id, 'lugarEvento')} name="lugarEvento"></input>
                                         </div>
+                                         <button className="act-evt-button absolute  bg-indigo-900 h-[40px] pr-6 pl-6" type="submit">{loading ? <LoadingButton/> : 'Actualizar evento'}</button>
                                     </div>
                                 </div>
-                                <button className="act-evt-button absolute bg-indigo-900 right-50 h-[40px] pr-6 pl-6" type="submit">{loading ? <LoadingButton/> : 'Actualizar evento'}</button>
                             </form>
                             </>
                         )}
-                        <form className="add-tickets-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
-                            <div className="mt-9">
+                       {showCreateTicketForm &&  <>
+      <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}></div>
+       <form className="add-tickets-form fixed mx-auto pl-4 pr-7 pb-4" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
+                            <div className="mt-4">
                                 <div className="flex items-center">
                                     <h3 className="text-xl">Crear nuevo ticket:</h3>
                                     <img className="ml-5" src={ticketPng} alt="" loading="lazy"></img>
                                 </div>
-                                <div>
+                                <div className="mt-4">
                                     <label>Nombre del ticket:</label>
                                     <input type="text" placeholder="..." name="nombreTicket" required></input>
                                 </div>
-                                <div>
+                                <div className="mt-2">
                                     <label>Descripcion del ticket:</label>
                                     <input type="text" placeholder="..." name="descripcionTicket" required></input>
                                 </div>
-                                <div className="price-qty-state flex items-center">
+                                <div className="price-qty-state flex items-center mt-2">
                                     <div>
                                         <label>Precio del ticket:</label>
                                         <input className="w-[120px]" type="number" placeholder="..." name="precio" required></input>
@@ -293,33 +299,36 @@ const EditProd = () => {
                                         </div>
                                     </div>
                                 }
-                                <div className="mt-3 h-[50px]">
+                                <div className=" h-[50px] mt-2">
                                     <label>Limite a sacar por persona:</label>
                                     <input type="number" name="limit" placeholder="Ej: 3"></input>
                                 </div>
-                                <div className="edit-form-date">
+                                <div className="edit-form-date mt-3">
                                     <label>Fecha y hora de fin:</label>
-                                    <input type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
+                                    <input type="datetime-local" value={closeDate} onChange={(e) => setCloseDate(e.target.value)} required></input>
                                 </div>
                                 {/*<div className="flex items-center">
                                         <label>Visibilidad</label><br></br>
                                         <input type="checkbox" name="visibilidad" onChange={(e) => setVisibilidad(e.target.value)}/>
-                                </div>*/ }
-                                <div className="mt-1">
+                                </div>*/}
+                                <div className="mt-2">
                                     <label>Imagen del ticket</label>
                                     <input type="file" name="imgTicket"></input>
                                 </div>
                             </div>
-                            <div className="flex justify-center items-center w-[180px] mt-5">
-                                <button className="w-[180px] bg-indigo-900 p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar tickets'}</button>
+                            <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-5">
+                                <button className="" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}>Cancelar</button>
+                                <button className="w-[180px]  bg-indigo-900 p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar tickets'}</button>
                             </div>
                                {message == 2 && 
                                     <div className="flex items-center">
-                                            <img className="mt-3" src={addedTicket} alt=""></img>
-                                            <p className="ml-2 mt-3 text-lg text-violet-600!">Se agrego el nuevo ticket!</p>
+                                        <img className="mt-3" src={addedTicket} alt=""></img>
+                                        <p className="ml-2 mt-3 text-lg text-violet-600!">Se agrego el nuevo ticket!</p>
                                     </div>
                                } 
                         </form>
+        </> }
+                       <button className="open-add-ticket-form flex items-center p-2 bg-violet-900 cursor-pointer" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar ticket + <img className="ml-3 mr-1" src={addedTicket} alt=""></img></button>
                          <form className="add-colab-form flex items-center mt-9" onSubmit={(e) => addRRPP(e)}>
                              <input type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
                              <button className="ml-3 cursor-pointer bg-violet-900 p-2 rounded-lg" type="submit">Añadir Colaborador</button>
