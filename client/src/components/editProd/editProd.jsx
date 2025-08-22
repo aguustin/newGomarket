@@ -174,11 +174,10 @@ const EditProd = () => {
 
     return(
         <>
-            <div className="edit-prod-container mt-10 p-8">
+            <div className="edit-prod-container mt-10">
                     <div>
                         {prod.map((p) => 
                         <>
-                           
                            <form className={`form-edit-event ${width >= 1290 ? 'flex relative' : 'block'}`} key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
                                 <img className={`${width >= 1290 ? 'w-[350px] h-[380px]' : 'mx-auto w-[350px] h-[380px] mb-9'}`} src={p.imgEvento} alt="" loading="lazy"></img>
                                 <div className="edit-info-event flex justify-center">
@@ -223,16 +222,16 @@ const EditProd = () => {
                                             <label>Fecha y hora de fin:</label><br></br>
                                             <input type="datetime-local" value={eventosEditados[p._id]?.fechaFin ??  p.fechaFin} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
                                         </div>
-                                        <div className="flex items-center">
+                                        <div className="prov-localidad flex items-center">
                                             <div>
                                                 <label>Provincia:</label><br></br>
-                                                <select className="bg-violet-900 pr-2 pl-2 rounded-lg" name="provincia" onChange={(e) => setEventProv(e.target.value)}>
+                                                <select className="bg-violet-900! pr-2 pl-2 rounded-lg" name="provincia" onChange={(e) => setEventProv(e.target.value)}>
                                                     <option value="provincia" defaultValue={eventosEditados[p._id]?.provincia ??  p.provincia}>mostrar provincias</option>
                                                 </select>
                                             </div>
                                             <div className="ml-5">
                                                 <label>Localidad</label><br></br>
-                                                <select className="bg-violet-900 pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
+                                                <select className="bg-violet-900! pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
                                                     <option value="localidad" defaultValue={eventosEditados[p._id]?.localidad ??  p.localidad}>mostrar localidad</option>
                                                 </select>
                                             </div>
@@ -247,9 +246,8 @@ const EditProd = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <button className="absolute bg-indigo-900 right-50 h-[40px] pr-6 pl-6" type="submit">{loading ? <LoadingButton/> : 'Actualizar evento'}</button>
+                                <button className="act-evt-button absolute bg-indigo-900 right-50 h-[40px] pr-6 pl-6" type="submit">{loading ? <LoadingButton/> : 'Actualizar evento'}</button>
                             </form>
-                           
                             </>
                         )}
                         <form className="add-tickets-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">

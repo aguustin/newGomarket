@@ -90,3 +90,10 @@ export const LoadingButton = () => {
         </div>
     )
 }
+
+export const CrearTicketForm = () => {
+    return(
+        <>
+        </>
+    )
+}

@@ -233,6 +233,10 @@ input{
   cursor: pointer;
 }
 
+.edit-prod-container{
+  padding: 30px;
+}
+
 .form-edit-event div{
   margin-top: -20px;
 }
@@ -579,6 +583,25 @@ input{
   }
 }
 
+@media screen and (max-width: 790px) {
+.edit-prod-container{
+  padding: 0px;
+}
+  .add-colab-form{
+    margin-bottom: 20px;
+  }
+
+  .send-back{
+    height: 270px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+  }
+  
+  .send-back a{
+    width: 300px;
+  } 
+}
+
 @media screen and (max-width:750px) { 
   .nav > div{
     width: 100% !important;
@@ -725,6 +748,15 @@ input{
     font-size: 20px;
     margin-top: 10px;
   }
+  .send-back{
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+  .send-back a{
+    justify-content: center;
+    
+  }
+
 }
 
 @media screen and (max-width:540px) { 
@@ -780,6 +812,14 @@ input{
 }
 
 @media screen and (max-width:495px) {
+  .edit-info-event, .edit-info-event > div > div, .add-tickets-form{
+    width: 90vw !important;
+    margin: auto !important;
+  }
+  .edit-info-event > div > div input, .edit-info-event > div > div input[type="file"]{
+    min-width: 100% !important;
+    width: 100% !important;
+  }
   .register-form{
     width: 100%;
   }
@@ -791,6 +831,22 @@ input{
   }
   .canvas{
     margin-bottom: 50px !important;
+  }
+  .prov-localidad{
+    padding: 25px;
+  }
+  .prov-localidad select{
+    margin-bottom: 10px;
+  }
+  .add-colab-form{
+    flex-wrap: wrap;
+  }
+  .add-colab-form input{
+    width: 70vw;
+  }
+  .add-colab-form button{
+    background-color: transparent;
+    margin-top: 10px;
   }
 }
 
@@ -810,7 +866,6 @@ input{
 
 @media screen and (max-width:450px) {
 
-
   #terminos-condiciones input{
     left: 130px !important;
     right: 0px !important;
@@ -823,21 +878,31 @@ input{
   .profile{
     width: 100vw;
   }
-
   footer p{
     font-size: 16px;
   }
-
   .register-form{
     margin-top: 50px;
     margin-bottom: 50px;
   }
-
   .register-form p, .register-form a, .register-form button {
     font-size: 14px;
   }
-
   .login-b{
     font-size: 17px !important;
+  }
+  .prov-localidad{
+    flex-wrap: wrap;
+    text-align: center;
+  }
+  .prov-localidad > div{
+    width: 100%;
+    margin-top: 0px !important;
+  }
+  .prov-localidad > div select{
+    padding: 8px;
+  }
+  .act-evt-button{
+    margin-bottom: 70px !important;
   }
 }
