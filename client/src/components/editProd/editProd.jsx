@@ -5,7 +5,7 @@ import { useRef } from "react"
 import ticketPng from '../../assets/images/ticket.png'
 import qrCodePng from '../../assets/images/qr-code.png'
 import backArrowPng from '../../assets/images/back-arrow.png'
-import { formatDate, LoadingButton } from "../../globalscomp/globalscomp"
+import { convertirInputADateTimeLocal, formatDate, formatearFechaParaInput, LoadingButton } from "../../globalscomp/globalscomp"
 import UserContext from "../../context/userContext"
 import addedTicket from "../../assets/images/added-ticket.png"
 
@@ -21,6 +21,7 @@ const EditProd = () => {
     const [eventosEditados, setEventosEditados] = useState({});
     const [visibilidad, setVisibilidad] = useState()
     const [message, setMessage] = useState(0)
+    const [dateMessage, setDateMessage] = useState(0)
     const [estado, setEstado] = useState(1)
     const [distribution, setDistribution] = useState(0)
     const [width, setWidth] = useState(null)
@@ -31,6 +32,7 @@ const EditProd = () => {
     const [loadingCreateTicket, setLoadingCreateTicket] = useState(false)
     const [showCreateTicketForm, setShowCreateTicketForm] = useState(false)
     
+
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
@@ -53,40 +55,89 @@ const EditProd = () => {
     
     if (width === null) return null;
     
-    const updateEvent = async (e, eventId, imgEvento, nombreEvento, descripcionEvento, eventoEdad,/* categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento) => {
-        e.preventDefault()
-        setLoading(true)
-        const editedValues = Object.entries(eventosEditados).map(([id, values]) => ({
-            id,
-            ...values,
-        }));
+   const updateEvent = async (
+    e,
+    eventId,
+    imgEvento,
+    nombreEvento,
+    descripcionEvento,
+    eventoEdad,
+    artistas,
+    montoVentas,
+    fechaInicio,
+    fechaFin,
+    provincia,
+    localidad,
+    direccion,
+    lugarEvento
+) => {
+    e.preventDefault();
+    setLoading(true);
 
-        const formData = new FormData()
-        if (fileRef.current?.files?.[0]) {
-            formData.append('imgEvento', fileRef.current.files[0]);
-        } else {
-            formData.append('imgEvento', imgEvento); // string (url existente)
-        }
-        formData.append('eventId', eventId)
-        formData.append('nombreEvento',  editedValues[0]?.nombreEvento ??  nombreEvento)
-        formData.append('descripcionEvento', editedValues[0]?.descripcionEvento ??  descripcionEvento)
-        formData.append('eventoEdad', editedValues[0]?.eventoEdad ??  eventoEdad)
-        //formData.append('categorias', editedValues[0]?.categorias ??  categorias)
-        formData.append('artistas', editedValues[0]?.artistas ??  artistas)
-        formData.append('montoVentas', editedValues[0]?.montoVentas ??  montoVentas)
-        formData.append('fechaInicio', new Date(editedValues[0]?.fechaInicio).toISOString() ??  new Date(fechaInicio).toISOString())
-        formData.append('fechaFin', new Date(editedValues[0]?.fechaFin).toISOString() ??  new Date(fechaFin).toISOString())
-        formData.append('provincia', editedValues[0]?.provincia ??  provincia)
-        formData.append('localidad', editedValues[0]?.localidad ??  localidad)
-        formData.append('direccion', editedValues[0]?.direccion ??  direccion)
-        formData.append('lugarEvento', editedValues[0]?.lugarEvento ??  lugarEvento)
-        const res = await updateEventRequest(formData)
-        console.log(res)
-        if(res.data.estado > 0){
-            setLoading(false)
-        }
+    // Obtenemos los datos editados si existen
+    const edited = eventosEditados[eventId] || {};
 
+    // Parseamos las fechas para validación
+    const fechaInicioFinal = new Date(edited.fechaInicio ?? fechaInicio);
+    const fechaFinFinal = new Date(edited.fechaFin ?? fechaFin);
+    const now = new Date();
+
+    // Validación de fechas
+    if (fechaInicioFinal < now) {
+        setLoading(false);
+        setDateMessage(1);
+        return;
     }
+
+    if (fechaFinFinal < fechaInicioFinal) {
+        setLoading(false);
+        setDateMessage(2);
+        return;
+    }
+
+    // Armamos el FormData
+    const formData = new FormData();
+
+    // Imagen: si se subió una nueva, usamos esa. Si no, usamos la existente (URL).
+    if (fileRef.current?.files?.[0]) {
+        formData.append('imgEvento', fileRef.current.files[0]);
+    } else {
+        formData.append('imgEvento', imgEvento);
+    }
+
+    // Agregamos los campos, usando el editado o el original
+    formData.append('eventId', eventId);
+    formData.append('nombreEvento', edited.nombreEvento ?? nombreEvento);
+    formData.append('descripcionEvento', edited.descripcionEvento ?? descripcionEvento);
+
+    if (eventoEdad && !isNaN(Number(eventoEdad))) {
+        formData.append('eventoEdad', eventoEdad);
+    }
+
+    formData.append('artistas', edited.artistas ?? artistas);
+    formData.append('montoVentas', edited.montoVentas ?? montoVentas);
+    formData.append('fechaInicio', fechaInicioFinal.toISOString());
+    formData.append('fechaFin', fechaFinFinal.toISOString());
+    formData.append('provincia', edited.provincia ?? provincia);
+    formData.append('localidad', edited.localidad ?? localidad);
+    formData.append('direccion', edited.direccion ?? direccion);
+    formData.append('lugarEvento', edited.lugarEvento ?? lugarEvento);
+
+    // Enviar al backend
+    try {
+        const res = await updateEventRequest(formData);
+        console.log(res);
+        if (res.data.estado > 0) {
+            setLoading(false);
+            // Podés agregar lógica adicional acá si es necesario
+        }
+    } catch (error) {
+        console.error('Error al actualizar evento:', error);
+        setLoading(false);
+        // Mostrar mensaje de error general si querés
+    }
+};
+
     
     const editEventTicket = async (e, ticketId, imgTicket, nombreTicket, descripcionTicket, precio, cantidad, limit, fechaDeCierre, visibilidad) => {
         e.preventDefault()
@@ -120,14 +171,18 @@ const EditProd = () => {
     }
 
     const handleChangeEvento = (e, id, field) => {
-        const value = e.target.value;
-        setEventosEditados(prev => ({
-            ...prev,
-            [id]: {
+        const rawValue = e.target.value;
+        const value = (field === 'fechaInicio' || field === 'fechaFin')
+        ? convertirInputADateTimeLocal(rawValue)
+        : rawValue;
+
+    setEventosEditados(prev => ({
+        ...prev,
+        [id]: {
             ...prev[id],
             [field]: value
-            }
-        }));
+        }
+    }));
     };
 
     const createEventTickets = async (e) => {
@@ -219,24 +274,26 @@ const EditProd = () => {
                                             <input type="number" placeholder="0" value={eventosEditados[p._id]?.montoVentas ??  p.montoVentas} onChange={(e) => handleChangeEvento(e, p._id, 'montoVentas')} name="montoVentas"></input>
                                         </div>
                                         <div>
-                                            <label>Fecha y hora de inicio:</label><br></br>
-                                            <input type="datetime-local" value={eventosEditados[p._id]?.fechaInicio ??  p.fechaInicio} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
+                                            <label>Fecha y hora de inicio:</label><br></br> 
+                                            <input type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaInicio ??  p.fechaInicio)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
+                                            {dateMessage == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
                                         </div>
                                         <div>
                                             <label>Fecha y hora de fin:</label><br></br>
-                                            <input type="datetime-local" value={eventosEditados[p._id]?.fechaFin ??  p.fechaFin} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
+                                            <input type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaFin ??  p.fechaFin)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
+                                            {dateMessage == 2 && <p className="text-red-600!">La fecha de fin no puede ser menor a la fecha de inicio</p>}
                                         </div>
                                         <div className="prov-localidad flex items-center">
-                                            <div>
-                                                <label>Provincia:</label><br></br>
+                                            {/* <div>
+                                               <label>Provincia: {p.provincia}  </label><br></br>
                                                 <select className="bg-violet-900! pr-2 pl-2 rounded-lg" name="provincia" onChange={(e) => setEventProv(e.target.value)}>
                                                     <option value="provincia" defaultValue={eventosEditados[p._id]?.provincia ??  p.provincia}>mostrar provincias</option>
                                                 </select>
-                                            </div>
+                                            </div>*/}
                                             <div className="ml-5">
-                                                <label>Localidad</label><br></br>
+                                                <label>Localidad: {p.localidad}</label><br></br>
                                                 <select className="bg-violet-900! pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
-                                                    <option value="localidad" defaultValue={eventosEditados[p._id]?.localidad ??  p.localidad}>mostrar localidad</option>
+                                                    <option value={eventosEditados[p._id]?.localidad ??  p.localidad}>Cambiar localidad</option>
                                                 </select>
                                             </div>
                                         </div>

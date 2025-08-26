@@ -63,6 +63,18 @@ export const formatDateB = (isoString) => {
   return `${day} ${month} ${year}, ${hours}:${minutes}`;
 };
 
+export const formatearFechaParaInput = (fecha) => {
+    if (!fecha) return '';
+    const date = new Date(fecha);
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000);
+    return localDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
+}
+
+export const convertirInputADateTimeLocal = (inputString) => {
+    return new Date(inputString).toISOString(); // Devuelve algo como "2025-08-22T14:30:00.000Z"
+}
+
 export const formatNumber = (num) => {
     let truncated = Math.floor(num * 100) / 100;
     return truncated.toString();

@@ -66,7 +66,7 @@ const CreateEventForm = () => {
                 formData.append('tipoEvento', tipoEvento)
                 if (rawEdad && !isNaN(Number(rawEdad))) {
                     console.log(rawEdad)
-                formData.append('eventoEdad', rawEdad);
+                    formData.append('eventoEdad', rawEdad);
                 }
                 formData.append('nombreEvento', e.target.elements.nombreEvento.value)
                 formData.append('descripcionEvento', e.target.elements.descripcionEvento.value)

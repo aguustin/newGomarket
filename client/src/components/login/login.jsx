@@ -6,7 +6,7 @@ import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
 
 const Login = () => {
-    const {session, setSession, message, setMessage, loginContext} = useContext(UserContext)
+    const { setSession, message, loginContext} = useContext(UserContext)
     const [showMsg, setShowMsg] = useState(false)
     const [recoverPass, setRecoverPass] = useState(false)
     const [captchaStatus, setCaptchaStatus] = useState(false)
