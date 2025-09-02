@@ -48,20 +48,20 @@ const Productions = () => {
 
 return(
         <>
-        <div className="productions-container h-full mb-24">
-            <div className={`productions relative overflow-x-auto shadow-md sm:rounded-lg ${width >= 1110 ? 'pl-10 pr-10 pb-10 pt-0' : 'pt-0'}`}>
-                <table className="w-full max-h-[900px] text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-violet-900 dark:text-white">
+        <div className=" h-full mb-24">
+            <div className={`productions relative overflow-x-auto sm:rounded-lg ${width >= 1110 ? 'pl-10 pr-10 pb-10 pt-0' : 'pt-0'}`}>
+                <table className="w-full max-h-[900px] text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827]">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-orange-500 dark:text-[#111827]">
                         <tr>
                             <th scope="col" className="px-6 py-3">
-                                Nombre del evento
+                                Evento
                             </th>
-                            {width >= 1110 && <th scope="col" className="px-6 py-3">
+                            {/*width >= 1110 && <th scope="col" className="px-6 py-3">
                                 Destino
-                            </th>}
-                            {width >= 1110 &&  <th scope="col" className="px-6 py-3">
+                            </th>*/}
+                            {/*width >= 1110 &&  <th scope="col" className="px-6 py-3">
                                 Lugar
-                            </th>}
+                            </th>*/}
                             {width >= 1110 && <th scope="col" className="px-6 py-3">
                                 Fecha de inicio
                             </th>}
@@ -75,23 +75,23 @@ return(
                                 Ganancias totales
                             </th>
                              <th scope="col" className="px-6 py-3">
-                    
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                        {productions.map((prod) => 
                        <>
-                         <tr key={prod._id} className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
+                         <tr key={prod._id} className="odd:bg-white even:bg-gray-200 border-b dark:border-gray-300 border-gray-300">
                             <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                               {prod.nombreEvento}
+                               <p className="primary-p">{prod.nombreEvento}</p> <br></br>
+                               <p className="secondary-p">{prod.provincia}, {prod.localidad}</p>
                             </th>
-                            {width >= 1110 && <td className="px-6 py-4">
+                            {/*width >= 1110 && <td className="px-6 py-4">
                                 {prod.paisDestino}, {prod.provincia}, {prod.localidad}
-                            </td>}
-                            {width >= 1110 && <td className="px-6 py-4">
+                            </td>*/}
+                            {/*width >= 1110 && <td className="px-6 py-4">
                                 {prod.lugarEvento}
-                            </td>}
+                            </td>*/}
                             {width >= 1110 && <td className="px-6 py-4">
                                 {formatDate(prod.fechaInicio)}
                             </td>}
@@ -105,13 +105,13 @@ return(
                                 {prod.totalMontoVendido || 0}
                                 </td>
                             <td className="px-6 py-4">
-                                <Link to={`/editar_evento/${prod._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>
+                                <Link to={`/editar_evento/${prod._id}`} className="font-medium underline!">Editar</Link><br></br>
                                 <Link to={`/statistics/${prod._id}/${session?.userFinded?.[0]?._id}`}>Estadisticas</Link><br></br>
-                                <button onClick={() => setShowRRPPData(showRRPPData === prod._id ? null : prod._id)}>Tus RRPP</button>
+                                <button onClick={() => setShowRRPPData(showRRPPData === prod._id ? null : prod._id)}>Tus RRPP</button><br></br>
                                 <button
                                     type="button"
                                     onClick={() => navigator.clipboard.writeText(`http://localhost:5173/buy_tickets/${prod._id}/${prod.prodMail}`)}
-                                    className="bg-blue-600 text-white px-3 py-1 rounded w-[99px]!"
+                                    className="secondary-button-fucsia text-white px-3 py-1 rounded w-[99px]!"
                                 >
                                     Copiar link
                                 </button>
@@ -120,9 +120,9 @@ return(
                          </tr>
                          {showRRPPData === prod._id &&
                             <tr>
-                                <td colSpan={8} className="bg-violet-100 dark:bg-violet-900 p-1">
+                                <td colSpan={8} className=" p-1">
                                     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                                        <thead className="text-xs text-white! uppercase bg-gray-50 dark:bg-violet-900 dark:text-gray-400">
+                                        <thead className="text-xs text-[#111827] uppercase bg-orange-500">
                                         <tr>
                                             <th className="px-6 py-3">Mail</th>
                                             <th className="px-6 py-3">Monto total vendido</th>

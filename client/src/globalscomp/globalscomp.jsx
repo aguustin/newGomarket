@@ -12,14 +12,14 @@ export default function FadeInImage({ src, alt, className }) {
             <img
                 src={defaultImage}
                 alt="placeholder"
-                className={`absolute top-0 left-0 w-full h-[300px] object-cover rounded-lg ${loaded ? "opacity-0" : "opacity-100"} transition-opacity duration-800`}
+                className={`absolute top-0 left-0 w-full h-[120px] object-cover object-top ${loaded ? "opacity-0" : "opacity-100"} transition-opacity duration-800`}
                 loading="lazy"/>
             {/* Imagen real con fade-in */}
             <img
                 src={src}
                 alt={alt}
                 onLoad={() => setLoaded(true)}
-                className={`w-full h-[300px] object-cover rounded-lg transition-opacity duration-800 ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
+                className={`w-full h-[120px] object-cover object-top transition-opacity duration-800 ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
                 loading="lazy"/>
         </div>
     );

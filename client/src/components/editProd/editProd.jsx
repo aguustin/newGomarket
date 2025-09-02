@@ -8,6 +8,9 @@ import backArrowPng from '../../assets/images/back-arrow.png'
 import { convertirInputADateTimeLocal, formatDate, formatearFechaParaInput, LoadingButton } from "../../globalscomp/globalscomp"
 import UserContext from "../../context/userContext"
 import addedTicket from "../../assets/images/added-ticket.png"
+import uploadPng from '../../assets/botones/upload.png'
+import megaphonePng from '../../assets/images/megaphone.png'
+import updatePng from '../../assets/images/update.png'
 
 const EditProd = () => {
     const {session} = useContext(UserContext)
@@ -230,22 +233,28 @@ const EditProd = () => {
 
     return(
         <>
-            <div className="edit-prod-container mt-10">
+            <div className="mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5">
                     <div>
                         {prod.map((p) => 
                         <>
-                           <form className={`form-edit-event ${width >= 1290 ? 'flex relative' : 'block'}`} key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
-                                <div>
-                                    <img className={`mt-6 ${width >= 1290 ? 'w-[350px] h-[380px]' : 'mx-auto w-[350px] h-[380px] mb-9'}`} src={p.imgEvento} alt="" loading="lazy"></img>
-                                    <h2 className="mt-3 text-xl text-center text-violet-500!">{p.nombreEvento}</h2>
-                                </div>
+                           <form className="form-edit-event" key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
+                                 <div className="relative flex flex-start">
+                                    <div>
+                                        <h2>Editar evento</h2>
+                                        <img className="w-[250px] h-[200px] object-cover rounded-lg" src={p.imgEvento} alt="" loading="lazy"></img>
+                                    </div>
+                                    <div className="text-left ml-4">
+                                        <h2 className="text-3xl text-[#111827]">{p.nombreEvento}</h2>
+                                        <p className="mt-3 secondary-p">Puedes subir otra imagen para tu evento y cambiar su información</p>
+                                        <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
+                                    </div>
+                                    <div className="absolute top-15 right-10">
+                                        <label htmlFor="imgEventoHtml" className="flex items-center border-[1px] border-gray-300 text-[#111827] p-3 rounded-2xl"><img className="mr-3" src={uploadPng} alt=""></img>Cargar portada</label><br></br>
+                                        <input id="imgEventoHtml" className="border-none hidden" type="file" name="imgEvento" ref={fileRef} />
+                                    </div>
+                                 </div>
                                 <div className="edit-info-event flex justify-center">
-                                    <div className={`${width >= 1290 ? 'ml-10' : 'ml-0'}`}>
-                                        <h3 className={`${width >= 1290 ? 'ml-10 text-2xl' : 'text-2xl text-center'}`}>Edita la informarcion de tu evento:</h3>
-                                        <div>
-                                            <label>Cambiar imagen del evento:</label><br></br>
-                                            <input className="border-none" type="file" name="imgEvento" ref={fileRef} />
-                                        </div>
+                                    <div className="p-3">
                                         <div>
                                             <label>Nombre del evento:</label><br></br>
                                             <input type="text" value={eventosEditados[p._id]?.nombreEvento ?? p.nombreEvento} onChange={(e) => handleChangeEvento(e, p._id, 'nombreEvento')}></input>
@@ -266,13 +275,12 @@ const EditProd = () => {
                                             <label>Artistas que participan:</label><br></br>
                                             <input type="text"  placeholder="..." value={eventosEditados[p._id]?.artistas ??  p.artistas} onChange={(e) => handleChangeEvento(e, p._id, 'artistas')} name="artistas"></input>
                                         </div>
-                                    </div>
-                                    <div className="ml-6">
-                                        <div className="h-[17px]"></div>
                                         <div>
                                             <label>Monto de ventas estimado</label><br></br>
                                             <input type="number" placeholder="0" value={eventosEditados[p._id]?.montoVentas ??  p.montoVentas} onChange={(e) => handleChangeEvento(e, p._id, 'montoVentas')} name="montoVentas"></input>
                                         </div>
+                                    </div>
+                                    <div className="relative p-3">
                                         <div>
                                             <label>Fecha y hora de inicio:</label><br></br> 
                                             <input type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaInicio ??  p.fechaInicio)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
@@ -290,9 +298,9 @@ const EditProd = () => {
                                                     <option value="provincia" defaultValue={eventosEditados[p._id]?.provincia ??  p.provincia}>mostrar provincias</option>
                                                 </select>
                                             </div>*/}
-                                            <div className="ml-5">
+                                            <div>
                                                 <label>Localidad: {p.localidad}</label><br></br>
-                                                <select className="bg-violet-900! pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
+                                                <select className="pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
                                                     <option value={eventosEditados[p._id]?.localidad ??  p.localidad}>Cambiar localidad</option>
                                                 </select>
                                             </div>
@@ -305,15 +313,15 @@ const EditProd = () => {
                                             <label>Lugar del evento:</label><br></br>
                                             <input type="text" value={eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento} onChange={(e) => handleChangeEvento(e, p._id, 'lugarEvento')} name="lugarEvento"></input>
                                         </div>
-                                         <button className="act-evt-button absolute  bg-indigo-900 h-[40px] pr-6 pl-6" type="submit">{loading ? <LoadingButton/> : 'Actualizar evento'}</button>
+                                         <button className="secondary-button-fucsia absolute right-3 bottom-[-60px] rounded-2xl p-3 text-xl text-white!" type="submit">{loading ? <LoadingButton/> : <div className="flex items-center"><img src={updatePng} alt=""></img><p className="ml-3">Actualizar evento</p></div>}</button>
                                     </div>
                                 </div>
                             </form>
                             </>
                         )}
                        {showCreateTicketForm &&  <>
-      <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}></div>
-       <form className="add-tickets-form fixed mx-auto pl-4 pr-7 pb-4" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
+                        <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}></div>
+                        <form className="add-tickets-form fixed pl-4 pr-7 pb-4 rounded-xl" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
                             <div className="mt-4">
                                 <div className="flex items-center">
                                     <h3 className="text-xl">Crear nuevo ticket:</h3>
@@ -356,7 +364,7 @@ const EditProd = () => {
                                         </div>
                                     </div>
                                 }
-                                <div className=" h-[50px] mt-2">
+                                <div className=" mt-2">
                                     <label>Limite a sacar por persona:</label>
                                     <input type="number" name="limit" placeholder="Ej: 3"></input>
                                 </div>
@@ -374,8 +382,8 @@ const EditProd = () => {
                                 </div>
                             </div>
                             <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-5">
-                                <button className="" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}>Cancelar</button>
-                                <button className="w-[180px]  bg-indigo-900 p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar tickets'}</button>
+                                <button className="secondary-button-fucsia text-white! p-2 rounded-xl" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}>Cancelar</button>
+                                <button className="w-[180px]  bg-orange-500! primary-p rounded-xl p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar tickets'}</button>
                             </div>
                                {message == 2 && 
                                     <div className="flex items-center">
@@ -384,25 +392,30 @@ const EditProd = () => {
                                     </div>
                                } 
                         </form>
-        </> }
-                       <button className="open-add-ticket-form flex items-center p-2 bg-violet-900 cursor-pointer" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar ticket + <img className="ml-3 mr-1" src={addedTicket} alt=""></img></button>
-                         <form className="add-colab-form flex items-center mt-9" onSubmit={(e) => addRRPP(e)}>
-                             <input type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
-                             <button className="ml-3 cursor-pointer bg-violet-900 p-2 rounded-lg" type="submit">Añadir Colaborador</button>
-                             {message == 1 && <p className="ml-3">Se añadio el colaborador al evento!</p>}
-                        </form>
+                    </> }
+                        <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl mb-6 primary-p" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar ticket + <img className="ml-3 mr-1" src={addedTicket} alt=""></img></button>
                     </div>
                     <div className="flex items-center">
                         {/*<button className="flex items-center text-xl mt-16 bg-violet-900 pl-6 pr-6 pt-3 pb-3 rounded-lg cursor-pointer"><p>Editar tickets</p><img className="w-[15px] h-[15px] ml-3" src={downArrow} alt=""></img></button> */}
                     </div>
-                    <div className="edit-tickets-container flex flex-wrap justify-around">
-                    {prod.map((pr) => 
+                    <div>
+                        <h2>Tickets</h2>
+                        {prod.map((pr) => 
                         pr.tickets.map((tick) => 
-                            <div className="form-edit-ticket w-[370px] mt-18 text-center" key={tick._id}>
-                                    <img className="ticket-img mx-auto mb-5 w-[185px] h-[185px] object-cover rounded-sm" src={tick.imgTicket} alt="" loading="lazy"></img>
-                                    <button className="pb-3 pt-3 pl-2 pr-2 bg-indigo-900! rounded-lg max-w-[350px] cursor-pointer" onClick={(e) => showTicketFunc(e, tick._id)}>Editar: {tick.nombreTicket}</button>
+                            <div key={tick._id} className="tickets-edit-prod max-h-[400px]">
+                                <div className="tickets-desc-container flex items-center justify-between mb-3">
+                                    <div className="flex items-center">
+                                        <img className="ticket-img w-[125px] h-[100px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
+                                        <p className="primary-p text-2xl ml-3">{tick.nombreTicket}</p>
+                                    </div>
+                                    <p className="secondary-p text-xl">${tick.precio}</p>
+                                    <p className="secondary-p text-xl">Quedan: {tick.cantidad} </p>
+                                    <button className="primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
+                                </div>
                                     {openTicketId === tick._id && ( 
                                     <>
+                                     <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() =>  setOpenTicketId(null)}></div>
+                                     <div className="add-tickets-form fixed p-6">
                                         <div className="mt-3 mb-3">
                                             <label>Cambiar imagen del ticket:</label><br></br>
                                             <input type="file" name="imgTicket" ref={el => fileRefsB.current[tick._id] = el} />
@@ -508,15 +521,26 @@ const EditProd = () => {
                                             </select>
                                         </div>
                                         <button className="mt-5 p-3 w-[100px] rounded-lg cursor-pointer" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.cantidad, tick.limit, tick.fechaDeCierre, tick.visibilidad)}>{ticketLoading ? <LoadingButton/> : 'Editar'}</button>
-                                    </>) }
+
+                                     </div>
+                                    </>
+                                ) }
                                 </div>
                         )
                     )}
                     </div>
-                    <div className="send-back relative flex items-center h-[150px]">
-                        <Link className="absolute right-120 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Enviar Invitaciónes</p></Link>
-                        <Link className="absolute right-40 flex items-center mt-12 ml-6 p-4 bg-violet-900 rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
-                        <Link className="absolute right-0 flex items-center mt-12 ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
+                    
+                    <div className="send-back relative flex flex-wrap justify-between items-center h-[150px]">
+                          <form className="add-colab-form flex items-center mt-9 mb-6" onSubmit={(e) => addRRPP(e)}>
+                             <input className="h-[40px]" type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
+                             <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl ml-3" type="submit">Añadir Colaborador</button>
+                             {message == 1 && <p className="ml-3">Se añadio el colaborador al evento!</p>}
+                        </form>
+                        <div className="flex items-center">
+                            <Link className="flex items-center ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Enviar Invitaciónes</p></Link>
+                            <Link className=" flex items-center ml-6 p-4 bg-violet-900 rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
+                            <Link className=" flex items-center ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
+                        </div>
                     </div>
                 </div>
         </>

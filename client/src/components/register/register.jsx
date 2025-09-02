@@ -45,10 +45,10 @@ const Register = () => {
 
     return(
         <>
-            <form className="register-form mt-22 mb-22 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => registerUser(e)}>
+            <form className="register-form mt-10 mb-10 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => registerUser(e)}>
                 <div className="text-center p-4">
                     <h3 className="text-5xl">Registrate</h3>
-                    <p className="mt-3">Registra tu cuenta de Goticket y disfruta de tus eventos favoritos</p>
+                    <p className="mt-3 secondary-p">Registra tu cuenta de Goticket y disfruta de tus eventos favoritos</p>
                 </div>
                     <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="text" placeholder="Nombre completo" name="nombreCompleto" required></input>
                     <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="mail" placeholder="Tu email" name="mail" required></input>
@@ -71,7 +71,7 @@ const Register = () => {
                         <div className="flex items-center"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/">Ingresar</Link></div>
                     </div>
                 </div>
-                    {loading ? <button className="login-b w-[130px] h-[56px] bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="w-[130px] bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>}
+                    {loading ? <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="primary-button w-full p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>}
                 </div>
             </form>
         </>

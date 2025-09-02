@@ -9,6 +9,9 @@ import { Link } from "react-router"
 import ticketPng from '../../assets/images/ticket.png'
 import { LoadingButton } from "../../globalscomp/globalscomp"
 import closePng from '../../assets/botones/close.png'
+import advicePng from '../../assets/images/advice.png'
+import megaphonePng from '../../assets/images/megaphone.png'
+import uploadPng from '../../assets/botones/upload.png'
 
 const CreateEventForm = () => {
     const {session} = useContext(UserContext)
@@ -31,6 +34,7 @@ const CreateEventForm = () => {
     const [selectedCity, setSelectedCity] = useState(null)
     const [showEventInfo, setShowEventInfo] = useState(true)
     const [previewImage, setPreviewImage] = useState(null)
+    const [imageFile, setImageFile] = useState()
     const [loading, setLoading] = useState(false)
     const [categorias, setCategorias] = useState([])
     const [dateMsg, setDateMsg] = useState(0)
@@ -81,7 +85,7 @@ const CreateEventForm = () => {
                 formData.append('direccion', e.target.elements.direccion.value)
                 formData.append('lugarEvento', e.target.elements.lugarEvento.value)
                 formData.append('linkVideo', e.target.elements.linkVideo.value)
-                formData.append('imgEvento', e.target.elements.imgEvento.files[0])
+                formData.append('imgEvento', imageFile)
 
                 const res = await createEventRequest(formData)
     
@@ -157,6 +161,7 @@ const CreateEventForm = () => {
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setPreviewImage(imageUrl);
+      setImageFile(file);
     }
   };
 
@@ -176,219 +181,242 @@ const CreateEventForm = () => {
    console.log(pubOrPriv)
     return(
         <>
-        <div className="create-form mx-auto flex justify-around mt-[20px] pl-12 pr-12">
-               {showEventInfo &&
-            <div className="w-[450px]">
-               <form className="create-event-form mt-9" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
-                    <div>
-                        <label>Pais del evento</label>
-                        <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
-                            <option value=''>Elegir país</option>
-                            {countries.map((cts) => (<option key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
-                        </select>
-                    </div>
-                    <div>
-                        <label>Privacidad del evento:</label>
-                        <select name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
-                            <option value={1}>Publico</option>
-                            <option value={2}>Privado</option>
-                        </select>
-                       {pubOrPriv == 2 && <p className="text-violet-600!">El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
-                    </div>
-                    <div>
-                        <label>Evento para mayores de edad:</label>
-                        <select onChange={(e) => setEstadoEdad(e.target.value)}>
-                            <option value={1}>NO</option>
-                            <option value={2}>SI</option>
-                        </select>
-                        {estadoEdad && <input type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
-                    </div>
-                    <div>
-                        <label>Nombre del evento:</label>
-                        <div>
-                            <input type="text"  placeholder="..." name="nombreEvento" required></input>
-                        </div>
-                    </div>
-                    <div>
-                        <label>Descripcion del evento:</label>
-                        <div>
-                            <textarea type="text"  placeholder="..." name="descripcionEvento"></textarea>
-                        </div>
-                    </div>
-                    <div>
-                        <label>Categorias del evento:</label>
-                        <div>
-                            <select onChange={handleChange} defaultValue="" required>
-                                <option value="" disabled>Selecciona una categoría</option>
-                                <option value="baile">Baile</option>
-                                <option value="musica">Música</option>
-                                <option value="arte">Arte</option>
-                                <option value="teatro">Teatro</option>
-                            </select>
-                            {/*<input type="text"  placeholder="..." name="categorias" required></input>*/ }
-                        </div>
-                        <div className="flex items-center mt-5 mb-2">
-                        {categorias.map((cat, i) => ( 
-                        <div key={i} className="flex ml-1 pt-2 pb-2 pl-3 pr-3 rounded-lg bg-violet-600!">
-                            <label className="rounded-xl">{cat}</label>
-                            <button className="remove-cat ml-2 cursor-pointer" type="button" onClick={(e) => removeCategory(e, cat)}><img src={closePng} alt=""></img></button>
-                        </div>))}
-                        </div>
-                    </div>
-                    <div>
-                        <label>Artistas que participan (opcional):</label>
-                        <div>
-                            <input type="text"  placeholder="..." name="artistas"></input>
-                        </div>
-                    </div>
-                    <div>
-                        <label>Monto de ventas estimado</label>
-                        <div>
-                            <input type="number" placeholder="0" name="montoVentas" required></input>
-                        </div>
-                    </div>
-                    <div>
-                        <label>Fecha y hora de inicio:</label>
-                        <div>
-                           <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
-                        </div>
-                    </div>
-                    <div>
-                        <label>Fecha y hora de fin:</label>
-                        <div>
-                            <input type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
-                        </div>
-                    </div>
-                    <div className="flex items-center">
-                        <div>
-                            <label>Provincia:</label>
-                            <select name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))} required>
-                                <option value=''>Elegir</option>
-                                {states.map((st) => (
-                                    <option key={st.isoCode} value={st.isoCode}>{st.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="ml-6">
-                            <label>Localidad:</label>
-                            <select name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))} required>
-                               <option value=''>Elegir</option>
-                               {cities.map((city) => (
-                                <option key={city.name} value={city.name}>{city.name}</option>
-                               ))}
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label>Direccion:</label>
-                        <div>
-                            <input name="direccion" placeholder="..." required></input>
-                        </div>
-                    </div>
-                    <div>
-                        <label>Lugar del evento:</label>
-                        <div>
-                            <input name="lugarEvento" placeholder="..." required></input>
-                        </div>
-                    </div>
-                    <div>
-                        <label>Video del evento (opcional):</label>
-                        <div>
-                            <input name="linkVideo" placeholder="..."></input>
-                        </div>
-                    </div>
-                    <div className="portal-evento">
-                        <label>Portada del evento:</label>
-                        <input type="file" placeholder="..." name="imgEvento" onChange={handleImageChange}></input>
-                    </div>
-                <div id="terminos-condiciones">
-                    <div className="relative mt-10">
-                        <label>Acepto términos y condiciones</label>
-                        <input className="absolute left-18" type="checkbox" required></input>
+        <div className=" mx-auto mt-[20px] mb-[20px] pl-12 pr-12">
+            {showEventInfo &&
+            <div className="w-[100%] flex items-start mx-auto justify-center">
+                <div className="w-[375px] bg-white rounded-2xl p-3">
+                    <b className="text-[#111827] text-xl">Portada del evento</b>
+                    <img className="object-cover rounded-2xl mx-auto mt-3" src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
+                    <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
+                     <div className="portal-evento bg-orange-500 p-3 text-center rounded-2xl">
+                        <label htmlFor="fileUpload" className="text-[#111827]">Portada del evento</label>
+                        <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
                     </div>
                 </div>
-                <button className="bg-violet-900 p-4 rounded-lg w-full mt-10 mb-20" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
+                 <div className="max-w-[70vw]">
+                    <div className="mx-6 mb-3">
+                        <h2 className="text-2xl">Crear nuevo evento:</h2>
+                        <label className="secondary-p">Llena todos los campos para poder publicar tu evento</label>
+                        <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
+                    </div>
+               <form className="create-event-form relative bg-white text-[#111827]! flex flex-wrap mx-9 rounded-2xl p-5" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
+                    <div className="w-[50%]">
+                        <div>
+                            <label>Pais del evento</label><br></br>
+                            <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
+                                <option value=''>Elegir país</option>
+                                {countries.map((cts) => (<option key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
+                            </select>
+                        </div>
+                        <div >
+                            <label>Privacidad del evento:</label><br></br>
+                            <select name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
+                                <option value={1}>Publico</option>
+                                <option value={2}>Privado</option>
+                            </select>
+                        {pubOrPriv == 2 && <p>El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
+                        </div>
+                        <div>
+                            <label>Evento para mayores de edad:</label><br></br>
+                            <select onChange={(e) => setEstadoEdad(e.target.value)}>
+                                <option value={1}>NO</option>
+                                <option value={2}>SI</option>
+                            </select>
+                            {estadoEdad && <input type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
+                        </div>
+                        <div>
+                            <label>Nombre del evento:</label>
+                            <div>
+                                <input type="text"  placeholder="..." name="nombreEvento" required></input>
+                            </div>
+                        </div>
+                        <div>
+                            <label>Descripcion del evento:</label>
+                            <div>
+                                <textarea className="h-[199px]" type="text"  placeholder="..." name="descripcionEvento"></textarea>
+                            </div>
+                        </div>
+                        <div>
+                            <label>Categorias del evento:</label>
+                            <div>
+                                <select onChange={handleChange} defaultValue="" required>
+                                    <option value="" disabled>Selecciona una categoría</option>
+                                    <option value="baile">Baile</option>
+                                    <option value="musica">Música</option>
+                                    <option value="arte">Arte</option>
+                                    <option value="teatro">Teatro</option>
+                                </select>
+                                {/*<input type="text"  placeholder="..." name="categorias" required></input>*/ }
+                            </div>
+                            <div className="flex items-center mb-4">
+                            {categorias.map((cat, i) => ( 
+                            <div key={i} className="flex ml-1 pt-2 pb-2 pl-3 pr-3 rounded-lg bg-orange-500">
+                                <label className="rounded-xl">{cat}</label>
+                                <button className="remove-cat ml-2 cursor-pointer" type="button" onClick={(e) => removeCategory(e, cat)}><img src={closePng} alt=""></img></button>
+                            </div>))}
+                            </div>
+                        </div>
+                        <div>
+                            <label>Artistas que participan (opcional):</label>
+                            <div>
+                                <input type="text"  placeholder="..." name="artistas"></input>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="w-[50%]">
+                            <div>
+                                <label>Monto de ventas estimado</label>
+                                <div>
+                                    <input type="number" placeholder="0" name="montoVentas" required></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label>Fecha y hora de inicio:</label>
+                                <div>
+                                <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
+                                </div>
+                            </div>
+                            <div>
+                                <label>Fecha y hora de fin:</label>
+                                <div>
+                                    <input type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
+                                </div>
+                            </div>
+                            
+                                <div>
+                                    <label>Provincia:</label>
+                                    <select name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))} required>
+                                        <option value=''>Elegir</option>
+                                        {states.map((st) => (
+                                            <option key={st.isoCode} value={st.isoCode}>{st.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Localidad:</label>
+                                    <select name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))} required>
+                                    <option value=''>Elegir</option>
+                                    {cities.map((city) => (
+                                        <option key={city.name} value={city.name}>{city.name}</option>
+                                    ))}
+                                    </select>
+                                </div>
+                            
+                            <div>
+                                <label>Direccion:</label>
+                                <div>
+                                    <input name="direccion" placeholder="..." required></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label>Lugar del evento:</label>
+                                <div>
+                                    <input name="lugarEvento" placeholder="..." required></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label>Video del evento (opcional):</label>
+                                <div>
+                                    <input name="linkVideo" placeholder="..."></input>
+                                </div>
+                            </div>
+                </div>
+                        <div id="terminos-condiciones" className="w-[50%]">
+                            <div className="relative mt-10 flex items-center">
+                                <label className="w-[500px] text-lg text-[#EC4899]">Acepto términos y condiciones</label>
+                                <input className="absolute right-[-30px] mt-3" type="checkbox" required></input>
+                            </div>
+                        </div>
+                <button className="absolute right-0 bottom-[-100px] primary-button p-4 rounded-lg mt-10 mb-6" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
             </form> 
+                </div>   
             </div>
                } 
-            <div className="mt-9 mb-25 mx-auto">
-                <div>
-                    <img className="event-img w-[430px] h-[450px] object-cover rounded-lg" src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
-                </div>
-                <div className="w-[430px] relative">
+            <div className="bg-white mx-auto rounded-2xl pt-3 pb-3 pl-6 pr-6">
+                <div className="relative">
                 {showTickets >= 1 && 
                     <form className="create-ticket-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
                         <div className="mt-9">
-                            <p className="text-violet-400! mb-2 underline">Crea al menos un ticket para continuar:</p>
+                            <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Crea al menos un ticket para continuar:</p>
                             <div className="flex items-center">
-                                <h3 className="text-violet-500! text-xl">Crear nuevo ticket:</h3>
-                                <img id="img-create-ticket" className="ml-5" src={ticketPng} alt="" loading="lazy"></img>
+                                <img id="img-create-ticket" className="mr-3" src={ticketPng} alt="" loading="lazy"></img>
+                                <h3 className="text-xl">Crear nuevo ticket:</h3>
                             </div>
-                            <div className="mt-3">
-                                <label>Nombre del ticket</label>
-                                <input className="reset-inp" type="text" placeholder="..." name="nombreTicket" required></input>
-                            </div>
-                            <div className="mt-3">
-                                <label>Descripcion del ticket</label>
-                                <input className="reset-inp" type="text" placeholder="..." name="descripcionTicket" required></input>
-                            </div>
-                            <div className="flex flex-wrap items-center">
+                            <div className="create-new-ticket w-[100%] rounded-2xl">
                                 <div className="mt-3">
-                                    <label>Precio del ticket</label>
-                                    <input className="reset-inp" type="number" placeholder="..." name="precio" required></input>
+                                    <label>Fecha y hora de fin:</label>
+                                    <input className="reset-inp" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
+                                    {dateMsg == 3 && <p className="text-red-600!">La fecha de cierre del ticket no puede ser menor a la de inicio del evento</p>}
+                                    {dateMsg == 4 && <p className="text-red-600!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
                                 </div>
-                                <div className="mt-3">
-                                    <label>Cantidad</label>
-                                    <input className="reset-inp" type="number" placeholder="..." name="cantidad" required></input>
-                                </div>
-                                <div className="mt-3">
-                                    <div className="flex items-center">
-                                        <label>Estado:</label>
-                                        <select className="reset-inp ml-1" name="estado" onChange={(e) => setEstado(e.target.value)}>
-                                            <option value={1}>Activo</option>
-                                            <option value={2}>No visible</option>
-                                            <option value={3}>Cortesia</option>
-                                        </select>
+                                <div className="flex flex-wrap items-center">
+                                    <div className="w-[50%] p-3">
+                                        <div className="mt-3">
+                                            <label>Nombre del ticket</label>
+                                            <input className="reset-inp" type="text" placeholder="..." name="nombreTicket" required></input>
+                                        </div>
+                                        <div className="mt-3">
+                                            <label>Descripcion del ticket</label>
+                                            <input className="reset-inp" type="text" placeholder="..." name="descripcionTicket" required></input>
+                                        </div>
                                     </div>
-                                   {estado === '3' &&
-                                    <>
-                                            <div className="flex items-center mt-3">
-                                                <label>Para:</label>
-                                                <select className="ml-1" name="distribution" onChange={(e) => setDistribution(e.target.value)}>
-                                                    <option value={1}>RRPP</option>
-                                                    <option value={2}>Clientes</option>
-                                                </select>
-                                            </div>
-                                        
-                                           {distribution === '2' &&
-                                                <div className="mt-3">
-                                                    <label>Limite a sacar por persona:</label>
-                                                    <input className="reset-inp" type="number" name="limit" placeholder="Ej: 3" required></input>
+                                    <div className="w-[50%] p-3">
+                                        <div className="mt-3">
+                                            <label>Precio del ticket</label>
+                                            <input className="reset-inp" type="number" placeholder="..." name="precio" required></input>
+                                        </div>
+                                        <div className="mt-3">
+                                            <label>Cantidad</label>
+                                            <input className="reset-inp" type="number" placeholder="..." name="cantidad" required></input>
+                                        </div> 
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="flex flex-wrap items-center">
+                                        <div>
+                                            <label>Estado:</label>
+                                            <select className="reset-inp ml-1" name="estado" onChange={(e) => setEstado(e.target.value)}>
+                                                <option value={1}>Activo</option>
+                                                <option value={2}>No visible</option>
+                                                <option value={3}>Cortesia</option>
+                                            </select>
+                                        </div>
+                                    {estado === '3' &&
+                                        <>
+                                                <div>
+                                                    <label>Para:</label>
+                                                    <select className="ml-1" name="distribution" onChange={(e) => setDistribution(e.target.value)}>
+                                                        <option value={1}>RRPP</option>
+                                                        <option value={2}>Clientes</option>
+                                                    </select>
                                                 </div>
-                                           } 
+                                            
+                                            {distribution === '2' &&
+                                                    <div>
+                                                        <label>Limite a sacar por persona:</label>
+                                                        <input className="reset-inp" type="number" name="limit" placeholder="Ej: 3" required></input>
+                                                    </div>
+                                            } 
                                         </>
-                                   } 
+                                    } 
+                                    </div>
+                                </div>
+                                <div className="flex items-center mt-3">
+                                    <p className="secondary-p">Opcional: </p>
+                                    <div className="secondary-button-fucsia flex items-center p-3 rounded-xl ml-3"><img src={uploadPng} alt=""></img><label className="ml-3 text-white!" htmlFor="imgTicketHtml">Cargar Imagen del ticket</label></div>
+                                    <input id="imgTicketHtml" className="hidden" type="file" name="imgTicket" required></input>
                                 </div>
                             </div>
-                            <div className="mt-3">
-                                <label>Fecha y hora de fin:</label>
-                                <input className="reset-inp" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
-                                {dateMsg == 3 && <p className="text-red-600!">La fecha de cierre del ticket no puede ser menor a la de inicio del evento</p>}
-                                {dateMsg == 4 && <p className="text-red-600!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
+                            <div className="relative text-center w-full">
+                                <div className="relative mt-6 h-[250px]">
+                                    <button className="bg-orange-500! p-3 rounded-xl mb-6 text-lg primary-p" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
+                                    {disabledButton && <><p className="text-xl! primary-p">Tu ticket fue creado con exito!</p><br></br></>}
+                                    <p className="secondary-p text-lg mb-6">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
+                                    {/*disabledButton && */<Link className="absolute w-full primary-button mb-10 p-4 rounded-2xl flex items-center justify-center text-xl" to="/Home">Continuar</Link>}
+                                </div>
                             </div>
-                            <div className="mt-3">
-                                <label>Imagen del ticket</label>
-                                <input className="reset-inp" type="file" name="imgTicket" required></input>
+
                             </div>
-                        </div>
-                        <div className="relative flex items-center w-full">
-                            <div className="items-center mt-6">
-                                <button className="bg-violet-700 p-3 rounded-lg mb-6" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
-                                {disabledButton && <><p className="text-xl! text-violet-400!">Tu ticket fue creado con exito!</p><br></br></>}
-                                <p className="text-violet-600! text-lg mb-10">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
-                                {disabledButton && <Link className="continuar-button absolute right-0 mt-36 mb-10 p-4 rounded-lg flex items-center w-[180px] justify-between " to="/Home">Continuar<img src={continueArrowPng} alt="" loading="lazy"></img></Link>}
-                            </div>
-                        </div>
                     </form>
                 }
                 </div>

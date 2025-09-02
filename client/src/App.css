@@ -9,19 +9,14 @@ button:focus{
   outline: none;
 }
 
-select{
-  background-color: #1a0c2c;
-  color: white;
-}
-
 /*------------------------------------------------------------------------------------- NAV -------------------------------------------------------------*/
 
 .nav, footer, .nav-mobile-options{
   z-index: 3;
-  background-color: #23103b;
-  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  background-color: #ffffff;
+  box-shadow: 2px 1px 5px 0px rgba(92, 92, 92, 0.75);
+  -webkit-box-shadow: 2px 1px 5px 0px rgba(92, 92, 92, 0.75);
+  -moz-box-shadow: 2px 1px 5px 0px rgba(92, 92, 92, 0.75);
 }
 
 .settings{
@@ -49,8 +44,8 @@ select{
 
 .register-form{
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.871);
-  background: linear-gradient(135deg, #1a0c2c, #1d0b0a);
+  color: #111827;
+  background: #ffffff;
   background-size: cover;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -59,6 +54,14 @@ select{
   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+}
+
+.register-form input, .register-form textarea{
+  background-color: #f7f7f7;
+}
+
+.register-form input::placeholder , .register-form textarea::placeholder{
+  color: #111827 !important;
 }
 
 .productions{
@@ -75,76 +78,25 @@ select{
   color: transparent !important;
 }
 
-p, label, input{
-  color: #cfcfd4;
-}
-
-input{
-  background-color: #18182b;
-}
-
-.home-events-container img{
-  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-}
-
-.categories-container button, .filter-statics-button button{
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1.4em;
-  font-weight: 500;
-  font-family: inherit;
+ .filter-statics-button button{
+  border: 1px solid #e0e0e0;
   cursor: pointer;
   transition: all 0.25s;
-  border-color: #2b2749;
 }
 
-.categories-container img{
-  width: 40px;
-  height: 40px;
-}
-
-.search-form button{
-  border: 2px solid transparent;
-  border-radius: 8px;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  background-color: #726bff;
-}
-
-.search-form button:hover{
-  transform: translateY(-2px);
-  background-color: #5b52ff;
-  transition: all .3s;
-}
 
 /*------------------------------------------------------------------ HOME -------------------------------------------------------------------------------*/
-
-.event-desc, .contact-textarea{
-  background: rgba(0, 0, 0, 0.377)
-}
-
-.event-desc{
-   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75)
-}
-
-.home-events-container{
+.events-and-categories{
   overflow-y: scroll;
+  overflow-x: hidden;
 }
-
-.home-events-container::-webkit-scrollbar{
-  background-color: transparent;
+.events-and-categories::-webkit-scrollbar{
   width: 5px;
+  background-color: transparent;
 }
 
-.productions-container::-webkit-scrollbar-thumb{
-  background-color: transparent;
+.events-and-categories::-webkit-scrollbar-thumb{
+ background-color: transparent;
 }
 
 /*---------------------------------------------------------------- BUY TICKET ------------------------------------------------------------------------------*/
@@ -154,106 +106,42 @@ input{
 }
 
 /* ------------------------------------------------------------ CREATE EVENT ---------------------------------------------------------------------------*/
-.create-form{
-  max-width: 70vw;
-  min-width: 1000px;
-}
 
-.create-event-form select{
-  height: 40px;
-}
-
-.create-form input, .create-form textarea, .form-edit-event input, .email-staff, .buy-ticket input {
-  border: 1px solid #302e5f;
+.create-event-form select, .create-event-form input, .create-event-form textarea, .create-new-ticket input, .create-new-ticket select, .imgTicketHtml-label{
+  border: 1px solid #f4f5f7;
+  border-radius: 12px;
   background-color: transparent;
-  border-radius: 5px;
-  padding-left: 3px;
-  height: 40px;
-  min-width: 400px;
-  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  outline: none;
+  padding: 10px;
+  width: 90%;
+  margin-bottom: 10px;
 }
-
-.create-form input, .create-form textarea{
-  width: 100%;
-}
-
-.create-form textarea{
-  height: 200px !important;
-}
-
-.create-form > div > form > div{
-  margin-top: 14px;
-}
-
-.create-ticket-form input{
-  width: 100%;
-}
-
-#terminos-condiciones input{
-  width: 22px !important;
-  height: 22px !important;
-  box-shadow: none;
-}
-
-.portal-evento label{
-  margin-top: 10px !important;
-}
-
-.event-img{
-    box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-    -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-}
-
-.remove-cat:hover{
-    background-color: transparent;
-}
-
-.continuar-button{
-  right: 0px;
-  top: -7px;
-  background-color: #726bff;
-}
-
-.continuar-button img{
-  box-shadow:none !important;
-}
-
 
 /*------------------------------------------------------------------- EDITAR EVENTRO ------------------------------------------------------------------------*/
 
-.form-edit-event h3, .add-tickets-form h3{
-  color:#726bff
+.edit-info-event > div{
+  margin-top: 30px;
+  width: 100%;
 }
 
-.form-edit-event button, .add-tickets-form button{
-  cursor: pointer;
+.edit-info-event > div > div input, .edit-info-event select, .tickets-desc-container, .add-tickets-form input, .add-tickets-form select, .add-colab-form input{
+  border:1px solid #e0e0e0;
+  border-radius: 15px;
+  padding: 15px;
+  background-color: transparent;
 }
 
-.edit-prod-container{
-  padding: 30px;
+.form-edit-event > div > div > div{
+  margin-top: 13px;
 }
 
-.form-edit-event div{
-  margin-top: -20px;
+.form-edit-event input, .form-edit-event select{
+  width: 100% !important;
 }
 
-.form-edit-event div > div{
-  margin-top: 15px;
+.form-edit-event > div > div label{
+  color: #6B7280 !important;
 }
 
-.form-edit-event input[type="file"]{
-  border: transparent !important;
-  background-color:#5b52ff;
-  box-shadow: none;
-}
-
-.form-edit-event button{
-  bottom: -60px;
-}
 
 .form-edit-ticket button{
   background-color:#5b52ff;
@@ -270,26 +158,32 @@ input{
 
 .add-tickets-form{
   z-index: 4;
-  background: linear-gradient(135deg, #1a0c2c, #1d0b0a);
+  background: white;
   background-size: cover;
-  top: 20%;
+  height: 540px;
+   top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
+  color: #111827 !important;
+  overflow-y: scroll;
+  overflow-x: hidden;
   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
+.add-tickets-form::-webkit-scrollbar, .tickets-edit-prod::-webkit-scrollbar{
+  width: 5px;
+  background-color: transparent;
+}
+
+.add-tickets-form::-webkit-scrollbar-thumb, .tickets-edit-prod::-webkit-scrollbar-thumb{
+  background-color: #b4b4b4;
+}
+
 .add-tickets-form input{
   width: 100%;
-  border: 1px solid #302e5f;
   background-color: transparent;
-  border-radius: 5px;
-  padding-left: 3px;
-  height: 30px;
-  box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-  -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
 .ticket-img{
@@ -332,68 +226,6 @@ input{
 
 /*--------------------------------------------------------------------------------- TICKET QR ----------------------------------------------------------------------------*/
 
-
-@media screen and (max-width:1375px) {
-  .home{
-   margin: 0 auto;
-   flex-direction: column-reverse;
-  }
-
-  .home > div{
-    width: 1020px;
-    margin: auto;
-    text-align: center;
-  }
-
-  .home > div > div h1{
-    margin-top: 30px;
-  }
-
-  .home-events-container{
-    text-align: left;
-  }
-
-  .categories-container{
-    width: 100%;
-    margin: auto;
-    display: flex;
-  }
-  
-  .categories-container > div{
-    display: flex ;
-    flex-wrap: wrap;
-    align-items: center;
-    padding:0px 0px 20px 20px;
-  }
-
-  .categories-container button{
-    width: auto !important;
-    background-color: #0d0b1f;
-    border-color: #271649;
-    font-size: 14px !important;
-    width: 170px !important;
-    margin: 8px auto;
-  }
-
-  .categories-container img{ 
-      width: 30px;
-      height: 30px;
-   }
-   .home{
-    width: 90vw;
-   }
-   .home-events-container{
-    overflow-y: scroll;
-    height: 100vh;
-   }
-   .home-events-container::-webkit-scrollbar{
-    background-color: transparent;
-   }
-   .event-desc h3{
-    font-size: 20px;
-   }
-}
-
 @media screen and (max-width:1290px) {
   .form-edit-event button{
     position: relative;
@@ -434,13 +266,6 @@ input{
     justify-content: center;
   }
 
-  .add-colab-form input{
-    height: 50px;
-    padding-left: 5px;
-    border-radius: 10px;
-    width: 250px;
-  }
-
   .send-back{
     justify-content: center;
   }
@@ -464,11 +289,12 @@ input{
   }
 }
 
-@media screen and (max-width: 1150px) {
-  .home{
-    width: 100vw;
-    padding: 10px;
-  }
+/*--------------------------------------------------------------------- ESTADISTICAS -------------------------------------------------------*/
+.statistics, .info{
+border: 1px solid #e0e0e0;
+}
+.info{
+  height: 140px;
 }
 
 @media screen and (max-width: 1061px) {
@@ -476,14 +302,6 @@ input{
     justify-content: center;
   }
 
-   .categories-container{
-    width: 90vw;
-  }
-
-  .home-events-container{
-    justify-content: center;
-    width: 98vw;
-  }
 }
 
 @media screen and (max-width:1000px) {
@@ -521,29 +339,6 @@ input{
 }
 
 @media screen and (max-width:950px) { 
-  .home{
-    padding: 15px;
-  }
-  .home > div{
-    width: 100%;
-    margin: auto;
-  }
-
-  .search-form {
-   justify-content: center;
-  }
-
-  .categories-container{
-    width: 90vw;
-  }
-
-  .categories-container button{
-    width: 170px !important;
-    background-color: #0d0b1f;
-    border-color: #271649;
-    font-size: 14px !important;
-    
-  }
 
   .statistics > div {
     display: block;
@@ -649,26 +444,7 @@ input{
   .nav > div{
     width: 100% !important;
   }
-  .home{
-    margin-bottom: 40px;
-  }
-  .home h1{
-    font-size: 34px;
-  }
-  .search-form p{
-    margin-bottom: 10px;
-  }
-  .categories-container > div{
-    display: flex;
-    flex-wrap: wrap;
-  }
-  .categories-container button{
-    width: 170px !important;
-    margin-top: 10px;
-  }
-  .search-form{
-    display: block !important;
-  }
+ 
 }
 
 @media screen and (max-width:710px) {
@@ -707,10 +483,6 @@ input{
     margin-top: 7px;
   }
 
-  .home-events-container{
-    justify-content: center !important;
-  }
-
   .buy-ticket p, .buy-ticket label{
     font-size: 16px;
   }
@@ -739,28 +511,6 @@ input{
   .new-cortesie img{
     margin-top: 110px !important;
   }
-
-  .event-img-container{
-    width: 100vw;
-    object-fit: fill;
-    box-shadow: transparent;
-  }
-  
-  .event-img-container img{
-    height: auto !important;
-    object-fit: contain;
-  }
-  .event-desc{
-    padding: 7px;
-    padding-left: 15px;
-  }
-
-  .event-desc h3{
-    font-size: 18px;
-  }
-  .event-desc p, .event-desc label{
-    font-size: 16px;
-  }
 }
 
 @media screen and (max-width: 610px) {
@@ -771,21 +521,12 @@ input{
   .create-form > div{
     width: 100%;
   }
-  .event-img{
-   width: 90vw; 
-   margin: auto;
-  }
   .statistics-categories{
     margin-top: 10px;
   }
   .filter-statics-button{
     flex-wrap: wrap;
     justify-content: center;
-  }
-  .filter-statics-button button{
-    width: 200px;
-    margin: 10px;
-    font-size: 13px !important;
   }
   .space-text{
     font-size: 20px;
@@ -803,9 +544,6 @@ input{
 }
 
 @media screen and (max-width:540px) { 
-  .categories-container button{
-    width: 200px !important;
-  }
    .sum-rest-qty button{
     padding-left: 10px;
     padding-right: 10px;
@@ -898,12 +636,6 @@ input{
  .form-edit-event{
   padding: 0 !important;
  }
-
-   .categories-container button{
-    width: 150px !important;
-    font-size: 12px !important;
-    padding: 10px;
-  }
 
 }
 

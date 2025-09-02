@@ -33,14 +33,14 @@ const Contact = () => {
                 <div className="text-center p-4">
                     <h2 className="text-4xl">Comunicate con nosotros</h2>
                 </div>
-                <p className="text-2xl text-center">Llena el formulario y nos pondremos en contacto contigo</p>
+                <p className="text-2xl text-center secondary-p">Llena el formulario y nos pondremos en contacto contigo</p>
                 <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="País" name="pais" type="text"required/>
                 <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="Nombre completo" name="nombreCompleto" type="text"required/>
                 <input className="p-3 mt-3 w-full" minLength="5" maxLength="50" placeholder="Correo electronico" name="correo" type="mail"required/>
                 <input className="p-3 mt-3 w-full" minLength="5" maxLength="20" placeholder="Teléfono" name="celular" type="number" required/>
                 <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="Nombre del evento (opcional)" name="nombreEvento" type="text" required/>
-                <textarea className="contact-textarea mt-3 w-full" rows={10} placeholder="Mensaje" name="mensaje" required/>
-                {showMsg ? <p className="text-lg text-violet-600! text-center">Tu mensaje fue enviado con exito!</p> : <button className="w-full mt-3 bg-violet-900 h-[40px] rounded-lg" type="submit">Enviar</button>}
+                <textarea className="contact-textarea mt-3 w-full p-3" rows={10} placeholder="Mensaje" name="mensaje" required/>
+                {showMsg ? <p className="text-lg text-center">Tu mensaje fue enviado con exito!</p> : <button className="w-full mt-3 primary-button h-[40px] rounded-lg" type="submit">Enviar</button>}
             </form>
         </>
     )

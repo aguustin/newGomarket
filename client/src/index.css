@@ -6,7 +6,7 @@
   font-weight: 400;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background: linear-gradient(135deg, #1a0c2c, #1d0b0a);
+  background: #f7f7f7;
   background-attachment: fixed;
   background-size: cover;
   font-synthesis: none;
@@ -24,6 +24,10 @@ a:hover {
   color: #535bf2;
 }
 
+select{
+  color: #111827 !important;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   margin: 0;
@@ -34,23 +38,58 @@ body {
   overflow-x:hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+h1{
+  font-size: 38px;
+  font-weight: 500;
 }
 
-h2, h3, button{
-  color:  #ffffff;
+h1, h2, h3, input, .primary-p{
+  color:  #111827 !important;
 }
 
+label{
+  color: #6B7280 !important;
+}
+
+.secondary-p{
+  color: #6B7280 !important;
+}
+
+.primary-button{
+  background-color: #4F46E5 !important;
+  color: #FFFFFF !important;
+}
+
+.secondary-button{
+  background-color: #F97316 !important;
+  color: #111827 !important;
+}
+
+.secondary-button-fucsia{
+  background-color: #EC4899 !important;
+  color: #111827 !important;
+}
+
+.terciary-button{
+  background-color: #F97316 !important;
+  color: #ffffff !important;
+}
 
 button:hover {
-  background-color: #13132b;
+  background-color: #4F46E5 !important;
+  color: #FFFFFF !important;
+  cursor: pointer;
 }
 
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+  background-color: #4F46E5 !important;
+  color: #FFFFFF !important;
+}
+
+.primary-div{
+  background-color: #FFFFFF;
 }
 
 @media (prefers-color-scheme: light) {

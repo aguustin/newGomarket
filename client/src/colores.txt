@@ -18,3 +18,25 @@ Color: #1c1c21
 
 Borde de los inputs y contenedores
 Color: #2a2a31 (gris oscuro)
+
+
+
+
+NUEVOS COLORES DEL REDISEÑO:
+
+
+Navbar / Header: Fondo blanco (#FFFFFF) o gris muy claro (#F9FAFB), con botones en azul eléctrico.
+
+Botones principales (CTA): Azul eléctrico (#4F46E5).
+
+Hover de botones: Un tono más oscuro del primario (#3730A3).
+
+Botones secundarios: Fucsia (#EC4899).
+
+Alertas / Destacar promociones: Naranja (#F97316).
+
+Fondos de tarjetas/eventos: Blanco (#FFFFFF) con borde sutil gris (#E5E7EB).
+
+Texto: Principal en azul petróleo (#111827), secundario en gris medio (#6B7280).
+
+Confirmaciones de compra: Verde esmeralda (#10B981).

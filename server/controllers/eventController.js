@@ -547,7 +547,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       const { prod_id, nombre_evento, quantities, mail, state, total, email_hash, nombre_completo, dni } = payment.body.metadata;
       
       if (!quantities || !mail || !prod_id || !total) {
-        console.error("❌ Metadata incompleta:", payment.body.metadata);
+        console.error("Metadata incompleta:", payment.body.metadata);
         return res.sendStatus(500);
       }
       await handleSuccessfulPayment({ prodId:prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni });
@@ -555,7 +555,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
     }
     return res.sendStatus(200);
   } catch (error) {
-    console.error('❌ Error en webhook:', error.message);
+    console.error('Error en webhook:', error.message);
     return res.sendStatus(400);
   }
 };
