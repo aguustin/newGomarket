@@ -251,7 +251,7 @@ const CreateEventForm = () => {
                             <div className="flex items-center mb-4">
                             {categorias.map((cat, i) => ( 
                             <div key={i} className="flex ml-1 pt-2 pb-2 pl-3 pr-3 rounded-lg bg-orange-500">
-                                <label className="rounded-xl">{cat}</label>
+                                <label className="rounded-xl text-white!">{cat}</label>
                                 <button className="remove-cat ml-2 cursor-pointer" type="button" onClick={(e) => removeCategory(e, cat)}><img src={closePng} alt=""></img></button>
                             </div>))}
                             </div>
@@ -324,16 +324,16 @@ const CreateEventForm = () => {
                         <div id="terminos-condiciones" className="w-[50%]">
                             <div className="relative mt-10 flex items-center">
                                 <label className="w-[500px] text-lg text-[#EC4899]">Acepto términos y condiciones</label>
-                                <input className="absolute right-[-30px] mt-3" type="checkbox" required></input>
+                                <input className="relative right-[30px] mt-3" type="checkbox" required></input>
                             </div>
                         </div>
-                <button className="absolute right-0 bottom-[-100px] primary-button p-4 rounded-lg mt-10 mb-6" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
+                <button className="absolute right-4 bottom-4 primary-button p-4 rounded-lg" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
             </form> 
                 </div>   
             </div>
                } 
-            <div className="bg-white mx-auto rounded-2xl pt-3 pb-3 pl-6 pr-6">
-                <div className="relative">
+            <div className="mx-auto rounded-2xl pt-3 pb-3 pl-6 pr-6">
+                <div className="relative bg-white">
                 {showTickets >= 1 && 
                     <form className="create-ticket-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
                         <div className="mt-9">
@@ -343,39 +343,39 @@ const CreateEventForm = () => {
                                 <h3 className="text-xl">Crear nuevo ticket:</h3>
                             </div>
                             <div className="create-new-ticket w-[100%] rounded-2xl">
-                                <div className="mt-3">
-                                    <label>Fecha y hora de fin:</label>
-                                    <input className="reset-inp" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
-                                    {dateMsg == 3 && <p className="text-red-600!">La fecha de cierre del ticket no puede ser menor a la de inicio del evento</p>}
-                                    {dateMsg == 4 && <p className="text-red-600!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
+                                <div className="mt-3 p-3">
+                                    <label>Fecha y hora de fin:</label><br></br>
+                                    <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
+                                    {dateMsg == 3 && <p className="text-orange-500!">La fecha de cierre del ticket no puede ser menor a la de inicio del evento</p>}
+                                    {dateMsg == 4 && <p className="text-orange-500!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
                                 </div>
                                 <div className="flex flex-wrap items-center">
                                     <div className="w-[50%] p-3">
-                                        <div className="mt-3">
+                                        <div>
                                             <label>Nombre del ticket</label>
-                                            <input className="reset-inp" type="text" placeholder="..." name="nombreTicket" required></input>
+                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="text" placeholder="..." name="nombreTicket" required></input>
                                         </div>
-                                        <div className="mt-3">
+                                        <div>
                                             <label>Descripcion del ticket</label>
-                                            <input className="reset-inp" type="text" placeholder="..." name="descripcionTicket" required></input>
+                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="text" placeholder="..." name="descripcionTicket" required></input>
                                         </div>
                                     </div>
                                     <div className="w-[50%] p-3">
-                                        <div className="mt-3">
+                                        <div>
                                             <label>Precio del ticket</label>
-                                            <input className="reset-inp" type="number" placeholder="..." name="precio" required></input>
+                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" placeholder="..." name="precio" required></input>
                                         </div>
-                                        <div className="mt-3">
+                                        <div className="w-[50%]">
                                             <label>Cantidad</label>
-                                            <input className="reset-inp" type="number" placeholder="..." name="cantidad" required></input>
+                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" placeholder="..." name="cantidad" required></input>
                                         </div> 
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="flex flex-wrap items-center">
+                                    <div className="flex flex-wrap items-center ml-3">
                                         <div>
                                             <label>Estado:</label>
-                                            <select className="reset-inp ml-1" name="estado" onChange={(e) => setEstado(e.target.value)}>
+                                            <select className="reset-inp border-[2px]! border-gray-200! rounded-lg!" name="estado" onChange={(e) => setEstado(e.target.value)}>
                                                 <option value={1}>Activo</option>
                                                 <option value={2}>No visible</option>
                                                 <option value={3}>Cortesia</option>
@@ -401,7 +401,7 @@ const CreateEventForm = () => {
                                     } 
                                     </div>
                                 </div>
-                                <div className="flex items-center mt-3">
+                                <div className="flex items-center mt-6 ml-3">
                                     <p className="secondary-p">Opcional: </p>
                                     <div className="secondary-button-fucsia flex items-center p-3 rounded-xl ml-3"><img src={uploadPng} alt=""></img><label className="ml-3 text-white!" htmlFor="imgTicketHtml">Cargar Imagen del ticket</label></div>
                                     <input id="imgTicketHtml" className="hidden" type="file" name="imgTicket" required></input>

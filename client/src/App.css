@@ -107,13 +107,17 @@ button:focus{
 
 /* ------------------------------------------------------------ CREATE EVENT ---------------------------------------------------------------------------*/
 
-.create-event-form select, .create-event-form input, .create-event-form textarea, .create-new-ticket input, .create-new-ticket select, .imgTicketHtml-label{
-  border: 1px solid #f4f5f7;
+.create-event-form select, .create-event-form input, .create-event-form textarea, .create-new-ticket input, .create-new-ticket select, .imgTicketHtml-label, .email-staff input{ 
+  border: 1px solid #b4b4b4;
   border-radius: 12px;
   background-color: transparent;
   padding: 10px;
   width: 90%;
   margin-bottom: 10px;
+}
+
+.summary-buttons button{
+  border: 1px solid #b4b4b4;
 }
 
 /*------------------------------------------------------------------- EDITAR EVENTRO ------------------------------------------------------------------------*/
@@ -123,7 +127,7 @@ button:focus{
   width: 100%;
 }
 
-.edit-info-event > div > div input, .edit-info-event select, .tickets-desc-container, .add-tickets-form input, .add-tickets-form select, .add-colab-form input{
+.edit-info-event > div > div input, .edit-info-event select, .create-new-ticket, .tickets-desc-container, .add-tickets-form input, .add-tickets-form select, .add-colab-form input, .cortesies-desc-container, .upload-excel-form input{
   border:1px solid #e0e0e0;
   border-radius: 15px;
   padding: 15px;
@@ -172,12 +176,17 @@ button:focus{
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
-.add-tickets-form::-webkit-scrollbar, .tickets-edit-prod::-webkit-scrollbar{
+.tickets-edit-prod, .cortesies-desc-container{
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.add-tickets-form::-webkit-scrollbar, .tickets-edit-prod::-webkit-scrollbar, .cortesies-desc-container::-webkit-scrollbar{
   width: 5px;
   background-color: transparent;
 }
 
-.add-tickets-form::-webkit-scrollbar-thumb, .tickets-edit-prod::-webkit-scrollbar-thumb{
+.add-tickets-form::-webkit-scrollbar-thumb, .tickets-edit-prod::-webkit-scrollbar-thumb, .cortesies-desc-container::-webkit-scrollbar-thumb{
   background-color: #b4b4b4;
 }
 
@@ -213,6 +222,11 @@ button:focus{
 
 .free-ticket-cont p {
   color: #aeb0c4;
+}
+
+/*----------------------------------------------------------------------------- LISTA DE CORTESIAS --------------------------------------------------------------------------*/
+.new-cortesie{
+  color: #111827;
 }
 
 /*----------------------------------------------------------------------------- MIS PRODUCCIONES -------------------------------------------------------------------------*/

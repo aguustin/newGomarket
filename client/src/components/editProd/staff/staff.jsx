@@ -5,6 +5,7 @@ import { useState } from "react"
 import { formatDate } from "../../../globalscomp/globalscomp"
 import { useContext } from "react"
 import UserContext from "../../../context/userContext"
+import checkWhitePng from "../../../assets/images/check-white.png"
 
 const Staff = () => {
     const {session} = useContext(UserContext)
@@ -80,37 +81,47 @@ const Staff = () => {
 
     return(
         <>
-            <form onSubmit={(e) => addStaff(e)} className="mt-30">
+            <form onSubmit={(e) => addStaff(e)} className="relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
                   {producction.map((p) =>
-                  <div className="text-center" key={p._id}>
-                    <div className="mx-auto text-center">
-                        <img className="w-[350px] h-[380px] mx-auto object-cover" src={p.imgEvento} alt="" loading="lazy"></img>   
-                        <h3 className="mt-6 mb-6 text-4xl underline">Evento: {p.nombreEvento}</h3>
-                        <p className="mt-2 text-xl">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
-                        <p className="mt-2 text-xl">Fecha de cierre: {formatDate(p.fechaFin) }</p>
+                   <>
+                  <div className="relative" key={p._id}>
+                    <div className="relative flex flex-start flex-wrap justify-center">
+                        <div>
+                            <h2 className="text-2xl">Confirmar detalles</h2>
+                            <img className="w-[250px] h-[200px] object-cover rounded-lg" src={p.imgEvento} alt="" loading="lazy"></img>   
+                        </div>
+                        <div className="text-left ml-4 mt-6">
+                            <h2 className="text-xl text-[#111827]">Evento: {p.nombreEvento}</h2>
+                            <div className="flex items-center">
+                                <p className="mt-3 secondary-p">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
+                                <p className="mt-3 ml-3 secondary-p">Fecha de cierre: {formatDate(p.fechaFin) }</p>
+                            </div>
+                            <div className="email-staff mt-8">
+                                <label className="">Enviar invitaciónes a:</label><br></br>
+                                <input className="w-[350px]! pl-3" type="email" name="emailStaff" placeholder="Email de colaborador..."></input>
+                            </div>
+                        </div>
                     </div>
-                    <div className="mt-10 text-center">
-                        <p className="text-2xl text-violet-600!">Enviar Invitaciónes a repartir:</p>
+                    <div className="cortesies-desc-container mt-10 text-center max-h-[432px]! mb-20"> 
                         {p.cortesiaRRPP.map((tck) => 
-                        <div className="flex justify-center mx-auto mt-3 mb-6 text-center" key={tck._id}>
-                            <div className="flex mt-3">
-                                <label className="text-xl">{tck.nombreTicket}: </label>
-                                <div className="flex items-center">
-                                    <button className="w-[100px] ml-3 mr-3 text-xl bg-violet-900 cursor-pointer rounded-lg" onClick={(e) => restQuantity(e, tck._id)}>-</button>
-                                    <p className="text-xl w-[100px]">{quantities[tck._id] || 0}</p>
-                                    <button className="w-[100px] ml-3 mr-3 text-xl bg-violet-900 cursor-pointer rounded-lg" onClick={(e) => addQuantity(e, tck._id)}>+</button>
+                        <div className="flex justify-center mx-auto text-center" key={tck._id}>
+                            <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
+                                <img className="ticket-img w-[70px] h-[50px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
+                                <p className="primary-p text-xl ml-3">{tck.nombreTicket}: </p>
+                                <p className="secondary-p text-xl ml-3">Total: {tck.cantidadDeCortesias}</p>
+                                <div className="summary-buttons flex items-center">
+                                    <button className="bg-transparent ml-3 mr-3 text-xl primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] " onClick={(e) => restQuantity(e, tck._id)}>-</button>
+                                    <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
+                                    <button className=" ml-3 mr-3 text-xl primary-button cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]" onClick={(e) => addQuantity(e, tck._id)}>+</button>
                                 </div>
                             </div>
                         </div>
                         )}
                     </div>
-                    <div className="mt-8">
-                        <label className="">Agregar email del colaborador:</label>
-                        <input className="email-staff w-[350px] ml-2 pl-3" type="email" name="emailStaff"></input>
-                    </div>
-                    <button className="mt-10 mb-6 p-4 pl-9 pr-9 bg-indigo-900 rounded-lg cursor-pointer" type="submit">Confirmar</button>
-                    {showMsg === 0 && '' || showMsg === 1 && <p className="text-xl text-violet-600! mb-12">Invitaciónes enviadas!</p> || showMsg === 2 && <p className="text-xl text-violet-600! mb-12">Falta agregar invitaciónes</p>}
                   </div>
+                    <button className="primary-button flex  items-center absolute right-3 bottom-3 mt-10 p-4  rounded-3xl cursor-pointer" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>Confirmar</button>
+                    {showMsg === 0 && '' || showMsg === 1 && <p className="text-xl text-violet-600! mb-12">Invitaciónes enviadas!</p> || showMsg === 2 && <p className="text-xl text-violet-600! mb-12">Falta agregar invitaciónes</p>}
+                </>
                 )}
             </form>
         </>

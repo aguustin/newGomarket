@@ -335,7 +335,7 @@ const EditProd = () => {
                                     <label>Descripcion del ticket:</label>
                                     <input type="text" placeholder="..." name="descripcionTicket" required></input>
                                 </div>
-                                <div className="price-qty-state flex items-center mt-2">
+                                <div className="price-qty-state flex items-center mt-3">
                                     <div>
                                         <label>Precio del ticket:</label>
                                         <input className="w-[120px]" type="number" placeholder="..." name="precio" required></input>
@@ -344,9 +344,9 @@ const EditProd = () => {
                                         <label>Cantidad:</label>
                                         <input  className="w-[120px]" type="number" placeholder="..." name="cantidad" required></input>
                                     </div>
-                                    <div className="state ml-5">
-                                        <label>Estado:</label>
-                                        <select className="bg-violet-900 pr-2 pl-2 rounded-lg" name="estado" onChange={(e) => setEstado(e.target.value)}>
+                                    <div className="ml-3">
+                                        <label>Estado:</label><br></br>
+                                        <select className="pr-2 pl-2  rounded-lg" name="estado" onChange={(e) => setEstado(e.target.value)}>
                                             <option value={1}>Activo</option>
                                             <option value={2}>No visible</option>
                                             <option value={3}>Cortesia</option>
@@ -383,7 +383,7 @@ const EditProd = () => {
                             </div>
                             <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-5">
                                 <button className="secondary-button-fucsia text-white! p-2 rounded-xl" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}>Cancelar</button>
-                                <button className="w-[180px]  bg-orange-500! primary-p rounded-xl p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar tickets'}</button>
+                                <button className="w-[180px]  bg-orange-500! primary-p rounded-xl p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar ticket'}</button>
                             </div>
                                {message == 2 && 
                                     <div className="flex items-center">
@@ -393,141 +393,147 @@ const EditProd = () => {
                                } 
                         </form>
                     </> }
-                        <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl mb-6 primary-p" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar ticket + <img className="ml-3 mr-1" src={addedTicket} alt=""></img></button>
                     </div>
                     <div className="flex items-center">
                         {/*<button className="flex items-center text-xl mt-16 bg-violet-900 pl-6 pr-6 pt-3 pb-3 rounded-lg cursor-pointer"><p>Editar tickets</p><img className="w-[15px] h-[15px] ml-3" src={downArrow} alt=""></img></button> */}
                     </div>
-                    <div>
-                        <h2>Tickets</h2>
-                        {prod.map((pr) => 
-                        pr.tickets.map((tick) => 
-                            <div key={tick._id} className="tickets-edit-prod max-h-[400px]">
-                                <div className="tickets-desc-container flex items-center justify-between mb-3">
-                                    <div className="flex items-center">
-                                        <img className="ticket-img w-[125px] h-[100px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
-                                        <p className="primary-p text-2xl ml-3">{tick.nombreTicket}</p>
+                    <div className="mt-24">
+                        <div className="flex items-center mb-3">
+                            <h2 className="text-xl">Tickets</h2>
+                            <button className="bg-orange-500! flex items-center pt-1 pb-1 pl-3 pr-3 cursor-pointer rounded-lg primary-p ml-3" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar nuevo ticket +</button>
+                        </div>
+                        <div className="tickets-edit-prod max-h-[432px]!">
+                            {prod.map((pr) => 
+                            pr.tickets.map((tick) => 
+                                <div key={tick._id}>
+                                    <div className="tickets-desc-container flex items-center justify-between mb-3">
+                                        <div className="flex items-center">
+                                            <img className="ticket-img w-[125px] h-[100px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
+                                            <p className="primary-p text-2xl ml-3">{tick.nombreTicket}</p>
+                                        </div>
+                                        <p className="secondary-p text-xl">${tick.precio}</p>
+                                        <p className="secondary-p text-xl">Quedan: {tick.cantidad} </p>
+                                        <button className="primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
                                     </div>
-                                    <p className="secondary-p text-xl">${tick.precio}</p>
-                                    <p className="secondary-p text-xl">Quedan: {tick.cantidad} </p>
-                                    <button className="primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
-                                </div>
-                                    {openTicketId === tick._id && ( 
-                                    <>
-                                     <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() =>  setOpenTicketId(null)}></div>
-                                     <div className="add-tickets-form fixed p-6">
-                                        <div className="mt-3 mb-3">
-                                            <label>Cambiar imagen del ticket:</label><br></br>
-                                            <input type="file" name="imgTicket" ref={el => fileRefsB.current[tick._id] = el} />
-                                        </div>
-                                        <div>
-                                            <label>Nombre del ticket:</label><br></br>
-                                            <input type="text" name="nombreTicket" value={ticketData[tick._id]?.nombreTicket ?? tick.nombreTicket}  onChange={(e) =>
-                                            setTicketData(prev => ({
-                                            ...prev,
-                                            [tick._id]: {
-                                            ...prev[tick._id],
-                                            nombreTicket: e.target.value
-                                            }
-                                        }))
-                                        }></input>
-                                        </div>     
-                                        <div>
-                                            <label>Descripcion del ticket</label><br></br>
-                                            <input type="text" name="descripcionTicket" value={ticketData[tick._id]?.descripcionTicket ?? tick.descripcionTicket}  onChange={(e) =>
-                                            setTicketData(prev => ({
-                                            ...prev,
-                                            [tick._id]: {
-                                            ...prev[tick._id],
-                                            descripcionTicket: e.target.value
-                                            }
-                                        }))
-                                        }></input>
-                                        </div>
-                                        <div>
-                                            <label>Precio:</label><br></br>
-                                            <input type="number" name="precio" value={ticketData[tick._id]?.precio ?? tick.precio}  onChange={(e) =>
-                                            setTicketData(prev => ({
-                                            ...prev,
-                                            [tick._id]: {
-                                            ...prev[tick._id],
-                                            precio: e.target.value
-                                            }
-                                        }))
-                                        }></input>
-                                        </div>
-                                        <div>
-                                            <label>Cantidad:</label><br></br>
-                                            <input type="number" name="cantidad" value={ticketData[tick._id]?.cantidad ?? tick.cantidad}  onChange={(e) =>
-                                            setTicketData(prev => ({
-                                            ...prev,
-                                            [tick._id]: {
-                                            ...prev[tick._id],
-                                            cantidad: e.target.value
-                                            }
-                                        }))
-                                        }></input>
-                                        </div>
-                                        <div>
-                                            <label>Limite:</label><br></br>
-                                            <input type="number" name="limit" value={ticketData[tick._id]?.limit ?? tick.limit}  onChange={(e) =>
-                                            setTicketData(prev => ({
-                                            ...prev,
-                                            [tick._id]: {
-                                            ...prev[tick._id],
-                                            limit: e.target.value
-                                            }
-                                        }))
-                                        }></input>
-                                        </div>
-                                        <div className="mt-3">
-                                            <div className="items-center">
-                                            <label>Fecha de cierre: </label><br></br>
-                                            <label>{formatDate(tick.fechaDeCierre)}</label><br></br>
+                                        {openTicketId === tick._id && ( 
+                                        <>
+                                        <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() =>  setOpenTicketId(null)}></div>
+                                        <div className="add-tickets-form fixed p-6 rounded-lg">
+                                            <div className="mt-3 mb-3">
+                                                <label>Cambiar imagen del ticket:</label><br></br>
+                                                <input type="file" name="imgTicket" ref={el => fileRefsB.current[tick._id] = el} />
+                                            </div>
+                                            <div>
+                                                <label>Nombre del ticket:</label><br></br>
+                                                <input type="text" name="nombreTicket" value={ticketData[tick._id]?.nombreTicket ?? tick.nombreTicket}  onChange={(e) =>
+                                                setTicketData(prev => ({
+                                                ...prev,
+                                                [tick._id]: {
+                                                ...prev[tick._id],
+                                                nombreTicket: e.target.value
+                                                }
+                                            }))
+                                            }></input>
+                                            </div>     
+                                            <div>
+                                                <label>Descripcion del ticket</label><br></br>
+                                                <input type="text" name="descripcionTicket" value={ticketData[tick._id]?.descripcionTicket ?? tick.descripcionTicket}  onChange={(e) =>
+                                                setTicketData(prev => ({
+                                                ...prev,
+                                                [tick._id]: {
+                                                ...prev[tick._id],
+                                                descripcionTicket: e.target.value
+                                                }
+                                            }))
+                                            }></input>
+                                            </div>
+                                            <div>
+                                                <label>Precio:</label><br></br>
+                                                <input type="number" name="precio" value={ticketData[tick._id]?.precio ?? tick.precio}  onChange={(e) =>
+                                                setTicketData(prev => ({
+                                                ...prev,
+                                                [tick._id]: {
+                                                ...prev[tick._id],
+                                                precio: e.target.value
+                                                }
+                                            }))
+                                            }></input>
+                                            </div>
+                                            <div>
+                                                <label>Cantidad:</label><br></br>
+                                                <input type="number" name="cantidad" value={ticketData[tick._id]?.cantidad ?? tick.cantidad}  onChange={(e) =>
+                                                setTicketData(prev => ({
+                                                ...prev,
+                                                [tick._id]: {
+                                                ...prev[tick._id],
+                                                cantidad: e.target.value
+                                                }
+                                            }))
+                                            }></input>
+                                            </div>
+                                            <div>
+                                                <label>Limite:</label><br></br>
+                                                <input type="number" name="limit" value={ticketData[tick._id]?.limit ?? tick.limit}  onChange={(e) =>
+                                                setTicketData(prev => ({
+                                                ...prev,
+                                                [tick._id]: {
+                                                ...prev[tick._id],
+                                                limit: e.target.value
+                                                }
+                                            }))
+                                            }></input>
+                                            </div>
+                                                        <div className="mt-3 mb-3">
+                                                            <label>Estado:</label><br></br>
+                                                            <select className="rounded-lg" name="estado" ref={estadoRef}>
+                                                                <option value={tick.estado}>{tick.estado === 1 && 'Visible' || tick.estado === 2 && 'No visible' || tick.estado === 3 && 'cortesia'}</option>
+                                                                <option value={1}>Activo</option>
+                                                                <option value={2}>No visible</option>
+                                                                <option value={3}>Cortesia</option>
+                                                            </select>
+                                                        </div>
                                             <div className="mt-3">
-                                                <label>Cambiar fecha a:</label><br></br>
-                                                <input type="datetime-local" value={ticketData[tick._id]?.fechaDeCierre ?? tick.fechaDeCierre}  onChange={(e) =>
+                                                <div className="items-center text-center">
+                                                    <label>Fecha de cierre: </label>
+                                                    <label>{formatDate(tick.fechaDeCierre)}</label><br></br>
+                                                    <div className="mt-3">
+                                                        <label>Cambiar fecha a:</label><br></br>
+                                                        <input type="datetime-local" value={ticketData[tick._id]?.fechaDeCierre ?? tick.fechaDeCierre}  onChange={(e) =>
+                                                            setTicketData(prev => ({
+                                                            ...prev,
+                                                            [tick._id]: {
+                                                                ...prev[tick._id],
+                                                                fechaDeCierre: e.target.value
+                                                                }
+                                                            }))
+                                                        }></input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {/*  <div className="flex justify-center items-center mt-3">
+                                                <label>Visibilidad</label>
+                                                <input className="ml-2" type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>
                                                 setTicketData(prev => ({
                                                 ...prev,
                                                 [tick._id]: {
                                                     ...prev[tick._id],
-                                                    fechaDeCierre: e.target.value
+                                                    visibilidad: e.target.value
                                                     }
                                                 }))
                                             }></input>
-
+                                            </div> */}
+                                            <div className="flex items-center justify-between">
+                                                <button className="secondary-button-fucsia mt-5 p-3 w-[100px] rounded-lg">Cancelar</button>
+                                                <button className="bg-orange-500! mt-5 p-3 w-[100px] rounded-lg cursor-pointer" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.cantidad, tick.limit, tick.fechaDeCierre, tick.visibilidad)}>{ticketLoading ? <LoadingButton/> : 'Editar'}</button>
                                             </div>
-                                            </div>
                                         </div>
-                                        <div className="flex justify-center items-center mt-3">
-                                            <label>Visibilidad</label>
-                                            <input className="ml-2" type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>
-                                            setTicketData(prev => ({
-                                            ...prev,
-                                            [tick._id]: {
-                                                ...prev[tick._id],
-                                                visibilidad: e.target.value
-                                                }
-                                            }))
-                                        }></input>
-                                        </div>
-                                        <div className="mt-3 mb-3">
-                                            <label>Estado:</label>
-                                            <select className="bg-violet-900 pr-2 pl-2 rounded-lg" name="estado" ref={estadoRef}>
-                                                <option value={tick.estado}>{tick.estado === 1 && 'Visible' || tick.estado === 2 && 'No visible' || tick.estado === 3 && 'cortesia'}</option>
-                                                <option value={1}>Activo</option>
-                                                <option value={2}>No visible</option>
-                                                <option value={3}>Cortesia</option>
-                                            </select>
-                                        </div>
-                                        <button className="mt-5 p-3 w-[100px] rounded-lg cursor-pointer" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.cantidad, tick.limit, tick.fechaDeCierre, tick.visibilidad)}>{ticketLoading ? <LoadingButton/> : 'Editar'}</button>
+                                        </>
+                                    ) }
+                                    </div>
+                            )
+                        )}
 
-                                     </div>
-                                    </>
-                                ) }
-                                </div>
-                        )
-                    )}
+                        </div>
                     </div>
                     
                     <div className="send-back relative flex flex-wrap justify-between items-center h-[150px]">
@@ -537,9 +543,9 @@ const EditProd = () => {
                              {message == 1 && <p className="ml-3">Se añadio el colaborador al evento!</p>}
                         </form>
                         <div className="flex items-center">
-                            <Link className="flex items-center ml-6 p-4 bg-violet-900 rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Enviar Invitaciónes</p></Link>
-                            <Link className=" flex items-center ml-6 p-4 bg-violet-900 rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
-                            <Link className=" flex items-center ml-6 p-4 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
+                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Enviar Invitaciónes</p></Link>
+                            <Link className=" flex items-center ml-6 p-2 primary-button rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
+                            <Link className=" flex items-center ml-6 p-2 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
                         </div>
                     </div>
                 </div>

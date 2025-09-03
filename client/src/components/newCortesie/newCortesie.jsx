@@ -5,6 +5,7 @@ import UserContext from "../../context/userContext"
 import excelEjPng from "../../assets/images/excelEj.png"
 import { getOneProdRequest } from "../../api/eventRequests"
 import { formatDateB } from "../../globalscomp/globalscomp"
+import uploadPng from "../../assets/images/upload.png"
 
 const NewCortesie = () => {
     const {prodId} = useParams()
@@ -41,31 +42,34 @@ const NewCortesie = () => {
 
     return(
         <>
-            <div className="new-cortesie flex flex-wrap min-h-[675px] justify-around pt-20 mb-10">
+        <div className="relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
+            <h2 className="text-3xl">Crear Lista</h2>
+            <div className="new-cortesie flex flex-wrap items-center justify-between mt-5 mb-10 bg-[#f0efef] rounded-2xl p-9">
                     <div>
-                        <h2 className="text-3xl underline">Pasos para crear tu lista:</h2>
-                        <p className="text-lg">1- Crear un archivo excel</p>
-                        <p className="text-lg">2- En la columna 'A' ingresar los nombres y en la columna 'B' los emails</p>
-                        <p className="text-lg">3- Una vez terminado guardar los cambios hechos en el arhivo excel</p>
-                        <p className="text-lg">4- Tocar la opcion 'Subir excel' buscar el archivo y seleccionarlo</p>
-                        <p className="text-lg">5- Confirmar la operación</p><br></br>
-                        <form className="relative" onSubmit={(e) => handleExcelUpload(e)} encType="multipart/form-data">
-                            <h3 className="text-2xl text-violet-600!">Crear lista:</h3>
-                            <div>
-                                <label className="text-lg">Nombre de tu lista de invitados: </label>
-                                <input name="excelName" type="text" required></input>
-                            </div>
-                            <div>
-                                <label className="text-lg">Subir excel: </label>
-                                <input type="file" name="excelFile" required></input>
-                            </div>
-                            <button className="absolute top-30 right-0 bg-violet-900 pt-3 pb-3 pl-8 pr-8 rounded-lg cursor-pointer" type="submit">Confirmar</button>
-                        </form>
+                        <h2 className="text-2xl underline">Pasos para crear tu lista:</h2>
+                        <p className="text-lg flex items-center"><p className="flex items-center justify-center bg-white border-[1px] border-gray-300 rounded-[200px] w-[40px] h-[40px] mr-3 mt-6 secondary-p">1</p> Crear un archivo excel</p>
+                        <p className="text-lg flex items-center"><p className="flex items-center justify-center bg-white border-[1px] border-gray-300 rounded-[200px] w-[40px] h-[40px] mr-3 mt-2 secondary-p">2</p> En la columna 'A' ingresar los nombres y en la columna 'B' los emails</p>
+                        <p className="text-lg flex items-center"><p className="flex items-center justify-center bg-white border-[1px] border-gray-300 rounded-[200px] w-[40px] h-[40px] mr-3 mt-2 secondary-p">3</p> Una vez terminado guardar los cambios hechos en el arhivo excel</p>
+                        <p className="text-lg flex items-center"><p className="flex items-center justify-center bg-white border-[1px] border-gray-300 rounded-[200px] w-[40px] h-[40px] mr-3 mt-2 secondary-p">4</p> Tocar la opcion 'Subir excel' buscar el archivo y seleccionarlo</p>
+                        <p className="text-lg flex items-center"><p className="flex items-center justify-center bg-white border-[1px] border-gray-300 rounded-[200px] w-[40px] h-[40px] mr-3 mt-2 secondary-p">5</p> Confirmar la operación</p><br></br>
                     </div>
                 <div>
-                    <img src={excelEjPng} alt="" loading="lazy"></img>
+                    <img className="rounded-xl" src={excelEjPng} alt="" loading="lazy"></img>
                 </div>
             </div>
+                        <form className="upload-excel-form relative flex items-center" onSubmit={(e) => handleExcelUpload(e)} encType="multipart/form-data">
+                            <div className="w-[50%] mx-2">
+                                <label className="text-lg">Nombre de tu lista: </label><br></br>
+                                <input className="h-[40px] w-full" name="excelName" type="text" required></input>
+                            </div>
+                            <div className="w-[50%] mx-2">
+                                <label className="text-lg">Cargar lista: </label><br></br>
+                                <p htmlFor="excelFileHtml" className="w-full flex items-center  border-[1px] border-gray-300 p-2 primary-p rounded-2xl"><img className="mr-2" src={uploadPng} alt=""></img>Subir excel</p>
+                                <input id="excelFileHtml" className="hidden" type="file" name="excelFile" required></input>
+                            </div>
+                            <button className="primary-button mt-5 pt-3 pb-3 pl-8 pr-8 rounded-3xl cursor-pointer" type="submit">Confirmar</button>
+                        </form>
+        </div>
         </>
     )
 }
