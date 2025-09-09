@@ -19,8 +19,7 @@ button:focus{
   -moz-box-shadow: 2px 1px 5px 0px rgba(92, 92, 92, 0.75);
 }
 
-.settings{
-   background-color: #1f0f33;
+.settings, .logout-b{
    box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
@@ -134,6 +133,12 @@ button:focus{
   background-color: transparent;
 }
 
+.create-new-ticket{
+  border-right: transparent;
+  border-left: transparent;
+  border-radius: 0px;
+}
+
 .form-edit-event > div > div > div{
   margin-top: 13px;
 }
@@ -239,7 +244,12 @@ button:focus{
 }
 
 /*--------------------------------------------------------------------------------- TICKET QR ----------------------------------------------------------------------------*/
+@media screen and (max-width:1375px) {
+  .events-container{
+    justify-content: center;
 
+  }
+}
 @media screen and (max-width:1290px) {
   .form-edit-event button{
     position: relative;
@@ -311,11 +321,33 @@ border: 1px solid #e0e0e0;
   height: 140px;
 }
 
+@media screen and (max-width: 1100px) {
+  .create-event-container{
+    flex-wrap: wrap;
+  }
+  .create-event-container > div{
+    margin-bottom: 30px;
+  }
+  .event-form{
+    max-width: 100%;
+  }
+  .graphics-b{
+    margin-left: 0px !important;
+  }
+  
+  
+}
 @media screen and (max-width: 1061px) {
   .statistics-event-info > div{
     justify-content: center;
   }
-
+  .graphics-b {
+    margin-left: 0px;
+    margin-top:  20px;
+  }
+  .filter-statics-button{
+    justify-content: space-around;
+  }
 }
 
 @media screen and (max-width:1000px) {
@@ -333,9 +365,16 @@ border: 1px solid #e0e0e0;
     min-width: 100%;
   }
 
+    .event-form input, .event-form select, .event-form textarea{
+      width: 90%;
+      min-width: 90%;
+    
+  }
+  
+
   .continuar-button{
     position: relative !important;
-    margin-top:10px ;
+    margin-top:10px;
     transform: translateX(137%);
   }
 }
@@ -347,12 +386,31 @@ border: 1px solid #e0e0e0;
     transform: translateX(-50%);
   }
 
-  .new-cortesie img{
-    margin-top: 70px;
-  }
 }
 
-@media screen and (max-width:950px) { 
+@media screen and (max-width:955px) { 
+
+  .home h1{
+    text-align: center;
+  }
+
+  .esc-tit{
+    text-align: center;
+  }
+ 
+  .search-form{
+    display:  block !important;
+    margin: auto;
+    text-align: center;
+  }
+
+  .search-form p{
+    width: 100%;
+  }
+
+  .search-form input{
+    margin-left: 0px;
+  }
 
   .statistics > div {
     display: block;
@@ -373,7 +431,32 @@ border: 1px solid #e0e0e0;
   }
 }
 
+@media screen and (max-width: 876px) {
+  .new-cortesie p{
+    font-size: 16px;
+  }
+  .upload-excel-form label, .upload-excel-form button{
+    font-size: 16px !important;
+  }
+}
+
 @media screen and (max-width: 890px) {
+
+  .create-new-ticket input{
+    width: 100%;
+  }
+
+  .filter-statics-button{
+    flex-wrap: wrap;
+    margin-top: 0px;
+  }
+
+  .filter-statics-button button{
+    width: 250px;
+    margin-left: 0px;
+    margin-top: 10px;
+  }
+
   .edit-info-event{
     flex-wrap: wrap;
   }
@@ -435,7 +518,49 @@ border: 1px solid #e0e0e0;
   }
 }
 
+@media screen and (max-width:840px) {
+
+  .statistics-event-info label{
+    text-align: center;
+    justify-content: center;
+  }
+  .statistics-event-info > div{
+    justify-content: center;
+    max-width: 735px;
+  }
+
+  .new-cortesie{
+    text-align: center;
+  }
+
+  .new-cortesie > div > p{
+    display: block;
+    margin-top: 10px;
+  }
+
+  .new-cortesie > div > p > p{
+    margin: auto;
+    margin-bottom: 5px;
+  }
+  .new-cortesie > div{
+    margin: auto;
+  }
+} 
+
 @media screen and (max-width: 790px) {
+
+  .create-event-and-ticket-container{
+    padding-left: 10px;
+    padding-right: 20px;
+  }
+  .create-ticket-container-father{
+    padding: 0px;
+  }
+
+.create-ticket-container{
+  width: 100%;
+}  
+
 .edit-prod-container{
   padding: 0px;
 }
@@ -458,7 +583,10 @@ border: 1px solid #e0e0e0;
   .nav > div{
     width: 100% !important;
   }
- 
+  .home{
+    padding-left: 0px;
+    padding-right: 0px;
+  }
 }
 
 @media screen and (max-width:710px) {
@@ -470,7 +598,15 @@ border: 1px solid #e0e0e0;
     width: 90vw !important;
     text-align: center;
   }
+
+  .create-event-form-div-child{
+    width: 100%;
+  }
+  .event-form input, .event-form select, .event-form textarea{
+      width: 100%;
+  }
 } 
+
 
 @media screen and (max-width:700px) { 
   footer{
@@ -507,27 +643,54 @@ border: 1px solid #e0e0e0;
     margin-top: 50px;
   }
 
+  .new-cortesie-container{
+    margin: 20px;
+  }
+
   .new-cortesie{
-    text-align: center;
+    
     padding-left: 20px;
     padding-right: 20px;
   }
 
-  .new-cortesie h2{
-    font-size: 25px;
-  }
-
-  .new-cortesie p, .new-cortesie label{
-    margin-top: 10px;
-    font-size: 17px;
-  }
-
   .new-cortesie img{
-    margin-top: 110px !important;
+    margin-top: 20px !important;
+  }
+}
+
+@media screen and (max-width:655px) {
+  .primary-div{
+    width: 100%;
+  }
+  .primary-div img{
+    height: 150px;
+    object-fit: cover;
+  }
+  .primary-div h3{
+    font-size: 19px;
+  }
+  .primary-div p{
+    font-size: 15px;
+  }
+
+  .primary-div label label{
+    font-size: 17px;
   }
 }
 
 @media screen and (max-width: 610px) {
+
+  .home h1{
+    font-size: 29px;
+  }
+  .create-ticket-container input{
+    width: 100% !important;
+  }
+
+  .div-inputs-tickets{
+    width: 100% !important;
+  }
+
   .create-form{
     width: 100vw;
     padding: 5px !important;
@@ -552,9 +715,23 @@ border: 1px solid #e0e0e0;
   }
   .send-back a{
     justify-content: center;
-    
   }
-
+  .upload-excel-form{
+    flex-wrap: wrap;
+  }
+  .upload-excel-form > div {
+    width: 100%;
+  }
+  .new-cortesie > div p {
+    font-size: 15px;
+  }
+  .new-cortesie > div h2{
+    font-size: 20px;
+  }
+  .upload-excel-form button{
+    margin: auto;
+    margin-top: 30px;
+  }
 }
 
 @media screen and (max-width:540px) { 
@@ -567,6 +744,9 @@ border: 1px solid #e0e0e0;
 @media screen and (max-width:515px) {
   .new-cortesie button{
     margin-top: 30px;
+  }
+  .create-event-form{
+    margin: 0px !important;
   }
 }
 
@@ -616,7 +796,7 @@ border: 1px solid #e0e0e0;
     width: 100% !important;
   }
   .register-form{
-    width: 100%;
+    width: 96%;
   }
   .register-form h2{
     font-size: 22px;
@@ -693,5 +873,24 @@ border: 1px solid #e0e0e0;
   }
   .act-evt-button{
     margin-bottom: 70px !important;
+  }
+}
+
+@media screen and (max-width:450px) {
+  .charge-ticket-img{
+    display: block;
+    text-align: center;
+  }
+
+  .charge-ticket-img p{
+    margin-bottom: 10px;
+  }
+
+  .charge-ticket-img img{
+    display: none;
+  }
+
+  .charge-ticket-img > div{
+    justify-content: center !important;
   }
 }

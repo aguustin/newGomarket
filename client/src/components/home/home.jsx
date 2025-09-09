@@ -4,13 +4,12 @@ import { getAllEventsRequest } from "../../api/eventRequests"
 import { formatDateB, truncarConElipsis } from "../../globalscomp/globalscomp"
 import { Link } from "react-router"
 import FadeInImage from "../../globalscomp/globalscomp"
-import dancingPng from "../../assets/botones/dancing.png"
-import dancerPng from '../../assets/botones/dancer.png'
-import theaterPng from '../../assets/botones/theater.png'
-import adultsPng from '../../assets/botones/adults.png'
-import musicPng from '../../assets/botones/music.png'
-import dancePng from '../../assets/botones/dance.png'
-import artPng from '../../assets/botones/art.png'
+import eventsPng from "../../assets/botones/event.png"
+import theatrePng from '../../assets/botones/theatre.png'
+import plusPng from '../../assets/botones/18-plus.png'
+import musicPng from '../../assets/botones/musical-note.png'
+import discoPng from '../../assets/botones/dance.png'
+import artPng from '../../assets/botones/paint.png'
 import footprintsPng from '../../assets/botones/footprints.png'
 import Skeleton from 'react-loading-skeleton';
 
@@ -43,36 +42,36 @@ const Home = () => {
 
     return(
         <>
-            <div className="home pt-10 pr-10 pl-10">
+            <div className="home pt-10 pr-10 pl-10 mb-16">
                 <div className="w-[100%] relative">
                     <div>
                         <h1>Encuentra tu evento:</h1> 
                     </div>
-                    <div className="mt-8">
+                    <div className="mt-4">
                         <form className="search-form justify-center flex items-center w-[90%] ml-3" >
                             <p className="primary-p text-lg w-[150px]">Buscar evento:</p>
-                            <input className="w-[92%] bg-white ml-3 p-3  rounded-3xl" placeholder="Escribe el titulo del evento" name="searchEvent" onChange={(e) => setSearch(e.target.value)}></input>
+                            <input className="w-[92%] bg-white ml-3 p-3 border-[1px] border-gray-200 rounded-3xl" placeholder="Escribe el titulo del evento" name="searchEvent" onChange={(e) => setSearch(e.target.value)}></input>
                         </form>
                     </div>
-                    <div className="mt-6">
+                    <div className="esc-tit mt-6">
                         <p className="secondary-p">Escribe para filtrar por titulo. Usa categorias para explorar</p>
                     </div>
                    
                         {width < 1376 &&
-                            <div className="categories-container relative right-0 w-[300px] mx-6">
-                                <div>
-                                    <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("")}><img src={dancingPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                    <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={dancerPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                    <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                    <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                    <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theaterPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                    <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setEdad(1)} name="menores"><img src={dancePng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
-                                    <button className="w-full flex items-center text-left mt-5 rounded-4xl" onClick={() => setEdad(2)} name="mayores"><img src={adultsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
+                            <div className="flex justify-center relative mx-6">
+                                <div className="flex flex-wrap justify-around">
+                                    <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada('')}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                    <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                    <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                    <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                    <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                    <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setEdad(1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
+                                    <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setEdad(2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
                                 </div>
                             </div>
                         }
                          <div className="events-and-categories flex items-start">
-                            <div className="flex flex-wrap max-h-[1200px] mb-9">
+                            <div className="events-container flex flex-wrap items-start max-h-[1200px] w-[100%] mb-9">
                             {allEvents
                                 .filter((allEv) => {
                                     const matchesSearch =
@@ -101,7 +100,7 @@ const Home = () => {
                                     return matchesSearch && matchesType && matchesCategory && matchesEdad;
                                 })
                                 .map((allEv) => (
-                                    <div key={allEv?._id} className="primary-div w-[300px] p-4 relative mt-8 mx-3 rounded-xl">
+                                    <div key={allEv?._id} className="primary-div w-[300px] p-4 relative mt-8 mx-3 rounded-xl border-[1px] border-gray-200">
                                         <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
                                             <FadeInImage
                                             src={allEv.imgEvento}
@@ -127,14 +126,15 @@ const Home = () => {
                                 <div className="secondary-button-fucsia categories-web-container rounded-xl mt-8">
                                     <div className="w-[400px] pl-4 pr-4 pt-7 pb-7">
                                         <p className="text-lg font-bold">Categorias</p>
-                                        <button className="flex items-center bg-white text-left mt-7 p-3 rounded-2xl w-[100%]" onClick={() => setCategoriaSeleccionada("")}><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%]" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%]" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%]" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%]" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%]" onClick={() => setEdad(1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Menores -18</p></button>
-                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%]" onClick={() => setEdad(2)} name="mayores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Mayores +18</p></button>
+                                        <button className="flex items-center bg-white text-left mt-7 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("")}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setEdad(1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
+                                        <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setEdad(2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
                                     </div>
+                                                                                                                                                  
                                 </div>
                             }
                     </div>

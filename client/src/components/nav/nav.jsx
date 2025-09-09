@@ -49,9 +49,9 @@ const Nav = () => {
                 </div>
                 {session?.userFinded?.length > 0 ? 
                 <button className="absolute right-9 cursor-pointer primary-p" onClick={() => setOpenProfileCong(!openProfileConf)}>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9 primary-p">Iniciar sesion</Link>}
-                {openProfileConf && <div className="settings absolute top-[80px] right-4 w-[200px]">
+                {openProfileConf && <div className="bg-white absolute top-[80px] right-4 w-[200px]">
                         {/*<div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div> */}
-                        <div className=" cursor-pointer"><button onClick={() => logoutFunc()} className="logout-b flex items-center h-[60px] text-lg cursor-pointer"><p className="ml-4">Salir</p><img className="ml-3" src={logoutPng} alt="" loading="lazy"></img></button></div>
+                       <button onClick={() => logoutFunc()} className="logout-b flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827]"><img className="ml-3" src={logoutPng} alt="" loading="lazy"></img><p className="ml-4">Salir</p></button>
                 </div>}
             </>
             :

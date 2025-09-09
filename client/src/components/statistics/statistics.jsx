@@ -185,7 +185,7 @@ const Statistics = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-[#EC4899]! p-3 ml-6 flex items-center rounded-2xl cursor-pointer">
+                        <div className="graphics-b bg-[#EC4899]! p-3 ml-6 flex items-center rounded-2xl cursor-pointer">
                             <img src={statisticsPng} alt="" className="cursor-pointer"></img>
                             <select className="ml-3 bg-[#EC4899]! cursor-pointer" name="graph" onChange={(e) => setGraphic(e.target.value)}>
                                 <option value={'bar'}>Grafico de Barras</option>
