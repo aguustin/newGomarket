@@ -682,16 +682,16 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
               </style>
             </head>
             <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
-              <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+              <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
                 <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
               </div>
-              <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#1a0c2c; color:white;">
-                  <h3 style="font-size:30px; color:white; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:18px">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+              <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
+                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
                   <p style="font-size:18px">Evento: ${nombreEvento} </p>
                   <img src="${eventImg}"  alt="${nombreEvento}" style="width:230px; height:230px;"/>
               </div>
-              <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center;">
+              <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
                 <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
               </footer>
             </body>
@@ -732,16 +732,16 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
               </style>
             </head>
             <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
-                <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+                <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
                   <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
                 </div>
-                <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
-                  <h3 style="font-size:30px; color:white; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p>Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-                  <p>Evento:</p>
+                <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
+                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p style="font-size:18px">Evento:</p>
                   <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
                 </div>
-                <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center;">
+                <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
                 <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
               </footer>
             </body>
@@ -867,10 +867,10 @@ export const sendQrStaffQrController = async (req, res) => {
             </style>
           </head>
           <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-            <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center;">
+            <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
               <h1 style="font-size:30px; color:white;">Go Ticket</h1>
             </div>
-            <div style="padding:20px; background-color:#1a0c2c; color:white;">
+            <div style="padding:20px; background-color:#ffffff; color:#111827;">
               <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
               ${findRrPp ? `
                 <a href=https://goticket-wsy0.onrender.com/get_my_rrpp_events/${mail}></a>
@@ -883,7 +883,7 @@ export const sendQrStaffQrController = async (req, res) => {
                 </div>
               ` : ''}
             </div>
-            <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center;">
+            <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
               <h2 style="font-size:27px; color:white;">Go Ticket</h2>
             </footer>
           </body>
@@ -965,21 +965,23 @@ const sendQrEmail = async (
           </style>
         </head>
         <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-          <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center; text-align:center">
+          <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
             <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
           </div>
-          <div style="text-align:center; padding:40px; background-color:#1a0c2c; color:white;">
-            <h3 style="font-size:20px">${nombreCompleto}, aquí tienes tus tickets!</h3>
-            <img src="${imagenEvento}" alt="Imagen del evento" style="width:100%; max-width:500px; margin-bottom:20px;" />
-            ${ticketsHTML}
+          <div style="background-color:#f7f7f7>
+            <div style="text-align:center; padding:40px; background-color:#ffffff; color:#111827;">
+              <h3 style="font-size:20px; margin-top:30px; margin-bottom:20px;">${nombreCompleto}, aquí tienes tus tickets!</h3>
+              <img src="${imagenEvento}" alt="Imagen del evento" style="width:100%; max-width:500px; margin-bottom:20px;" />
+              ${ticketsHTML}
+            </div>
           </div>
-          <div style="background-color:#0c0614; color:white; padding:20px; text-align:center">
+          <div style="background-color:#ffffff; color:#111827; padding:20px; text-align:center">
             <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
             <p style="font-size:16px">- Presenta tu eTicket en el acceso del evento con tu teléfono.</p>
             <p style="font-size:16px">- También puedes acceder a tus compras desde nuestra web.</p>
             <p style="font-size:16px">- Lleva tus eTickets abiertos en tu celular.</p>
           </div>
-          <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center;">
+          <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
             <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
           </footer>
         </body>
