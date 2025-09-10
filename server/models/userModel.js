@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema({
         instagram:{type: String},
         facebook:{type: String},
         whatsapp:{type: Number}
+    }],
+    favorites:[{
+        eventId:{type: String}
     }]
 })
 

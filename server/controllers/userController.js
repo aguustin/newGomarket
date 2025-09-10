@@ -3,6 +3,8 @@ import userModel from "../models/userModel.js"
 import bcrypt from "bcrypt"
 import nodemailer from 'nodemailer'; 
 import jwt from "jsonwebtoken"
+import ticketModel from "../models/ticketsModel.js";
+import { Console } from "console";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
@@ -41,7 +43,7 @@ export const registerController = async (req, res) => {
 export const loginController = async (req, res) => {
     const {mail, contrasenia} = req.body
     const userFinded = await userModel.find({mail: mail})
-
+    console.log(mail, contrasenia)
     if(userFinded.length > 0){
         const decryptContrasenia = await bcrypt.compare(contrasenia, userFinded[0].contrasenia)
         if(decryptContrasenia){
@@ -109,7 +111,7 @@ export const contactController = async (req, res) => {
         service: 'gmail',
         auth: {
             user: user_mail,
-            pass: pass,
+            pass: pass
         },
     });
     
@@ -122,4 +124,54 @@ export const contactController = async (req, res) => {
     });
 
     res.status(200).json({state:1})
+}
+
+export const saveEventsController = async (req, res) => {
+    const {userId, eventId} = req.body
+    const getUserInfo = await userModel.findById({_id: userId})
+
+    if(getUserInfo){
+        const filterFavorites = getUserInfo.favorites.some((fav) => fav.eventId === eventId)
+        
+        if(filterFavorites){
+            
+            await userModel.updateOne(
+                {_id: userId},
+                { $pull: { favorites: { eventId: eventId } } }
+            )
+           return res.status(200).json({done: 2})
+        }
+        await userModel.updateOne(
+            {_id: userId},
+            {
+                $addToSet: {
+                    favorites: {eventId: eventId} 
+                }
+            }
+        )
+    
+        return res.status(200).json({done: 1})
+    }
+}
+
+export const getMySavedEventsController = async (req, res) => {
+    const {userId} = req.body
+
+    const getUserInfo = await userModel.findById({_id: userId})
+
+    if(!getUserInfo){
+        res.send(200).json({empty: true})
+    }
+
+    const filterFavorites = getUserInfo ? getUserInfo.favorites.map((fav) => fav.eventId) : []
+
+    if(filterFavorites.length <= 0){
+        res.send(200).json({empty: true})
+    }
+
+    const favoriteEvents = await ticketModel.find({
+        _id:{$in: filterFavorites}
+    })
+
+    res.send(favoriteEvents).json({empty:false})
 }

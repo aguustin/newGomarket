@@ -181,26 +181,26 @@ const CreateEventForm = () => {
    console.log(pubOrPriv)
     return(
         <>
-        <div className=" mx-auto mt-[20px] mb-[20px] pl-12 pr-12">
+        <div className="create-event-and-ticket-container mx-auto mt-[20px] mb-[20px] pl-12 pr-12">
             {showEventInfo &&
-            <div className="w-[100%] flex items-start mx-auto justify-center">
+            <div className="create-event-container w-[100%] flex items-start mx-auto justify-center">
                 <div className="w-[375px] bg-white rounded-2xl p-3">
                     <b className="text-[#111827] text-xl">Portada del evento</b>
                     <img className="object-cover rounded-2xl mx-auto mt-3" src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
                     <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
-                     <div className="portal-evento bg-orange-500 p-3 text-center rounded-2xl">
+                    <div className="portal-evento bg-orange-500 p-3 text-center rounded-2xl">
                         <label htmlFor="fileUpload" className="text-[#111827]">Portada del evento</label>
                         <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
                     </div>
                 </div>
-                 <div className="max-w-[70vw]">
+                 <div className="event-form max-w-[70vw]">
                     <div className="mx-6 mb-3">
                         <h2 className="text-2xl">Crear nuevo evento:</h2>
                         <label className="secondary-p">Llena todos los campos para poder publicar tu evento</label>
                         <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
                     </div>
                <form className="create-event-form relative bg-white text-[#111827]! flex flex-wrap mx-9 rounded-2xl p-5" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
-                    <div className="w-[50%]">
+                    <div className="create-event-form-div-child w-[50%]">
                         <div>
                             <label>Pais del evento</label><br></br>
                             <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
@@ -263,7 +263,7 @@ const CreateEventForm = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="w-[50%]">
+                    <div className="create-event-form-div-child w-[50%]">
                             <div>
                                 <label>Monto de ventas estimado</label>
                                 <div>
@@ -321,28 +321,27 @@ const CreateEventForm = () => {
                                 </div>
                             </div>
                 </div>
-                        <div id="terminos-condiciones" className="w-[50%]">
-                            <div className="relative mt-10 flex items-center">
-                                <label className="w-[500px] text-lg text-[#EC4899]">Acepto términos y condiciones</label>
-                                <input className="relative right-[30px] mt-3" type="checkbox" required></input>
-                            </div>
-                        </div>
-                <button className="absolute right-4 bottom-4 primary-button p-4 rounded-lg" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
+                        
+                    <div className="relative mt-10 flex items-center">
+                        <label className="text-md text-[#EC4899]">Acepto términos y condiciones</label>
+                        <input className="mt-3" type="checkbox" required></input>
+                    </div> 
+                    <button className="absolute right-4 bottom-4 primary-button p-4 rounded-lg" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
             </form> 
                 </div>   
             </div>
                } 
-            <div className="mx-auto rounded-2xl pt-3 pb-3 pl-6 pr-6">
-                <div className="relative bg-white">
+            <div className="create-ticket-container-father mx-auto pt-3 pb-3 pl-6 pr-6">
+                <div className="create-ticket-container max-w-[1000px] mx-auto rounded-2xl relative bg-white">
                 {showTickets >= 1 && 
                     <form className="create-ticket-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
                         <div className="mt-9">
                             <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Crea al menos un ticket para continuar:</p>
-                            <div className="flex items-center">
+                            <div className="flex items-center pl-3 mb-6 mt-6">
                                 <img id="img-create-ticket" className="mr-3" src={ticketPng} alt="" loading="lazy"></img>
                                 <h3 className="text-xl">Crear nuevo ticket:</h3>
                             </div>
-                            <div className="create-new-ticket w-[100%] rounded-2xl">
+                            <div className="create-new-ticket rounded-2xl">
                                 <div className="mt-3 p-3">
                                     <label>Fecha y hora de fin:</label><br></br>
                                     <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
@@ -350,7 +349,7 @@ const CreateEventForm = () => {
                                     {dateMsg == 4 && <p className="text-orange-500!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
                                 </div>
                                 <div className="flex flex-wrap items-center">
-                                    <div className="w-[50%] p-3">
+                                    <div className="div-inputs-tickets  w-[50%] min-w-[270px] p-3">
                                         <div>
                                             <label>Nombre del ticket</label>
                                             <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="text" placeholder="..." name="nombreTicket" required></input>
@@ -360,12 +359,12 @@ const CreateEventForm = () => {
                                             <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="text" placeholder="..." name="descripcionTicket" required></input>
                                         </div>
                                     </div>
-                                    <div className="w-[50%] p-3">
+                                    <div className="div-inputs-tickets w-[50%] min-w-[270px] p-3">
                                         <div>
                                             <label>Precio del ticket</label>
                                             <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" placeholder="..." name="precio" required></input>
                                         </div>
-                                        <div className="w-[50%]">
+                                        <div>
                                             <label>Cantidad</label>
                                             <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" placeholder="..." name="cantidad" required></input>
                                         </div> 
@@ -401,7 +400,7 @@ const CreateEventForm = () => {
                                     } 
                                     </div>
                                 </div>
-                                <div className="flex items-center mt-6 ml-3">
+                                <div className="charge-ticket-img flex items-center mt-6 ml-3">
                                     <p className="secondary-p">Opcional: </p>
                                     <div className="secondary-button-fucsia flex items-center p-3 rounded-xl ml-3"><img src={uploadPng} alt=""></img><label className="ml-3 text-white!" htmlFor="imgTicketHtml">Cargar Imagen del ticket</label></div>
                                     <input id="imgTicketHtml" className="hidden" type="file" name="imgTicket" required></input>
@@ -412,7 +411,7 @@ const CreateEventForm = () => {
                                     <button className="bg-orange-500! p-3 rounded-xl mb-6 text-lg primary-p" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
                                     {disabledButton && <><p className="text-xl! primary-p">Tu ticket fue creado con exito!</p><br></br></>}
                                     <p className="secondary-p text-lg mb-6">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
-                                    {/*disabledButton && */<Link className="absolute w-full primary-button mb-10 p-4 rounded-2xl flex items-center justify-center text-xl" to="/Home">Continuar</Link>}
+                                    {/*disabledButton && */<Link className="w-[300px] primary-button mx-auto mb-10 p-4 rounded-2xl flex items-center justify-center text-xl" to="/Home">Continuar</Link>}
                                 </div>
                             </div>
 

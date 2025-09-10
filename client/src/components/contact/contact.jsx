@@ -29,18 +29,20 @@ const Contact = () => {
 
     return(
         <>
-            <form className="register-form h-full mt-9 mb-9 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => contactarFunc(e)}>
+            <form className="register-form h-full mt-9 mb-9 mx-auto w-[450px] rounded-lg" onSubmit={(e) => contactarFunc(e)}>
                 <div className="text-center p-4">
-                    <h2 className="text-4xl">Comunicate con nosotros</h2>
+                    <h2 className="text-3xl">Comunicate con nosotros</h2>
                 </div>
-                <p className="text-2xl text-center secondary-p">Llena el formulario y nos pondremos en contacto contigo</p>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="País" name="pais" type="text"required/>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="Nombre completo" name="nombreCompleto" type="text"required/>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="50" placeholder="Correo electronico" name="correo" type="mail"required/>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="20" placeholder="Teléfono" name="celular" type="number" required/>
-                <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" placeholder="Nombre del evento (opcional)" name="nombreEvento" type="text" required/>
-                <textarea className="contact-textarea mt-3 w-full p-3" rows={10} placeholder="Mensaje" name="mensaje" required/>
-                {showMsg ? <p className="text-lg text-center">Tu mensaje fue enviado con exito!</p> : <button className="w-full mt-3 primary-button h-[40px] rounded-lg" type="submit">Enviar</button>}
+                <p className="text-md text-center secondary-p">Llena el formulario y nos pondremos en contacto contigo</p>
+                <div className="p-3">
+                    <input className="p-3 mx-auto mt-3 w-full border-[1px] border-gray-200" minLength="5" maxLength="30" placeholder="País" name="pais" type="text"required/>
+                    <input className="p-3 mx-auto mt-3 w-full border-[1px] border-gray-200" minLength="5" maxLength="30" placeholder="Nombre completo" name="nombreCompleto" type="text"required/>
+                    <input className="p-3 mx-auto mt-3 w-full border-[1px] border-gray-200" minLength="5" maxLength="50" placeholder="Correo electronico" name="correo" type="mail"required/>
+                    <input className="p-3 mx-auto mt-3 w-full border-[1px] border-gray-200" minLength="5" maxLength="20" placeholder="Teléfono" name="celular" type="number" required/>
+                    <input className="p-3 mx-auto mt-3 w-full border-[1px] border-gray-200" minLength="5" maxLength="30" placeholder="Nombre del evento (opcional)" name="nombreEvento" type="text" required/>
+                    <textarea className="contact-textarea mt-3 w-full p-3 border-[1px] border-gray-200" rows={10} placeholder="Mensaje" name="mensaje" required/>
+                    {showMsg ? <p className="text-lg text-center">Tu mensaje fue enviado con exito!</p> : <button className="w-full mt-3 primary-button h-[40px] rounded-lg" type="submit">Enviar</button>}
+                </div>
             </form>
         </>
     )

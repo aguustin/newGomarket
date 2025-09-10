@@ -28,7 +28,7 @@ export default function FadeInImage({ src, alt, className }) {
 export const Message = (props) => {
     return(
         <div className="msg fixed top-10 mx-auto bg-red-900">
-            <p className="text-white">saddddddddddddddddddddddddddddddddddddd</p>
+            <p className="text-white"></p>
         </div>
     )
 }

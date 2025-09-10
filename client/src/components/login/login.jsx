@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import UserContext from "../../context/userContext"
 import {Link, useNavigate} from 'react-router'
-import { LoadingButton, Message } from "../../globalscomp/globalscomp"
+import { LoadingButton } from "../../globalscomp/globalscomp"
 import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
 
@@ -26,6 +26,7 @@ const Login = () => {
     const loginUser = async (e) => {
         e.preventDefault()
         setLoading(true)
+
         const userData = {
             mail: e.target.elements.mail.value,
             contrasenia: e.target.elements.contrasenia.value
@@ -38,9 +39,9 @@ const Login = () => {
             setLoading(false)
             setShowMsg(true)
         }
+        
         if(captchaStatus){ 
         }
-        setLoading(false)   
     }
     
     const recoverPassFunc = async (e) => {
@@ -51,7 +52,6 @@ const Login = () => {
 
     return(
         <>
-            {showMsg && <Message text={message}/>}
             {recoverPass ?
              <form className="register-form h-full mt-35 mb-35 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
                     <div className="text-center p-4">

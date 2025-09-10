@@ -24,3 +24,7 @@ export const recoverPassRequest = ({mail}) => axios.post(`${import.meta.env.VITE
 export const confirmNewPassRequest = ({token, nuevaContrasenia}) => axios.post(`${import.meta.env.VITE_URL}/new_password`, {token, nuevaContrasenia})
 
 export const contactarRequest = (mailData) => axios.post(`${import.meta.env.VITE_URL}/contactar`, mailData)
+
+export const saveEventRequest = (data) => axios.post(`${import.meta.env.VITE_URL}/save_event`, data)
+
+export const obtainMySaveEventsRequest = (userId) => axios.post(`${import.meta.env.VITE_URL}/obtain_saved_events`, userId)
