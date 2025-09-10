@@ -12,13 +12,21 @@ import discoPng from '../../assets/botones/dance.png'
 import artPng from '../../assets/botones/paint.png'
 import footprintsPng from '../../assets/botones/footprints.png'
 import Skeleton from 'react-loading-skeleton';
+import { saveEventRequest } from "../../api/userRequests"
+import { useContext } from "react"
 
 const Home = () => {
+    const {session} = useContext(UserContext)
     const [allEvents, setAllEvents] = useState([])
     const [search, setSearch] = useState('')
     const [width, setWidth] = useState(null)
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
     const [edad, setEdad] = useState(0);  //continuar con esto para filtrar por edad
+    const [favoriteEventIds, setFavoriteEventIds] = useState(() => {
+            const session = JSON.parse(localStorage.getItem("session"));
+            const userFavorites = session?.userFinded?.[0]?.favorites || [];
+            return userFavorites.map(fav => fav?.eventId);
+    });
 
     useEffect(() => { 
         const getAllEventsFunc = async () => {
@@ -27,7 +35,11 @@ const Home = () => {
         }
         getAllEventsFunc()
 
+        const favs = session?.userFinded?.[0]?.favorites || [];
+        setFavoriteEventIds(favs.map(f => f.eventId));
+
         const mediaQuery = window.matchMedia("(min-width: 1376px)");
+
         const handleResize = () => {
            setWidth(mediaQuery.matches ? 1376 : 1375);
         };
@@ -39,6 +51,58 @@ const Home = () => {
     },[])
     
     if (width === null) return null;
+
+    const saveEvent = async (eventId) => {
+       const session = JSON.parse(localStorage.getItem("session"));
+    const user = session?.userFinded?.[0];
+
+    if (!user) {
+        // Redirigir al login o mostrar cartel
+        return;
+    }
+
+    let updatedFavorites;
+
+    if (favoriteEventIds.includes(eventId)) {
+        // Quitar de favoritos
+        updatedFavorites = user.favorites.filter(f => f?.eventId !== eventId);
+    } else {
+        // Agregar a favoritos
+        const newFavorite = {
+            eventId: eventId,
+            _id: Math.random().toString(36).substring(2, 15), // generar id temporal si querés
+        };
+        updatedFavorites = [...user.favorites, newFavorite];
+    }
+
+    // Actualizar localStorage
+    const updatedSession = {
+        ...session,
+        userFinded: [
+            {
+                ...user,
+                favorites: updatedFavorites
+            }
+        ]
+    };
+    localStorage.setItem("session", JSON.stringify(updatedSession));
+
+    // Actualizar estado para render
+    setFavoriteEventIds(updatedFavorites.map(f => f?.eventId));
+
+        const data = {
+            userId: session?.userFinded?.[0]?._id,
+            eventId: eventId
+        }
+       const res = await saveEventRequest(data)
+
+       if(res.data.empty){
+            console.log("debes iniciar sesion")  //mostrar un cartel que diga que debe iniciar sesion y dejarle un link para que navegue al login (o poner un timeout y mandarlo directo al login)
+       }else{
+            console.log("Guardado con exito")
+       }
+    }
+
 
     return(
         <>
@@ -100,6 +164,7 @@ const Home = () => {
                                     return matchesSearch && matchesType && matchesCategory && matchesEdad;
                                 })
                                 .map((allEv) => (
+                                    
                                     <div key={allEv?._id} className="primary-div w-[300px] p-4 relative mt-8 mx-3 rounded-xl border-[1px] border-gray-200">
                                         <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
                                             <FadeInImage
@@ -116,8 +181,22 @@ const Home = () => {
                                             <label className="text-lg secondary-p">{formatDateB(allEv.fechaInicio)}</label>
                                         </div>
                                         <div className="flex items-center justify-between mt-5">
-                                             <button className="primary-p bg-orange-500 p-2 rounded-xl">Guardar</button>
-                                             <Link className="primary-button p-2 rounded-xl" to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>Ver más</Link>
+                                             {favoriteEventIds.includes(allEv._id) ? (
+                                                    <button
+                                                        className="primary-p bg-gray-400 p-2 rounded-xl"
+                                                        onClick={() => saveEvent(allEv._id)}
+                                                    >
+                                                        Guardado
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className="primary-p bg-orange-500 p-2 rounded-xl"
+                                                        onClick={() => saveEvent(allEv._id)}
+                                                    >
+                                                        Guardar
+                                                    </button>
+                                                )}
+                                                <Link className="primary-button p-2 rounded-xl" to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>Ver más</Link>
                                         </div>    
                                     </div>
                                 ))}

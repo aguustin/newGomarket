@@ -81,26 +81,8 @@ button:hover {
   cursor: pointer;
 }
 
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-  background-color: #4F46E5 !important;
-  color: #FFFFFF !important;
-}
 
 .primary-div{
   background-color: #FFFFFF;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}

@@ -39,6 +39,12 @@ button:focus{
    border-color: #726bff;
 }
 
+.session-b:hover{
+  background-color: #e0e0e0 !important;
+  color: #111827 !important;
+  transition: all .3s;
+}
+
 /*------------------------------------------------------- REGISTER FORM --------------------------------------------*/
 
 .register-form{
@@ -98,14 +104,16 @@ button:focus{
  background-color: transparent;
 }
 
-/*---------------------------------------------------------------- BUY TICKET ------------------------------------------------------------------------------*/
+.categories-web-container > div button:hover{
+  transition: all .5s;
+} 
 
+/*---------------------------------------------------------------- BUY TICKET ------------------------------------------------------------------------------*/
 .buy-ticket input{
   width: 280px !important;
 }
 
 /* ------------------------------------------------------------ CREATE EVENT ---------------------------------------------------------------------------*/
-
 .create-event-form select, .create-event-form input, .create-event-form textarea, .create-new-ticket input, .create-new-ticket select, .imgTicketHtml-label, .email-staff input{ 
   border: 1px solid #b4b4b4;
   border-radius: 12px;
