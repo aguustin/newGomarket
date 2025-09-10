@@ -80,6 +80,7 @@ export const formatNumber = (num) => {
     return truncated.toString();
 }
 
+
 export const LoadingDiv = () => {
     <div className="mx-auto flex justify-center fixed h-screen" role="status">
         <svg aria-hidden="true" className="w-8 h-8 text-gray-200 animate-spin dark:text-violet-400 fill-blue-900" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">

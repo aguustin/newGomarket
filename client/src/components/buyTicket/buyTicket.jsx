@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router"
 import { buyTicketsRequest, getEventToBuyRequest } from "../../api/eventRequests"
 import { formatDate, formatNumber, LoadingButton, Message } from "../../globalscomp/globalscomp"
+import checkWhitePng from "../../assets/images/check-white.png"
 
 const BuyTicket = () => {
     const {prodId, emailHash} = useParams()
@@ -18,6 +19,11 @@ const BuyTicket = () => {
             }
             getOneEvent()
     }, [])
+
+    const currencyFormatter = new Intl.NumberFormat('es-AR', {
+  style: 'currency',
+  currency: 'ARS',
+});
 
  const restQuantity = (e, ticketId) => {
     e.preventDefault();
@@ -39,10 +45,9 @@ const BuyTicket = () => {
         setQuantities(prev => {
             const current = prev[ticketId] || 0;
             const maxLimit = limit !== undefined ? limit : 20; // Usa 20 si no hay limit (tickets pagos)
-
             if (current < maxLimit) {
                 setTotalQuantity(totalQuantity + 1);
-
+            
                 return {
                     ...prev,
                     [ticketId]: current + 1,
@@ -85,91 +90,119 @@ const BuyTicket = () => {
             console.error("Error en handlePayment:", error);
         }
     }
-
+    console.log(quantities)
 
     return(
-        <div className="buy-ticket mx-auto mt-10 mb-10 text-center">
+         
+        <div className="relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
             {prod.map((p) => 
-            <div className="mx-auto" key={p._id}>
-                <h2 className="text-3xl mb-3">{p.nombreEvento}</h2>
-                <p className="mb-1">{p.direccion}</p>
-                <p className="text-lg mb-5">{formatDate(p.fechaInicio)}</p>
-                <img className="rounded-lg max-w-[500px] mx-auto" loading="lazy" src={p.imgEvento}></img>
-            </div>
+            <div className="relative flex flex-start flex-wrap" key={p._id}>
+                        <div>
+                            <h2 className="text-2xl">Comprar tickets</h2>
+                            <img className="w-[250px] h-[200px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
+                        </div>
+                        <div className="text-left ml-4 mt-9">
+                            <h2 className="text-xl text-[#111827]">Evento: {p.nombreEvento}</h2>
+                            <p className="mb-2 secondary-p">Dirección: {p.direccion}</p>
+                            <div className="flex items-center mt-2">
+                                <p className="secondary-p">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
+                                <p className="ml-3 secondary-p">Fecha de cierre: {formatDate(p.fechaFin) }</p>
+                            </div>
+                        </div>
+                    </div>
             )}
-            <form className="form-buy-inputs" onSubmit={(e) => buyTickets(e)}>
-                <div className="mt-4">
-                    <label className="text-xl">Nombre completo:</label><br></br>
-                    <input type="text" name="nombreCompleto" placeholder="..."></input>
+            <form className="form-buy-inputs mt-6" onSubmit={(e) => buyTickets(e)}>
+                <div className="flex flex-wrap items-center justify-center">
+                    <div className="w-[30%] mx-2 border-[1px] border-gray-100 rounded-2xl p-3">
+                        <label className="text-xl">Nombre:</label><br></br>
+                        <input className="w-[100%]" type="text" name="nombreCompleto" placeholder="..."></input>
+                    </div>
+                    <div className="w-[30%] mx-2 border-[1px] border-gray-100 rounded-2xl p-3">
+                        <label className="text-xl">Mail:</label><br></br>
+                        <input className="w-[100%]" type="email" name="mail" placeholder="example@gmail.com"></input>
+                    </div>
+                    <div className="w-[30%] mx-2 border-[1px] border-gray-100 rounded-2xl p-3">
+                        <label className="text-xl">dni:</label><br></br>
+                        <input className="w-[100%]" type="number" name="dni" placeholder="..."></input>
+                    </div>
                 </div>
-                <div className="mt-4">
-                    <label className="text-xl">Mail:</label><br></br>
-                    <input type="email" name="mail" placeholder="example@gmail.com"></input>
-                </div>
-                <div className="mt-4">
-                    <label className="text-xl">dni:</label><br></br>
-                    <input type="number" name="dni" placeholder="..."></input>
-                </div>
+            <div className="cortesies-desc-container mt-10 text-center max-h-[432px]! mb-10"> 
               {prod.map((p) => {
-    return (
-        <>
-            {p.tickets.filter((tck) => tck.estado !== 2).map((tck) => (
-                <div key={tck._id}>
-                    <div className="buy-t max-w-[700px] mx-auto flex justify-between pl-6 pr-6 mt-6">
-                        <div className="flex items-center text-left">
-                            <label className="text-xl">{tck.nombreTicket}: </label>
-                            <p className="ml-2 text-xl">${tck.precio}</p>
-                        </div>
-                        <div className="sum-rest-qty flex items-center justify-center">
-                            <button
-                                className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
-                                onClick={(e) => restQuantity(e, tck._id, tck.limit)}
-                            >
-                                -
-                            </button>
-                            <p className="text-xl">{quantities[tck._id] || 0}</p>
-                            <button
-                                className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
-                                onClick={(e) => addQuantity(e, tck._id, tck.limit)}
-                            >
-                                +
-                            </button>
-                        </div>
-                    </div>
+                    return (
+                        <>
+                            {p.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
+                                <div className="flex justify-center mx-auto text-center" key={tck._id}>
+                                    <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
+                                        <div className="flex items-center">
+                                            <img className="ticket-img w-[70px] h-[50px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
+                                            <label className="primary-p text-xl ml-3">{tck.nombreTicket} </label>
+                                        </div>
+                                        <div>
+                                            <p className="ml-2 text-xl secondary-p">${tck.precio}</p>
+                                        </div>
+                                        <div className="flex items-center justify-left w-[270px] border-[1px] border-gray-100 rounded-4xl p-3">
+                                            <button
+                                                className="bg-transparent ml-3 mr-3 text-xl primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
+                                                onClick={(e) => restQuantity(e, tck._id, tck.limit)}
+                                            >
+                                                -
+                                            </button>
+                                            <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
+                                            <button
+                                                className=" ml-3 mr-3 text-xl bg-orange-500! cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
+                                                onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.precio)}
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <p className="primary-p">{currencyFormatter.format((quantities[tck._id] || 0) * tck.precio)}</p> 
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {p.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
+                                  <div className="flex justify-center mx-auto text-center" key={crt._id}>
+                                    <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
+                                        <div className="flex items-center">
+                                            <img className="ticket-img w-[70px] h-[50px] rounded-xl" src={crt.imgTicket} alt="" loading="lazy"></img>
+                                            <label className="primary-p text-xl ml-3">{crt.nombreTicket} </label>
+                                        </div>
+                                        <div>
+                                            <p className="ml-2 text-xl secondary-p">Disponibles:{crt.limit}</p>
+                                        </div>
+                                        <div className="flex items-center justify-left w-[270px] border-[1px] border-gray-100 rounded-4xl p-3">
+                                            <button
+                                                className="bg-transparent ml-3 mr-3 text-xl primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
+                                                onClick={(e) => restQuantity(e, crt._id, crt.limit)}
+                                            >
+                                                -
+                                            </button>
+                                            <p className="text-xl w-[50px] secondary-p">{quantities[crt._id] || 0}</p>
+                                            <button
+                                                className=" ml-3 mr-3 text-xl bg-orange-500! cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
+                                                onClick={(e) => addQuantity(e, crt._id, crt.limit)}
+                                            >
+                                                +
+                                            </button>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    );
+                })}
                 </div>
-            ))}
-            {p.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
-                <div key={crt._id}>
-                    <div className="buy-t max-w-[700px] mx-auto flex justify-between pl-6 pr-6 mt-6">
-                        <label className="text-xl">{crt.nombreTicket}: </label>
-                        <div className="sum-rest-qty flex items-center ">
-                            <button
-                                className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
-                                onClick={(e) => restQuantity(e, crt._id, crt.limit)}
-                            >
-                                -
-                            </button>
-                            <p className="text-xl">{quantities[crt._id] || 0}</p>
-                            <button
-                                className="cursor-pointer bg-violet-900 pt-1 pb-1 pl-6 pr-6 rounded-lg ml-3 mr-3"
-                                onClick={(e) => addQuantity(e, crt._id, crt.limit)}
-                            >
-                                +
-                            </button>
-                            <p className="ml-2 text-xl">${crt.precio}</p>
-                        </div>
-                    </div>
+                <div className="relative h-[120px]">
+                    <p className="absolute top-[-50px] right-6 text-2xl primary-p">Total:${formatNumber(total)}</p>
+                    {showMsg && <p className="text-lg text-violet-600! mt-2">Debes llenar todos los campos</p>}
+                     <button className="primary-button w-[300px] mx-auto flex items-center justify-center bottom-3 mt-16 p-4 rounded-3xl cursor-pointer text-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
-            ))}
-        </>
-    );
-})}
-
-                <p className="text-2xl mt-6">Total:${formatNumber(total)}</p>
-                {showMsg && <p className="text-lg text-violet-600! mt-2">Debes llenar todos los campos</p>}
-                <button className="buy-button bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">{ loading ? <LoadingButton/> : 'Comprar'}</button>
             </form>
             {/*setShowMsg && 
+            
+                    <button className="buy-button bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 <div className="w-screen">
                     <p>Se han  enviaron las cortesias a tu mail!</p>
                 </div>*/

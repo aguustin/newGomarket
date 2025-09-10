@@ -165,7 +165,7 @@ button:focus{
   background: white;
   background-size: cover;
   height: 540px;
-   top: 50%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   color: #111827 !important;
@@ -253,10 +253,6 @@ button:focus{
   .add-tickets-form{
     width: 400px;
     margin: auto;
-  }
-
-  .add-tickets-form{
-    margin-top: 80px !important;
   }
 
   .add-tickets-form button{

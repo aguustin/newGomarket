@@ -148,7 +148,8 @@ const EditProd = () => {
        const formData = new FormData()
        const fileInput = fileRefsB.current[ticketId];
        const estado = parseInt(estadoRef.current.value);
-
+      
+  
         if(fileInput?.files?.[0]){
             formData.append('imgTicket', fileInput.files[0]);
         }else{
@@ -168,8 +169,10 @@ const EditProd = () => {
         const res = await updateTicketsRequest(formData)
 
         if(res.data.estado > 0){
-            setMessage(3)
-            setTicketLoading(false)
+            setTimeout(() => {
+                setMessage(3)
+                setTicketLoading(false)
+            }, 2000)
         }
     }
 
