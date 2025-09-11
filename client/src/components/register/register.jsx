@@ -2,6 +2,7 @@ import { useState } from "react"
 import { registerUserRequest } from "../../api/userRequests"
 import {Link, useNavigate} from 'react-router';
 import ReCAPTCHA from "react-google-recaptcha";
+import { LoadingButton } from "../../globalscomp/globalscomp";
 
 const Register = () => {
     const navigate = useNavigate() 
