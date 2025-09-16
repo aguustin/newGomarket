@@ -11,7 +11,8 @@ import addedTicket from "../../assets/images/added-ticket.png"
 import uploadPng from '../../assets/botones/upload.png'
 import megaphonePng from '../../assets/images/megaphone.png'
 import updatePng from '../../assets/images/update.png'
-
+import calendarPng from "../../assets/images/calendar.png"
+import ticketCantPng from "../../assets/images/ticket-cant.png"
 const EditProd = () => {
     const {session} = useContext(UserContext)
     const {prodId} = useParams()
@@ -236,24 +237,24 @@ const EditProd = () => {
 
     return(
         <>
-            <div className="mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5">
+            <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-white border-[1px] border-gray-100 rounded-2xl p-5">
                     <div>
                         {prod.map((p) => 
                         <>
                            <form className="form-edit-event" key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
-                                 <div className="relative flex flex-start">
-                                    <div>
-                                        <h2>Editar evento</h2>
+                                 <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center">
+                                    <div className="">
+                                        <h2 className="text-2xl">Editar evento</h2>
                                         <img className="w-[250px] h-[200px] object-cover rounded-lg" src={p.imgEvento} alt="" loading="lazy"></img>
                                     </div>
-                                    <div className="text-left ml-4">
+                                    <div className="edit-evet-desc text-left ml-4">
                                         <h2 className="text-3xl text-[#111827]">{p.nombreEvento}</h2>
                                         <p className="mt-3 secondary-p">Puedes subir otra imagen para tu evento y cambiar su información</p>
                                         <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
-                                    </div>
-                                    <div className="absolute top-15 right-10">
+                                    <div className="edit-evet-img-upload top-15 right-10">
                                         <label htmlFor="imgEventoHtml" className="flex items-center border-[1px] border-gray-300 text-[#111827] p-3 rounded-2xl"><img className="mr-3" src={uploadPng} alt=""></img>Cargar portada</label><br></br>
                                         <input id="imgEventoHtml" className="border-none hidden" type="file" name="imgEvento" ref={fileRef} />
+                                    </div>
                                     </div>
                                  </div>
                                 <div className="edit-info-event flex justify-center">
@@ -301,7 +302,7 @@ const EditProd = () => {
                                                     <option value="provincia" defaultValue={eventosEditados[p._id]?.provincia ??  p.provincia}>mostrar provincias</option>
                                                 </select>
                                             </div>*/}
-                                            <div>
+                                            <div className="w-[100%]!">
                                                 <label>Localidad: {p.localidad}</label><br></br>
                                                 <select className="pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
                                                     <option value={eventosEditados[p._id]?.localidad ??  p.localidad}>Cambiar localidad</option>
@@ -400,24 +401,42 @@ const EditProd = () => {
                     <div className="flex items-center">
                         {/*<button className="flex items-center text-xl mt-16 bg-violet-900 pl-6 pr-6 pt-3 pb-3 rounded-lg cursor-pointer"><p>Editar tickets</p><img className="w-[15px] h-[15px] ml-3" src={downArrow} alt=""></img></button> */}
                     </div>
-                    <div className="mt-24">
-                        <div className="flex items-center mb-3">
-                            <h2 className="text-xl">Tickets</h2>
+                    <div className="edit-tickets-container mt-24">
+                        <div className="add-ticket flex items-center mb-3">
+                            <h2 className="text-xl underline">Tickets</h2>
                             <button className="bg-orange-500! flex items-center pt-1 pb-1 pl-3 pr-3 cursor-pointer rounded-lg primary-p ml-3" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar nuevo ticket +</button>
                         </div>
                         <div className="tickets-edit-prod max-h-[432px]!">
                             {prod.map((pr) => 
                             pr.tickets.map((tick) => 
                                 <div key={tick._id}>
-                                    <div className="tickets-desc-container flex items-center justify-between mb-3">
-                                        <div className="flex items-center">
-                                            <img className="ticket-img w-[125px] h-[100px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
-                                            <p className="primary-p text-2xl ml-3">{tick.nombreTicket}</p>
+                                   {/** antiguo estilo de tickets, lo dejo por si se pierde algo en el nuevo
+                                    * 
+                                    * <div>
+                                        <div className="tickets-desc-container flex items-center justify-between mb-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-start items-center">
+                                                    <img className="ticket-img w-[125px] h-[100px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
+                                                    <p className="primary-p text-2xl ml-3">{truncarConElipsis(tick.nombreTicket, 18)}</p>
+                                                </div>
+                                                    <p className="secondary-p text-xl">${tick.precio}</p>
+                                                    <p className="secondary-p text-xl">Quedan: {tick.cantidad} </p>
+                                            </div>
+                                            <button className="primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
                                         </div>
-                                        <p className="secondary-p text-xl">${tick.precio}</p>
-                                        <p className="secondary-p text-xl">Quedan: {tick.cantidad} </p>
-                                        <button className="primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
                                     </div>
+                                    */} 
+                                        <div className="flex justify-center mx-auto text-center" key={tick._id}>
+                                            <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3">
+                                                <img className="ticket-img w-[130px] h-[120px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
+                                                <div className="summary-event-info text-left w-full">
+                                                    <p className="primary-p text-xl ml-3 ">${tick.precio}</p>
+                                                    <p className="secondary-p text-xl ml-3 flex items-center">Cant. :<img className="h-[32px]! w-[32px]! ml-2 mr-1" src={ticketCantPng} alt=""></img>{tick.cantidad}</p>
+                                                    <p className="secondary-p text-xl ml-3 flex flex-wrap items-center">Cierre: <img className="h-[24px]! w-[24px]! ml-2 mr-1" src={calendarPng} alt=""></img>{formatDate(tick.fechaDeCierre)}</p>     
+                                                </div>
+                                            <button className="primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
+                                            </div>
+                                        </div>
                                         {openTicketId === tick._id && ( 
                                         <>
                                         <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() =>  setOpenTicketId(null)}></div>

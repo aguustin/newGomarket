@@ -208,13 +208,13 @@ const CreateEventForm = () => {
                                 {countries.map((cts) => (<option key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
                             </select>
                         </div>
-                        <div >
+                        <div>
                             <label>Privacidad del evento:</label><br></br>
                             <select name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
                                 <option value={1}>Publico</option>
                                 <option value={2}>Privado</option>
                             </select>
-                        {pubOrPriv == 2 && <p>El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
+                        {pubOrPriv == 2 && <p className="w-[90%] p-2 bg-[#ffdeca] mt-1 mb-2 rounded-xl text-[#111827]">El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
                         </div>
                         <div>
                             <label>Evento para mayores de edad:</label><br></br>

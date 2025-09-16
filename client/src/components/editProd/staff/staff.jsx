@@ -6,6 +6,7 @@ import { formatDate } from "../../../globalscomp/globalscomp"
 import { useContext } from "react"
 import UserContext from "../../../context/userContext"
 import checkWhitePng from "../../../assets/images/check-white.png"
+import calendarPng from "../../../assets/images/calendar.png"
 
 const Staff = () => {
     const {session} = useContext(UserContext)
@@ -81,16 +82,16 @@ const Staff = () => {
 
     return(
         <>
-            <form onSubmit={(e) => addStaff(e)} className="relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
+            <form onSubmit={(e) => addStaff(e)} className="staff-container relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
                   {producction.map((p) =>
                    <>
                   <div className="relative" key={p._id}>
-                    <div className="relative flex flex-start flex-wrap justify-center">
+                    <div className="edit-event-img relative flex flex-start flex-wrap justify-center">
                         <div>
                             <h2 className="text-2xl">Confirmar detalles</h2>
-                            <img className="w-[250px] h-[200px] object-cover rounded-lg" src={p.imgEvento} alt="" loading="lazy"></img>   
+                            <img className="w-[351px] h-[234px] object-cover rounded-lg" src={p.imgEvento} alt="" loading="lazy"></img>   
                         </div>
-                        <div className="text-left ml-4 mt-6">
+                        <div className="staff-desc-info text-left ml-4 mt-6">
                             <h2 className="text-xl text-[#111827]">Evento: {p.nombreEvento}</h2>
                             <div className="flex items-center">
                                 <p className="mt-3 secondary-p">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
@@ -102,17 +103,20 @@ const Staff = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="cortesies-desc-container mt-10 text-center max-h-[432px]! mb-20"> 
+                    <div className="tickets-edit-prod mt-10 text-center max-h-[432px]! mb-20"> 
                         {p.cortesiaRRPP.map((tck) => 
                         <div className="flex justify-center mx-auto text-center" key={tck._id}>
-                            <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
-                                <img className="ticket-img w-[70px] h-[50px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
-                                <p className="primary-p text-xl ml-3">{tck.nombreTicket}: </p>
-                                <p className="secondary-p text-xl ml-3">Total: {tck.cantidadDeCortesias}</p>
+                            <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3">
+                                <img className="ticket-img w-[130px] h-[120px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
+                                <div className="summary-event-info w-full flex items-center justify-between">
+                                    <p className="primary-p text-xl ml-3 ">{tck.nombreTicket}</p>
+                                    <p className="secondary-p text-xl ml-3">Total: {tck.cantidadDeCortesias}</p>
+                                    <p className="flex items-center secondary-p text-xl ml-3"><img className="h-[24px]! w-[24px]! mr-2" src={calendarPng} alt=""></img> {formatDate(p.fechaInicio)}</p>
+                                </div>
                                 <div className="summary-buttons flex items-center">
                                     <button className="bg-transparent ml-3 mr-3 text-xl primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] " onClick={(e) => restQuantity(e, tck._id)}>-</button>
                                     <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
-                                    <button className=" ml-3 mr-3 text-xl primary-button cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]" onClick={(e) => addQuantity(e, tck._id)}>+</button>
+                                    <button className=" ml-3 mr-3 text-xl cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px] text-[#111827]" onClick={(e) => addQuantity(e, tck._id)}>+</button>
                                 </div>
                             </div>
                         </div>
@@ -120,7 +124,7 @@ const Staff = () => {
                     </div>
                   </div>
                     <button className="primary-button flex  items-center absolute right-3 bottom-3 mt-10 p-4  rounded-3xl cursor-pointer" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>Confirmar</button>
-                    {showMsg === 0 && '' || showMsg === 1 && <p className="text-xl text-violet-600! mb-12">Invitaciónes enviadas!</p> || showMsg === 2 && <p className="text-xl text-violet-600! mb-12">Falta agregar invitaciónes</p>}
+                    {showMsg === 0 || showMsg === 1 && <p className="text-xl text-violet-600! mb-12">Invitaciónes enviadas!</p> || showMsg === 2 && <p className="text-xl text-violet-600! mb-12">Falta agregar invitaciónes</p>}
                 </>
                 )}
             </form>

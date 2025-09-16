@@ -48,9 +48,9 @@ const Productions = () => {
 
 return(
         <>
-        <div className=" h-full mb-24">
-            <div className={`productions relative overflow-x-auto sm:rounded-lg ${width >= 1110 ? 'pl-10 pr-10 pb-10 pt-0' : 'pt-0'}`}>
-                <table className="w-full max-h-[900px] text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827]">
+        <div className="h-full mb-24">
+            <div className='productions relative sm:rounded-lg pl-10 pr-6 pb-10 pt-0'>
+                <table className="max-h-[900px] min-w-[820px] mx-auto text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827]">
                     <thead className="text-xs uppercase bg-gray-50 bg-orange-500 text-[#111827]">
                         <tr>
                             <th scope="col" className="px-6 py-3">
