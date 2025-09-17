@@ -25,9 +25,10 @@ button:focus{
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
-.settings > div:hover, .settings > button:hover{
-  background-color: #321852 !important;
+.settings > div:hover, .settings > button:hover, .logout-b:hover{
+  background-color: #e0e0e0 !important;
   transition: background-color .5s;
+  color: #111827 !important;
 }
 
 .logout-b:hover{
@@ -50,6 +51,14 @@ button:focus{
   color:transparent;
 }
 
+.nav-mobile-options > div:hover{
+  cursor: pointer;
+}
+
+.nav-mobile-options > div:hover{
+  background-color: #e0e0e0;
+  transition: background-color .5s;
+}
 /*------------------------------------------------------- REGISTER FORM --------------------------------------------*/
 
 .register-form{
