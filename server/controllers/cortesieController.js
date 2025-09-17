@@ -131,16 +131,16 @@ export const sendCortesiesController = async (req, res) => {
               </style>
             </head>
             <body style="font-family: 'Poppins', sans-serif; padding:3px; text-align:center; margin:0; -webkit-text-size-adjust: 100%;">
-              <div style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center;">
+              <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
                 <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
               </div>
-              <div style="text-align:center; padding:20px 15px 40px 15px; background-color:#1d0b0c; color:white;">
+              <div style="text-align:center; padding:20px 15px 40px 15px; background-color:#f7f7f7; color:#111827;">
                 <h3 style="font-size:20px">${usuario.clientName}, ¡Tienes una invitación!</h3>
                 <p style="font-size:18px">Invitación: <strong>ticket número A</strong></p>
                 <p style="font-size:18px">Escaneá este QR para acceder:</p>
                 <img src=${evento.imgEvento} alt="" style="width:230px; height:230px; margin:20px 0;">
                 <img src="cid:qrcodeimg" alt="QR de cortesia" style="width:230px; height:230px; margin:20px 0;"/>
-                <div>
+                <div style="color:#111827">
                   <h2 style="font-size:20px">${evento.nombreEvento}</h2>
                   <p style="font-size:18px">Fecha del evento: ${new Date(evento.fechaInicio).toLocaleDateString()}</p>
                   <p style="font-size:18px">Invitación válida hasta: ${new Date(evento.fechaFin).toLocaleDateString()}</p>
@@ -148,14 +148,14 @@ export const sendCortesiesController = async (req, res) => {
                 </div>
                   <p style="display:none">ID único: ${uuidv4()}</p>
               </div>
-              <div style="background-color:#1c0b13; color:white; padding:20px; text-align:center">
+              <div style="background-color:#ffffff; color:#111827; padding:20px; text-align:center">
                 <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
                 <p style="font-size:16px">- Recuerda presentar tu eTicket en el acceso del evento con tu teléfono.</p>
                 <p style="font-size:16px">- Siempre podrás acceder a tus compras o eTickets desde nuestra web.</p>
                 <p style="font-size:16px">- Recuerda llevar tus eTickets abiertos en tu celular.</p>
                 <p style="font-size:16px"> -${randomTip}</p>
               </div>
-              <footer style="display:flex; height:90px; background-color:#23103b; justify-content:center; align-items:center;">
+              <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
                 <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
               </footer>
             </body>

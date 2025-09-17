@@ -58,16 +58,16 @@ const Nav = () => {
             <>
                 
                     <img className="w-[100px]" src={logoPruebaJpg} alt="" loading="lazy"></img>
-                    <button className="absolute right-8" onClick={() => setShowMobileNav(!showMobileNav)}><img className="w-[40px]" src={menuPng} alt="" loading="lazy"></img></button>
+                    <button className="menu-b absolute right-8" onClick={() => setShowMobileNav(!showMobileNav)}><img className="w-[40px]" src={menuPng} alt="" loading="lazy"></img></button>
                     {showMobileNav && 
-                    <div className="nav-mobile-options absolute right-0 top-[80px] ">
-                        <div className="text-center p-4 pl-10 pr-10 border-b-1">
+                    <div className="nav-mobile-options w-full absolute right-0 top-[80px] ">
+                        <div className="text-center p-4 pl-10 pr-10 border-t-2 border-b-2 border-gray-300">
                             <Link className="text-lg primary-p" to="/Home" onClick={() => setShowMobileNav(!showMobileNav)}>Inicio</Link>
                         </div>
-                        <div className="text-center p-4 pl-10 pr-10 border-b-1">
+                        <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300">
                             <Link className="text-lg primary-p" to="/Contact" onClick={() => setShowMobileNav(!showMobileNav)}>Contacto</Link>
                         </div>
-                        <div className="text-center p-4 pl-10 pr-10 border-b-1">
+                        <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300">
                             {session?.userFinded?.length > 0 ? <Link className="text-lg primary-p" to="/Create_event" onClick={() => setShowMobileNav(!showMobileNav)}>Crear evento</Link> : <Link className="text-lg" to="/">Crear evento</Link>}
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-1">

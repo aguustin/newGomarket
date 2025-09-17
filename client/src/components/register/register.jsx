@@ -2,6 +2,7 @@ import { useState } from "react"
 import { registerUserRequest } from "../../api/userRequests"
 import {Link, useNavigate} from 'react-router';
 import ReCAPTCHA from "react-google-recaptcha";
+import { LoadingButton } from "../../globalscomp/globalscomp";
 
 const Register = () => {
     const navigate = useNavigate() 
@@ -17,6 +18,8 @@ const Register = () => {
         e.preventDefault()
         setLoading(true)
         if(captchaStatus){ 
+            console.log('eee')
+        }
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg(true)
             }else{
@@ -39,7 +42,7 @@ const Register = () => {
                     console.log(res.data.msj)
                 }
             }
-        }
+         //hasta aca llega el if
         setLoading(false)
     }
 

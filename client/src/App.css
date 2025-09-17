@@ -14,9 +14,9 @@ button:focus{
 .nav, footer, .nav-mobile-options{
   z-index: 3;
   background-color: #ffffff;
-  box-shadow: 2px 1px 5px 0px rgba(92, 92, 92, 0.75);
-  -webkit-box-shadow: 2px 1px 5px 0px rgba(92, 92, 92, 0.75);
-  -moz-box-shadow: 2px 1px 5px 0px rgba(92, 92, 92, 0.75);
+  box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
+  -webkit-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
+  -moz-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
 }
 
 .settings, .logout-b{
@@ -43,6 +43,11 @@ button:focus{
   background-color: #e0e0e0 !important;
   color: #111827 !important;
   transition: all .3s;
+}
+
+.menu-b:hover{
+  background-color:transparent !important;
+  color:transparent;
 }
 
 /*------------------------------------------------------- REGISTER FORM --------------------------------------------*/
@@ -178,7 +183,7 @@ button:focus{
   background: white;
   background-size: cover;
   height: 540px;
-   top: 50%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   color: #111827 !important;
@@ -193,6 +198,7 @@ button:focus{
   overflow-y: scroll;
   overflow-x: hidden;
 }
+
 
 .add-tickets-form::-webkit-scrollbar, .tickets-edit-prod::-webkit-scrollbar, .cortesies-desc-container::-webkit-scrollbar{
   width: 5px;
@@ -214,6 +220,20 @@ button:focus{
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
 }
 
+.productions table{ 
+  min-width: 790px;
+}
+
+.productions::-webkit-scrollbar{
+  background-color: transparent;
+  height: 10px;
+  
+}
+
+.productions::-webkit-scrollbar-thumb{
+  background-color: #d3d3d3;
+  border-radius: 10px;
+}
 
 /* ------------------------------------------------------------------------------- ENVIAR TICKETS DE CORTESIA ----------------------------------------------------------------*/
 
@@ -244,12 +264,8 @@ button:focus{
 
 /*----------------------------------------------------------------------------- MIS PRODUCCIONES -------------------------------------------------------------------------*/
 
-.productions{
-  max-height: 70vw !important;
-}
-.productions > table{
-  overflow-y: scroll !important;
-}
+
+
 
 /*--------------------------------------------------------------------------------- TICKET QR ----------------------------------------------------------------------------*/
 @media screen and (max-width:1375px) {
@@ -271,10 +287,6 @@ button:focus{
   .add-tickets-form{
     width: 400px;
     margin: auto;
-  }
-
-  .add-tickets-form{
-    margin-top: 80px !important;
   }
 
   .add-tickets-form button{
@@ -342,7 +354,38 @@ border: 1px solid #e0e0e0;
   .graphics-b{
     margin-left: 0px !important;
   }
-  
+  .edit-event-img{
+    display: block;
+    text-align: center;
+  }
+  .edit-event-img > div:first-child img{
+    margin: auto;
+    width: 351px;
+    height: 234px;
+    border-radius: 15px;
+  }
+  .edit-evet-desc{
+    text-align: center;
+    margin-left: 0px !important;
+  }
+  .edit-evet-img-upload{
+    position: relative;
+    top:0;
+    right:0;
+  }
+  .edit-info-event > div {
+    margin-top: 0px;
+  }
+  .prov-localidad{
+    width: 100% !important;
+  }
+
+  .edit-tickets-container{
+    margin-top: 0px;
+  }
+  .tickets-desc-container p{
+    font-size: 16px;
+  }
   
 }
 @media screen and (max-width: 1061px) {
@@ -355,6 +398,13 @@ border: 1px solid #e0e0e0;
   }
   .filter-statics-button{
     justify-content: space-around;
+  }
+  .staff-desc-info, .staff-desc-info > div{
+    text-align: center;
+    justify-content: center;
+  }
+  .email-staff label{
+    font-size: 19px;
   }
 }
 
@@ -472,6 +522,31 @@ border: 1px solid #e0e0e0;
   .edit-info-event div:nth-of-type(2){
     margin-left: -2px;
   }
+  .tickets-edit-prod{
+    display: block;
+  }
+  .tickets-desc-container{
+   margin-top: 10px !important;
+   width: 100%;
+  }
+  .tickets-desc-container img{
+    width:130px;
+    height: 120px;
+    object-fit: cover;
+  }
+
+   .summary-event-info p{
+    margin-top: 10px !important;
+  }
+
+  .tickets-desc-container button{
+    background-color: #f97316;
+    color: #111827;
+    padding: 7px;
+    position:absolute;
+    bottom: 10px;
+    right: 10px;
+  }
 
   .add-tickets-form{
     width: 400px;
@@ -483,12 +558,38 @@ border: 1px solid #e0e0e0;
     margin-left: 0 !important;
   }
 
-  .add-tickets-form > div > div  /*deja los input precio ticket, cantidad y estado con el aspecto actual que tienen*/
 
   .edit-form-date{
     margin-top: 20px !important;
   }
-
+  .staff-container{
+    margin: 10px;
+    padding: 5px;
+  }
+  .staff-container > div > div{
+    padding: 5px !important;
+  }
+  .tickets-desc-container, .tickets-desc-container > div{
+    margin: auto;
+    max-height: auto;
+    padding-bottom: 30px;
+    align-items: flex-start;
+  }
+  .summary-event-info{
+    display: block;
+    text-align: left;
+  }
+  .summary-buttons{
+    position: absolute;
+    bottom: -24px;
+    right: 5px;
+  }
+  .summary-buttons p {
+    margin-top: 20px;
+  }
+  .summary-buttons button{
+    background-color: transparent !important;
+  }
   .price-qty-state{
     display: block;
   }
@@ -512,16 +613,39 @@ border: 1px solid #e0e0e0;
 
   .edit-tickets-container > div{
     margin: auto;
-    margin-top: 50px;
+    margin-top: 20px;
   }
 
+  .edit-tickets-container > div p{
+     font-size: 18px;
+  }
+  .add-ticket{
+    display: block !important;
+    text-align: center;
+    font-size: 19px;
+  }
+  .add-ticket h2{
+    font-size: 28px;
+  }
+  .add-ticket button{
+    margin: auto;
+    margin-top: 5px;
+    padding: 10px;
+  }
+
+  .edit-info-event > div {
+    padding: 0px !important;
+  }
   .send-back a{
     position: relative;
-    margin: auto;
-    right: auto;
+    margin-top: 20px;
   }
-
   .send-back{
+    height: 350px;
+    justify-content: center !important;
+  }
+  .send-back > div{
+    flex-wrap: wrap;
     justify-content: center !important;
   }
 }
@@ -557,34 +681,27 @@ border: 1px solid #e0e0e0;
 
 @media screen and (max-width: 790px) {
 
-  .create-event-and-ticket-container{
+  .create-event-and-ticket-container, .edit-event-and-tickets-container {
     padding-left: 10px;
-    padding-right: 20px;
+    padding-right: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
   }
   .create-ticket-container-father{
     padding: 0px;
   }
 
-.create-ticket-container{
+.create-ticket-container, .form-edit-event{
   width: 100%;
 }  
 
-.edit-prod-container{
-  padding: 0px;
+.edit-event-img{
+  text-align: center;
 }
   .add-colab-form{
     margin-bottom: 20px;
   }
 
-  .send-back{
-    height: 270px;
-    flex-wrap: wrap;
-    margin-bottom: 30px;
-  }
-  
-  .send-back a{
-    width: 300px;
-  } 
 }
 
 @media screen and (max-width:750px) { 
@@ -595,6 +712,7 @@ border: 1px solid #e0e0e0;
     padding-left: 0px;
     padding-right: 0px;
   }
+
 }
 
 @media screen and (max-width:710px) {
@@ -633,6 +751,10 @@ border: 1px solid #e0e0e0;
   }
   .event-form input, .event-form select, .event-form textarea{
       width: 100%;
+  }
+
+  .tickets-edit-prod > div{
+    width: 100%;
   }
 } 
 
@@ -686,14 +808,6 @@ border: 1px solid #e0e0e0;
     margin-top: 20px !important;
   }
 
-  .productions table{
-    min-width: 700px;
-  }
-
-  .productions table{
-    overflow-x: scroll !important;
-    overflow-x: scroll;
-  }
 }
 
 @media screen and (max-width:655px) {
@@ -770,6 +884,13 @@ border: 1px solid #e0e0e0;
     margin: auto;
     margin-top: 30px;
   }
+  .add-colab-form, .add-colab-form button, .add-colab-form input{
+    display: block;  
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    width: 300px;
+  }
 }
 
 @media screen and (max-width:540px) { 
@@ -825,7 +946,7 @@ border: 1px solid #e0e0e0;
 }
 
 @media screen and (max-width:495px) {
-  .edit-info-event, .edit-info-event > div > div, .add-tickets-form{
+  .add-tickets-form{
     width: 90vw !important;
     margin: auto !important;
   }

@@ -23,11 +23,11 @@ const Cortesies = () => {
 
     return(
         <>
-            <div className="productions-container  mb-24">
-            <div className='productions text-center relative overflow-x-auto shadow-md sm:rounded-lg'>
-                <div className="p-10"><Link className="bg-indigo-900 p-4 rounded-lg cursor-pointer" to={`/new_excel/${prodId}`}>Crear nueva lista de cortesias</Link></div>
-                <table className="w-full max-h-[900px] text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-violet-900 dark:text-white">
+            <div className="mb-24">
+            <div className="productions overflow-x-scroll w-screen sm:rounded-lg pl-2 pr-2 pb-10 pt-9">
+            <div className="text-center pb-10 pt-6"><Link className="bg-orange-500 p-4 rounded-lg cursor-pointer" to={`/new_excel/${prodId}`}>Crear nueva lista de cortesias</Link></div>
+                <table className="min-w-[790px] w-full text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827]">
+                    <thead className="text-xs uppercase bg-gray-50 bg-orange-500 text-[#111827]">
                         <tr>
                             <th scope="col" className="px-6 py-3">
                                 Evento
@@ -49,7 +49,7 @@ const Cortesies = () => {
                     <tbody>
                        {cortesies.map((cort) => 
                        <>
-                         <tr key={cort._id} className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
+                         <tr key={cort._id} className="odd:bg-white even:bg-gray-200 border-b dark:border-gray-300 border-gray-300">
                             <td className="px-6 py-4">
                                 {cort.eventName}
                             </td>
