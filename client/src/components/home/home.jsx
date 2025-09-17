@@ -53,54 +53,54 @@ const Home = () => {
     if (width === null) return null;
 
     const saveEvent = async (eventId) => {
-       const session = JSON.parse(localStorage.getItem("session"));
-    const user = session?.userFinded?.[0];
+        const session = JSON.parse(localStorage.getItem("session"));
+        const user = session?.userFinded?.[0];
 
-    if (!user) {
-        // Redirigir al login o mostrar cartel
-        return;
-    }
+        if (!user) {
+            // Redirigir al login o mostrar cartel
+            return;
+        }
 
-    let updatedFavorites;
+        let updatedFavorites;
 
-    if (favoriteEventIds.includes(eventId)) {
-        // Quitar de favoritos
-        updatedFavorites = user.favorites.filter(f => f?.eventId !== eventId);
-    } else {
-        // Agregar a favoritos
-        const newFavorite = {
-            eventId: eventId,
-            _id: Math.random().toString(36).substring(2, 15), // generar id temporal si querés
+        if (favoriteEventIds.includes(eventId)) {
+            // Quitar de favoritos
+            updatedFavorites = user.favorites.filter(f => f?.eventId !== eventId);
+        } else {
+            // Agregar a favoritos
+            const newFavorite = {
+                eventId: eventId,
+                _id: Math.random().toString(36).substring(2, 15), // generar id temporal si querés
+            };
+            updatedFavorites = [...user.favorites, newFavorite];
+        }
+
+        // Actualizar localStorage
+        const updatedSession = {
+            ...session,
+            userFinded: [
+                {
+                    ...user,
+                    favorites: updatedFavorites
+                }
+            ]
         };
-        updatedFavorites = [...user.favorites, newFavorite];
-    }
+        localStorage.setItem("session", JSON.stringify(updatedSession));
 
-    // Actualizar localStorage
-    const updatedSession = {
-        ...session,
-        userFinded: [
-            {
-                ...user,
-                favorites: updatedFavorites
-            }
-        ]
-    };
-    localStorage.setItem("session", JSON.stringify(updatedSession));
-
-    // Actualizar estado para render
-    setFavoriteEventIds(updatedFavorites.map(f => f?.eventId));
+        // Actualizar estado para render
+        setFavoriteEventIds(updatedFavorites.map(f => f?.eventId));
 
         const data = {
             userId: session?.userFinded?.[0]?._id,
             eventId: eventId
         }
-       const res = await saveEventRequest(data)
+        const res = await saveEventRequest(data)
 
-       if(res.data.empty){
-            console.log("debes iniciar sesion")  //mostrar un cartel que diga que debe iniciar sesion y dejarle un link para que navegue al login (o poner un timeout y mandarlo directo al login)
-       }else{
-            console.log("Guardado con exito")
-       }
+        if(res.data.empty){
+                console.log("debes iniciar sesion")  //mostrar un cartel que diga que debe iniciar sesion y dejarle un link para que navegue al login (o poner un timeout y mandarlo directo al login)
+        }else{
+                console.log("Guardado con exito")
+        }
     }
 
 

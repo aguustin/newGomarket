@@ -163,15 +163,15 @@ const Statistics = () => {
                     <div className="flex flex-wrap items-center">
                         <img className="w-[250px] h-[200px] object-cover rounded-lg" src={prod.imgEvento} alt="" loading="lazy"/>
                         <div className="ml-4">
-                            <h2 className="text-3xl text-[#111827]">{prod.nombreEvento}</h2>
-                            <div>
+                            <h2 className="statistic-even-name text-3xl text-[#111827]">{prod.nombreEvento}</h2>
+                            <div className="statistic-event-desc">
                                 <p className="mt-3 secondary-p">{prod.paisDestino}, {prod.provincia}</p>
                                 <div className="flex flex-wrap items-center">
                                     <p className="mt-3 secondary-p flex items-center"><img className="mr-2" src={calendaryPng} alt=""></img>{formatDate(prod.fechaInicio)}</p>
                                     <p className="mt-3 ml-6 secondary-p flex items-center"><img className="mr-2" src={calendaryPng} alt=""></img>{formatDate(prod.fechaFin)}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center mt-4">
+                            <div className="info-container flex items-center mt-4">
                                 <div className="info p-3 pr-12 border-[1px] rounded-2xl">
                                     <p className="secondary-p">Monto esperado</p>
                                     <p className="text-[#111827] text-2xl">${prod.montoVentas}</p>

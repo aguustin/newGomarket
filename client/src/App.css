@@ -598,15 +598,36 @@ border: 1px solid #e0e0e0;
 }
 
 @media screen and (max-width:710px) {
+  .statistics{
+    padding: 0;  
+  }
   .statistics-event-info > div > div{
    justify-content: center !important;
   }
-
-  .info{
-    width: 90vw !important;
+  .statistic-event-desc, .statistic-event-desc > div, .statistic-even-name{
     text-align: center;
+    justify-content: center;
+    margin: 0px;
   }
-
+  .statistic-event-desc > div p{
+    margin-left: 0;
+  }
+  .info-container{
+    display: block;
+  }
+  .info{
+    padding: auto;
+    height: auto;
+    margin: auto;
+    margin-top: 15px;
+  }
+  .info p{
+      font-size: 16px;
+      height: auto;   
+  }
+  .statistics-categories{
+    padding-top: 0;
+  }
   .create-event-form-div-child{
     width: 100%;
   }
@@ -663,6 +684,15 @@ border: 1px solid #e0e0e0;
 
   .new-cortesie img{
     margin-top: 20px !important;
+  }
+
+  .productions table{
+    min-width: 700px;
+  }
+
+  .productions table{
+    overflow-x: scroll !important;
+    overflow-x: scroll;
   }
 }
 
