@@ -621,7 +621,7 @@ for (const ticket of filteredTickets) {
     const saveToken = new tokenModel({ token });
     await saveToken.save();
 
-    const qrUrl = `${process.env.URL_FRONT}/ticket/validate/${token}`;
+    const qrUrl = `${process.env.URL_FRONT_DEV}/ticket/validate/${token}`;
     const ticketDate = formatDateB(ticket.fechaDeCierre);
     const eventDate = formatDateB(event.fechaInicio);
 
@@ -687,7 +687,7 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
               </div>
               <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
                   <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT_DEV}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
                   <p style="font-size:18px">Evento: ${nombreEvento} </p>
                   <img src="${eventImg}"  alt="${nombreEvento}" style="width:230px; height:230px;"/>
               </div>
@@ -737,7 +737,7 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
                 </div>
                 <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
                   <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}//get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT_DEV}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
                   <p style="font-size:18px">Evento:</p>
                   <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
                 </div>
@@ -873,13 +873,13 @@ export const sendQrStaffQrController = async (req, res) => {
             <div style="padding:20px; background-color:#ffffff; color:#111827;">
               <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
               ${findRrPp ? `
-                <a href=https://goticket-wsy0.onrender.com/get_my_rrpp_events/${mail}></a>
-                <img src="${findRrPp.imagenEvento || ''}" alt="" style="width:230px; height:230px;"/>
+                <a href="${process.env.URL_FRONT_DEV}/get_my_rrpp_events/${mail}"></a>
+                <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px;"/>
                 <div>
-                  <h2>${findRrPp.nombreEvento}</h2>
-                  <p>Fecha del evento: ${findRrPp.eventoFechaInicio}</p>
-                  <p>Entrada válida hasta: ${findRrPp.ticketFechaCierre}</p>
-                  <p>${findRrPp.direccionEvento}</p>
+                  <h2 style="font-size:30px;">${findRrPp.nombreEvento}</h2>
+                  <p>Fecha del evento: ${findRrPp.fechaInicio}</p>
+                  <p>Entrada válida hasta: ${findRrPp.fechaFin}</p>
+                  <p>${findRrPp.direccion}</p>
                 </div>
               ` : ''}
             </div>
@@ -1118,11 +1118,11 @@ export const generateMyRRPPLinkController = async (req, res) => {  //guardar en 
         $set:{
           'rrpp.$.mailEncriptado': encryptedMail,
           'rrpp.$.mailHash': emailHash,
-          'rrpp.$.linkDePago': `${process.env.URL_FRONT}/buy_tickets/${prodId}/${emailHash}`
+          'rrpp.$.linkDePago': `${process.env.URL_FRONT_DEV}/buy_tickets/${prodId}/${emailHash}`
         }
       }
     )
-   return res.json({message: `${process.env.URL_FRONT}/buy_tickets/${prodId}/${emailHash}`}).status(200)
+   return res.json({message: `${process.env.URL_FRONT_DEV}/buy_tickets/${prodId}/${emailHash}`}).status(200)
   }
   return res.json({message: 'Ya tienes tu link de pago'})
 }

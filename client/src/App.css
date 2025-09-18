@@ -274,7 +274,19 @@ button:focus{
 /*----------------------------------------------------------------------------- MIS PRODUCCIONES -------------------------------------------------------------------------*/
 
 
+/*-------------------------------------------------------------------------- MIS EVENTOS COMO RRPP ----------------------------------------------------------------------*/
+.rrpp-events-container{
+  overflow-x: hidden;
+}
 
+.rrpp-events-container::-webkit-scrollbar{
+  background-color: transparent;
+  width: 6px;
+}
+
+.rrpp-events-container::-webkit-scrollbar-thumb{
+  background-color: #b4b4b4;
+}
 
 /*--------------------------------------------------------------------------------- TICKET QR ----------------------------------------------------------------------------*/
 @media screen and (max-width:1375px) {
@@ -1041,6 +1053,13 @@ border: 1px solid #e0e0e0;
   }
   .act-evt-button{
     margin-bottom: 70px !important;
+  }
+  .rrpp-events-container{
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  .rrpp-events-container > div{
+    margin: 5px;
   }
 }
 

@@ -64,7 +64,7 @@ const Cortesies = () => {
                             </td>
                             <td className="px-6 py-4">
                                 <button onClick={(e) => handleSendCortesies(cort._id)}>Enviar</button><br></br>
-                                <Link to={`/get_cortesie/${cort._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>
+                               {/* <Link to={`/get_cortesie/${cort._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>*/ }
                                 <button onClick={(e) => deleteExcel(e)}>Eliminar</button>
                             </td>
                          </tr>

@@ -29,7 +29,7 @@ const TicketQr = ({params}) => {
       return (
           <div className="h-screen text-center mt-[110px] pt-10 pr-3 pl-3">
             <img className="mx-auto" src={warningPng} loading="lazy"></img>
-            <p className="text-red-500! text-center mt-6 text-3xl">El ticket no existe o ya fue escaneado</p>
+            <p className="text-[#111827]! text-center mt-6 text-xl">El ticket no existe o ya fue escaneado</p>
           </div>
   )
   

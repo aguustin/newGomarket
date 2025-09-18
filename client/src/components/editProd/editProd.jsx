@@ -13,6 +13,8 @@ import megaphonePng from '../../assets/images/megaphone.png'
 import updatePng from '../../assets/images/update.png'
 import calendarPng from "../../assets/images/calendar.png"
 import ticketCantPng from "../../assets/images/ticket-cant.png"
+import leftArrowPng from "../../assets/images/left-arrow.png"
+
 const EditProd = () => {
     const {session} = useContext(UserContext)
     const {prodId} = useParams()
@@ -567,7 +569,7 @@ const EditProd = () => {
                         <div className="flex items-center">
                             <Link className="flex items-center ml-6 p-2 primary-button rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Enviar Invitaciónes</p></Link>
                             <Link className=" flex items-center ml-6 p-2 primary-button rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
-                            <Link className=" flex items-center ml-6 p-2 bg-black rounded-lg" to="/home"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
+                            <Link className=" flex items-center ml-6 p-2 bg-black rounded-lg" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
                         </div>
                     </div>
                 </div>
