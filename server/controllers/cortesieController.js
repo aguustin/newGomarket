@@ -10,9 +10,7 @@ import tokenModel from "../models/tokenModel.js";
 
 export const getAllExcelsInfoController = async (req, res) => {
     const {userId, prodId} = req.params
-    console.log(req.params)
     const findExcels = await cortesieModel.find({prodId: prodId, userId: userId})
-    console.log('exceell', findExcels)
     res.send(findExcels)
 }
 

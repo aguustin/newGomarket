@@ -8,6 +8,7 @@ const Cortesies = () => {
     const {session} = useContext(UserContext)
     const {prodId} = useParams()
     const [cortesies, setCortesies] = useState([])
+
     useEffect(() => {
         console.log(prodId, ' ', session?.userFinded?.[0]?._id)
         const getProdCortesiesFunc = async () => {
@@ -18,7 +19,8 @@ const Cortesies = () => {
     }, [session])
 
     const handleSendCortesies = async (cortesieId) => {
-            await sendCortesiesRequest({prodId, cortesieId})
+        console.log('cortesieId', cortesieId)
+        await sendCortesiesRequest({prodId, cortesieId})
     }
 
     return(

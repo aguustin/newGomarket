@@ -35,7 +35,7 @@ const TicketQr = ({params}) => {
   
   if (!ticketInfo) return <p>Cargando ticket...</p>;
   return (
-      <div className='evento-desc mt-[110px] mb-[240px] flex justify-center'>
+      <div className='evento-desc  flex justify-center'>
           <div className="mx-auto text-center h-full">
                 <h1 className="text-white text-4xl underline">{ticketInfo.nombreEvento}</h1>
                 <img className="mx-auto mt-6" src={ticketInfo.imgEvento} alt="evento" width="300" loading="lazy"/>
