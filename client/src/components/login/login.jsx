@@ -27,20 +27,19 @@ const Login = () => {
         e.preventDefault()
         setLoading(true)
 
-        const userData = {
-            mail: e.target.elements.mail.value,
-            contrasenia: e.target.elements.contrasenia.value
-        }   
-        const res = await loginContext(userData)
-        
-        if(res.data.estado === 1){
-            navigate('/home')
-        }else{
-            setLoading(false)
-            setShowMsg(true)
-        }
-        
         if(captchaStatus){ 
+            const userData = {
+                mail: e.target.elements.mail.value,
+                contrasenia: e.target.elements.contrasenia.value
+            }   
+            const res = await loginContext(userData)
+            
+            if(res.data.estado === 1){
+                navigate('/home')
+            }else{
+                setLoading(false)
+                setShowMsg(true)
+            }
         }
     }
     

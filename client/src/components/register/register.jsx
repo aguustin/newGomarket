@@ -18,8 +18,7 @@ const Register = () => {
         e.preventDefault()
         setLoading(true)
         if(captchaStatus){ 
-            console.log('eee')
-        }
+            
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg(true)
             }else{
@@ -32,7 +31,7 @@ const Register = () => {
                     repetirContrasenia: e.target.elements.repetirContrasenia.value
                 }
                 const res = await registerUserRequest(userData)
-               
+                
                 if(res.data.msj === 1){
                     setTimeout(() => { // Set the timeout
                         navigate('/')
@@ -42,8 +41,9 @@ const Register = () => {
                     console.log(res.data.msj)
                 }
             }
-         //hasta aca llega el if
-        setLoading(false)
+            //hasta aca llega el if
+            setLoading(false)
+        }
     }
 
     return(
