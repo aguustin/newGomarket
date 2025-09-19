@@ -352,16 +352,17 @@ button:focus{
     -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
     -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   }
-    .price-qty-state{
+  .price-qty-state{
     display: block;
   }
-
   .price-qty-state > input, .qty, .est{
     margin-left: 0px !important;
   }
-
   .qty, .est{
     margin-top: 10px;
+  }
+  .staff-container{
+    margin: 0px;
   }
 }
 
@@ -418,7 +419,9 @@ border: 1px solid #e0e0e0;
   .tickets-desc-container p{
     font-size: 16px;
   }
-  
+  .staff-desc-info{
+    margin-left: 0px;
+  }
 }
 @media screen and (max-width: 1061px) {
   .statistics-event-info > div{
