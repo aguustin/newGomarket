@@ -147,14 +147,14 @@ const BuyTicket = () => {
                                                 </div>
                                                 <div className="summary-buttons-buy-tickets flex items-center justify-between w-[270px] border-[1px] border-gray-200 rounded-4xl p-3">
                                                     <button
-                                                        className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
+                                                        className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px]  text-[#111827]!"
                                                         onClick={(e) => restQuantity(e, tck._id, tck.limit)}
                                                     >
                                                         -
                                                     </button>
                                                     <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
                                                     <button
-                                                        className=" ml-3 mr-3 text-xl bg-orange-500 cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
+                                                        className=" ml-3 mr-3 text-xl bg-orange-500 cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px] text-[#111827]!"
                                                         onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.precio)}
                                                     >
                                                         +
@@ -191,14 +191,14 @@ const BuyTicket = () => {
                                                     </div>
                                                 <div className="summary-buttons-buy-tickets flex items-center justify-between w-[270px] border-[1px] border-gray-200 rounded-4xl p-3">
                                                     <button
-                                                        className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
+                                                        className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] text-[#111827]!"
                                                         onClick={(e) => restQuantity(e, crt._id, crt.limit)}
                                                     >
                                                         -
                                                     </button>
                                                     <p className="text-xl w-[50px] secondary-p">{quantities[crt._id] || 0}</p>
                                                     <button
-                                                        className=" ml-3 mr-3 text-xl bg-orange-500 cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
+                                                        className=" ml-3 mr-3 text-xl bg-orange-500 cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px] text-[#111827]!"
                                                         onClick={(e) => addQuantity(e, crt._id, crt.limit)}
                                                     >
                                                         +
