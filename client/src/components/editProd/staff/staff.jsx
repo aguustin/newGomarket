@@ -124,8 +124,7 @@ const Staff = () => {
                     </div>
                   </div>
                     <button className="primary-button flex  items-center mx-auto right-3 bottom-3 mt-0 p-4  rounded-3xl cursor-pointer" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>Confirmar</button>
-                    <p className="text-xl text-center text-[#111827] mt-6 mb-12">Invitaciónes enviadas!</p>
-                    {showMsg === 0 || showMsg === 1 && <p className="text-xl text-[#111827] mb-12">Invitaciónes enviadas!</p> || showMsg === 2 && <p className="text-xl text-violet-600! mb-12">Falta agregar invitaciónes</p>}
+                    {showMsg === 0 || showMsg === 1 && <p className="text-xl text-center text-[#111827] mt-6 mb-12">Invitaciónes enviadas!</p> || showMsg === 2 && <p className="text-xl text-center text-[#111827] mt-6 mb-12 text-orange-500!">Falta agregar invitaciónes</p>}
                 </>
                 )}
             </form>

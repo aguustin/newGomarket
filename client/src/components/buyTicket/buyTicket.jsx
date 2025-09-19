@@ -94,9 +94,9 @@ const BuyTicket = () => {
 
     return(
          
-        <div className="relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
+        <div className="buy-tickets-container relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
             {prod.map((p) => 
-            <div className="relative flex flex-start flex-wrap" key={p._id}>
+            <div className="relative flex flex-wrap justify-center" key={p._id}>
                         <div>
                             <h2 className="text-2xl">Comprar tickets</h2>
                             <img className="w-[250px] h-[200px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
@@ -113,15 +113,15 @@ const BuyTicket = () => {
             )}
             <form className="form-buy-inputs mt-6" onSubmit={(e) => buyTickets(e)}>
                 <div className="flex flex-wrap items-center justify-center">
-                    <div className="w-[30%] mx-2 border-[1px] border-gray-100 rounded-2xl p-3">
+                    <div className="w-[30%] mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-3">
                         <label className="text-xl">Nombre:</label><br></br>
                         <input className="w-[100%]" type="text" name="nombreCompleto" placeholder="..."></input>
                     </div>
-                    <div className="w-[30%] mx-2 border-[1px] border-gray-100 rounded-2xl p-3">
+                    <div className="w-[30%] mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-3">
                         <label className="text-xl">Mail:</label><br></br>
                         <input className="w-[100%]" type="email" name="mail" placeholder="example@gmail.com"></input>
                     </div>
-                    <div className="w-[30%] mx-2 border-[1px] border-gray-100 rounded-2xl p-3">
+                    <div className="w-[30%] mx-2 border-[1px] border-gray-200 rounded-2xl p-3">
                         <label className="text-xl">dni:</label><br></br>
                         <input className="w-[100%]" type="number" name="dni" placeholder="..."></input>
                     </div>
@@ -132,46 +132,100 @@ const BuyTicket = () => {
                         <>
                             {p.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
                                 <div className="flex justify-center mx-auto text-center" key={tck._id}>
-                                    <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
-                                        <div className="flex items-center">
-                                            <img className="ticket-img w-[70px] h-[50px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
-                                            <div className="block text-left">
-                                                <p className="primary-p text-xl ml-3">{tck.nombreTicket} </p>
-                                                <p className="secondary-p text-lg ml-3">Valido hasta: {formatDate(tck.fechaDeCierre)}</p>
+                                    <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3">
+                                        <div className="flex items-center w-full justify-between">
+                                            <div className="flex items-center">
+                                                <img className="ticket-img w-[100px] h-[100px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
+                                                <div className="buy-tickets-name-date block text-left">
+                                                    <p className="primary-p text-xl ml-3">{tck.nombreTicket} sdasd asdasd dasd asdsad dsdad asdasd sadasd asdsad</p>
+                                                    <p className="secondary-p text-lg ml-3">Valido hasta: {formatDate(tck.fechaDeCierre)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap items-center justify-center mx-auto">
+                                                <div className="buy-tickets-price">
+                                                    <p className="ml-2 mr-2 text-md secondary-p">${tck.precio} c/u</p>
+                                                </div>
+                                                <div className="summary-buttons-buy-tickets flex items-center justify-between w-[270px] border-[1px] border-gray-200 rounded-4xl p-3">
+                                                    <button
+                                                        className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
+                                                        onClick={(e) => restQuantity(e, tck._id, tck.limit)}
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
+                                                    <button
+                                                        className=" ml-3 mr-3 text-xl bg-orange-500 cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
+                                                        onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.precio)}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <div>
+                                                    <p className="primary-p">Total: {currencyFormatter.format((quantities[tck._id] || 0) * tck.precio)}</p> 
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex flex-wrap items-center justify-center">
-                                            <div>
-                                                <p className="ml-2 text-xl secondary-p">${tck.precio}</p>
-                                            </div>
-                                            <div className="flex items-center justify-between w-[270px] border-[1px] border-gray-100 rounded-4xl p-3">
-                                                <button
-                                                    className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
-                                                    onClick={(e) => restQuantity(e, tck._id, tck.limit)}
-                                                >
-                                                    -
-                                                </button>
-                                                <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
-                                                <button
-                                                    className=" ml-3 mr-3 text-xl bg-orange-500! cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
-                                                    onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.precio)}
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-                                            <div>
-                                                <p className="primary-p">Total: {currencyFormatter.format((quantities[tck._id] || 0) * tck.precio)}</p> 
-                                            </div>
-
+                                        <div className="w-full text-left mt-3">
+                                            <p className="secondary-p text-[13px]!">{tck.descripcionTicket}</p>
                                         </div>
                                     </div>
                                 </div>
                             ))}
                             {p.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
-                                  <div className="flex justify-center mx-auto text-center" key={crt._id}>
+                          
+
+
+                                <div className="flex justify-center mx-auto text-center" key={crt._id}>
+                                    <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3">
+                                        <div className="flex items-center w-full justify-between">
+                                           <div className="flex items-center">
+                                            <img className="ticket-img w-[100px] h-[100px] rounded-xl" src={crt.imgTicket} alt="" loading="lazy"></img>
+                                            <div className="block text-left">
+                                                <p className="primary-p text-lg ml-3">{crt.nombreTicket} </p>
+                                                <p className="secondary-p text-lg ml-3">Valido hasta: {formatDate(crt.fechaDeCierre)}</p>
+                                            </div>
+                                        </div>
+                                            <div className="flex flex-wrap items-center justify-center mx-auto">
+                                                     <div className="buy-tickets-price mr-3">
+                                                        <p className="ml-2 text-md secondary-p">Disponibles: {crt.limit}</p>
+                                                    </div>
+                                                <div className="summary-buttons-buy-tickets flex items-center justify-between w-[270px] border-[1px] border-gray-200 rounded-4xl p-3">
+                                                    <button
+                                                        className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
+                                                        onClick={(e) => restQuantity(e, crt._id, crt.limit)}
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <p className="text-xl w-[50px] secondary-p">{quantities[crt._id] || 0}</p>
+                                                    <button
+                                                        className=" ml-3 mr-3 text-xl bg-orange-500 cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
+                                                        onClick={(e) => addQuantity(e, crt._id, crt.limit)}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="w-full text-left mt-3">
+                                            <p className="secondary-p text-[13px]!">{crt.descripcionTicket}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    );
+                })}
+                </div>
+                <div className="relative h-[120px]">
+                    <p className="absolute top-[-50px] right-6 text-2xl primary-p">Total:${formatNumber(total)}</p>
+                    {showMsg && <p className="text-lg text-orange-500! mt-2">Debes llenar todos los campos</p>}
+                     <button className="primary-button w-[300px] mx-auto flex items-center justify-center bottom-3 mt-16 p-4 rounded-3xl cursor-pointer text-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
+                </div>
+            </form>
+            {/* <div className="flex justify-center mx-auto text-center" key={crt._id}>
                                     <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
                                         <div className="flex items-center">
-                                            <img className="ticket-img w-[70px] h-[50px] rounded-xl" src={crt.imgTicket} alt="" loading="lazy"></img>
+                                            <img className="ticket-img w-[100px] h-[100px] rounded-xl" src={crt.imgTicket} alt="" loading="lazy"></img>
                                             <div className="block text-left">
                                                 <p className="primary-p text-lg ml-3">{crt.nombreTicket} </p>
                                                 <p className="secondary-p text-lg ml-3">Valido hasta: {formatDate(crt.fechaDeCierre)}</p>
@@ -197,24 +251,7 @@ const BuyTicket = () => {
                                             
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </>
-                    );
-                })}
-                </div>
-                <div className="relative h-[120px]">
-                    <p className="absolute top-[-50px] right-6 text-2xl primary-p">Total:${formatNumber(total)}</p>
-                    {showMsg && <p className="text-lg text-violet-600! mt-2">Debes llenar todos los campos</p>}
-                     <button className="primary-button w-[300px] mx-auto flex items-center justify-center bottom-3 mt-16 p-4 rounded-3xl cursor-pointer text-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
-                </div>
-            </form>
-            {/*setShowMsg && 
-            
-                    <button className="buy-button bg-violet-900 p-4 mt-6 w-[280px] rounded-lg text-2xl cursor-pointer" type="submit">{ loading ? <LoadingButton/> : 'Comprar'}</button>
-                <div className="w-screen">
-                    <p>Se han  enviaron las cortesias a tu mail!</p>
-                </div>*/
+                                </div> */
             }
         </div>
     )

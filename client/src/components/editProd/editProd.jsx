@@ -146,7 +146,7 @@ const EditProd = () => {
 
     
     const editEventTicket = async (e, ticketId, imgTicket, nombreTicket, descripcionTicket, precio, cantidad, limit, fechaDeCierre, visibilidad) => {
-        e.preventDefault()
+       e.preventDefault()
        setTicketLoading(true)
        const formData = new FormData()
        const fileInput = fileRefsB.current[ticketId];
@@ -159,6 +159,10 @@ const EditProd = () => {
             formData.append('imgTicket', imgTicket)
         }
         
+        if (estado === 3) {
+            precio === 0
+        }
+
         const dataToUpdate = ticketData[ticketId]
         formData.append('ticketId', ticketId)
         formData.append('nombreTicket', dataToUpdate?.nombreTicket ?? nombreTicket)
@@ -197,11 +201,13 @@ const EditProd = () => {
     const createEventTickets = async (e) => {
             e.preventDefault()
             setLoadingCreateTicket(true)
+            const estado = parseInt(estadoRef.current.value);
+
             const formData = new FormData()
             formData.append('prodId', prodId)
             formData.append('nombreTicket', e.target.elements.nombreTicket.value)
             formData.append('descripcionTicket', e.target.elements.descripcionTicket.value)
-            formData.append('precio', e.target.elements.precio.value)
+            formData.append('precio', estado === 3 ? 0 : e.target.elements.precio.value)
             formData.append('cantidad', e.target.elements.cantidad.value)
             formData.append('fechaDeCierre', new Date(closeDate))
             formData.append('imgTicket', e.target.elements.imgTicket.files[0])
@@ -342,17 +348,18 @@ const EditProd = () => {
                                     <input type="text" placeholder="..." name="descripcionTicket" required></input>
                                 </div>
                                 <div className="price-qty-state flex items-center mt-3">
+                                    {estado !== '3' &&
                                     <div>
                                         <label>Precio del ticket:</label>
                                         <input className="w-[120px]" type="number" placeholder="..." name="precio" required></input>
-                                    </div>
-                                    <div className="qty ml-5">
+                                    </div>  }
+                                    <div className="qty">
                                         <label>Cantidad:</label>
-                                        <input  className="w-[120px]" type="number" placeholder="..." name="cantidad" required></input>
+                                        <input className="w-[120px]" type="number" placeholder="..." name="cantidad"></input>
                                     </div>
-                                    <div className="ml-3">
+                                    <div className="est ml-3">
                                         <label>Estado:</label><br></br>
-                                        <select className="pr-2 pl-2  rounded-lg" name="estado" onChange={(e) => setEstado(e.target.value)}>
+                                        <select className="pr-2 pl-2  rounded-lg" name="estado" onChange={(e) => setEstado(e.target.value)} ref={estadoRef}>
                                             <option value={1}>Activo</option>
                                             <option value={2}>No visible</option>
                                             <option value={3}>Cortesia</option>
@@ -360,15 +367,13 @@ const EditProd = () => {
                                     </div>
                                 </div>
                                 {estado === '3' && 
-                                    <div className="flex items-center">
-                                        <div className="flex items-center mt-3">
-                                            <label>Para:</label>
+                                        <div className="est mt-3">
+                                            <label>Para:</label><br></br>
                                             <select className="ml-1" name="distribution" onChange={(e) => setDistribution(e.target.value)}>
                                                 <option value={1}>RRPP</option>
                                                 <option value={2}>Clientes</option>
                                             </select>
                                         </div>
-                                    </div>
                                 }
                                 <div className=" mt-2">
                                     <label>Limite a sacar por persona:</label>
@@ -394,7 +399,7 @@ const EditProd = () => {
                                {message == 2 && 
                                     <div className="flex items-center">
                                         <img className="mt-3" src={addedTicket} alt=""></img>
-                                        <p className="ml-2 mt-3 text-lg text-violet-600!">Se agrego el nuevo ticket!</p>
+                                        <p className="ml-2 mt-3 text-lg text-orange-500!">Se agrego el nuevo ticket!</p>
                                     </div>
                                } 
                         </form>
@@ -412,31 +417,16 @@ const EditProd = () => {
                             {prod.map((pr) => 
                             pr.tickets.map((tick) => 
                                 <div key={tick._id}>
-                                   {/** antiguo estilo de tickets, lo dejo por si se pierde algo en el nuevo
-                                    * 
-                                    * <div>
-                                        <div className="tickets-desc-container flex items-center justify-between mb-3">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-start items-center">
-                                                    <img className="ticket-img w-[125px] h-[100px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
-                                                    <p className="primary-p text-2xl ml-3">{truncarConElipsis(tick.nombreTicket, 18)}</p>
-                                                </div>
-                                                    <p className="secondary-p text-xl">${tick.precio}</p>
-                                                    <p className="secondary-p text-xl">Quedan: {tick.cantidad} </p>
-                                            </div>
-                                            <button className="primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
-                                        </div>
-                                    </div>
-                                    */} 
                                         <div className="flex justify-center mx-auto text-center" key={tick._id}>
                                             <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3">
                                                 <img className="ticket-img w-[130px] h-[120px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
                                                 <div className="summary-event-info text-left w-full">
-                                                    <p className="primary-p text-xl ml-3 ">${tick.precio}</p>
+                                                    <p className="primary-p text-xl ml-3" >{tick.nombreTicket}</p>
+                                                    <p className="secondary-p text-xl ml-3 ">${tick.precio}</p>
                                                     <p className="secondary-p text-xl ml-3 flex items-center">Cant. :<img className="h-[32px]! w-[32px]! ml-2 mr-1" src={ticketCantPng} alt=""></img>{tick.cantidad}</p>
                                                     <p className="secondary-p text-xl ml-3 flex flex-wrap items-center">Cierre: <img className="h-[24px]! w-[24px]! ml-2 mr-1" src={calendarPng} alt=""></img>{formatDate(tick.fechaDeCierre)}</p>     
                                                 </div>
-                                            <button className="primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
+                                            <button className="editProd-edit-ticket primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
                                             </div>
                                         </div>
                                         {openTicketId === tick._id && ( 
@@ -552,9 +542,10 @@ const EditProd = () => {
                                             </div>
                                         </div>
                                         </>
-                                    ) }
+                                    )}
                                     </div>
                             )
+                      
                         )}
 
                         </div>
