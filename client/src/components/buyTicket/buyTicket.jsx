@@ -135,28 +135,34 @@ const BuyTicket = () => {
                                     <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
                                         <div className="flex items-center">
                                             <img className="ticket-img w-[70px] h-[50px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
-                                            <label className="primary-p text-xl ml-3">{tck.nombreTicket} </label>
+                                            <div className="block text-left">
+                                                <p className="primary-p text-xl ml-3">{tck.nombreTicket} </p>
+                                                <p className="secondary-p text-lg ml-3">Valido hasta: {formatDate(tck.fechaDeCierre)}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="ml-2 text-xl secondary-p">${tck.precio}</p>
-                                        </div>
-                                        <div className="flex items-center justify-left w-[270px] border-[1px] border-gray-100 rounded-4xl p-3">
-                                            <button
-                                                className="bg-transparent ml-3 mr-3 text-xl primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
-                                                onClick={(e) => restQuantity(e, tck._id, tck.limit)}
-                                            >
-                                                -
-                                            </button>
-                                            <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
-                                            <button
-                                                className=" ml-3 mr-3 text-xl bg-orange-500! cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
-                                                onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.precio)}
-                                            >
-                                                +
-                                            </button>
-                                        </div>
-                                        <div>
-                                            <p className="primary-p">{currencyFormatter.format((quantities[tck._id] || 0) * tck.precio)}</p> 
+                                        <div className="flex flex-wrap items-center justify-center">
+                                            <div>
+                                                <p className="ml-2 text-xl secondary-p">${tck.precio}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between w-[270px] border-[1px] border-gray-100 rounded-4xl p-3">
+                                                <button
+                                                    className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
+                                                    onClick={(e) => restQuantity(e, tck._id, tck.limit)}
+                                                >
+                                                    -
+                                                </button>
+                                                <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
+                                                <button
+                                                    className=" ml-3 mr-3 text-xl bg-orange-500! cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
+                                                    onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.precio)}
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                            <div>
+                                                <p className="primary-p">Total: {currencyFormatter.format((quantities[tck._id] || 0) * tck.precio)}</p> 
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -166,12 +172,15 @@ const BuyTicket = () => {
                                     <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
                                         <div className="flex items-center">
                                             <img className="ticket-img w-[70px] h-[50px] rounded-xl" src={crt.imgTicket} alt="" loading="lazy"></img>
-                                            <label className="primary-p text-xl ml-3">{crt.nombreTicket} </label>
+                                            <div className="block text-left">
+                                                <p className="primary-p text-lg ml-3">{crt.nombreTicket} </p>
+                                                <p className="secondary-p text-lg ml-3">Valido hasta: {formatDate(crt.fechaDeCierre)}</p>
+                                            </div>
                                         </div>
                                         <div>
                                             <p className="ml-2 text-xl secondary-p">Disponibles:{crt.limit}</p>
                                         </div>
-                                        <div className="flex items-center justify-left w-[270px] border-[1px] border-gray-100 rounded-4xl p-3">
+                                        <div className="flex items-center justify-between w-[270px] border-[1px] border-gray-100 rounded-4xl p-3">
                                             <button
                                                 className="bg-transparent ml-3 mr-3 text-xl primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
                                                 onClick={(e) => restQuantity(e, crt._id, crt.limit)}

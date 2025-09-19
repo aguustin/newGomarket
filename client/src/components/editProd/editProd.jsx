@@ -561,12 +561,12 @@ const EditProd = () => {
                     </div>
                     
                     <div className="send-back relative flex flex-wrap justify-between items-center h-[150px]">
-                          <form className="add-colab-form flex items-center mt-9 mb-6" onSubmit={(e) => addRRPP(e)}>
+                          <form className="add-colab-form flex flex-wrap items-center mt-9 mb-6" onSubmit={(e) => addRRPP(e)}>
                              <input className="h-[40px]" type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
                              <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl ml-3" type="submit">Añadir Colaborador</button>
-                             {message == 1 && <p className="ml-3">Se añadio el colaborador al evento!</p>}
+                             {message == 1 && <p className="text-lg ml-3 text-[#111827]">Se añadio el colaborador al evento!</p>}
                         </form>
-                        <div className="flex items-center">
+                        <div className="edit-prod-bottom-buttons flex items-center">
                             <Link className="flex items-center ml-6 p-2 primary-button rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Enviar Invitaciónes</p></Link>
                             <Link className=" flex items-center ml-6 p-2 primary-button rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
                             <Link className=" flex items-center ml-6 p-2 bg-black rounded-lg" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
