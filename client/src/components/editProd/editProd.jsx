@@ -13,7 +13,6 @@ import megaphonePng from '../../assets/images/megaphone.png'
 import updatePng from '../../assets/images/update.png'
 import calendarPng from "../../assets/images/calendar.png"
 import ticketCantPng from "../../assets/images/ticket-cant.png"
-import leftArrowPng from "../../assets/images/left-arrow.png"
 
 const EditProd = () => {
     const {session} = useContext(UserContext)

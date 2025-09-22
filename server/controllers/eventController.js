@@ -12,6 +12,7 @@ import userModel from "../models/userModel.js";
 import crypto from "crypto"
 import tokenModel from "../models/tokenModel.js";
 import { formatDateB } from "../lib/dates.js";
+import transactionsModel from "../models/transactionsModel.js";
 
 dotenv.config();
 
@@ -520,6 +521,20 @@ export const buyEventTicketsController = async (req, res) => {
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
+      const totalPagoEntradas = Math.round(total / 1.10)
+      await transactionsModel.updateOne(
+        {prodId: prodId},
+        {
+          $addToSet:{
+            nombre: nombreCompleto,
+            email: mail,
+            montoPagado: totalPagoEntradas,
+            transaccionId: 'a'
+          },
+          $setOnInsert:{prodId:prodId},
+        },
+        {$upsert: true}
+      )
       //await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });
       return res.status(200).json({
         init_point: response.body.init_point,
@@ -545,12 +560,12 @@ export const mercadoPagoWebhookController = async (req, res) => {
     
     if (status === 'approved') {
       const { prod_id, nombre_evento, quantities, mail, state, total, email_hash, nombre_completo, dni } = payment.body.metadata;
-      
+      console.log("metadata del pago: " , payment.body.metadata)
       if (!quantities || !mail || !prod_id || !total) {
         console.error("Metadata incompleta:", payment.body.metadata);
         return res.sendStatus(500);
       }
-      await handleSuccessfulPayment({ prodId:prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni });
+      //await handleSuccessfulPayment({ prodId:prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni });
 
     }
     return res.sendStatus(200);
