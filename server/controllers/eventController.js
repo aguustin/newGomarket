@@ -490,7 +490,7 @@ export const handleSuccessfulPayment = async (data) => {
 
   // Ejecutar tareas en paralelo (si no dependen entre sí)
   const tasks = [
-    generarQRParaCompra(prodId, quantities, mail, state, nombreCompleto, dni),
+    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
     procesarVentaGeneral(event, quantities, total),
     guardarTransaccionExitosa(prodId, nombreCompleto, mail, total, paymentId)
   ];

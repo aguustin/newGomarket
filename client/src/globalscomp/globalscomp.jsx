@@ -1,6 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import defaultImage from "../assets/LogoPrueba.jpg"
+import { useNavigate } from "react-router";
+import timerPng from "../assets/images/timer.png"
 
+export const Timer = ({duration}) => {
+    const [time, setTime] = useState(duration)
+    const navigation = useNavigate()
+
+    useEffect(() => {
+        setTimeout(() => {
+            setTime(time - 1000)
+        }, 1000)
+        if(time === 0){
+            navigation('/home')
+        }
+    }, [time])
+
+    const getFormattedTime = (miliseconds) => {
+        let total_seconds = parseInt(Math.floor(miliseconds / 1000))
+        let total_minutes = parseInt(Math.floor(total_seconds / 60))
+
+        let seconds = parseInt(total_seconds % 60)
+        let minutes = parseInt(total_minutes % 60)
+
+        return `${minutes}:${seconds}`
+    }
+    
+    return <div className="text-center mt-6 text-orange-600! text-4xl flex items-center justify-center"><img src={timerPng} alt="" className="mr-2"></img>{getFormattedTime(time)}</div>
+}
 
 export default function FadeInImage({ src, alt, className }) {
     const [loaded, setLoaded] = useState(false);

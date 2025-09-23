@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
 import { buyTicketsRequest, getEventToBuyRequest } from "../../api/eventRequests"
-import { formatDate, formatNumber, LoadingButton, Message } from "../../globalscomp/globalscomp"
+import { formatDate, formatNumber, LoadingButton, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 
 const BuyTicket = () => {
@@ -125,6 +125,9 @@ const BuyTicket = () => {
                         <label className="text-xl">dni:</label><br></br>
                         <input className="w-[100%]" type="number" name="dni" placeholder="..."></input>
                     </div>
+                </div>
+                <div>
+                    <Timer duration={720000}></Timer>
                 </div>
             <div className="cortesies-desc-container mt-10 text-center max-h-[432px]! mb-10"> 
               {prod.map((p) => {
