@@ -108,3 +108,5 @@ export const getRRPPInfoRequest = (mail) => axios.get(`${import.meta.env.VITE_UR
 export const getEventsFreesRequest = (prodId, mail) => axios.get(`${import.meta.env.VITE_URL}/rrpp_get_event_free/${prodId}/${mail}`)
 
 export const generateMyRRPPLinkRequest = ({prodId, rrppMail}) => axios.post(`${import.meta.env.VITE_URL}/generate_rrpp_url`, {prodId, rrppMail})
+
+export const descargarCompradoresRequest = ({prodId}) => axios.post(`${import.meta.env.VITE_URL}/descargar_compradores`, {prodId})

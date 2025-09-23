@@ -13,6 +13,7 @@ import crypto from "crypto"
 import tokenModel from "../models/tokenModel.js";
 import { formatDateB } from "../lib/dates.js";
 import transactionModel from "../models/transactionsModel.js";
+import ExcelJS from 'exceljs';
 
 dotenv.config();
 
@@ -479,6 +480,13 @@ export const handleSuccessfulPayment = async (data) => {
     prodId, quantities, mail, state, total,
     emailHash, nombreCompleto, dni, paymentId
   } = data;
+
+  const existingTransaction = await transactionModel.findOne({ paymentId });
+
+  if (existingTransaction) {
+    console.log(`transacción ya procesada para paymentId: ${paymentId}`);
+    return; // o simplemente no repetir los pasos
+  }
 
   const event = await ticketModel.findOne({ _id: prodId }).lean();
   if (!event) {
@@ -1177,4 +1185,41 @@ export const paymentSuccessController = async (req, res) => {
 export const verTokensController = async (req , res) => {
   const response = await tokenModel.find()
   res.send(response)
+}
+
+export const descargarCompradoresController = async (req, res) => {
+  const {prodId} = req.body
+
+  const transaction = await transactionModel.findOne({prodId: prodId})
+
+  if(!transaction){
+    return res.status(404).send("No se encontro ninguna transacción")
+  }
+
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet('Compradores')
+
+  worksheet.columns = [
+    {header: 'Nombre completo', key: 'nombre', width:30},
+    {header: 'Email', key: 'key', width: 30}
+  ]
+
+  transaction.compradores.forEach(comprador => {
+    worksheet.addRow({
+      nombre:comprador.nombre,
+      email:comprador.email
+    })
+  })
+
+  res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+  res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=compradores_${prodId}.xlsx`
+  );
+
+  await workbook.xlsx.write(res);
+  res.sendStatus(200).json({succes: 1});
 }
