@@ -109,7 +109,7 @@ export const getEventsFreesRequest = (prodId, mail) => axios.get(`${import.meta.
 
 export const generateMyRRPPLinkRequest = ({prodId, rrppMail}) => axios.post(`${import.meta.env.VITE_URL}/generate_rrpp_url`, {prodId, rrppMail})
 
-export const descargarCompradoresRequest = async ({ prodId }) => {
+export const descargarCompradoresRequest = async ({ prodId, nombreEvento }) => {
     const response = await axios.post(
         `${import.meta.env.VITE_URL}/descargar_compradores`,
         { prodId },
@@ -126,7 +126,7 @@ export const descargarCompradoresRequest = async ({ prodId }) => {
     const a = document.createElement('a');
 
     a.href = url;
-    a.download = `compradores_${prodId}.xlsx`;
+    a.download = `compradores_${nombreEvento}.xlsx`;
     document.body.appendChild(a);
     a.click();
     a.remove();

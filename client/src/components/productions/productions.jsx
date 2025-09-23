@@ -46,8 +46,8 @@ const Productions = () => {
         return `${year}/${month}/${day}  ${hours}:${minutes}`;
     };
 
-    const descargarCompradores = async (prodId) => {
-        const res = await descargarCompradoresRequest({prodId})
+    const descargarCompradores = async (prodId, nombreEvento) => {
+        const res = await descargarCompradoresRequest({prodId, nombreEvento})
 
         if(res.data.succes === 1){
             console.log('data')
@@ -118,7 +118,7 @@ return(
                                 <Link to={`/editar_evento/${prod._id}`} className="font-medium underline! text-[#111827]">Editar</Link><br></br>
                                 <Link to={`/statistics/${prod._id}/${session?.userFinded?.[0]?._id}`} className="text-[#111827]!">Estadisticas</Link><br></br>
                                 <button onClick={() => setShowRRPPData(showRRPPData === prod._id ? null : prod._id)} className="text-[#111827]!">Tus RRPP</button><br></br>
-                                <button className="text-[#111827]" onClick={() => descargarCompradores(prod._id)}>Lista de compradores</button><br></br>
+                                <button className="text-[#111827]" onClick={() => descargarCompradores(prod._id, prod.nombreEvento)}>Lista de compradores</button><br></br>
                                 <button
                                     type="button"
                                     onClick={() => navigator.clipboard.writeText(`http://localhost:5173/buy_tickets/${prod._id}/${prod.prodMail}`)}
