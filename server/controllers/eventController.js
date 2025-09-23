@@ -457,10 +457,29 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
   const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
+  const existing = await transactionModel.findOne({
+    prodId,
+    'compradores.email': mail
+  });
+
+  if(existing){
+    await transactionModel.updateOne(
+      { prodId, 'compradores.email': mail },
+      {
+        $inc: {
+          'compradores.$.montoPagado': totalPagoEntradas,
+          montoPagado: totalPagoEntradas
+        }
+      }
+    );
+
+    res.sendStatus(200).json({message: 'Se actualizo el monto pagado'})
+  }
+
   await transactionModel.updateOne(
     { prodId },
     {
-      $addToSet: {
+      $push: {
         compradores: {
           nombre: nombreCompleto,
           email: mail,
@@ -468,6 +487,7 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
           transaccionId: paymentId
         }
       },
+      $inc: { montoPagado: totalPagoEntradas },
       $setOnInsert: { prodId }
     },
     { upsert: true }
