@@ -501,6 +501,8 @@ export const handleSuccessfulPayment = async (data) => {
     emailHash, nombreCompleto, dni, paymentId
   } = data;
 
+  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
+
   const existingTransaction = await transactionModel.findOne({ paymentId });
 
   if (existingTransaction) {
@@ -518,7 +520,7 @@ export const handleSuccessfulPayment = async (data) => {
 
   // Ejecutar tareas en paralelo (si no dependen entre sí)
   const tasks = [
-    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
+    //qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
     procesarVentaGeneral(event, quantities, total),
     guardarTransaccionExitosa(prodId, nombreCompleto, mail, total, paymentId)
   ];
