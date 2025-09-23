@@ -501,14 +501,14 @@ export const handleSuccessfulPayment = async (data) => {
     emailHash, nombreCompleto, dni, paymentId
   } = data;
 
-  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
-
+  
   const existingTransaction = await transactionModel.findOne({ paymentId });
-
+  
   if (existingTransaction) {
     console.log(`transacción ya procesada para paymentId: ${paymentId}`);
     return; // o simplemente no repetir los pasos
   }
+  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
 
   const event = await ticketModel.findOne({ _id: prodId }).lean();
   if (!event) {
@@ -712,9 +712,10 @@ await sendQrEmail(
 
 console.log("QRs generados y enviados.");
 
-
+  return true
 } catch (err) {
   console.error("❌ Error generando QRs:", err);
+  return false
 }
 };
 
