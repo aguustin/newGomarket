@@ -137,7 +137,7 @@ const BuyTicket = () => {
                                             <div className="flex items-center">
                                                 <img className="ticket-img w-[100px] h-[100px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
                                                 <div className="buy-tickets-name-date block text-left">
-                                                    <p className="primary-p text-xl ml-3">{tck.nombreTicket} sdasd asdasd dasd asdsad dsdad asdasd sadasd asdsad</p>
+                                                    <p className="primary-p text-xl ml-3">{tck.nombreTicket}</p>
                                                     <p className="secondary-p text-lg ml-3">Valido hasta: {formatDate(tck.fechaDeCierre)}</p>
                                                 </div>
                                             </div>

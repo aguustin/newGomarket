@@ -2,10 +2,11 @@ import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
 import { addRRPPRequest, createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
-import ticketPng from '../../assets/images/ticket.png'
+import {Country, State, City} from "country-state-city"
+import { convertirInputADateTimeLocal, formatDate, formatearFechaParaInput, LoadingButton } from "../../globalscomp/globalscomp"
 import qrCodePng from '../../assets/images/qr-code.png'
 import backArrowPng from '../../assets/images/back-arrow.png'
-import { convertirInputADateTimeLocal, formatDate, formatearFechaParaInput, LoadingButton } from "../../globalscomp/globalscomp"
+import ticketPng from '../../assets/images/ticket.png'
 import UserContext from "../../context/userContext"
 import addedTicket from "../../assets/images/added-ticket.png"
 import uploadPng from '../../assets/botones/upload.png'
@@ -36,13 +37,17 @@ const EditProd = () => {
     const [ticketLoading, setTicketLoading] = useState(false)
     const [loadingCreateTicket, setLoadingCreateTicket] = useState(false)
     const [showCreateTicketForm, setShowCreateTicketForm] = useState(false)
-    
+    const [eventVisibility, setEventVisibility] = useState()
+    const [cities, setCities] = useState([])
+    const [localidad, setLocalidad] = useState(null)
 
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
             const res = await getOneProdRequest(prodId, userId) //userId va la session del usuario
             setProd(res.data)
+            console.log(res.data[0]?.codigoCiudad)
+            setCities(City?.getCitiesOfState(res?.data[0]?.codigoPais, res?.data[0]?.codigoCiudad))
         }
         getOneProd()
         const mediaQuery = window.matchMedia("(min-width: 1290px)");
@@ -113,6 +118,8 @@ const EditProd = () => {
     // Agregamos los campos, usando el editado o el original
     formData.append('eventId', eventId);
     formData.append('nombreEvento', edited.nombreEvento ?? nombreEvento);
+    formData.append('codigoPais', localidad.countryCode ?? cities[0]?.countryCode); //cambiado ahora el 22/09/2025
+    formData.append('codigoCiudad', localidad.stateCode ?? cities[0]?.stateCode); //cambiado ahora el 22/09/2025
     formData.append('descripcionEvento', edited.descripcionEvento ?? descripcionEvento);
 
     if (eventoEdad && !isNaN(Number(eventoEdad))) {
@@ -124,6 +131,11 @@ const EditProd = () => {
     formData.append('fechaInicio', fechaInicioFinal.toISOString());
     formData.append('fechaFin', fechaFinFinal.toISOString());
     formData.append('provincia', edited.provincia ?? provincia);
+
+    if(eventVisibility !== '' || eventVisibility !== 0){
+        formData.append('tipoEvento', edited.tipoEvento ?? eventVisibility);
+    }
+
     formData.append('localidad', edited.localidad ?? localidad);
     formData.append('direccion', edited.direccion ?? direccion);
     formData.append('lugarEvento', edited.lugarEvento ?? lugarEvento);
@@ -302,6 +314,15 @@ const EditProd = () => {
                                             <input type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaFin ??  p.fechaFin)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
                                             {dateMessage == 2 && <p className="text-red-600!">La fecha de fin no puede ser menor a la fecha de inicio</p>}
                                         </div>
+                                         <div className="prov-localidad flex items-center">
+                                            <div className="w-[100%]!">
+                                                <label>Visibilidad del evento: {p.tipoEvento === 1 ? 'Publico' : 'Privado'}</label><br></br>
+                                                <select className="pr-2 pl-2 rounded-lg" name="tipoEvent" onChange={(e) => setEventVisibility(e.target.value)}>
+                                                    <option value={1}>Publico</option>
+                                                    <option value={2}>Privado</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div className="prov-localidad flex items-center">
                                             {/* <div>
                                                <label>Provincia: {p.provincia}  </label><br></br>
@@ -311,9 +332,18 @@ const EditProd = () => {
                                             </div>*/}
                                             <div className="w-[100%]!">
                                                 <label>Localidad: {p.localidad}</label><br></br>
-                                                <select className="pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setEventLocalidad(e.target.value)}>
+                                                <select className="pr-2 pl-2 rounded-lg"name="localidad" onChange={(e) => setLocalidad(cities.find((c) => c.name === e.target.value))}>
                                                     <option value={eventosEditados[p._id]?.localidad ??  p.localidad}>Cambiar localidad</option>
+                                                    {cities.map((city) => (
+                                                        <option key={city.name} value={city.name}>{city.name}</option>
+                                                    ))}
                                                 </select>
+                                                {/**    <select name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))} required>
+                                                <option value=''>Elegir</option>
+                                                {cities.map((city) => (
+                                                    <option key={city.name} value={city.name}>{city.name}</option>
+                                                ))}
+                                                </select> */}
                                             </div>
                                         </div>
                                         <div>

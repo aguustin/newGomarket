@@ -12,7 +12,7 @@ import userModel from "../models/userModel.js";
 import crypto from "crypto"
 import tokenModel from "../models/tokenModel.js";
 import { formatDateB } from "../lib/dates.js";
-import transactionsModel from "../models/transactionsModel.js";
+import transactionModel from "../models/transactionsModel.js";
 
 dotenv.config();
 
@@ -26,7 +26,7 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
+    const {userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
     const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
 
     const parsedCategorias = JSON.parse(categoriasEventos)
@@ -37,6 +37,8 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
             const createdEvent = await ticketModel.create({
                     userId: userId,
                     prodMail: encryptedMail,
+                    codigoPais: codigoPais,
+                    codigoCiudad: codigoCiudad,
                     paisDestino: paisDestino,
                     tipoEvento: tipoEvento,
                     eventoEdad: eventoEdadPush,
@@ -72,6 +74,8 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
            const createdEvent = await ticketModel.create({   //SE CREA EL EVENTO SI HAY UNA IMAGEN SUBIDA
                 userId: userId,
                 prodMail: encryptedMail,
+                codigoPais: codigoPais,
+                codigoCiudad: codigoCiudad,
                 paisDestino: paisDestino,
                 tipoEvento: tipoEvento,
                 eventoEdad: eventoEdad,
@@ -193,9 +197,9 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
 
 
 export const updateEventController = async (req, res) => {  //ACTUALIZA LA INFO DEL EVENTO
-    const { eventId, nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento} = req.body;
+    const { eventId, nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento} = req.body;
     // Construir los campos que siempre se actualizan
-    const updateFields = { nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, direccion, lugarEvento};
+    const updateFields = { nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento};
     
     if (req.file) {      //SE ACTUALIZAN LOS DATOS CON UNA IMAGEN NUEVA
     cloudinary.uploader.upload_stream(
@@ -452,7 +456,7 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
   const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
-  await transactionsModel.updateOne(
+  await transactionModel.updateOne(
     { prodId },
     {
       $push: {
@@ -544,7 +548,7 @@ export const buyEventTicketsController = async (req, res) => {
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
-      //await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });
+     // await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });
       return res.status(200).json({
         init_point: response.body.init_point,
       });

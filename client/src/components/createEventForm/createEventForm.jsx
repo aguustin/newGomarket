@@ -66,6 +66,8 @@ const CreateEventForm = () => {
                 const formData = new FormData()
                 formData.append('userId', session?.userFinded?.[0]?._id)
                 formData.append('prodMail', session?.userFinded?.[0]?.mail) //aca va el mail de la session
+                formData.append('codigoPais', selectedCity.countryCode)
+                formData.append('codigoCiudad', selectedCity.stateCode)
                 formData.append('paisDestino', selectedCountry.name)
                 formData.append('tipoEvento', tipoEvento)
                 if (rawEdad && !isNaN(Number(rawEdad))) {
@@ -403,7 +405,7 @@ const CreateEventForm = () => {
                                 <div className="charge-ticket-img flex items-center mt-6 ml-3">
                                     <p className="secondary-p">Opcional: </p>
                                     <div className="secondary-button-fucsia flex items-center p-3 rounded-xl ml-3"><img src={uploadPng} alt=""></img><label className="ml-3 text-white!" htmlFor="imgTicketHtml">Cargar Imagen del ticket</label></div>
-                                    <input id="imgTicketHtml" className="hidden" type="file" name="imgTicket" required></input>
+                                    <input id="imgTicketHtml" className="hidden" type="file" name="imgTicket"></input>
                                 </div>
                             </div>
                             <div className="relative text-center w-full">
