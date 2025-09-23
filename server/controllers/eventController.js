@@ -1227,7 +1227,7 @@ export const descargarCompradoresController = async (req, res) => {
 
   worksheet.columns = [
     {header: 'Nombre completo', key: 'nombre', width:30},
-    {header: 'Email', key: 'key', width: 30}
+    {header: 'Email', key: 'email', width: 30}
   ]
 
   transaction.compradores.forEach(comprador => {
