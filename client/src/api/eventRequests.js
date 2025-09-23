@@ -109,4 +109,26 @@ export const getEventsFreesRequest = (prodId, mail) => axios.get(`${import.meta.
 
 export const generateMyRRPPLinkRequest = ({prodId, rrppMail}) => axios.post(`${import.meta.env.VITE_URL}/generate_rrpp_url`, {prodId, rrppMail})
 
-export const descargarCompradoresRequest = ({prodId}) => axios.post(`${import.meta.env.VITE_URL}/descargar_compradores`, {prodId})
+export const descargarCompradoresRequest = async ({ prodId }) => {
+    const response = await axios.post(
+        `${import.meta.env.VITE_URL}/descargar_compradores`,
+        { prodId },
+        { responseType: 'blob' } 
+    );
+
+    // Crear blob y forzar descarga
+    const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+
+    // Crear enlace de descarga
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = `compradores_${prodId}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+};

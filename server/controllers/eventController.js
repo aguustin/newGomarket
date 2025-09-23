@@ -1210,8 +1210,13 @@ export const verTokensController = async (req , res) => {
 export const descargarCompradoresController = async (req, res) => {
   const {prodId} = req.body
 
-  const transaction = await transactionModel.findOne({prodId: prodId})
   const event = await ticketModel.findOne({_id: prodId})
+
+   if(!event){
+    return res.status(404).send("No se encontro ningun evento")
+  }
+
+  const transaction = await transactionModel.findOne({prodId: prodId})
 
   if(!transaction){
     return res.status(404).send("No se encontro ninguna transacción")
@@ -1235,15 +1240,10 @@ export const descargarCompradoresController = async (req, res) => {
    const nombreLimpio = event.nombreEvento.replace(/[^a-zA-Z0-9]/g, '_');
    const nombreArchivo = `compradores_${nombreLimpio}.xlsx`;
 
-  res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  );
-  res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=${nombreArchivo}.xlsx`
-  );
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename=${nombreArchivo}`);
 
+    
   await workbook.xlsx.write(res);
   res.end()
 }
