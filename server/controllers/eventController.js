@@ -1231,15 +1231,15 @@ export const descargarCompradoresController = async (req, res) => {
     })
   })
 
- /* res.setHeader(
+  res.setHeader(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  );*/
+  );
   res.setHeader(
       'Content-Disposition',
       `attachment; filename=compradores_${prodId}.xlsx`
   );
 
   await workbook.xlsx.write(res);
-  res.sendStatus(200).json({succes: 1});
+  res.end()
 }
