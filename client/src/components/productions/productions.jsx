@@ -108,14 +108,14 @@ return(
                                 <Link to={`/editar_evento/${prod._id}`} className="font-medium underline! text-[#111827]">Editar</Link><br></br>
                                 <Link to={`/statistics/${prod._id}/${session?.userFinded?.[0]?._id}`} className="text-[#111827]!">Estadisticas</Link><br></br>
                                 <button onClick={() => setShowRRPPData(showRRPPData === prod._id ? null : prod._id)} className="text-[#111827]!">Tus RRPP</button><br></br>
+                                <button className="text-[#111827]">Lista de compradores</button><br></br>
                                 <button
                                     type="button"
                                     onClick={() => navigator.clipboard.writeText(`http://localhost:5173/buy_tickets/${prod._id}/${prod.prodMail}`)}
                                     className="secondary-button-fucsia text-white px-3 py-1 rounded w-[99px]!"
                                 >
                                     Copiar link
-                                </button><br></br>
-                                <button className="text-[#111827]">Lista de compradores</button>
+                                </button>
                             </td>
                          </tr>
                          {showRRPPData === prod._id &&

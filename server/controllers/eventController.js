@@ -459,13 +459,12 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
   await transactionModel.updateOne(
     { prodId },
     {
-      $push: {
-        transacciones: {
+      $addToSet: {
+        compradores: {
           nombre: nombreCompleto,
           email: mail,
           montoPagado: totalPagoEntradas,
-          transaccionId: paymentId,
-          fecha: new Date()
+          transaccionId: paymentId
         }
       },
       $setOnInsert: { prodId }
@@ -473,6 +472,7 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
     { upsert: true }
   );
 };
+
 
 export const handleSuccessfulPayment = async (data) => {
     const {

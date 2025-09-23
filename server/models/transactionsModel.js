@@ -9,7 +9,7 @@ const transactionModel = mongoose.Schema({
         montoPagado:{type: Number},
         transaccionId:{type: String},
         reembolsado: { type: Boolean, default: false },
-        creadoEn: { type: Date, default: Date.now }
+        fecha: { type: Date, default: Date.now }
     }]
 })
 
