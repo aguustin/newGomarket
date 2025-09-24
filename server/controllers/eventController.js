@@ -457,26 +457,11 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
   const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
-  const existing = await transactionModel.findOne({
-    prodId,
-    'compradores.email': mail
-  });
-
-  if(existing){
-    await transactionModel.updateOne(
-      { prodId, 'compradores.email': mail },
-      {
-        $inc: {
-          'compradores.$.montoPagado': totalPagoEntradas
-        }
-      }
-    );
-
-    return true;
-  }
-
-  await transactionModel.updateOne(
-    { prodId },
+  const result = await transactionModel.updateOne(
+    {
+      prodId,
+      'compradores.transaccionId': { $ne: paymentId }  // Solo si este paymentId NO existe ya
+    },
     {
       $push: {
         compradores: {
@@ -486,37 +471,65 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
           transaccionId: paymentId
         }
       },
+      $inc: { montoPagado: totalPagoEntradas },
       $setOnInsert: { prodId }
     },
     { upsert: true }
   );
+
+  if (result.modifiedCount === 0) {
+    // Ya se había procesado este paymentId => no seguimos
+    console.log(`🟡 Pago duplicado omitido: ${paymentId}`);
+    return false;
+  }
+
+  console.log(`✅ Transacción guardada para paymentId: ${paymentId}`);
+  return true;
 };
 
-
 export const handleSuccessfulPayment = async (data) => {
-    const {
-    prodId, quantities, mail, state, total,
-    emailHash, nombreCompleto, dni, paymentId
+  const {
+    prodId,
+    quantities,
+    mail,
+    state,
+    total,
+    emailHash,
+    nombreCompleto,
+    dni,
+    paymentId
   } = data;
 
-  
   const event = await ticketModel.findOne({ _id: prodId }).lean();
-  
+
   if (!event) {
-    console.error("Evento no encontrado:", prodId);
+    console.error("❌ Evento no encontrado:", prodId);
     return;
   }
-  
+
   const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
-  
-  // Ejecutar tareas en paralelo (si no dependen entre sí)
+
+  // 👉 Guardamos la transacción
+  const guardado = await guardarTransaccionExitosa(
+    prodId,
+    nombreCompleto,
+    mail,
+    total,
+    paymentId
+  );
+
+  // 🛑 Si ya existía, salimos y NO se genera QR ni se hace nada más
+  if (!guardado) {
+    console.log(`🟡 Transacción ya procesada para paymentId: ${paymentId}`);
+    return;
+  }
+
+  // ✅ Solo si es nuevo pago, generamos QRs y procesamos venta
   const tasks = [
-    //qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
-    procesarVentaGeneral(event, quantities, total),
-    guardarTransaccionExitosa(prodId, nombreCompleto, mail, total, paymentId)
+    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
+    procesarVentaGeneral(event, quantities, total)
   ];
-  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
-  
+
   if (rrppMatch && decryptedMail) {
     tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
   }
