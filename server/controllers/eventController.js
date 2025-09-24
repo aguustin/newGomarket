@@ -591,59 +591,66 @@ export const mercadoPagoWebhookController = async (req, res) => {
       return res.sendStatus(400);
     }
 
+    // Obtener pago desde MercadoPago
     const payment = await mercadopago.payment.findById(paymentId);
     const status = payment.body?.status;
 
-    if (status === 'approved') {
-      const {
-        prod_id,
-        nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        email_hash,
-        nombre_completo,
-        dni
-      } = payment.body.metadata;
-
-      console.log("metadata del pago:", payment.body.metadata);
-
-      if (!quantities || !mail || !prod_id || !total) {
-        console.error("Metadata incompleta:", payment.body.metadata);
-        return res.sendStatus(500);
-      }
-
-      
-      const existing = await transactionModel.findOne({
-        'compradores.transaccionId': paymentId
-      });
-
-      if (existing) {
-        console.log(`Payment ${paymentId} ya fue procesado`);
-        return res.sendStatus(200);
-      }
-
-      await handleSuccessfulPayment({
-        prodId: prod_id,
-        nombreEvento: nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash: email_hash,
-        nombreCompleto: nombre_completo,
-        dni,
-        paymentId
-      });
+    if (status !== 'approved') {
+      // No es pago aprobado, no hacemos nada
+      return res.sendStatus(200);
     }
+
+    // CHEQUEO DE IDEMPOTENCIA — bloque crítico
+    const existing = await transactionModel.findOne({
+      'compradores.transaccionId': paymentId
+    });
+
+    if (existing) {
+      console.log(`Pago ${paymentId} ya procesado — omitido`);
+      return res.sendStatus(200);
+    }
+
+    // Extraer metadata
+    const {
+      prod_id,
+      nombre_evento,
+      quantities,
+      mail,
+      state,
+      total,
+      email_hash,
+      nombre_completo,
+      dni
+    } = payment.body.metadata;
+
+    console.log("metadata del pago:", payment.body.metadata);
+
+    if (!quantities || !mail || !prod_id || !total) {
+      console.error("Metadata incompleta:", payment.body.metadata);
+      return res.sendStatus(500);
+    }
+
+    // Llamar al handler que procesa todo
+    await handleSuccessfulPayment({
+      prodId: prod_id,
+      nombreEvento: nombre_evento,
+      quantities,
+      mail,
+      state,
+      total,
+      emailHash: email_hash,
+      nombreCompleto: nombre_completo,
+      dni,
+      paymentId
+    });
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error('Error en webhook:', error.message);
-    return res.sendStatus(400);
+    console.error('Error en webhook:', error.message, error.stack);
+    return res.sendStatus(500);
   }
 };
+
 
 
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
