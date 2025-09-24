@@ -499,24 +499,24 @@ export const handleSuccessfulPayment = async (data) => {
     emailHash, nombreCompleto, dni, paymentId
   } = data;
 
-  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
-
+  
   const event = await ticketModel.findOne({ _id: prodId }).lean();
-   
+  
   if (!event) {
     console.error("Evento no encontrado:", prodId);
     return;
   }
-
+  
   const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
-
+  
   // Ejecutar tareas en paralelo (si no dependen entre sí)
   const tasks = [
     //qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
     procesarVentaGeneral(event, quantities, total),
     guardarTransaccionExitosa(prodId, nombreCompleto, mail, total, paymentId)
   ];
-
+  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
+  
   if (rrppMatch && decryptedMail) {
     tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
   }
