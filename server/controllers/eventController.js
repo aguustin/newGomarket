@@ -499,14 +499,7 @@ export const handleSuccessfulPayment = async (data) => {
     emailHash, nombreCompleto, dni, paymentId
   } = data;
 
-  
-  const existingTransaction = await transactionModel.findOne({ 'compradores.transaccionId': paymentId});
-  
-  if (existingTransaction) {
-    console.log(`transacción ya procesada para paymentId: ${paymentId}`);
-  }else{
-    await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
-  }
+  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
 
   const event = await ticketModel.findOne({ _id: prodId }).lean();
    
@@ -590,33 +583,68 @@ export const buyEventTicketsController = async (req, res) => {
 
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
+    const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
-    const id = req.query.id || req.query['data.id'];
 
-    if (!id || topic !== 'payment') {
+    if (!paymentId || topic !== 'payment') {
       console.error("No payment ID or topic !== 'payment'");
       return res.sendStatus(400);
     }
-    const payment = await mercadopago.payment.findById(id);
+
+    const payment = await mercadopago.payment.findById(paymentId);
     const status = payment.body?.status;
-    const paymentId = payment.body.id
 
     if (status === 'approved') {
-      const { prod_id, nombre_evento, quantities, mail, state, total, email_hash, nombre_completo, dni } = payment.body.metadata;
-      console.log("metadata del pago: " , payment.body.metadata)
+      const {
+        prod_id,
+        nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        email_hash,
+        nombre_completo,
+        dni
+      } = payment.body.metadata;
+
+      console.log("metadata del pago:", payment.body.metadata);
+
       if (!quantities || !mail || !prod_id || !total) {
         console.error("Metadata incompleta:", payment.body.metadata);
         return res.sendStatus(500);
       }
-      await handleSuccessfulPayment({ prodId:prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId });
 
+      
+      const existing = await transactionModel.findOne({
+        'compradores.transaccionId': paymentId
+      });
+
+      if (existing) {
+        console.log(`Payment ${paymentId} ya fue procesado`);
+        return res.sendStatus(200);
+      }
+
+      await handleSuccessfulPayment({
+        prodId: prod_id,
+        nombreEvento: nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        emailHash: email_hash,
+        nombreCompleto: nombre_completo,
+        dni,
+        paymentId
+      });
     }
+
     return res.sendStatus(200);
   } catch (error) {
     console.error('Error en webhook:', error.message);
     return res.sendStatus(400);
   }
 };
+
 
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
   
