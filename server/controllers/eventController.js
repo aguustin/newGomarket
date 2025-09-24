@@ -467,13 +467,12 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
       { prodId, 'compradores.email': mail },
       {
         $inc: {
-          'compradores.$.montoPagado': totalPagoEntradas,
-          montoPagado: totalPagoEntradas
+          'compradores.$.montoPagado': totalPagoEntradas
         }
       }
     );
 
-    res.sendStatus(200).json({message: 'Se actualizo el monto pagado'})
+    return true;
   }
 
   await transactionModel.updateOne(
@@ -487,7 +486,6 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
           transaccionId: paymentId
         }
       },
-      $inc: { montoPagado: totalPagoEntradas },
       $setOnInsert: { prodId }
     },
     { upsert: true }
@@ -502,15 +500,16 @@ export const handleSuccessfulPayment = async (data) => {
   } = data;
 
   
-  const existingTransaction = await transactionModel.findOne({ paymentId });
+  const existingTransaction = await transactionModel.findOne({ 'compradores.transaccionId': paymentId});
   
   if (existingTransaction) {
     console.log(`transacción ya procesada para paymentId: ${paymentId}`);
-    return; // o simplemente no repetir los pasos
+  }else{
+    await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
   }
-  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
 
   const event = await ticketModel.findOne({ _id: prodId }).lean();
+   
   if (!event) {
     console.error("Evento no encontrado:", prodId);
     return;
