@@ -28,7 +28,7 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
+    const {userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, aviso, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
     const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
 
     const parsedCategorias = JSON.parse(categoriasEventos)
@@ -46,6 +46,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     eventoEdad: eventoEdadPush,
                     nombreEvento: nombreEvento,
                     descripcionEvento: descripcionEvento,
+                    aviso: aviso,
                     categoriasEventos: parsedCategorias,
                     artistas: artistas,
                     montoVentas: montoVentas,
@@ -83,6 +84,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 eventoEdad: eventoEdad,
                 nombreEvento: nombreEvento,
                 descripcionEvento: descripcionEvento,
+                aviso: aviso,
                 categoriasEventos: parsedCategorias,
                 artistas: artistas,
                 montoVentas: montoVentas,

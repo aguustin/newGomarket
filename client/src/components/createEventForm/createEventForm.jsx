@@ -76,6 +76,7 @@ const CreateEventForm = () => {
                 }
                 formData.append('nombreEvento', e.target.elements.nombreEvento.value)
                 formData.append('descripcionEvento', e.target.elements.descripcionEvento.value)
+                formData.append('aviso', e.target.elements.aviso.value)
                 formData.append('categoriasEventos', JSON.stringify(categorias))
                 formData.append('artistas', e.target.elements.artistas.value)
                 formData.append('montoVentas', e.target.elements.montoVentas.value)
@@ -233,11 +234,19 @@ const CreateEventForm = () => {
                             </div>
                         </div>
                         <div>
-                            <label>Descripcion del evento:</label>
+                            <label>Descripcion del evento (opcional):</label>
                             <div>
                                 <textarea className="h-[199px]" type="text"  placeholder="..." name="descripcionEvento"></textarea>
                             </div>
                         </div>
+                         <div>
+                            <label>Aviso importante (opcional):</label>
+                            <div>
+                                <textarea className="h-[165px]" type="text"  placeholder="..." name="aviso"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="create-event-form-div-child w-[50%]">
                         <div>
                             <label>Categorias del evento:</label>
                             <div>
@@ -264,8 +273,6 @@ const CreateEventForm = () => {
                                 <input type="text"  placeholder="..." name="artistas"></input>
                             </div>
                         </div>
-                    </div>
-                    <div className="create-event-form-div-child w-[50%]">
                             <div>
                                 <label>Monto de ventas estimado</label>
                                 <div>

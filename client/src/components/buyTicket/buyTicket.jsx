@@ -90,7 +90,7 @@ const BuyTicket = () => {
             console.error("Error en handlePayment:", error);
         }
     }
-    console.log(quantities)
+    
 
     return(
          
@@ -99,7 +99,7 @@ const BuyTicket = () => {
             <div className="relative flex flex-wrap justify-center" key={p._id}>
                         <div>
                             <h2 className="text-2xl">Comprar tickets</h2>
-                            <img className="w-[250px] h-[200px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
+                            <img className="w-[370px] h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
                         </div>
                         <div className="text-left ml-4 mt-9">
                             <h2 className="text-xl text-[#111827]">Evento: {p.nombreEvento}</h2>
@@ -107,6 +107,10 @@ const BuyTicket = () => {
                             <div className="flex items-center mt-2">
                                 <p className="secondary-p">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
                                 <p className="ml-3 secondary-p">Fecha de cierre: {formatDate(p.fechaFin) }</p>
+                            </div>
+                            <div>
+                                <p className="secondary-p mt-3 text-sm">{p.descripcionEvento}</p>
+                                {p?.aviso?.length > 0 && <p className="primary-p mt-3 text-sm bg-pink-400! p-2">{p.aviso}</p> }
                             </div>
                         </div>
                     </div>
@@ -164,7 +168,7 @@ const BuyTicket = () => {
                                                     </button>
                                                 </div>
                                                 <div>
-                                                    <p className="primary-p">Total: {currencyFormatter.format((quantities[tck._id] || 0) * tck.precio)}</p> 
+                                                    <p className="buy-ticket-total-p-tck primary-p mx-3">Total: {currencyFormatter.format((quantities[tck._id] || 0) * tck.precio)}</p> 
                                                 </div>
                                             </div>
                                         </div>

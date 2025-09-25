@@ -21,6 +21,7 @@ import { UserContextProvider } from './context/userContext'
 import Cortesies from './components/cortesies/cortesies'
 import NewCortesie from './components/newCortesie/newCortesie'
 import 'react-loading-skeleton/dist/skeleton.css';
+import LegalConditions from './components/conditions/legalConditions'
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
             <Route path='/statistics/:prodId/:userId' element={<Statistics/>}></Route>
             <Route path='/cortesies/:prodId' element={<Cortesies/>}></Route>
             <Route path='/new_excel/:prodId' element={<NewCortesie/>}></Route>
+            <Route path='/conditions' element={<LegalConditions/>}></Route>
           </Routes>
           <Footer></Footer>
       </UserContextProvider>
