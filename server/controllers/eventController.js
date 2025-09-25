@@ -11,9 +11,10 @@ import { v4 as uuidv4 } from 'uuid'
 import userModel from "../models/userModel.js";
 import crypto from "crypto"
 import tokenModel from "../models/tokenModel.js";
-import { formatDateB } from "../lib/dates.js";
 import transactionModel from "../models/transactionsModel.js";
+import { formatDateB } from "../lib/dates.js";
 import ExcelJS from 'exceljs';
+import axios from "axios";
 
 dotenv.config();
 
@@ -479,7 +480,7 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
 
   if (result.modifiedCount === 0) {
     // Ya se había procesado este paymentId => no seguimos
-    console.log(`🟡 Pago duplicado omitido: ${paymentId}`);
+    console.log(`Pago duplicado omitido: ${paymentId}`);
     return false;
   }
 
@@ -1296,4 +1297,45 @@ export const descargarCompradoresController = async (req, res) => {
     
   await workbook.xlsx.write(res);
   res.end()
+}
+
+
+export const cancelarEventoController = async (req, res) => {
+  const {prodId} = req.body;
+
+try{
+
+const getPaymentsIds = await transactionModel.findOne({prodiId: prodId})
+
+ const refundPromises = getPaymentsIds.compradores.map((pays) => {
+    axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
+      {"amount": pays.montoPagado},
+      {
+        headers:{
+          Authorization:`Bearer ${process.env.MP_ACCES_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+  }
+  )
+  
+  const results = await Promise.allSettled(refundPromises);
+
+  results.forEach((r, i) => {
+    getPaymentsIds.compradores[i].reembolsado = r.status === 'fulfilled';
+  });
+
+  await getPaymentsIds.save();
+
+  // Ver resultados
+  const fallidos = results.filter(r => r.status === 'rejected');
+  if (fallidos.length > 0) {
+    console.warn('Algunos reembolsos fallaron:', fallidos);
+  }
+ // await transactionModel.deleteOne({prodId: prodId})
+  return res.status(200).json({ message: 'Reembolsos procesados', fallidos: fallidos.length });
+}catch(err){
+    return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
+}
 }

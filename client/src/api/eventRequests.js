@@ -131,4 +131,6 @@ export const descargarCompradoresRequest = async ({ prodId, nombreEvento }) => {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
-};
+}; 
+
+export const cancelarEventoRequest = async ({prodId}) => axios.post(`${import.meta.env.VITE_URL}/cancelar_evento`, {prodId})
