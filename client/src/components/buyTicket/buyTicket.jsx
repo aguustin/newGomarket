@@ -71,6 +71,7 @@ const BuyTicket = () => {
         const dni = e.target.elements.dni.value
 
         const hasTickets = Object.values(quantities).some(value => value <= 0);
+        console.log(hasTickets)
         if (!hasTickets) {
             setShowMsg(true)
             return; // Detiene la ejecución si todos son <= 0
