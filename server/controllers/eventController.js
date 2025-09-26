@@ -815,7 +815,7 @@ export const addRRPPController = async (req, res) => {
   const sendEmailToRRPP = async () => {
     try {
       const result = await resend.emails.send({
-        from: 'GoTickets <no-reply@tudominio.com>', // Usa tu dominio verificado
+        from: 'GoTickets <no-reply@notifications.goticket.com>', // Usa tu dominio verificado
         to: rrppMail,
         subject: `Ya eres colaborador en: ${nombreEvento}`,
         html: emailHTML,
@@ -976,7 +976,7 @@ export const sendQrStaffQrController = async (req, res) => {
   `;
 
   const result = await resend.emails.send({
-    from: 'GoTickets <no-reply@tudominio.com>', // Asegúrate de tener este dominio verificado en Resend
+    from: 'GoTickets <no-reply@notifications.goticket.com>', // Asegúrate de tener este dominio verificado en Resend
     to: mail,
     subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
     html,
@@ -1023,7 +1023,7 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-
+  console.log("mi email: ", email)
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
       const qrCid = `qrcodeimg${index}`;
