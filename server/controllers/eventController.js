@@ -1088,7 +1088,7 @@ const sendQrEmail = async (
       attachments,
     });
 
-    console.log('📧 Email enviado:', info.messageId);
+    console.log('📧 Correo enviado vía Resend:', result.id);
   } catch (err) {
     console.error('❌ Error al enviar el email:', err);
     throw err;
