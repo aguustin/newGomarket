@@ -553,7 +553,7 @@ export const buyEventTicketsController = async (req, res) => {
           {
             title: `Ticket para ${nombreEvento}`,
             quantity: 1,
-            unit_price: 1, // aca va "total"
+            unit_price: total, // aca va "total"
             currency_id: 'ARS',
           },
         ],
