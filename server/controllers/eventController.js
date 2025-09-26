@@ -490,78 +490,54 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
 };
 
 export const handleSuccessfulPayment = async (data) => {
-  try {
-    const {
-      prodId,
-      quantities,
-      mail,
-      state,
-      total,
-      emailHash,
-      nombreCompleto,
-      dni,
-      paymentId
-    } = data;
+  const {
+    prodId,
+    quantities,
+    mail,
+    state,
+    total,
+    emailHash,
+    nombreCompleto,
+    dni,
+    paymentId
+  } = data;
 
-    const event = await ticketModel.findOne({ _id: prodId }).lean();
+  const event = await ticketModel.findOne({ _id: prodId }).lean();
 
-    if (!event) {
-      console.error("❌ Evento no encontrado:", prodId);
-      return;
-    }
+  if (!event) {
+    console.error("❌ Evento no encontrado:", prodId);
+    return;
+  }
 
-    const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
+  const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
 
-    // Guardamos la transacción y verificamos idempotencia
-    const guardado = await guardarTransaccionExitosa(
-      prodId,
-      nombreCompleto,
-      mail,
-      total,
-      paymentId
-    );
+  // 👉 Guardamos la transacción
+  const guardado = await guardarTransaccionExitosa(
+    prodId,
+    nombreCompleto,
+    mail,
+    total,
+    paymentId
+  );
 
-    if (!guardado) {
-      console.log(`🟡 Transacción ya procesada para paymentId: ${paymentId}`);
-      return;
-    }
+  // 🛑 Si ya existía, salimos y NO se genera QR ni se hace nada más
+  if (!guardado) {
+    console.log(`🟡 Transacción ya procesada para paymentId: ${paymentId}`);
+    return;
+  }
 
-    // Solo si es nuevo pago, generamos QRs y procesamos venta
-    const tasks = [
-      qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
-      procesarVentaGeneral(event, quantities, total),
-    ];
-
-    if (rrppMatch && decryptedMail) {
-      tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
-    }
-
-    // Ejecutamos las tareas y capturamos errores individuales para no abortar todo
-     console.log('🔹 Inicio generación de QR');
-  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
-  console.log('🔹 QR generado, inicio procesarVentaGeneral');
-  
-  await procesarVentaGeneral(event, quantities, total);
-  console.log('🔹 Venta general procesada');
+  // ✅ Solo si es nuevo pago, generamos QRs y procesamos venta
+  const tasks = [
+    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
+    procesarVentaGeneral(event, quantities, total)
+  ];
 
   if (rrppMatch && decryptedMail) {
-    console.log('🔹 Inicio procesarVentaRRPP');
-    await procesarVentaRRPP(event, quantities, decryptedMail);
-    console.log('🔹 Venta RRPP procesada');
+    tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
   }
-   /* await Promise.all(
-      tasks.map(task =>
-        task.catch(err => {
-          console.error('❌ Error en task async:', err);
-        })
-      )
-    );*/
 
-  } catch (error) {
-    console.error('❌ Error general en handleSuccessfulPayment:', error);
-  }
+  await Promise.all(tasks);
 };
-
 
 export const buyEventTicketsController = async (req, res) => {
   const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
@@ -625,87 +601,75 @@ export const mercadoPagoWebhookController = async (req, res) => {
     const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
 
-    if (!paymentId) {
-      console.error("❌ No se recibió payment ID");
+    if (!paymentId || topic !== 'payment') {
+      console.error("No payment ID or topic !== 'payment'");
+      return res.sendStatus(400);
+    }
+
+    // Obtener pago desde MercadoPago
+    const payment = await mercadopago.payment.findById(paymentId);
+    const status = payment.body?.status;
+
+    if (status !== 'approved') {
+      // No es pago aprobado, no hacemos nada
       return res.sendStatus(200);
     }
 
-    if (topic === 'payment') {
-      // Obtener pago desde MercadoPago
-      const payment = await mercadopago.payment.findById(paymentId);
-      const status = payment.body?.status;
+    // CHEQUEO DE IDEMPOTENCIA — bloque crítico
+    const existing = await transactionModel.findOne({
+      'compradores.transaccionId': paymentId
+    });
 
-      if (status !== 'approved') {
-        return res.sendStatus(200);
-      }
-
-      // Chequeo de idempotencia
-      const existing = await transactionModel.findOne({
-        'compradores.transaccionId': paymentId
-      });
-
-      if (existing) {
-        console.log(`🟡 Pago duplicado omitido: ${paymentId}`);
-        return res.sendStatus(200);
-      }
-
-      // Extraer metadata
-      const {
-        prod_id,
-        nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        email_hash,
-        nombre_completo,
-        dni
-      } = payment.body.metadata;
-
-      if (!quantities || !mail || !prod_id || !total) {
-        console.error("❌ Metadata incompleta:", payment.body.metadata);
-        return res.sendStatus(500);
-      }
-
-      // Respondemos rápido para evitar reintentos
-      res.sendStatus(200);
-
-      // Procesar pago async sin bloquear
-      handleSuccessfulPayment({
-        prodId: prod_id,
-        nombreEvento: nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash: email_hash,
-        nombreCompleto: nombre_completo,
-        dni,
-        paymentId
-      }).catch(err => {
-        console.error('❌ Error en procesamiento async del pago:', err);
-      });
-
-    } else if (topic === 'merchant_order') {
-      console.log("📦 Webhook merchant_order recibido — ignorado.");
-      return res.sendStatus(200);
-    } else {
-      console.warn("⚠️ Topic desconocido recibido:", topic);
+    if (existing) {
+      console.log(`Pago ${paymentId} ya procesado — omitido`);
       return res.sendStatus(200);
     }
 
+    // Extraer metadata
+    const {
+      prod_id,
+      nombre_evento,
+      quantities,
+      mail,
+      state,
+      total,
+      email_hash,
+      nombre_completo,
+      dni
+    } = payment.body.metadata;
+
+    console.log("metadata del pago:", payment.body.metadata);
+
+    if (!quantities || !mail || !prod_id || !total) {
+      console.error("Metadata incompleta:", payment.body.metadata);
+      return res.sendStatus(500);
+    }
+
+    // Llamar al handler que procesa todo
+    await handleSuccessfulPayment({
+      prodId: prod_id,
+      nombreEvento: nombre_evento,
+      quantities,
+      mail,
+      state,
+      total,
+      emailHash: email_hash,
+      nombreCompleto: nombre_completo,
+      dni,
+      paymentId
+    });
+
+    return res.sendStatus(200);
   } catch (error) {
-    console.error('❌ Error en webhook:', error.message, error.stack);
+    console.error('Error en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
 
 
 
-
-
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
-  console.log('   🔸 qrGeneratorController iniciado');
+  
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
     const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
       updateOne: {
@@ -728,9 +692,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
     
     await ticketModel.bulkWrite(bulkOps);
   }
-  console.log('   🔸 qrGeneratorController medio');
   try {
-    console.log('   🔸 qrGeneratorController primero');
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
   const event = await ticketModel.findById(prodId);
 
@@ -750,7 +712,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
   ];
 
   const ticketDataArray = [];
-console.log('   🔸 qrGeneratorController segundo');
+
 for (const ticket of filteredTickets) {
   const quantity = quantities[ticket._id.toString()];
   for (let i = 0; i < quantity; i++) {
@@ -774,16 +736,15 @@ for (const ticket of filteredTickets) {
     const qrImage = await QRCode.toDataURL(qrUrl);
     const qrBase64 = qrImage.split(',')[1];
     const qrBuffer = Buffer.from(qrBase64, 'base64');
- console.log('   🔸 qrGeneratorController tercero');
+
     ticketDataArray.push({
       qrBuffer,
       nombreTicket: ticket.nombreTicket,
-      precio: ticket.precio,
+      ticketPrecio: ticket.precio,
       ticketFechaCierre: ticketDate,
       tipo: ticket.tipo
     });
   }
-  console.log('   🔸 qrGeneratorController finalizado');
 }
 
 // 👉 Enviamos todos los tickets en un solo mail
@@ -802,7 +763,7 @@ console.log("QRs generados y enviados.");
 
   return true
 } catch (err) {
-  console.error("Error generando QRs:", err);
+  console.error("❌ Error generando QRs:", err);
   return false
 }
 };
@@ -811,17 +772,15 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
     const {prodId, rrppMail, nombreEvento, eventImg} = req.body
     const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
     if(rrppExist){
-     const transporter = nodemailer.createTransport({
-  host: 'smtp.resend.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: 'resend', // Fijo, no se cambia
-    pass: process.env.RESEND_API_KEY,
-  },
-});
+      const transporter = nodemailer.createTransport({
+      service: 'gmail', 
+        auth: {
+          user: user_mail,
+          pass: pass
+        }
+      });
       await transporter.sendMail({
-        from: '"GoTickets" <no-reply@resend.dev>',
+        from: '"GoTickets" <no-reply@gotickets.com>',
         to: rrppMail,
         subject: `Ya eres colaborador en: ${nombreEvento}`,
         html: `
@@ -863,17 +822,15 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
         }
       )
 
-  const transporter = nodemailer.createTransport({
-  host: 'smtp.resend.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: 'resend', // Fijo, no se cambia
-    pass: process.env.RESEND_API_KEY,
-  },
-});
+   const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+      auth: {
+        user: user_mail,
+        pass: pass
+      }
+    });
     await transporter.sendMail({
-    from: '"GoTickets" <no-reply@resend.dev>',
+    from: '"GoTickets" <no-reply@gotickets.com>',
     to: rrppMail,
     subject: `Ya eres colaborador en: ${nombreEvento}`,
     html: `
@@ -1002,13 +959,13 @@ export const sendQrStaffQrController = async (req, res) => {
     service: 'gmail',
     auth: {
       user: user_mail,
-      pass: 'gewu tykr kdjl btfz'
+      pass: pass
     }
   });
 
   try {
     const info = await transporter.sendMail({
-      from: '"GoTickets" <no-reply@resend.dev>',
+      from: '"GoTickets" <no-reply@gotickets.com>',
       to: mail,
       subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
       html: `
@@ -1082,15 +1039,13 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-const transporter = nodemailer.createTransport({
-  host: 'smtp.resend.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: 'resend', // Fijo, no se cambia
-    pass: process.env.RESEND_API_KEY,
-  },
-});
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: user_mail,
+      pass: pass,
+    },
+  });
 
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
@@ -1102,7 +1057,7 @@ const transporter = nodemailer.createTransport({
           <img src="cid:${qrCid}" alt="QR para ${ticket.nombreTicket}" style="width:230px; height:230px;"/>
           <div>
             <h2 style="font-size:20px">${nombreEvento}</h2>
-            <p style="font-size:18px">${ticket.nombreTicket} - $ ${ticket.precio}</p>
+            <p style="font-size:18px">${ticket.nombreTicket} - $ ${ticket.ticketPrecio}</p>
             <p style="font-size:18px">Fecha del evento: ${eventoFechaInicio}</p>
             <p style="font-size:18px">Entrada válida hasta: ${ticket.ticketFechaCierre}</p>
             <p style="font-size:18px">${direccionEvento}</p>
@@ -1149,7 +1104,7 @@ const transporter = nodemailer.createTransport({
     }));
 
     const info = await transporter.sendMail({
-      from: '"GoTickets" <no-reply@resend.dev>',
+      from: '"GoTickets" <no-reply@gotickets.com>',
       to: email,
       subject: `Tus entradas para ${nombreEvento}`,
       html,
