@@ -705,7 +705,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
 
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
-  
+  console.log('   🔸 qrGeneratorController iniciado');
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
     const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
       updateOne: {
@@ -728,7 +728,9 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
     
     await ticketModel.bulkWrite(bulkOps);
   }
+  console.log('   🔸 qrGeneratorController medio');
   try {
+    console.log('   🔸 qrGeneratorController primero');
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
   const event = await ticketModel.findById(prodId);
 
@@ -748,7 +750,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
   ];
 
   const ticketDataArray = [];
-
+console.log('   🔸 qrGeneratorController segundo');
 for (const ticket of filteredTickets) {
   const quantity = quantities[ticket._id.toString()];
   for (let i = 0; i < quantity; i++) {
@@ -772,7 +774,7 @@ for (const ticket of filteredTickets) {
     const qrImage = await QRCode.toDataURL(qrUrl);
     const qrBase64 = qrImage.split(',')[1];
     const qrBuffer = Buffer.from(qrBase64, 'base64');
- 
+ console.log('   🔸 qrGeneratorController tercero');
     ticketDataArray.push({
       qrBuffer,
       nombreTicket: ticket.nombreTicket,
@@ -781,6 +783,7 @@ for (const ticket of filteredTickets) {
       tipo: ticket.tipo
     });
   }
+  console.log('   🔸 qrGeneratorController finalizado');
 }
 
 // 👉 Enviamos todos los tickets en un solo mail
