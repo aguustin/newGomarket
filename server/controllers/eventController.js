@@ -490,54 +490,66 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
 };
 
 export const handleSuccessfulPayment = async (data) => {
-  const {
-    prodId,
-    quantities,
-    mail,
-    state,
-    total,
-    emailHash,
-    nombreCompleto,
-    dni,
-    paymentId
-  } = data;
+  try {
+    const {
+      prodId,
+      quantities,
+      mail,
+      state,
+      total,
+      emailHash,
+      nombreCompleto,
+      dni,
+      paymentId
+    } = data;
 
-  const event = await ticketModel.findOne({ _id: prodId }).lean();
+    const event = await ticketModel.findOne({ _id: prodId }).lean();
 
-  if (!event) {
-    console.error("❌ Evento no encontrado:", prodId);
-    return;
+    if (!event) {
+      console.error("❌ Evento no encontrado:", prodId);
+      return;
+    }
+
+    const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
+
+    // Guardamos la transacción y verificamos idempotencia
+    const guardado = await guardarTransaccionExitosa(
+      prodId,
+      nombreCompleto,
+      mail,
+      total,
+      paymentId
+    );
+
+    if (!guardado) {
+      console.log(`🟡 Transacción ya procesada para paymentId: ${paymentId}`);
+      return;
+    }
+
+    // Solo si es nuevo pago, generamos QRs y procesamos venta
+    const tasks = [
+      qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
+      procesarVentaGeneral(event, quantities, total),
+    ];
+
+    if (rrppMatch && decryptedMail) {
+      tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
+    }
+
+    // Ejecutamos las tareas y capturamos errores individuales para no abortar todo
+    await Promise.all(
+      tasks.map(task =>
+        task.catch(err => {
+          console.error('❌ Error en task async:', err);
+        })
+      )
+    );
+
+  } catch (error) {
+    console.error('❌ Error general en handleSuccessfulPayment:', error);
   }
-
-  const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
-
-  // 👉 Guardamos la transacción
-  const guardado = await guardarTransaccionExitosa(
-    prodId,
-    nombreCompleto,
-    mail,
-    total,
-    paymentId
-  );
-
-  // 🛑 Si ya existía, salimos y NO se genera QR ni se hace nada más
-  if (!guardado) {
-    console.log(`🟡 Transacción ya procesada para paymentId: ${paymentId}`);
-    return;
-  }
-
-  // ✅ Solo si es nuevo pago, generamos QRs y procesamos venta
-  const tasks = [
-    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
-    procesarVentaGeneral(event, quantities, total)
-  ];
-
-  if (rrppMatch && decryptedMail) {
-    tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
-  }
-
-  await Promise.all(tasks);
 };
+
 
 export const buyEventTicketsController = async (req, res) => {
   const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
@@ -603,7 +615,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
     if (!paymentId) {
       console.error("❌ No se recibió payment ID");
-      return res.sendStatus(200); // Respondemos 200 para que MP no reintente
+      return res.sendStatus(200);
     }
 
     if (topic === 'payment') {
@@ -612,7 +624,6 @@ export const mercadoPagoWebhookController = async (req, res) => {
       const status = payment.body?.status;
 
       if (status !== 'approved') {
-        // No es pago aprobado, no hacemos nada
         return res.sendStatus(200);
       }
 
@@ -639,15 +650,16 @@ export const mercadoPagoWebhookController = async (req, res) => {
         dni
       } = payment.body.metadata;
 
-      console.log("📦 Metadata del pago:", payment.body.metadata);
-
       if (!quantities || !mail || !prod_id || !total) {
         console.error("❌ Metadata incompleta:", payment.body.metadata);
         return res.sendStatus(500);
       }
 
-      // Ejecutar el procesamiento del pago
-      await handleSuccessfulPayment({
+      // Respondemos rápido para evitar reintentos
+      res.sendStatus(200);
+
+      // Procesar pago async sin bloquear
+      handleSuccessfulPayment({
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -658,9 +670,10 @@ export const mercadoPagoWebhookController = async (req, res) => {
         nombreCompleto: nombre_completo,
         dni,
         paymentId
+      }).catch(err => {
+        console.error('❌ Error en procesamiento async del pago:', err);
       });
 
-      return res.sendStatus(200);
     } else if (topic === 'merchant_order') {
       console.log("📦 Webhook merchant_order recibido — ignorado.");
       return res.sendStatus(200);
@@ -668,11 +681,13 @@ export const mercadoPagoWebhookController = async (req, res) => {
       console.warn("⚠️ Topic desconocido recibido:", topic);
       return res.sendStatus(200);
     }
+
   } catch (error) {
     console.error('❌ Error en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
+
 
 
 
