@@ -601,70 +601,79 @@ export const mercadoPagoWebhookController = async (req, res) => {
     const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
 
-    if (!paymentId || topic !== 'payment') {
-      console.error("No payment ID or topic !== 'payment'");
-      return res.sendStatus(400);
+    if (!paymentId) {
+      console.error("❌ No se recibió payment ID");
+      return res.sendStatus(200); // Respondemos 200 para que MP no reintente
     }
 
-    // Obtener pago desde MercadoPago
-    const payment = await mercadopago.payment.findById(paymentId);
-    const status = payment.body?.status;
+    if (topic === 'payment') {
+      // Obtener pago desde MercadoPago
+      const payment = await mercadopago.payment.findById(paymentId);
+      const status = payment.body?.status;
 
-    if (status !== 'approved') {
-      // No es pago aprobado, no hacemos nada
+      if (status !== 'approved') {
+        // No es pago aprobado, no hacemos nada
+        return res.sendStatus(200);
+      }
+
+      // Chequeo de idempotencia
+      const existing = await transactionModel.findOne({
+        'compradores.transaccionId': paymentId
+      });
+
+      if (existing) {
+        console.log(`🟡 Pago duplicado omitido: ${paymentId}`);
+        return res.sendStatus(200);
+      }
+
+      // Extraer metadata
+      const {
+        prod_id,
+        nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        email_hash,
+        nombre_completo,
+        dni
+      } = payment.body.metadata;
+
+      console.log("📦 Metadata del pago:", payment.body.metadata);
+
+      if (!quantities || !mail || !prod_id || !total) {
+        console.error("❌ Metadata incompleta:", payment.body.metadata);
+        return res.sendStatus(500);
+      }
+
+      // Ejecutar el procesamiento del pago
+      await handleSuccessfulPayment({
+        prodId: prod_id,
+        nombreEvento: nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        emailHash: email_hash,
+        nombreCompleto: nombre_completo,
+        dni,
+        paymentId
+      });
+
+      return res.sendStatus(200);
+    } else if (topic === 'merchant_order') {
+      console.log("📦 Webhook merchant_order recibido — ignorado.");
+      return res.sendStatus(200);
+    } else {
+      console.warn("⚠️ Topic desconocido recibido:", topic);
       return res.sendStatus(200);
     }
-
-    // CHEQUEO DE IDEMPOTENCIA — bloque crítico
-    const existing = await transactionModel.findOne({
-      'compradores.transaccionId': paymentId
-    });
-
-    if (existing) {
-      console.log(`Pago ${paymentId} ya procesado — omitido`);
-      return res.sendStatus(200);
-    }
-
-    // Extraer metadata
-    const {
-      prod_id,
-      nombre_evento,
-      quantities,
-      mail,
-      state,
-      total,
-      email_hash,
-      nombre_completo,
-      dni
-    } = payment.body.metadata;
-
-    console.log("metadata del pago:", payment.body.metadata);
-
-    if (!quantities || !mail || !prod_id || !total) {
-      console.error("Metadata incompleta:", payment.body.metadata);
-      return res.sendStatus(500);
-    }
-
-    // Llamar al handler que procesa todo
-    await handleSuccessfulPayment({
-      prodId: prod_id,
-      nombreEvento: nombre_evento,
-      quantities,
-      mail,
-      state,
-      total,
-      emailHash: email_hash,
-      nombreCompleto: nombre_completo,
-      dni,
-      paymentId
-    });
-
-    return res.sendStatus(200);
   } catch (error) {
-    console.error('Error en webhook:', error.message, error.stack);
+    console.error('❌ Error en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
+
 
 
 
