@@ -108,6 +108,9 @@ const BuyTicket = () => {
                                 <p className="secondary-p">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
                                 <p className="ml-3 secondary-p">Fecha de cierre: {formatDate(p.fechaFin) }</p>
                             </div>
+                            <div className="flex items-center mt-2">
+                                <p className="secondary-p">Artistas: {p.artistas}</p>
+                            </div>
                             <div>
                                 <p className="secondary-p mt-3 text-sm">{p.descripcionEvento}</p>
                                 {p?.aviso?.length > 0 && <p className="primary-p mt-3 text-sm bg-pink-400! p-2">{p.aviso}</p> }
@@ -179,9 +182,6 @@ const BuyTicket = () => {
                                 </div>
                             ))}
                             {p.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
-                          
-
-
                                 <div className="flex justify-center mx-auto text-center" key={crt._id}>
                                     <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3">
                                         <div className="flex items-center w-full justify-between">
@@ -193,9 +193,9 @@ const BuyTicket = () => {
                                             </div>
                                         </div>
                                             <div className="flex flex-wrap items-center justify-center mx-auto">
-                                                     <div className="buy-tickets-price mr-3">
-                                                        <p className="ml-2 text-md secondary-p">Disponibles: {crt.limit}</p>
-                                                    </div>
+                                                <div className="buy-tickets-price mr-3">
+                                                    <p className="ml-2 text-md secondary-p">Disponibles: {crt.limit}</p>
+                                                </div>
                                                 <div className="summary-buttons-buy-tickets flex items-center justify-between w-[270px] border-[1px] border-gray-200 rounded-4xl p-3">
                                                     <button
                                                         className="bg-transparent ml-3 mr-3 text-xl text-[#111827] primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] text-[#111827]!"
@@ -210,6 +210,9 @@ const BuyTicket = () => {
                                                     >
                                                         +
                                                     </button>
+                                                </div>
+                                                <div className="buy-tickets-price mr-3">
+                                                        <p className="ml-2 text-md primary-p">Cortesias</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -229,37 +232,6 @@ const BuyTicket = () => {
                      <button className="primary-button w-[300px] mx-auto flex items-center justify-center bottom-3 mt-16 p-4 rounded-3xl cursor-pointer text-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>
-            {/* <div className="flex justify-center mx-auto text-center" key={crt._id}>
-                                    <div className="tickets-desc-container w-full flex items-center justify-between mb-3">
-                                        <div className="flex items-center">
-                                            <img className="ticket-img w-[100px] h-[100px] rounded-xl" src={crt.imgTicket} alt="" loading="lazy"></img>
-                                            <div className="block text-left">
-                                                <p className="primary-p text-lg ml-3">{crt.nombreTicket} </p>
-                                                <p className="secondary-p text-lg ml-3">Valido hasta: {formatDate(crt.fechaDeCierre)}</p>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p className="ml-2 text-xl secondary-p">Disponibles:{crt.limit}</p>
-                                        </div>
-                                        <div className="flex items-center justify-between w-[270px] border-[1px] border-gray-100 rounded-4xl p-3">
-                                            <button
-                                                className="bg-transparent ml-3 mr-3 text-xl primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] "
-                                                onClick={(e) => restQuantity(e, crt._id, crt.limit)}
-                                            >
-                                                -
-                                            </button>
-                                            <p className="text-xl w-[50px] secondary-p">{quantities[crt._id] || 0}</p>
-                                            <button
-                                                className=" ml-3 mr-3 text-xl bg-orange-500! cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px]"
-                                                onClick={(e) => addQuantity(e, crt._id, crt.limit)}
-                                            >
-                                                +
-                                            </button>
-                                            
-                                        </div>
-                                    </div>
-                                </div> */
-            }
         </div>
     )
 }

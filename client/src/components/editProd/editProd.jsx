@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { addRRPPRequest, createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
+import { addRRPPRequest, cancelarEventoRequest, createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
 import {Country, State, City} from "country-state-city"
 import { convertirInputADateTimeLocal, formatDate, formatearFechaParaInput, LoadingButton } from "../../globalscomp/globalscomp"
@@ -14,6 +14,10 @@ import megaphonePng from '../../assets/images/megaphone.png'
 import updatePng from '../../assets/images/update.png'
 import calendarPng from "../../assets/images/calendar.png"
 import ticketCantPng from "../../assets/images/ticket-cant.png"
+import cancelPng from "../../assets/images/cancel.png"
+import cancelEventPng from '../../assets/images/cancel-event.png'
+import eraserPng from '../../assets/images/eraser.png'
+import megaphoneBPng from '../../assets/images/megaphoneB.png'
 
 const EditProd = () => {
     const {session} = useContext(UserContext)
@@ -40,6 +44,7 @@ const EditProd = () => {
     const [eventVisibility, setEventVisibility] = useState()
     const [cities, setCities] = useState([])
     const [localidad, setLocalidad] = useState(null)
+    const [cancelAlert, setCancelAlert] = useState(false)
 
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
@@ -178,6 +183,7 @@ const EditProd = () => {
         formData.append('ticketId', ticketId)
         formData.append('nombreTicket', dataToUpdate?.nombreTicket ?? nombreTicket)
         formData.append('descripcionTicket', dataToUpdate?.descripcionTicket ?? descripcionTicket)
+        formData.append('aviso', dataToUpdate?.aviso ?? aviso)
         formData.append('precio', dataToUpdate?.precio ?? precio)
         formData.append('cantidad', dataToUpdate?.cantidad ?? cantidad)
         formData.append('limit', dataToUpdate?.limit ?? limit)
@@ -254,6 +260,10 @@ const EditProd = () => {
         openTicketId === ticketId ? setOpenTicketId(null) : setOpenTicketId(ticketId)
     }
 
+    const cancelarEvento = async (prodId) => {
+        const res = await cancelarEventoRequest({prodId})
+    }
+
     return(
         <>
             <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-white border-[1px] border-gray-100 rounded-2xl p-5">
@@ -271,7 +281,7 @@ const EditProd = () => {
                                         <p className="mt-3 secondary-p">Puedes subir otra imagen para tu evento y cambiar su información</p>
                                         <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
                                     <div className="edit-evet-img-upload top-15 right-10">
-                                        <label htmlFor="imgEventoHtml" className="flex items-center border-[1px] border-gray-300 text-[#111827] p-3 rounded-2xl"><img className="mr-3" src={uploadPng} alt=""></img>Cargar portada</label><br></br>
+                                        <label htmlFor="imgEventoHtml" className="flex items-center border-[1px] border-gray-300 text-[#111827] p-3 rounded-2xl"><img className="mr-3" src={uploadPng} alt=""></img>Cargar nueva portada</label><br></br>
                                         <input id="imgEventoHtml" className="border-none hidden" type="file" name="imgEvento" ref={fileRef} />
                                     </div>
                                     </div>
@@ -283,11 +293,15 @@ const EditProd = () => {
                                             <input type="text" value={eventosEditados[p._id]?.nombreEvento ?? p.nombreEvento} onChange={(e) => handleChangeEvento(e, p._id, 'nombreEvento')}></input>
                                         </div>
                                         <div>
-                                            <label>Descripcion</label><br></br>
-                                            <input type="text" value={eventosEditados[p._id]?.descripcionEvento ??  p.descripcionEvento} onChange={(e) => handleChangeEvento(e, p._id, 'descripcionEvento')}></input>
+                                            <label>Descripcion:</label><br></br>
+                                            <input type="textarea" value={eventosEditados[p._id]?.descripcionEvento ??  p.descripcionEvento} onChange={(e) => handleChangeEvento(e, p._id, 'descripcionEvento')}></input>
+                                        </div>
+                                       <div>
+                                            <label>Aviso importante:</label><br></br>
+                                            <input type="textarea" value={eventosEditados[p._id]?.aviso ??  p.aviso} onChange={(e) => handleChangeEvento(e, p._id, 'aviso')}></input>
                                         </div>
                                         <div>
-                                            <label>Edad minima</label><br></br>
+                                            <label>Edad minima:</label><br></br>
                                             <input type="number" value={eventosEditados[p._id]?.eventoEdad ??  p.eventoEdad} onChange={(e) => handleChangeEvento(e, p._id, 'eventoEdad')}></input>
                                         </div>
                                         {/*<div>
@@ -299,7 +313,7 @@ const EditProd = () => {
                                             <input type="text"  placeholder="..." value={eventosEditados[p._id]?.artistas ??  p.artistas} onChange={(e) => handleChangeEvento(e, p._id, 'artistas')} name="artistas"></input>
                                         </div>
                                         <div>
-                                            <label>Monto de ventas estimado</label><br></br>
+                                            <label>Monto de ventas estimado:</label><br></br>
                                             <input type="number" placeholder="0" value={eventosEditados[p._id]?.montoVentas ??  p.montoVentas} onChange={(e) => handleChangeEvento(e, p._id, 'montoVentas')} name="montoVentas"></input>
                                         </div>
                                     </div>
@@ -426,10 +440,10 @@ const EditProd = () => {
                                 <button className="w-[180px]  bg-orange-500! primary-p rounded-xl p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar ticket'}</button>
                             </div>
                                {message == 2 && 
-                                    <div className="flex items-center">
-                                        <img className="mt-3" src={addedTicket} alt=""></img>
-                                        <p className="ml-2 mt-3 text-lg text-orange-500!">Se agrego el nuevo ticket!</p>
-                                    </div>
+                                <div className="flex items-center">
+                                    <img className="mt-3" src={addedTicket} alt=""></img>
+                                    <p className="ml-2 mt-3 text-lg text-orange-500!">Se agrego el nuevo ticket!</p>
+                                </div>
                                } 
                         </form>
                     </> }
@@ -526,15 +540,15 @@ const EditProd = () => {
                                             }))
                                             }></input>
                                             </div>
-                                                        <div className="mt-3 mb-3">
-                                                            <label>Estado:</label><br></br>
-                                                            <select className="rounded-lg" name="estado" ref={estadoRef}>
-                                                                <option value={tick.estado}>{tick.estado === 1 && 'Visible' || tick.estado === 2 && 'No visible' || tick.estado === 3 && 'cortesia'}</option>
-                                                                <option value={1}>Activo</option>
-                                                                <option value={2}>No visible</option>
-                                                                <option value={3}>Cortesia</option>
-                                                            </select>
-                                                        </div>
+                                            <div className="mt-3 mb-3">
+                                                <label>Estado:</label><br></br>
+                                                <select className="rounded-lg" name="estado" ref={estadoRef}>
+                                                    <option value={tick.estado}>{tick.estado === 1 && 'Visible' || tick.estado === 2 && 'No visible' || tick.estado === 3 && 'cortesia'}</option>
+                                                    <option value={1}>Activo</option>
+                                                    <option value={2}>No visible</option>
+                                                    <option value={3}>Cortesia</option>
+                                                </select>
+                                            </div>
                                             <div className="mt-3">
                                                 <div className="items-center text-center">
                                                     <label>Fecha de cierre: </label>
@@ -587,12 +601,33 @@ const EditProd = () => {
                              {message == 1 && <p className="text-lg ml-3 text-[#111827]">Se añadio el colaborador al evento!</p>}
                         </form>
                         <div className="edit-prod-bottom-buttons flex items-center">
-                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Enviar Invitaciónes</p></Link>
-                            <Link className=" flex items-center ml-6 p-2 primary-button rounded-lg" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-3">Crear lista de invitaciónes</p></Link>
-                            <Link className=" flex items-center ml-6 p-2 bg-black rounded-lg" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-3">Volver</p></Link>
+                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white!" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Enviar Invitaciónes</p></Link>
+                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white!" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Crear lista de invitaciónes</p></Link>
+                            <button className="flex items-center ml-6 p-2 bg-[#EC4899] rounded-lg text-white!" onClick={() => setCancelAlert(true)}><img src={cancelPng} alt="" loading="lazy"></img><p className="ml-2">Cancelar evento</p></button>
+                            <Link className="flex items-center ml-6 p-2 bg-black rounded-lg text-white!" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-2">Volver</p></Link>
                         </div>
                     </div>
                 </div>
+                {cancelAlert && <>
+                    <div className="fixed z-[3] bg-black h-screen  top-[0%] w-screen opacity-[0.5]"></div>
+                    <div className="cancel-alert fixed z-[4] top-[50%] w-[450px] text-center bg-white">
+                            <div className="flex items-center justify-center bg-orange-500 p-2">
+                                <img className="megaphone" src={megaphoneBPng} alt=""></img>
+                                <h2 className="text-3xl text-white! ml-2">Aviso!</h2>
+                            </div>
+                            <div className="p-4">
+                                <p className="text-md text-[#111827]">¿Estas seguro de cancelar el evento? Si eliminas el evento se reembolsaran el dinero de los tickets comprados y se eliminara el evento.</p>
+                            </div>
+                            <div className="flex justify-center mt-1 mb-8">
+                                <img src={cancelEventPng} alt=""></img>
+                                <img className="ml-5" src={eraserPng} alt=""></img>
+                            </div>
+                            <div className="flex items-center justify-around pb-2">
+                                <button className="w-[100px] rounded-lg text-[#111827] p-2 bg-[#EC4899]" onClick={() => setCancelAlert(false)}>Atras</button>
+                                <button className="w-[100px] rounded-lg text-[#111827] p-2 bg-red-400" onClick={() => cancelarEvento(prod[0]._id)}>Eliminar</button>
+                            </div>
+                    </div>
+                </> }
         </>
     )
 }

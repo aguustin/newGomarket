@@ -201,9 +201,9 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
 
 
 export const updateEventController = async (req, res) => {  //ACTUALIZA LA INFO DEL EVENTO
-    const { eventId, nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento} = req.body;
+    const { eventId, nombreEvento, descripcionEvento, aviso, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento} = req.body;
     // Construir los campos que siempre se actualizan
-    const updateFields = { nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento};
+    const updateFields = { nombreEvento, descripcionEvento, aviso, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento};
     
     if (req.file) {      //SE ACTUALIZAN LOS DATOS CON UNA IMAGEN NUEVA
     cloudinary.uploader.upload_stream(
@@ -250,9 +250,8 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
     visibilidad,
     estado
   } = req.body;
-  console.log(req.body)
+  
 let estadoInt = Number(estado)     
-const parseId = new mongoose.Types.ObjectId(ticketId);
 
 // Construye campos comunes para actualización
 const buildUpdateFields = (imgUrl = null) => {
@@ -296,32 +295,32 @@ const updateTicket = async (imgUrl = null) => {
   return updateResult;
 };
 
-// Si hay imagen, sube a Cloudinary
-if (req.file) {
-  cloudinary.uploader.upload_stream(
-    { resource_type: 'auto', folder: 'GoTicketsT' },
-    async (error, result) => {
-      if (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Error uploading to Cloudinary' });
-      }
+  // Si hay imagen, sube a Cloudinary
+  if (req.file) {
+    cloudinary.uploader.upload_stream(
+      { resource_type: 'auto', folder: 'GoTicketsT' },
+      async (error, result) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ error: 'Error uploading to Cloudinary' });
+        }
 
-      const updateResult = await updateTicket(result.secure_url);
-      return res.status(200).json({
-        url: result.secure_url,
-        updated: updateResult.modifiedCount > 0,
-        state: 1
-      });
-    }
-  ).end(req.file.buffer);
-} else {
-  // Sin imagen
-  const updateResult = await updateTicket();
-  return res.status(200).json({
-    updated: updateResult.modifiedCount > 0,
-    estado: 1
-  });
-}
+        const updateResult = await updateTicket(result.secure_url);
+        return res.status(200).json({
+          url: result.secure_url,
+          updated: updateResult.modifiedCount > 0,
+          state: 1
+        });
+      }
+    ).end(req.file.buffer);
+  } else {
+    // Sin imagen
+    const updateResult = await updateTicket();
+    return res.status(200).json({
+      updated: updateResult.modifiedCount > 0,
+      estado: 1
+    });
+  }
 }
 
 export const getEventToBuyController = async (req, res) => {
