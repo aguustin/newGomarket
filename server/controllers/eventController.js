@@ -537,13 +537,25 @@ export const handleSuccessfulPayment = async (data) => {
     }
 
     // Ejecutamos las tareas y capturamos errores individuales para no abortar todo
-    await Promise.all(
+     console.log('🔹 Inicio generación de QR');
+  await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
+  console.log('🔹 QR generado, inicio procesarVentaGeneral');
+  
+  await procesarVentaGeneral(event, quantities, total);
+  console.log('🔹 Venta general procesada');
+
+  if (rrppMatch && decryptedMail) {
+    console.log('🔹 Inicio procesarVentaRRPP');
+    await procesarVentaRRPP(event, quantities, decryptedMail);
+    console.log('🔹 Venta RRPP procesada');
+  }
+   /* await Promise.all(
       tasks.map(task =>
         task.catch(err => {
           console.error('❌ Error en task async:', err);
         })
       )
-    );
+    );*/
 
   } catch (error) {
     console.error('❌ Error general en handleSuccessfulPayment:', error);
