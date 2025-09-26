@@ -11,10 +11,9 @@ import { v4 as uuidv4 } from 'uuid'
 import userModel from "../models/userModel.js";
 import crypto from "crypto"
 import tokenModel from "../models/tokenModel.js";
-import transactionModel from "../models/transactionsModel.js";
 import { formatDateB } from "../lib/dates.js";
+import transactionModel from "../models/transactionsModel.js";
 import ExcelJS from 'exceljs';
-import axios from "axios";
 
 dotenv.config();
 
@@ -28,7 +27,7 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, aviso, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
+    const {userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
     const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
 
     const parsedCategorias = JSON.parse(categoriasEventos)
@@ -46,7 +45,6 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     eventoEdad: eventoEdadPush,
                     nombreEvento: nombreEvento,
                     descripcionEvento: descripcionEvento,
-                    aviso: aviso,
                     categoriasEventos: parsedCategorias,
                     artistas: artistas,
                     montoVentas: montoVentas,
@@ -84,7 +82,6 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 eventoEdad: eventoEdad,
                 nombreEvento: nombreEvento,
                 descripcionEvento: descripcionEvento,
-                aviso: aviso,
                 categoriasEventos: parsedCategorias,
                 artistas: artistas,
                 montoVentas: montoVentas,
@@ -201,9 +198,9 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
 
 
 export const updateEventController = async (req, res) => {  //ACTUALIZA LA INFO DEL EVENTO
-    const { eventId, nombreEvento, descripcionEvento, aviso, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento} = req.body;
+    const { eventId, nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento} = req.body;
     // Construir los campos que siempre se actualizan
-    const updateFields = { nombreEvento, descripcionEvento, aviso, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento};
+    const updateFields = { nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento};
     
     if (req.file) {      //SE ACTUALIZAN LOS DATOS CON UNA IMAGEN NUEVA
     cloudinary.uploader.upload_stream(
@@ -250,8 +247,9 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
     visibilidad,
     estado
   } = req.body;
-  
+  console.log(req.body)
 let estadoInt = Number(estado)     
+const parseId = new mongoose.Types.ObjectId(ticketId);
 
 // Construye campos comunes para actualización
 const buildUpdateFields = (imgUrl = null) => {
@@ -295,32 +293,32 @@ const updateTicket = async (imgUrl = null) => {
   return updateResult;
 };
 
-  // Si hay imagen, sube a Cloudinary
-  if (req.file) {
-    cloudinary.uploader.upload_stream(
-      { resource_type: 'auto', folder: 'GoTicketsT' },
-      async (error, result) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).json({ error: 'Error uploading to Cloudinary' });
-        }
-
-        const updateResult = await updateTicket(result.secure_url);
-        return res.status(200).json({
-          url: result.secure_url,
-          updated: updateResult.modifiedCount > 0,
-          state: 1
-        });
+// Si hay imagen, sube a Cloudinary
+if (req.file) {
+  cloudinary.uploader.upload_stream(
+    { resource_type: 'auto', folder: 'GoTicketsT' },
+    async (error, result) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error uploading to Cloudinary' });
       }
-    ).end(req.file.buffer);
-  } else {
-    // Sin imagen
-    const updateResult = await updateTicket();
-    return res.status(200).json({
-      updated: updateResult.modifiedCount > 0,
-      estado: 1
-    });
-  }
+
+      const updateResult = await updateTicket(result.secure_url);
+      return res.status(200).json({
+        url: result.secure_url,
+        updated: updateResult.modifiedCount > 0,
+        state: 1
+      });
+    }
+  ).end(req.file.buffer);
+} else {
+  // Sin imagen
+  const updateResult = await updateTicket();
+  return res.status(200).json({
+    updated: updateResult.modifiedCount > 0,
+    estado: 1
+  });
+}
 }
 
 export const getEventToBuyController = async (req, res) => {
@@ -481,7 +479,7 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
 
   if (result.modifiedCount === 0) {
     // Ya se había procesado este paymentId => no seguimos
-    console.log(`Pago duplicado omitido: ${paymentId}`);
+    console.log(`🟡 Pago duplicado omitido: ${paymentId}`);
     return false;
   }
 
@@ -1298,45 +1296,4 @@ export const descargarCompradoresController = async (req, res) => {
     
   await workbook.xlsx.write(res);
   res.end()
-}
-
-
-export const cancelarEventoController = async (req, res) => {
-  const {prodId} = req.body;
-
-try{
-
-const getPaymentsIds = await transactionModel.findOne({prodiId: prodId})
-
- const refundPromises = getPaymentsIds.compradores.map((pays) => {
-    axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
-      {"amount": pays.montoPagado},
-      {
-        headers:{
-          Authorization:`Bearer ${process.env.MP_ACCES_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-  }
-  )
-  
-  const results = await Promise.allSettled(refundPromises);
-
-  results.forEach((r, i) => {
-    getPaymentsIds.compradores[i].reembolsado = r.status === 'fulfilled';
-  });
-
-  await getPaymentsIds.save();
-
-  // Ver resultados
-  const fallidos = results.filter(r => r.status === 'rejected');
-  if (fallidos.length > 0) {
-    console.warn('Algunos reembolsos fallaron:', fallidos);
-  }
- // await transactionModel.deleteOne({prodId: prodId})
-  return res.status(200).json({ message: 'Reembolsos procesados', fallidos: fallidos.length });
-}catch(err){
-    return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
-}
 }
