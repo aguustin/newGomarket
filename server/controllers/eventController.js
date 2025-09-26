@@ -781,15 +781,17 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
     const {prodId, rrppMail, nombreEvento, eventImg} = req.body
     const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
     if(rrppExist){
-      const transporter = nodemailer.createTransport({
-      service: 'gmail', 
-        auth: {
-          user: user_mail,
-          pass: 'gewu tykr kdjl btfz' //aca iba "pass"
-        }
-      });
+     const transporter = nodemailer.createTransport({
+  host: 'smtp.resend.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: 'resend', // Fijo, no se cambia
+    pass: process.env.RESEND_API_KEY,
+  },
+});
       await transporter.sendMail({
-        from: '"GoTickets" <no-reply@gotickets.com>',
+        from: '"GoTickets" <no-reply@resend.dev>',
         to: rrppMail,
         subject: `Ya eres colaborador en: ${nombreEvento}`,
         html: `
@@ -831,15 +833,17 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
         }
       )
 
-   const transporter = nodemailer.createTransport({
-    service: 'gmail', 
-      auth: {
-        user: user_mail,
-        pass: 'gewu tykr kdjl btfz'
-      }
-    });
+  const transporter = nodemailer.createTransport({
+  host: 'smtp.resend.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: 'resend', // Fijo, no se cambia
+    pass: process.env.RESEND_API_KEY,
+  },
+});
     await transporter.sendMail({
-    from: '"GoTickets" <no-reply@gotickets.com>',
+    from: '"GoTickets" <no-reply@resend.dev>',
     to: rrppMail,
     subject: `Ya eres colaborador en: ${nombreEvento}`,
     html: `
@@ -974,7 +978,7 @@ export const sendQrStaffQrController = async (req, res) => {
 
   try {
     const info = await transporter.sendMail({
-      from: '"GoTickets" <no-reply@gotickets.com>',
+      from: '"GoTickets" <no-reply@resend.dev>',
       to: mail,
       subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
       html: `
@@ -1048,13 +1052,15 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: user_mail,
-      pass: 'gewu tykr kdjl btfz',
-    },
-  });
+const transporter = nodemailer.createTransport({
+  host: 'smtp.resend.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: 'resend', // Fijo, no se cambia
+    pass: process.env.RESEND_API_KEY,
+  },
+});
 
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
@@ -1113,7 +1119,7 @@ const sendQrEmail = async (
     }));
 
     const info = await transporter.sendMail({
-      from: '"GoTickets" <no-reply@gotickets.com>',
+      from: '"GoTickets" <no-reply@resend.dev>',
       to: email,
       subject: `Tus entradas para ${nombreEvento}`,
       html,
