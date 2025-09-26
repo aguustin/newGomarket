@@ -54,7 +54,6 @@ const BuyTicket = () => {
                 };
             }
 
-            console.warn(`No se pueden seleccionar más de ${maxLimit} entradas para este ticket.`);
             return prev;
         });
 
@@ -70,12 +69,15 @@ const BuyTicket = () => {
         const mail = e.target.elements.mail.value;
         const nombreCompleto = e.target.elements.nombreCompleto.value
         const dni = e.target.elements.dni.value
-        
-        if(total <= 0 || mail.length <= 0 || nombreCompleto.length <= 0 || dni.length <= 0){
+
+        const hasTickets = Object.values(quantities).some(value => value >= 0);
+        if (!hasTickets) {
             setShowMsg(true)
-        }else{
-            setLoading(true)
-        } 
+            return; // Detiene la ejecución si todos son <= 0
+        }
+        if(mail.length <= 0 || nombreCompleto.length <= 0 || dni.length <= 0){
+            setShowMsg(true)
+        }
         
         try {
             const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);

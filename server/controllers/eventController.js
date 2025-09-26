@@ -553,7 +553,7 @@ export const buyEventTicketsController = async (req, res) => {
           {
             title: `Ticket para ${nombreEvento}`,
             quantity: 1,
-            unit_price: total, // aca va "total"
+            unit_price: 1, // aca va "total"
             currency_id: 'ARS',
           },
         ],
@@ -740,7 +740,7 @@ for (const ticket of filteredTickets) {
     ticketDataArray.push({
       qrBuffer,
       nombreTicket: ticket.nombreTicket,
-      ticketPrecio: ticket.precio,
+      precio: ticket.precio,
       ticketFechaCierre: ticketDate,
       tipo: ticket.tipo
     });
@@ -763,7 +763,7 @@ console.log("QRs generados y enviados.");
 
   return true
 } catch (err) {
-  console.error("❌ Error generando QRs:", err);
+  console.error("Error generando QRs:", err);
   return false
 }
 };
@@ -776,7 +776,7 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
       service: 'gmail', 
         auth: {
           user: user_mail,
-          pass: pass
+          pass: 'gewu tykr kdjl btfz' //aca iba "pass"
         }
       });
       await transporter.sendMail({
@@ -826,7 +826,7 @@ export const addRRPPController = async (req, res) => { //añadiendo rrpp en el e
     service: 'gmail', 
       auth: {
         user: user_mail,
-        pass: pass
+        pass: 'gewu tykr kdjl btfz'
       }
     });
     await transporter.sendMail({
@@ -959,7 +959,7 @@ export const sendQrStaffQrController = async (req, res) => {
     service: 'gmail',
     auth: {
       user: user_mail,
-      pass: pass
+      pass: 'gewu tykr kdjl btfz'
     }
   });
 
@@ -1043,7 +1043,7 @@ const sendQrEmail = async (
     service: 'gmail',
     auth: {
       user: user_mail,
-      pass: pass,
+      pass: 'gewu tykr kdjl btfz',
     },
   });
 
@@ -1057,7 +1057,7 @@ const sendQrEmail = async (
           <img src="cid:${qrCid}" alt="QR para ${ticket.nombreTicket}" style="width:230px; height:230px;"/>
           <div>
             <h2 style="font-size:20px">${nombreEvento}</h2>
-            <p style="font-size:18px">${ticket.nombreTicket} - $ ${ticket.ticketPrecio}</p>
+            <p style="font-size:18px">${ticket.nombreTicket} - $ ${ticket.precio}</p>
             <p style="font-size:18px">Fecha del evento: ${eventoFechaInicio}</p>
             <p style="font-size:18px">Entrada válida hasta: ${ticket.ticketFechaCierre}</p>
             <p style="font-size:18px">${direccionEvento}</p>
