@@ -70,7 +70,7 @@ const BuyTicket = () => {
         const nombreCompleto = e.target.elements.nombreCompleto.value
         const dni = e.target.elements.dni.value
 
-        const hasTickets = Object.values(quantities).some(value => value >= 0);
+        const hasTickets = Object.values(quantities).some(value => value <= 0);
         if (!hasTickets) {
             setShowMsg(true)
             return; // Detiene la ejecución si todos son <= 0
@@ -81,7 +81,7 @@ const BuyTicket = () => {
         
         try {
             const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);
-
+            
             if (!data?.init_point) {
                 console.error("init_point no recibido");
                 return;
