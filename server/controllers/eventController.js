@@ -11,15 +11,18 @@ import { v4 as uuidv4 } from 'uuid'
 import userModel from "../models/userModel.js";
 import crypto from "crypto"
 import tokenModel from "../models/tokenModel.js";
-import { formatDateB } from "../lib/dates.js";
 import transactionModel from "../models/transactionsModel.js";
+import { formatDateB } from "../lib/dates.js";
 import ExcelJS from 'exceljs';
+import axios from "axios";
+import { Resend } from 'resend';
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 const SECRET_MAIL_KEY = process.env.SECRET_MAIL_KEY || 'mjac32nk12n3123ja7das2'
 const IV_LENGTH = 16
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
     const getEvents = await ticketModel.find({})
@@ -27,7 +30,7 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 }
 
 export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
+    const {userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, aviso, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
     const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
 
     const parsedCategorias = JSON.parse(categoriasEventos)
@@ -45,6 +48,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                     eventoEdad: eventoEdadPush,
                     nombreEvento: nombreEvento,
                     descripcionEvento: descripcionEvento,
+                    aviso: aviso,
                     categoriasEventos: parsedCategorias,
                     artistas: artistas,
                     montoVentas: montoVentas,
@@ -82,6 +86,7 @@ export const createEventController = async (req, res) => {  //CREATE EVENTO
                 eventoEdad: eventoEdad,
                 nombreEvento: nombreEvento,
                 descripcionEvento: descripcionEvento,
+                aviso: aviso,
                 categoriasEventos: parsedCategorias,
                 artistas: artistas,
                 montoVentas: montoVentas,
@@ -198,9 +203,9 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
 
 
 export const updateEventController = async (req, res) => {  //ACTUALIZA LA INFO DEL EVENTO
-    const { eventId, nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento} = req.body;
+    const { eventId, nombreEvento, descripcionEvento, aviso, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento} = req.body;
     // Construir los campos que siempre se actualizan
-    const updateFields = { nombreEvento, descripcionEvento, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento};
+    const updateFields = { nombreEvento, descripcionEvento, aviso, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento};
     
     if (req.file) {      //SE ACTUALIZAN LOS DATOS CON UNA IMAGEN NUEVA
     cloudinary.uploader.upload_stream(
@@ -247,9 +252,8 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
     visibilidad,
     estado
   } = req.body;
-  console.log(req.body)
+  
 let estadoInt = Number(estado)     
-const parseId = new mongoose.Types.ObjectId(ticketId);
 
 // Construye campos comunes para actualización
 const buildUpdateFields = (imgUrl = null) => {
@@ -293,32 +297,32 @@ const updateTicket = async (imgUrl = null) => {
   return updateResult;
 };
 
-// Si hay imagen, sube a Cloudinary
-if (req.file) {
-  cloudinary.uploader.upload_stream(
-    { resource_type: 'auto', folder: 'GoTicketsT' },
-    async (error, result) => {
-      if (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Error uploading to Cloudinary' });
-      }
+  // Si hay imagen, sube a Cloudinary
+  if (req.file) {
+    cloudinary.uploader.upload_stream(
+      { resource_type: 'auto', folder: 'GoTicketsT' },
+      async (error, result) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ error: 'Error uploading to Cloudinary' });
+        }
 
-      const updateResult = await updateTicket(result.secure_url);
-      return res.status(200).json({
-        url: result.secure_url,
-        updated: updateResult.modifiedCount > 0,
-        state: 1
-      });
-    }
-  ).end(req.file.buffer);
-} else {
-  // Sin imagen
-  const updateResult = await updateTicket();
-  return res.status(200).json({
-    updated: updateResult.modifiedCount > 0,
-    estado: 1
-  });
-}
+        const updateResult = await updateTicket(result.secure_url);
+        return res.status(200).json({
+          url: result.secure_url,
+          updated: updateResult.modifiedCount > 0,
+          state: 1
+        });
+      }
+    ).end(req.file.buffer);
+  } else {
+    // Sin imagen
+    const updateResult = await updateTicket();
+    return res.status(200).json({
+      updated: updateResult.modifiedCount > 0,
+      estado: 1
+    });
+  }
 }
 
 export const getEventToBuyController = async (req, res) => {
@@ -479,7 +483,7 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
 
   if (result.modifiedCount === 0) {
     // Ya se había procesado este paymentId => no seguimos
-    console.log(`🟡 Pago duplicado omitido: ${paymentId}`);
+    console.log(`Pago duplicado omitido: ${paymentId}`);
     return false;
   }
 
@@ -604,62 +608,67 @@ export const mercadoPagoWebhookController = async (req, res) => {
       return res.sendStatus(400);
     }
 
-    // Obtener pago desde MercadoPago
-    const payment = await mercadopago.payment.findById(paymentId);
-    const status = payment.body?.status;
+    // ✅ Respondemos lo antes posible
+    res.sendStatus(200);
 
-    if (status !== 'approved') {
-      // No es pago aprobado, no hacemos nada
-      return res.sendStatus(200);
+    // 🔄 Todo lo que sigue se procesa en segundo plano
+    // ⚠️ Importante: los errores se capturan, ya que ya respondimos
+    try {
+      const payment = await mercadopago.payment.findById(paymentId);
+      const status = payment.body?.status;
+
+      if (status !== 'approved') return;
+
+      // Chequeo de idempotencia
+      const existing = await transactionModel.findOne({
+        'compradores.transaccionId': paymentId
+      });
+
+      if (existing) {
+        console.log(`Pago ${paymentId} ya procesado — omitido`);
+        return;
+      }
+
+      // Extraer metadata
+      const {
+        prod_id,
+        nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        email_hash,
+        nombre_completo,
+        dni
+      } = payment.body.metadata;
+
+      console.log("📦 Metadata del pago:", payment.body.metadata);
+
+      if (!quantities || !mail || !prod_id || !total) {
+        console.error("❌ Metadata incompleta:", payment.body.metadata);
+        return;
+      }
+
+      // ✅ Procesamos el pago exitoso
+      await handleSuccessfulPayment({
+        prodId: prod_id,
+        nombreEvento: nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        emailHash: email_hash,
+        nombreCompleto: nombre_completo,
+        dni,
+        paymentId
+      });
+
+    } catch (err) {
+      console.error("❌ Error procesando pago en background:", err);
     }
 
-    // CHEQUEO DE IDEMPOTENCIA — bloque crítico
-    const existing = await transactionModel.findOne({
-      'compradores.transaccionId': paymentId
-    });
-
-    if (existing) {
-      console.log(`Pago ${paymentId} ya procesado — omitido`);
-      return res.sendStatus(200);
-    }
-
-    // Extraer metadata
-    const {
-      prod_id,
-      nombre_evento,
-      quantities,
-      mail,
-      state,
-      total,
-      email_hash,
-      nombre_completo,
-      dni
-    } = payment.body.metadata;
-
-    console.log("metadata del pago:", payment.body.metadata);
-
-    if (!quantities || !mail || !prod_id || !total) {
-      console.error("Metadata incompleta:", payment.body.metadata);
-      return res.sendStatus(500);
-    }
-
-    // Llamar al handler que procesa todo
-    await handleSuccessfulPayment({
-      prodId: prod_id,
-      nombreEvento: nombre_evento,
-      quantities,
-      mail,
-      state,
-      total,
-      emailHash: email_hash,
-      nombreCompleto: nombre_completo,
-      dni,
-      paymentId
-    });
-
-    return res.sendStatus(200);
   } catch (error) {
-    console.error('Error en webhook:', error.message, error.stack);
+    console.error('❌ Error en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
@@ -766,98 +775,77 @@ console.log("QRs generados y enviados.");
 }
 };
 
-export const addRRPPController = async (req, res) => { //añadiendo rrpp en el evento si no existe y enviar mail al mail del rrpp con el link para que ingrese a generar su linkDePago
-    const {prodId, rrppMail, nombreEvento, eventImg} = req.body
-    const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
-    if(rrppExist){
-      const transporter = nodemailer.createTransport({
-      service: 'gmail', 
-        auth: {
-          user: user_mail,
-          pass: pass
-        }
-      });
-      await transporter.sendMail({
-        from: '"GoTickets" <no-reply@gotickets.com>',
+export const addRRPPController = async (req, res) => {
+  const { prodId, rrppMail, nombreEvento, eventImg } = req.body;
+
+  const rrppExist = await ticketModel.findOne({
+    _id: prodId,
+    'rrpp.mail': rrppMail,
+  });
+
+  const emailHTML = `
+    <html>
+      <head>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+        </style>
+      </head>
+      <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
+        <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
+          <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
+        </div>
+        <div style="text-align:center; padding:20px; background-color:#ffffff; color:#111827;">
+          <h3 style="font-size:30px;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+          <p style="font-size:18px; margin-top:20px;">
+            Ya puedes generar tu link de cobranza del evento. Ingresa a este link:<br>
+            <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}">
+              ${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}
+            </a>
+          </p>
+          <p style="font-size:18px">Evento: ${nombreEvento}</p>
+          <img src="${eventImg}" alt="${nombreEvento}" style="width:230px; height:230px; margin-top:20px;" />
+        </div>
+        <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
+          <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
+        </footer>
+      </body>
+    </html>
+  `;
+
+  const sendEmailToRRPP = async () => {
+    try {
+      const result = await resend.emails.send({
+        from: 'GoTickets <no-reply@tudominio.com>', // Usa tu dominio verificado
         to: rrppMail,
         subject: `Ya eres colaborador en: ${nombreEvento}`,
-        html: `
-          <html>
-            <head>
-              <style>
-                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-              </style>
-            </head>
-            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
-              <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
-                <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
-              </div>
-              <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
-                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-                  <p style="font-size:18px">Evento: ${nombreEvento} </p>
-                  <img src="${eventImg}"  alt="${nombreEvento}" style="width:230px; height:230px;"/>
-              </div>
-              <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
-                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
-              </footer>
-            </body>
-          </html>
-        `,
+        html: emailHTML,
       });
-      return res.status(200).json({msg:'El colaborador ya existe en este evento'})
-    }else{
-
-      await ticketModel.updateOne(
-        {_id: prodId, 'rrpp.mail': {$ne: rrppMail}},
-        {
-          $addToSet:{
-            rrpp:
-              {
-                mail: rrppMail
-              }
-          }
-        }
-      )
-
-   const transporter = nodemailer.createTransport({
-    service: 'gmail', 
-      auth: {
-        user: user_mail,
-        pass: pass
-      }
-    });
-    await transporter.sendMail({
-    from: '"GoTickets" <no-reply@gotickets.com>',
-    to: rrppMail,
-    subject: `Ya eres colaborador en: ${nombreEvento}`,
-    html: `
-          <html>
-            <head>
-              <style>
-                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-              </style>
-            </head>
-            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
-                <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
-                  <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
-                </div>
-                <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
-                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-                  <p style="font-size:18px">Evento:</p>
-                  <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
-                </div>
-                <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
-                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
-              </footer>
-            </body>
-          </html>
-        `,
-    });
-      return res.status(200).json({msg:1})
+      console.log('📧 Correo enviado vía Resend:', result.id);
+    } catch (error) {
+      console.error('❌ Error al enviar el correo con Resend:', error);
+      throw error;
     }
-}
+  };
+
+  if (rrppExist) {
+    await sendEmailToRRPP();
+    return res.status(200).json({ msg: 'El colaborador ya existe en este evento' });
+  } else {
+    await ticketModel.updateOne(
+      { _id: prodId, 'rrpp.mail': { $ne: rrppMail } },
+      {
+        $addToSet: {
+          rrpp: {
+            mail: rrppMail,
+          },
+        },
+      }
+    );
+
+    await sendEmailToRRPP();
+    return res.status(200).json({ msg: 1 });
+  }
+};
 
 export const sendQrStaffQrController = async (req, res) => {
   const { prodId, quantities, mail } = req.body;
@@ -953,56 +941,54 @@ export const sendQrStaffQrController = async (req, res) => {
   }
 
   // Enviar correo
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: user_mail,
-      pass: pass
-    }
+ try {
+  const html = `
+    <html>
+      <head>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+        </style>
+      </head>
+      <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
+        <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
+          <h1 style="font-size:30px; color:white;">Go Ticket</h1>
+        </div>
+        <div style="padding:20px; background-color:#ffffff; color:#111827;">
+          <h3>${mail}, ¡Ingresa al link que está debajo para crear tu link de pago!</h3>
+          ${findRrPp ? `
+            <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}">
+              ${process.env.URL_FRONT}/get_my_rrpp_events/${mail}
+            </a>
+            <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px; margin-top:20px;" />
+            <div>
+              <h2 style="font-size:30px;">${findRrPp.nombreEvento}</h2>
+              <p>Fecha del evento: ${findRrPp.fechaInicio}</p>
+              <p>Entrada válida hasta: ${findRrPp.fechaFin}</p>
+              <p>${findRrPp.direccion}</p>
+            </div>
+          ` : ''}
+        </div>
+        <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
+          <h2 style="font-size:27px; color:white;">Go Ticket</h2>
+        </footer>
+      </body>
+    </html>
+  `;
+
+  const result = await resend.emails.send({
+    from: 'GoTickets <no-reply@tudominio.com>', // Asegúrate de tener este dominio verificado en Resend
+    to: mail,
+    subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
+    html,
   });
 
-  try {
-    const info = await transporter.sendMail({
-      from: '"GoTickets" <no-reply@gotickets.com>',
-      to: mail,
-      subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
-      html: `
-        <html>
-          <head>
-            <style>
-              @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-            </style>
-          </head>
-          <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-            <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-              <h1 style="font-size:30px; color:white;">Go Ticket</h1>
-            </div>
-            <div style="padding:20px; background-color:#ffffff; color:#111827;">
-              <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
-              ${findRrPp ? `
-                <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}"></a>
-                <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px;"/>
-                <div>
-                  <h2 style="font-size:30px;">${findRrPp.nombreEvento}</h2>
-                  <p>Fecha del evento: ${findRrPp.fechaInicio}</p>
-                  <p>Entrada válida hasta: ${findRrPp.fechaFin}</p>
-                  <p>${findRrPp.direccion}</p>
-                </div>
-              ` : ''}
-            </div>
-            <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-              <h2 style="font-size:27px; color:white;">Go Ticket</h2>
-            </footer>
-          </body>
-        </html>
-      `
-    });
+  console.log('📧 Correo enviado vía Resend:', result.id);
 
-    return res.status(200).json({ state: 1 }); // Éxito
-  } catch (error) {
-    console.error("Error al enviar el correo:", error);
-    return res.status(500).json({ state: 0, error: "Error al enviar el correo" });
-  }
+  return res.status(200).json({ state: 1 });
+} catch (error) {
+  console.error("❌ Error al enviar el correo con Resend:", error);
+  return res.status(500).json({ state: 0, error: "Error al enviar el correo" });
+}
 };
 
 
@@ -1037,13 +1023,6 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: user_mail,
-      pass: pass,
-    },
-  });
 
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
@@ -1101,9 +1080,9 @@ const sendQrEmail = async (
       cid: `qrcodeimg${index}`,
     }));
 
-    const info = await transporter.sendMail({
-      from: '"GoTickets" <no-reply@gotickets.com>',
-      to: email,
+     const result = await resend.emails.send({
+      from: 'GoTickets <no-reply@gotiickets.com>', // Usa tu dominio verificado
+      to: [email],
       subject: `Tus entradas para ${nombreEvento}`,
       html,
       attachments,
@@ -1296,4 +1275,45 @@ export const descargarCompradoresController = async (req, res) => {
     
   await workbook.xlsx.write(res);
   res.end()
+}
+
+
+export const cancelarEventoController = async (req, res) => {
+  const {prodId} = req.body;
+
+try{
+
+const getPaymentsIds = await transactionModel.findOne({prodiId: prodId})
+
+ const refundPromises = getPaymentsIds.compradores.map((pays) => {
+    axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
+      {"amount": pays.montoPagado},
+      {
+        headers:{
+          Authorization:`Bearer ${process.env.MP_ACCES_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+  }
+  )
+  
+  const results = await Promise.allSettled(refundPromises);
+
+  results.forEach((r, i) => {
+    getPaymentsIds.compradores[i].reembolsado = r.status === 'fulfilled';
+  });
+
+  await getPaymentsIds.save();
+
+  // Ver resultados
+  const fallidos = results.filter(r => r.status === 'rejected');
+  if (fallidos.length > 0) {
+    console.warn('Algunos reembolsos fallaron:', fallidos);
+  }
+ // await transactionModel.deleteOne({prodId: prodId})
+  return res.status(200).json({ message: 'Reembolsos procesados', fallidos: fallidos.length });
+}catch(err){
+    return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
+}
 }
