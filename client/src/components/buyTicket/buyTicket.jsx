@@ -9,7 +9,7 @@ const BuyTicket = () => {
     const [prod, setProd] = useState([])
     const [quantities, setQuantities] = useState({});
     const [totalQuantity, setTotalQuantity] = useState(0)
-    const [showMsg, setShowMsg] = useState(false)
+    const [showMsg, setShowMsg] = useState(0)
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
@@ -70,21 +70,21 @@ const BuyTicket = () => {
         const nombreCompleto = e.target.elements.nombreCompleto.value
         const dni = e.target.elements.dni.value
 
-        const hasTickets = Object.values(quantities).some(value => value <= 0);
+        const hasTickets = Object.values(quantities).some(value => parseInt(value) > 0);
         console.log(hasTickets)
         if (!hasTickets) {
-            setShowMsg(true)
+            setShowMsg(1)
             return; // Detiene la ejecución si todos son <= 0
         }
         if(mail.length <= 0 || nombreCompleto.length <= 0 || dni.length <= 0){
-            setShowMsg(true)
+            setShowMsg(2)
         }
         
         try {
             const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);
             
             if (!data?.init_point) {
-                console.error("init_point no recibido");
+                console.log('entro aca en sin init_point')
                 return;
             }
             setLoading(false)
@@ -94,7 +94,6 @@ const BuyTicket = () => {
         }
     }
     
-
     return(
          
         <div className="buy-tickets-container relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
@@ -230,8 +229,9 @@ const BuyTicket = () => {
                 })}
                 </div>
                 <div className="relative h-[120px]">
-                    <p className="absolute top-[-50px] right-6 text-2xl primary-p">Total:${formatNumber(total)}</p>
-                    {showMsg && <p className="text-lg text-orange-500! mt-2">Debes llenar todos los campos</p>}
+                    <p className="absolute top-[-30px] right-6 text-2xl primary-p">Total:${formatNumber(total)}</p>
+                    {showMsg === 1 && <p className="text-lg text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
+                    {showMsg === 2 && <p className="text-lg text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                      <button className="primary-button w-[300px] mx-auto flex items-center justify-center bottom-3 mt-16 p-4 rounded-3xl cursor-pointer text-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>

@@ -736,7 +736,7 @@ for (const ticket of filteredTickets) {
     const qrImage = await QRCode.toDataURL(qrUrl);
     const qrBase64 = qrImage.split(',')[1];
     const qrBuffer = Buffer.from(qrBase64, 'base64');
-
+ 
     ticketDataArray.push({
       qrBuffer,
       nombreTicket: ticket.nombreTicket,
