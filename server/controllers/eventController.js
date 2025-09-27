@@ -600,27 +600,31 @@ export const mercadoPagoWebhookController = async (req, res) => {
     const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
 
+    console.log("🔔 Webhook recibido — paymentId:", paymentId, "topic:", topic);
+
+    // Procesar solo si es un pago
     if (!paymentId || topic !== 'payment') {
-      console.error("No payment ID or topic !== 'payment'");
-      return res.sendStatus(400);
+      console.warn("🟡 Webhook no válido o irrelevante:", req.query);
+      return res.sendStatus(200); // responder rápido para evitar reintentos
     }
 
     // Obtener pago desde MercadoPago
-    const payment = await mercadopago.payment.findById(paymentId);
-    const status = payment.body?.status;
+    const paymentResponse = await mercadopago.payment.findById(paymentId);
+    const payment = paymentResponse.body;
+    const status = payment?.status;
 
     if (status !== 'approved') {
-      // No es pago aprobado, no hacemos nada
+      console.log(`🟡 Pago ${paymentId} con estado no aprobado: ${status}`);
       return res.sendStatus(200);
     }
 
-    // CHEQUEO DE IDEMPOTENCIA — bloque crítico
+    // Chequeo de idempotencia
     const existing = await transactionModel.findOne({
       'compradores.transaccionId': paymentId
     });
 
     if (existing) {
-      console.log(`Pago ${paymentId} ya procesado — omitido`);
+      console.log(`🟡 Pago ${paymentId} ya fue procesado`);
       return res.sendStatus(200);
     }
 
@@ -635,16 +639,16 @@ export const mercadoPagoWebhookController = async (req, res) => {
       email_hash,
       nombre_completo,
       dni
-    } = payment.body.metadata;
-
-    console.log("metadata del pago:", payment.body.metadata);
+    } = payment.metadata;
 
     if (!quantities || !mail || !prod_id || !total) {
-      console.error("Metadata incompleta:", payment.body.metadata);
+      console.error("❌ Metadata incompleta:", payment.metadata);
       return res.sendStatus(500);
     }
 
-    // Llamar al handler que procesa todo
+    console.log("📦 Metadata recibida:", payment.metadata);
+
+    // Llamar al handler directamente (sin worker)
     await handleSuccessfulPayment({
       prodId: prod_id,
       nombreEvento: nombre_evento,
@@ -660,7 +664,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error('Error en webhook:', error.message, error.stack);
+    console.error('❌ Error en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
