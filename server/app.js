@@ -8,6 +8,7 @@ import cortesieRoutes from "./routes/cortesieRoutes.js"
 import cors from "cors"
 import dotenv from "dotenv"
 import './lib/cron.js'
+import responseTime from 'response-time'
 
 dotenv.config()
 const app = express()
@@ -16,6 +17,7 @@ connecDb()
 //setting
 
 //middleware
+app.use(responseTime())
 const corsOptions = {
   origin: "*", //https://goticket-wsy0.onrender.com",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",

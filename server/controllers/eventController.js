@@ -16,6 +16,7 @@ import { formatDateB } from "../lib/dates.js";
 import ExcelJS from 'exceljs';
 import axios from "axios";
 import { Resend } from 'resend';
+import { paymentQueue } from "../queues/paymentQueue.js";
 
 dotenv.config();
 
@@ -23,6 +24,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgn
 const SECRET_MAIL_KEY = process.env.SECRET_MAIL_KEY || 'mjac32nk12n3123ja7das2'
 const IV_LENGTH = 16
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+resend.domains.create({ name: 'notifications.goticket.com' });
 
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
     const getEvents = await ticketModel.find({})
@@ -504,41 +507,61 @@ export const handleSuccessfulPayment = async (data) => {
     paymentId
   } = data;
 
-  const event = await ticketModel.findOne({ _id: prodId }).lean();
+  const cacheKey = `payment_processed:${paymentId}`;
 
-  if (!event) {
-    console.error("❌ Evento no encontrado:", prodId);
-    return;
+  try {
+    // Revisar si ya se procesó el pago (cache Redis)
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      console.log(`Pago ${paymentId} ya procesado (cache).`);
+      return;
+    }
+
+    // Si no está en cache, validar en DB (tu función actual)
+    const event = await ticketModel.findOne({ _id: prodId }).lean();
+    if (!event) {
+      console.error("Evento no encontrado:", prodId);
+      return;
+    }
+
+    const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
+
+    // Guardamos la transacción (validación real en BD)
+    const guardado = await guardarTransaccionExitosa(
+      prodId,
+      nombreCompleto,
+      mail,
+      total,
+      paymentId
+    );
+
+    if (!guardado) {
+      console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
+      // Marcar en cache para acelerar futuros chequeos
+      await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas
+      return;
+    }
+
+    // Nuevo pago, generamos QRs y procesamos venta
+    const tasks = [
+      qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
+      procesarVentaGeneral(event, quantities, total)
+    ];
+
+    if (rrppMatch && decryptedMail) {
+      tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
+    }
+
+    await Promise.all(tasks);
+
+    // Marcar como procesado en cache
+    await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas
+
+    console.log(`Pago ${paymentId} procesado y cacheado.`);
+  } catch (error) {
+    console.error("Error en handleSuccessfulPayment:", error);
+    throw error;
   }
-
-  const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
-
-  // 👉 Guardamos la transacción
-  const guardado = await guardarTransaccionExitosa(
-    prodId,
-    nombreCompleto,
-    mail,
-    total,
-    paymentId
-  );
-
-  // 🛑 Si ya existía, salimos y NO se genera QR ni se hace nada más
-  if (!guardado) {
-    console.log(`🟡 Transacción ya procesada para paymentId: ${paymentId}`);
-    return;
-  }
-
-  // ✅ Solo si es nuevo pago, generamos QRs y procesamos venta
-  const tasks = [
-    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
-    procesarVentaGeneral(event, quantities, total)
-  ];
-
-  if (rrppMatch && decryptedMail) {
-    tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
-  }
-
-  await Promise.all(tasks);
 };
 
 export const buyEventTicketsController = async (req, res) => {
@@ -587,7 +610,8 @@ export const buyEventTicketsController = async (req, res) => {
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
-     // await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });
+     // await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });//esta va en "desarrollo - dev" y lo reemplazo con el paymentQueue para probar si funciona mas rapido
+      await paymentQueue.add('ejecutar-pago', {prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni})
       return res.status(200).json({
         init_point: response.body.init_point,
       });
@@ -650,7 +674,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       }
 
       // ✅ Procesamos el pago exitoso
-      await handleSuccessfulPayment({
+      /*await handleSuccessfulPayment({
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -661,7 +685,18 @@ export const mercadoPagoWebhookController = async (req, res) => {
         nombreCompleto: nombre_completo,
         dni,
         paymentId
-      });
+      });*/
+      await paymentQueue.add('ejecutar-pago', {
+        prodId: prod_id,
+        nombreEvento: nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        emailHash: email_hash,
+        nombreCompleto: nombre_completo,
+        dni,
+        paymentId})
 
     } catch (err) {
       console.error("❌ Error procesando pago en background:", err);
@@ -776,75 +811,96 @@ console.log("QRs generados y enviados.");
 };
 
 export const addRRPPController = async (req, res) => {
-  const { prodId, rrppMail, nombreEvento, eventImg } = req.body;
-
-  const rrppExist = await ticketModel.findOne({
-    _id: prodId,
-    'rrpp.mail': rrppMail,
-  });
-
-  const emailHTML = `
-    <html>
-      <head>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-        </style>
-      </head>
-      <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-        <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-          <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
-        </div>
-        <div style="text-align:center; padding:20px; background-color:#ffffff; color:#111827;">
-          <h3 style="font-size:30px;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-          <p style="font-size:18px; margin-top:20px;">
-            Ya puedes generar tu link de cobranza del evento. Ingresa a este link:<br>
-            <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}">
-              ${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}
-            </a>
-          </p>
-          <p style="font-size:18px">Evento: ${nombreEvento}</p>
-          <img src="${eventImg}" alt="${nombreEvento}" style="width:230px; height:230px; margin-top:20px;" />
-        </div>
-        <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-          <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
-        </footer>
-      </body>
-    </html>
-  `;
-
-  const sendEmailToRRPP = async () => {
-    try {
-      const result = await resend.emails.send({
-        from: 'GoTickets <no-reply@notifications.goticket.com>', // Usa tu dominio verificado
+ const {prodId, rrppMail, nombreEvento, eventImg} = req.body
+    const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
+    if(rrppExist){
+      const transporter = nodemailer.createTransport({
+      service: 'gmail', 
+        auth: {
+          user: user_mail,
+          pass: pass
+        }
+      });
+      await transporter.sendMail({
+        from: '"GoTickets" <no-reply@gotickets.com>',
         to: rrppMail,
         subject: `Ya eres colaborador en: ${nombreEvento}`,
-        html: emailHTML,
+        html: `
+          <html>
+            <head>
+              <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+              </style>
+            </head>
+            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
+              <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
+                <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
+              </div>
+              <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
+                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p style="font-size:18px">Evento: ${nombreEvento} </p>
+                  <img src="${eventImg}"  alt="${nombreEvento}" style="width:230px; height:230px;"/>
+              </div>
+              <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
+                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
+              </footer>
+            </body>
+          </html>
+        `,
       });
-      console.log('📧 Correo enviado vía Resend:', result.id);
-    } catch (error) {
-      console.error('❌ Error al enviar el correo con Resend:', error);
-      throw error;
-    }
-  };
+      return res.status(200).json({msg:'El colaborador ya existe en este evento'})
+    }else{
 
-  if (rrppExist) {
-    await sendEmailToRRPP();
-    return res.status(200).json({ msg: 'El colaborador ya existe en este evento' });
-  } else {
-    await ticketModel.updateOne(
-      { _id: prodId, 'rrpp.mail': { $ne: rrppMail } },
-      {
-        $addToSet: {
-          rrpp: {
-            mail: rrppMail,
-          },
-        },
+      await ticketModel.updateOne(
+        {_id: prodId, 'rrpp.mail': {$ne: rrppMail}},
+        {
+          $addToSet:{
+            rrpp:
+              {
+                mail: rrppMail
+              }
+          }
+        }
+      )
+
+   const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+      auth: {
+        user: user_mail,
+        pass: pass
       }
-    );
-
-    await sendEmailToRRPP();
-    return res.status(200).json({ msg: 1 });
-  }
+    });
+    await transporter.sendMail({
+    from: '"GoTickets" <no-reply@gotickets.com>',
+    to: rrppMail,
+    subject: `Ya eres colaborador en: ${nombreEvento}`,
+    html: `
+          <html>
+            <head>
+              <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+              </style>
+            </head>
+            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
+                <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
+                  <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
+                </div>
+                <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
+                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p style="font-size:18px">Evento:</p>
+                  <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
+                </div>
+                <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
+                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
+              </footer>
+            </body>
+          </html>
+        `,
+    });
+      return res.status(200).json({msg:1})
+    }
 };
 
 export const sendQrStaffQrController = async (req, res) => {
@@ -941,54 +997,56 @@ export const sendQrStaffQrController = async (req, res) => {
   }
 
   // Enviar correo
- try {
-  const html = `
-    <html>
-      <head>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-        </style>
-      </head>
-      <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-        <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-          <h1 style="font-size:30px; color:white;">Go Ticket</h1>
-        </div>
-        <div style="padding:20px; background-color:#ffffff; color:#111827;">
-          <h3>${mail}, ¡Ingresa al link que está debajo para crear tu link de pago!</h3>
-          ${findRrPp ? `
-            <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}">
-              ${process.env.URL_FRONT}/get_my_rrpp_events/${mail}
-            </a>
-            <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px; margin-top:20px;" />
-            <div>
-              <h2 style="font-size:30px;">${findRrPp.nombreEvento}</h2>
-              <p>Fecha del evento: ${findRrPp.fechaInicio}</p>
-              <p>Entrada válida hasta: ${findRrPp.fechaFin}</p>
-              <p>${findRrPp.direccion}</p>
-            </div>
-          ` : ''}
-        </div>
-        <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-          <h2 style="font-size:27px; color:white;">Go Ticket</h2>
-        </footer>
-      </body>
-    </html>
-  `;
-
-  const result = await resend.emails.send({
-    from: 'GoTickets <no-reply@notifications.goticket.com>', // Asegúrate de tener este dominio verificado en Resend
-    to: mail,
-    subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
-    html,
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: user_mail,
+      pass: pass
+    }
   });
 
-  console.log('📧 Correo enviado vía Resend:', result.id);
+  try {
+    const info = await transporter.sendMail({
+      from: '"GoTickets" <no-reply@gotickets.com>',
+      to: mail,
+      subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
+      html: `
+        <html>
+          <head>
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+            </style>
+          </head>
+          <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
+            <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
+              <h1 style="font-size:30px; color:white;">Go Ticket</h1>
+            </div>
+            <div style="padding:20px; background-color:#ffffff; color:#111827;">
+              <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
+              ${findRrPp ? `
+                <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}"></a>
+                <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px;"/>
+                <div>
+                  <h2 style="font-size:30px;">${findRrPp.nombreEvento}</h2>
+                  <p>Fecha del evento: ${findRrPp.fechaInicio}</p>
+                  <p>Entrada válida hasta: ${findRrPp.fechaFin}</p>
+                  <p>${findRrPp.direccion}</p>
+                </div>
+              ` : ''}
+            </div>
+            <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
+              <h2 style="font-size:27px; color:white;">Go Ticket</h2>
+            </footer>
+          </body>
+        </html>
+      `
+    });
 
-  return res.status(200).json({ state: 1 });
-} catch (error) {
-  console.error("❌ Error al enviar el correo con Resend:", error);
-  return res.status(500).json({ state: 0, error: "Error al enviar el correo" });
-}
+    return res.status(200).json({ state: 1 }); // Éxito
+  } catch (error) {
+    console.error("Error al enviar el correo:", error);
+    return res.status(500).json({ state: 0, error: "Error al enviar el correo" });
+  }
 };
 
 
@@ -1023,7 +1081,14 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-  console.log("mi email: ", email)
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: user_mail,
+      pass: pass,
+    },
+  });
+
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
       const qrCid = `qrcodeimg${index}`;
@@ -1080,15 +1145,15 @@ const sendQrEmail = async (
       cid: `qrcodeimg${index}`,
     }));
 
-     const result = await resend.emails.send({
-      from: 'GoTickets <no-reply@gotiickets.com>', // Usa tu dominio verificado
-      to: [email],
+    const info = await transporter.sendMail({
+      from: '"GoTickets" <no-reply@gotickets.com>',
+      to: email,
       subject: `Tus entradas para ${nombreEvento}`,
       html,
       attachments,
     });
 
-    console.log('📧 Correo enviado vía Resend:', result.id);
+    console.log('📧 Email enviado:', info.messageId);
   } catch (err) {
     console.error('❌ Error al enviar el email:', err);
     throw err;
