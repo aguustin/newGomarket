@@ -25,7 +25,7 @@ const SECRET_MAIL_KEY = process.env.SECRET_MAIL_KEY || 'mjac32nk12n3123ja7das2'
 const IV_LENGTH = 16
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-resend.domains.create({ name: 'notifications.goticket.com' });
+resend.domains.create({ name: 'goticketonline.com' });
 
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
     const getEvents = await ticketModel.find({})
@@ -814,16 +814,9 @@ export const addRRPPController = async (req, res) => {
  const {prodId, rrppMail, nombreEvento, eventImg} = req.body
     const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
     if(rrppExist){
-      const transporter = nodemailer.createTransport({
-      service: 'gmail', 
-        auth: {
-          user: user_mail,
-          pass: pass
-        }
-      });
-      await transporter.sendMail({
-        from: '"GoTickets" <no-reply@gotickets.com>',
-        to: rrppMail,
+      await resend.emails.send({
+        from: '"GoTickets" <no-reply@goticketonline.com>',
+        to: [rrppMail],
         subject: `Ya eres colaborador en: ${nombreEvento}`,
         html: `
           <html>
@@ -863,17 +856,9 @@ export const addRRPPController = async (req, res) => {
           }
         }
       )
-
-   const transporter = nodemailer.createTransport({
-    service: 'gmail', 
-      auth: {
-        user: user_mail,
-        pass: pass
-      }
-    });
-    await transporter.sendMail({
-    from: '"GoTickets" <no-reply@gotickets.com>',
-    to: rrppMail,
+    await resend.emails.send({
+    from: '"GoTickets" <no-reply@goticketonline.com>',
+    to: [rrppMail],
     subject: `Ya eres colaborador en: ${nombreEvento}`,
     html: `
           <html>
@@ -1006,9 +991,9 @@ export const sendQrStaffQrController = async (req, res) => {
   });
 
   try {
-    const info = await transporter.sendMail({
-      from: '"GoTickets" <no-reply@gotickets.com>',
-      to: mail,
+    const info = await resend.emails.send({
+      from: '"GoTickets" <no-reply@goticketonline.com>',
+      to: [mail],
       subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
       html: `
         <html>
@@ -1081,13 +1066,6 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: user_mail,
-      pass: pass,
-    },
-  });
 
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
@@ -1145,9 +1123,9 @@ const sendQrEmail = async (
       cid: `qrcodeimg${index}`,
     }));
 
-    const info = await transporter.sendMail({
-      from: '"GoTickets" <no-reply@gotickets.com>',
-      to: email,
+    const info = await resend.emails.send({
+      from: '"GoTickets" <no-reply@goticketonline.com>',
+      to: [email],
       subject: `Tus entradas para ${nombreEvento}`,
       html,
       attachments,

@@ -22,6 +22,7 @@ import Cortesies from './components/cortesies/cortesies'
 import NewCortesie from './components/newCortesie/newCortesie'
 import 'react-loading-skeleton/dist/skeleton.css';
 import LegalConditions from './components/conditions/legalConditions'
+import MyFavoritesEvents from './components/myFavoritesEvents/myFavoritesEvents'
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
             <Route path="/register" element={<Register/>}></Route>
             <Route path="/recover_password" element={<RecoverPass/>}></Route>
             <Route path="/home" element={<Home/>}></Route>
+            <Route path="/my_favorites_events" element={<MyFavoritesEvents/>}></Route>
             <Route path="/contact" element={<Contact/>}></Route>
             <Route path="/create_event" element={<CreateEventForm/>}></Route>
             <Route path="/profile" element={<Profile/>}></Route>
