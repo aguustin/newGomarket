@@ -15,17 +15,15 @@ import transactionModel from "../models/transactionsModel.js";
 import { formatDateB } from "../lib/dates.js";
 import ExcelJS from 'exceljs';
 import axios from "axios";
-import { Resend } from 'resend';
-import { paymentQueue } from "../queues/paymentQueue.js";
+import { paymentQueue, refundQueue } from "../queues/paymentQueue.js";
+import { redisClient } from "../lib/redisClient.js";
+import { resend } from "../lib/resendDomain.js";
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 const SECRET_MAIL_KEY = process.env.SECRET_MAIL_KEY || 'mjac32nk12n3123ja7das2'
 const IV_LENGTH = 16
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-resend.domains.create({ name: 'goticketonline.com' });
 
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
     const getEvents = await ticketModel.find({})
@@ -610,8 +608,20 @@ export const buyEventTicketsController = async (req, res) => {
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
-     // await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });//esta va en "desarrollo - dev" y lo reemplazo con el paymentQueue para probar si funciona mas rapido
-      await paymentQueue.add('ejecutar-pago', {prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni})
+      // await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });//esta va en "desarrollo - dev" y lo reemplazo con el paymentQueue para probar si funciona mas rapido
+      /*await paymentQueue.add('ejecutar-pago', 
+        {prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni},
+        {
+          attempts: 3, // Reintentar 3 veces si falla
+          backoff: {
+            type: 'exponential', // o 'fixed'
+            delay: 5000 // 5 segundos de espera antes de reintentar
+          },
+          removeOnComplete: true, // limpia el job si se completó
+          removeOnFail: false // puedes dejarlo en false para revisar errores
+        }
+      )*/
+      
       return res.status(200).json({
         init_point: response.body.init_point,
       });
@@ -632,11 +642,11 @@ export const mercadoPagoWebhookController = async (req, res) => {
       return res.sendStatus(400);
     }
 
-    // ✅ Respondemos lo antes posible
+    // Respondemos lo antes posible
     res.sendStatus(200);
 
-    // 🔄 Todo lo que sigue se procesa en segundo plano
-    // ⚠️ Importante: los errores se capturan, ya que ya respondimos
+    //Todo lo que sigue se procesa en segundo plano
+    //Importante: los errores se capturan, ya que ya respondimos
     try {
       const payment = await mercadopago.payment.findById(paymentId);
       const status = payment.body?.status;
@@ -686,17 +696,16 @@ export const mercadoPagoWebhookController = async (req, res) => {
         dni,
         paymentId
       });*/
-      await paymentQueue.add('ejecutar-pago', {
-        prodId: prod_id,
-        nombreEvento: nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash: email_hash,
-        nombreCompleto: nombre_completo,
-        dni,
-        paymentId})
+      await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
+        {
+          attempts: 3, // Reintentar 3 veces si falla
+          backoff: {
+            type: 'exponential', // o 'fixed'
+            delay: 5000 // 5 segundos de espera antes de reintentar
+          },
+          removeOnComplete: true, // limpia el job si se completó
+          removeOnFail: false // puedes dejarlo en false para revisar errores
+        })
 
     } catch (err) {
       console.error("❌ Error procesando pago en background:", err);
@@ -813,8 +822,9 @@ console.log("QRs generados y enviados.");
 export const addRRPPController = async (req, res) => {
  const {prodId, rrppMail, nombreEvento, eventImg} = req.body
     const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
+    console.log('Intentando enviar correo a 0');
     if(rrppExist){
-      await resend.emails.send({
+      const inf = await resend.emails.send({
         from: '"GoTickets" <no-reply@goticketonline.com>',
         to: [rrppMail],
         subject: `Ya eres colaborador en: ${nombreEvento}`,
@@ -842,6 +852,7 @@ export const addRRPPController = async (req, res) => {
           </html>
         `,
       });
+      console.log(inf)
       return res.status(200).json({msg:'El colaborador ya existe en este evento'})
     }else{
 
@@ -856,7 +867,8 @@ export const addRRPPController = async (req, res) => {
           }
         }
       )
-    await resend.emails.send({
+      console.log('Intentando enviar correo a 1');
+    const inf = await resend.emails.send({
     from: '"GoTickets" <no-reply@goticketonline.com>',
     to: [rrppMail],
     subject: `Ya eres colaborador en: ${nombreEvento}`,
@@ -884,6 +896,7 @@ export const addRRPPController = async (req, res) => {
           </html>
         `,
     });
+    console.log(inf)
       return res.status(200).json({msg:1})
     }
 };
@@ -982,16 +995,17 @@ export const sendQrStaffQrController = async (req, res) => {
   }
 
   // Enviar correo
-  const transporter = nodemailer.createTransport({
+  /*const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: user_mail,
       pass: pass
     }
-  });
+  });*/
 
   try {
-    const info = await resend.emails.send({
+    console.log('Intentando enviar correo a 2');
+    const inf = await resend.emails.send({
       from: '"GoTickets" <no-reply@goticketonline.com>',
       to: [mail],
       subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
@@ -1026,7 +1040,7 @@ export const sendQrStaffQrController = async (req, res) => {
         </html>
       `
     });
-
+    console.log(inf)
     return res.status(200).json({ state: 1 }); // Éxito
   } catch (error) {
     console.error("Error al enviar el correo:", error);
@@ -1122,7 +1136,7 @@ const sendQrEmail = async (
       content: ticket.qrBuffer,
       cid: `qrcodeimg${index}`,
     }));
-
+console.log('Intentando enviar correo a 3');
     const info = await resend.emails.send({
       from: '"GoTickets" <no-reply@goticketonline.com>',
       to: [email],
@@ -1320,20 +1334,17 @@ export const descargarCompradoresController = async (req, res) => {
   res.end()
 }
 
-
-export const cancelarEventoController = async (req, res) => {
-  const {prodId} = req.body;
-
+export const refundsFunc = async ({prodId}) => {
 try{
 
-const getPaymentsIds = await transactionModel.findOne({prodiId: prodId})
+const getPaymentsIds = await transactionModel.findOne({prodId})
 
  const refundPromises = getPaymentsIds.compradores.map((pays) => {
     axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
       {"amount": pays.montoPagado},
       {
         headers:{
-          Authorization:`Bearer ${process.env.MP_ACCES_TOKEN}`,
+          Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN}`,
           'Content-Type': 'application/json'
         }
       }
@@ -1355,8 +1366,29 @@ const getPaymentsIds = await transactionModel.findOne({prodiId: prodId})
     console.warn('Algunos reembolsos fallaron:', fallidos);
   }
  // await transactionModel.deleteOne({prodId: prodId})
-  return res.status(200).json({ message: 'Reembolsos procesados', fallidos: fallidos.length });
+  return 1;
 }catch(err){
-    return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
+  return 2;
 }
+}
+
+export const cancelarEventoController = async (req, res) => {
+  const {prodId} = req.body;
+  const result = await refundQueue.add('reembolsar-pago', 
+    {prodId},
+    {
+    attempts: 3, // Reintentar 3 veces si falla
+    backoff: {
+      type: 'exponential', // o 'fixed'
+      delay: 5000 // 5 segundos de espera antes de reintentar
+    },
+      removeOnComplete: true, // limpia el job si se completó
+      removeOnFail: false // puedes dejarlo en false para revisar errores
+    }
+  )
+
+  if(result === 1){
+    return res.status(200).json({ message: 'Reembolsos procesados', fallidos: fallidos.length });
+  }
+  return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
 }
