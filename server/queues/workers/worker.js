@@ -4,6 +4,7 @@ import { paymentQueue, refundQueue } from "../paymentQueue.js";
 import dotenv from 'dotenv';
 dotenv.config();
 await connecDb();
+
 paymentQueue.process('ejecutar-pago', async (job) => {
   console.log(`Procesando job ID: ${job.id}`);
   console.log('Payload recibido:', job.data);
