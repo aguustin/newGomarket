@@ -632,11 +632,11 @@ export const mercadoPagoWebhookController = async (req, res) => {
       return res.sendStatus(400);
     }
 
-    // ✅ Respondemos lo antes posible
+    //Respondemos lo antes posible
     res.sendStatus(200);
 
-    // 🔄 Todo lo que sigue se procesa en segundo plano
-    // ⚠️ Importante: los errores se capturan, ya que ya respondimos
+    //Todo lo que sigue se procesa en segundo plano
+    //Importante: los errores se capturan, ya que ya respondimos
     try {
       const payment = await mercadopago.payment.findById(paymentId);
       const status = payment.body?.status;
@@ -666,14 +666,14 @@ export const mercadoPagoWebhookController = async (req, res) => {
         dni
       } = payment.body.metadata;
 
-      console.log("📦 Metadata del pago:", payment.body.metadata);
+      console.log("Metadata del pago:", payment.body.metadata);
 
       if (!quantities || !mail || !prod_id || !total) {
-        console.error("❌ Metadata incompleta:", payment.body.metadata);
+        console.error("Metadata incompleta:", payment.body.metadata);
         return;
       }
 
-      // ✅ Procesamos el pago exitoso
+      // Procesamos el pago exitoso
       /*await handleSuccessfulPayment({
         prodId: prod_id,
         nombreEvento: nombre_evento,
@@ -699,11 +699,11 @@ export const mercadoPagoWebhookController = async (req, res) => {
         paymentId})
 
     } catch (err) {
-      console.error("❌ Error procesando pago en background:", err);
+      console.error("Error procesando pago en background:", err);
     }
 
   } catch (error) {
-    console.error('❌ Error en webhook:', error.message, error.stack);
+    console.error('Error en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
