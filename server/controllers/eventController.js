@@ -793,12 +793,11 @@ export const mercadoPagoWebhookController = async (req, res) => {
   try {
     const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
-
+    console.log(paymentId, ' ', topic)
     if (!paymentId || topic !== 'payment') {
       console.error("No payment ID or topic !== 'payment'");
       return res.sendStatus(400);
     }
-    res.sendStatus(200);
 
     //Todo lo que sigue se procesa en segundo plano
     //Importante: los errores se capturan, ya que ya respondimos
