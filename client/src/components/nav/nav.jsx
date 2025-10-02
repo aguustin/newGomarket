@@ -34,9 +34,9 @@ const Nav = () => {
     }
 
     const closeMenu = () => setShowMobileNav(false)
-
+console.log(width)
     return(
-        <nav className="nav relative w-screen flex fixed items-center top-0 p-6 h-[80px]">
+        <nav className="nav relative w-full flex fixed items-center top-0 p-6 h-[80px]">
            { width >= 950 ? 
             <>
                 <img className="w-[100px]" src={logoPruebaJpg} alt="" loading="lazy"></img>
