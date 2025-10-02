@@ -1268,7 +1268,7 @@ const sendQrEmail = async (
           <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
             <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
           </div>
-          <div style="background-color:#f7f7f7>
+          <div style="background-color:#f7f7f7">
             <div style="text-align:center; padding:40px; background-color:#ffffff; color:#111827;">
               <h3 style="font-size:20px; margin-top:30px; margin-bottom:20px;">${nombreCompleto}, aquí tienes tus tickets!</h3>
               <img src="${imagenEvento}" alt="Imagen del evento" style="width:100%; max-width:500px; margin-bottom:20px;" />

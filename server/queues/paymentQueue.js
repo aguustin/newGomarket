@@ -4,9 +4,9 @@ dotenv.config()
 
 const redisOptions = {
   redis: {
-    host: 'adapting-pipefish-16442.upstash.io',
+    host: process.env.REDIS_HOST,
     port: 6379,
-    password: 'AUA6AAIncDIwZTY1NDg1NTA3NGY0ZjZjOTRjMDAwMTFlYTA4YWY1OHAyMTY0NDI',
+    password: process.env.REDIS_PASSWORD,
     tls: {} // para que funcione con Upstash
   }
 };

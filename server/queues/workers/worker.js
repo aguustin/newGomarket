@@ -7,10 +7,10 @@ await connecDb();
 
 paymentQueue.process('ejecutar-pago', async (job) => {
   console.log(`Procesando job ID: ${job.id}`);
-  console.log('Payload recibido:', job);
+  console.log('Payload recibido:', job.data);
 
   try {
-    await handleSuccessfulPayment(job);
+    await handleSuccessfulPayment(job.data);
     console.log(`Job ${job.id} procesado con éxito.`);
   } catch (err) {
     console.error(`Job ${job.id} falló:`, err);
@@ -20,7 +20,7 @@ paymentQueue.process('ejecutar-pago', async (job) => {
 
 refundQueue.process('reembolsar-pago', async (job) => {
     try {
-      await refundsFunc(job)
+      await refundsFunc(job.data)
     } catch (error) {
       console.log('error en el worker de reembolso', error)
     }
