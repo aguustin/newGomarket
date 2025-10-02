@@ -676,10 +676,10 @@ export const mercadoPagoWebhookController = async (req, res) => {
         dni
       } = payment.body.metadata;
 
-      console.log("📦 Metadata del pago:", payment.body.metadata);
+      console.log("Metadata del pago:", payment.body.metadata);
 
       if (!quantities || !mail || !prod_id || !total) {
-        console.error("❌ Metadata incompleta:", payment.body.metadata);
+        console.error("Metadata incompleta:", payment.body.metadata);
         return;
       }
 
@@ -708,11 +708,11 @@ export const mercadoPagoWebhookController = async (req, res) => {
         })
 
     } catch (err) {
-      console.error("❌ Error procesando pago en background:", err);
+      console.error("Error procesando pago en background:", err);
     }
 
   } catch (error) {
-    console.error('❌ Error en webhook:', error.message, error.stack);
+    console.error('Error en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
