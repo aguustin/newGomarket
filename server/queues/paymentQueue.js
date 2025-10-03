@@ -11,6 +11,6 @@ const redisOptions = {
   }
 };
 
-export const paymentQueue = new Queue('procesar-pago', redisOptions)
+export const paymentQueue = new Queue('ejecutar-pago', redisOptions)
 
 export const refundQueue = new Queue('reembolsar-pago', redisOptions)
