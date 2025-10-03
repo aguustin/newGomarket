@@ -792,13 +792,13 @@ export const buyEventTicketsController = async (req, res) => {
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
     const topic = req.query.topic || req.query.type;
-    const id = req.query.id || req.query['data.id'];
+    const paymentId = req.query.id || req.query['data.id'];
 
-    if (!id || topic !== 'payment') {
+    /*if (!id || topic !== 'payment') {
       console.error("No payment ID or topic !== 'payment'");
       return res.sendStatus(400);
-    }
-    const payment = await mercadopago.payment.findById(id);
+    }*/
+    const payment = await mercadopago.payment.findById(paymentId);
     const status = payment.body?.status;
     
     if (status === 'approved') {
