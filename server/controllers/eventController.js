@@ -791,81 +791,64 @@ export const buyEventTicketsController = async (req, res) => {
 
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
-    let paymentId = req.query.id || req.query['data.id'];
+    const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
 
     console.log('Webhook recibido:', topic, paymentId);
 
-    if (!paymentId || topic !== 'merchant_order') {
-      // Respondemos OK para que no reintente pero sin procesar nada
+    // ✅ Solo procesamos pagos
+    if (!paymentId || topic !== 'payment') {
       return res.sendStatus(200);
     }
 
-    // Respondemos rápido antes de hacer llamadas externas (evita timeout)
-    res.sendStatus(200);
+    res.sendStatus(200); // Respondemos rápido
 
-    // Ahora hacemos el trabajo pesado *después* de responder
+    // Trabajo en segundo plano
     (async () => {
       try {
-        // Obtener la orden
-        const order = await mercadopago.merchant_orders.findById(paymentId);
-        const pagos = order.body.payments;
-
-        // Buscar pago aprobado
-        const pagoAprobado = pagos.find(p => p.status === 'approved');
-        if (!pagoAprobado) {
-          console.log(`Orden ${paymentId} no tiene pagos aprobados aún`);
-          return;
-        }
-
-        // Buscar el payment real
-        const realPaymentId = pagoAprobado.id;
-        const payment = await mercadopago.payment.findById(realPaymentId);
-
+        const payment = await mercadopago.payment.findById(paymentId);
         if (payment.body?.status !== 'approved') {
-          console.log(`Pago ${realPaymentId} no está aprobado`);
+          console.log(`Pago ${paymentId} no está aprobado`);
           return;
         }
 
-        // Chequeo de idempotencia
-        const existing = await transactionModel.findOne({
-          'compradores.transaccionId': realPaymentId
-        });
-        if (existing) {
-          console.log(`Pago ${realPaymentId} ya procesado — omitido`);
-          return;
-        }
-
-        // Extraer metadata y validar
         const {
-          prod_id,
-          nombre_evento,
+          prodId,
+          nombreEvento,
           quantities,
           mail,
           state,
           total,
-          email_hash,
-          nombre_completo,
+          emailHash,
+          nombreCompleto,
           dni
         } = payment.body.metadata || {};
 
-        if (!quantities || !mail || !prod_id || !total) {
+        if (!quantities || !mail || !prodId || !total) {
           console.error("Metadata incompleta:", payment.body.metadata);
           return;
         }
 
-        // Encolar procesamiento
+        const existing = await transactionModel.findOne({
+          'compradores.transaccionId': paymentId
+        });
+
+        if (existing) {
+          console.log(`Pago ${paymentId} ya procesado`);
+          return;
+        }
+
         await paymentQueue.add('ejecutar-pago', {
-          prodId: prod_id,
-          nombreEvento: nombre_evento,
+          prodId,
+          nombreEvento,
           quantities,
           mail,
           state,
           total,
-          emailHash: email_hash,
-          nombreCompleto: nombre_completo,
+          emailHash,
+          nombreCompleto,
           dni,
-          paymentId: realPaymentId
+          paymentId
         }, {
           attempts: 3,
           backoff: { type: 'exponential', delay: 5000 },
@@ -873,15 +856,15 @@ export const mercadoPagoWebhookController = async (req, res) => {
           removeOnFail: false
         });
 
-        console.log(`Pago ${realPaymentId} encolado para procesamiento`);
+        console.log(`Pago ${paymentId} encolado con éxito`);
 
       } catch (err) {
-        console.error("Error procesando pago en background:", err);
+        console.error('Error al procesar pago:', err);
       }
     })();
 
   } catch (error) {
-    console.error('Error general en webhook:', error.message, error.stack);
+    console.error('Error general en webhook:', error.message);
     return res.sendStatus(500);
   }
 };
@@ -1518,7 +1501,7 @@ const getPaymentsIds = await transactionModel.findOne({prodId})
       {"amount": pays.montoPagado},
       {
         headers:{
-          Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN}`,
+          Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN_DEV}`,
           'Content-Type': 'application/json'
         }
       }
