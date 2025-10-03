@@ -793,94 +793,99 @@ export const mercadoPagoWebhookController = async (req, res) => {
   try {
     let paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
-    
+
     console.log('Webhook recibido:', topic, paymentId);
 
     if (!paymentId || topic !== 'merchant_order') {
-      console.error("No payment ID o no es merchant_order");
+      // Respondemos OK para que no reintente pero sin procesar nada
       return res.sendStatus(200);
     }
 
-    try {
-      // 1. Buscar la orden
-      const order = await mercadopago.merchant_orders.findById(paymentId);
-      const pagos = order.body.payments;
+    // Respondemos rápido antes de hacer llamadas externas (evita timeout)
+    res.sendStatus(200);
 
-      // 2. Obtener pago aprobado
-      const pagoAprobado = pagos.find(p => p.status === 'approved');
-      if (!pagoAprobado) {
-        console.log(`Orden ${paymentId} no tiene pagos aprobados aún`);
-        return res.sendStatus(200);
+    // Ahora hacemos el trabajo pesado *después* de responder
+    (async () => {
+      try {
+        // Obtener la orden
+        const order = await mercadopago.merchant_orders.findById(paymentId);
+        const pagos = order.body.payments;
+
+        // Buscar pago aprobado
+        const pagoAprobado = pagos.find(p => p.status === 'approved');
+        if (!pagoAprobado) {
+          console.log(`Orden ${paymentId} no tiene pagos aprobados aún`);
+          return;
+        }
+
+        // Buscar el payment real
+        const realPaymentId = pagoAprobado.id;
+        const payment = await mercadopago.payment.findById(realPaymentId);
+
+        if (payment.body?.status !== 'approved') {
+          console.log(`Pago ${realPaymentId} no está aprobado`);
+          return;
+        }
+
+        // Chequeo de idempotencia
+        const existing = await transactionModel.findOne({
+          'compradores.transaccionId': realPaymentId
+        });
+        if (existing) {
+          console.log(`Pago ${realPaymentId} ya procesado — omitido`);
+          return;
+        }
+
+        // Extraer metadata y validar
+        const {
+          prod_id,
+          nombre_evento,
+          quantities,
+          mail,
+          state,
+          total,
+          email_hash,
+          nombre_completo,
+          dni
+        } = payment.body.metadata || {};
+
+        if (!quantities || !mail || !prod_id || !total) {
+          console.error("Metadata incompleta:", payment.body.metadata);
+          return;
+        }
+
+        // Encolar procesamiento
+        await paymentQueue.add('ejecutar-pago', {
+          prodId: prod_id,
+          nombreEvento: nombre_evento,
+          quantities,
+          mail,
+          state,
+          total,
+          emailHash: email_hash,
+          nombreCompleto: nombre_completo,
+          dni,
+          paymentId: realPaymentId
+        }, {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 5000 },
+          removeOnComplete: true,
+          removeOnFail: false
+        });
+
+        console.log(`Pago ${realPaymentId} encolado para procesamiento`);
+
+      } catch (err) {
+        console.error("Error procesando pago en background:", err);
       }
-
-      // 3. Buscar el payment real
-      const realPaymentId = pagoAprobado.id;
-      const payment = await mercadopago.payment.findById(realPaymentId);
-      const status = payment.body?.status;
-
-      if (status !== 'approved') return res.sendStatus(200);
-
-      // 4. Chequeo de idempotencia
-      const existing = await transactionModel.findOne({
-        'compradores.transaccionId': realPaymentId
-      });
-
-      if (existing) {
-        console.log(`Pago ${realPaymentId} ya procesado — omitido`);
-        return res.sendStatus(200);
-      }
-
-      // 5. Extraer metadata del payment
-      const {
-        prod_id,
-        nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        email_hash,
-        nombre_completo,
-        dni
-      } = payment.body.metadata;
-
-      if (!quantities || !mail || !prod_id || !total) {
-        console.error("Metadata incompleta:", payment.body.metadata);
-        return res.sendStatus(200);
-      }
-
-      // 6. Encolar procesamiento
-      await paymentQueue.add('ejecutar-pago', {
-        prodId: prod_id,
-        nombreEvento: nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash: email_hash,
-        nombreCompleto: nombre_completo,
-        dni,
-        paymentId: realPaymentId
-      }, {
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 5000
-        },
-        removeOnComplete: true,
-        removeOnFail: false
-      });
-
-    } catch (err) {
-      console.error("Error procesando pago en background:", err);
-    }
-
-    return res.sendStatus(200); // ✅ Siempre respondemos OK
+    })();
 
   } catch (error) {
     console.error('Error general en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
+
 
 
 
