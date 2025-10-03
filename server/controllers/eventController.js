@@ -791,52 +791,24 @@ export const buyEventTicketsController = async (req, res) => {
 
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
-    const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
+    const id = req.query.id || req.query['data.id'];
 
-    console.log('Webhook recibido:', topic, paymentId);
-
-    //Solo procesamos pagos
-    if (!paymentId || topic !== 'payment') {
-      return res.sendStatus(200);
+    if (!id || topic !== 'payment') {
+      console.error("No payment ID or topic !== 'payment'");
+      return res.sendStatus(400);
     }
-
-    // Trabajo en segundo plano
-    (async () => {
-      try {
-        const payment = await mercadopago.payment.findById(paymentId);
-        if (payment.body?.status !== 'approved') {
-          console.log(`Pago ${paymentId} no está aprobado`);
-          return;
-        }
-
-        const {
-          prodId,
-          nombreEvento,
-          quantities,
-          mail,
-          state,
-          total,
-          emailHash,
-          nombreCompleto,
-          dni
-        } = payment.body.metadata || {};
-
-        if (!quantities || !mail || !prodId || !total) {
-          console.error("Metadata incompleta:", payment.body.metadata);
-          return;
-        }
-
-        const existing = await transactionModel.findOne({
-          'compradores.transaccionId': paymentId
-        });
-
-        if (existing) {
-          console.log(`Pago ${paymentId} ya procesado`);
-          return;
-        }
-
-        await paymentQueue.add('ejecutar-pago', {
+    const payment = await mercadopago.payment.findById(id);
+    const status = payment.body?.status;
+    
+    if (status === 'approved') {
+      const { prod_id, nombre_evento, quantities, mail, state, total, email_hash, nombre_completo, dni } = payment.body.metadata;
+      
+      if (!quantities || !mail || !prod_id || !total) {
+        console.error("Metadata incompleta:", payment.body.metadata);
+        return res.sendStatus(500);
+      }
+      await paymentQueue.add('ejecutar-pago', {
           prodId,
           nombreEvento,
           quantities,
@@ -856,16 +828,16 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
         console.log(`Pago ${paymentId} encolado con éxito`);
 
-      } catch (err) {
-        console.error('Error al procesar pago:', err);
-      }
-    })();
-
+    }
+    return res.sendStatus(200);
   } catch (error) {
-    console.error('Error general en webhook:', error.message);
-    return res.sendStatus(500);
+    console.error('Error en webhook:', error.message);
+    return res.sendStatus(400);
   }
 };
+
+
+
 
 
 
