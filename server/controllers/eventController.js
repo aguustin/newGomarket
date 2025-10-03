@@ -719,7 +719,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 };
 
 export const buyEventTicketsController = async (req, res) => {
-  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
+ /* const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
   
   if(total <= 0){
     qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
@@ -779,14 +779,79 @@ export const buyEventTicketsController = async (req, res) => {
         }
       )*/
       
-      return res.status(200).json({
+      /*return res.status(200).json({
         init_point: response.body.init_point,
       });
     }
   } catch (error) {
     console.error('Error al crear preferencia:', error);
     res.status(500).json({ message: 'Error creando la preferencia' });
+  }*/
+
+  const {
+    prodId,
+    nombreEvento,
+    quantities,
+    mail,
+    state,
+    total,
+    emailHash,
+    nombreCompleto,
+    dni
+  } = req.body;
+
+  // ⚠️ Validación básica
+  if (!prodId || !nombreEvento || !quantities || !mail || !total || total <= 0) {
+    return res.status(400).json({ message: 'Datos inválidos para generar la preferencia.' });
   }
+
+  try {
+    const preference = {
+      items: [
+        {
+          title: `Ticket para ${nombreEvento}`,
+          quantity: 1,
+          unit_price: Number(total), // ⚠️ Asegurate de que sea un número
+          currency_id: 'ARS',
+        },
+      ],
+      payer: {
+        email: mail, // Solo es obligatorio el email en Checkout Pro
+      },
+      back_urls: {
+        success: `${process.env.URL_BACK}/payment-success`,
+        failure: `${process.env.URL_BACK}/payment-failure`,
+        pending: `${process.env.URL_BACK}/payment-pending`,
+      },
+      external_reference: `${prodId}-${Date.now()}`, // algo único por preferencia
+      auto_return: 'approved',
+      notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,
+      metadata: {
+        prodId,
+        nombreEvento,
+        quantities,
+        mail,
+        state,
+        total,
+        emailHash,
+        nombreCompleto,
+        dni,
+      },
+    };
+
+    const response = await mercadopago.preferences.create(preference);
+
+    if (response.body?.init_point) {
+      return res.status(200).json({ init_point: response.body.init_point });
+    } else {
+      return res.status(500).json({ message: 'No se pudo crear la preferencia.' });
+    }
+
+  } catch (error) {
+    console.error('Error al crear preferencia:', error.response?.body || error.message);
+    return res.status(500).json({ message: 'Error creando la preferencia.' });
+  }
+
 };
 
 export const mercadoPagoWebhookController = async (req, res) => {
