@@ -791,33 +791,46 @@ export const buyEventTicketsController = async (req, res) => {
 
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
-   const paymentId = req.query.id || req.query['data.id'];
-   const topic = req.query.topic || req.query.type;
+    let paymentId = req.query.id || req.query['data.id'];
+    const topic = req.query.topic || req.query.type;
     
+    console.log('Webhook recibido:', topic, paymentId);
+
     if (!paymentId || topic !== 'merchant_order') {
-      console.error("No payment ID or topic !== 'payment'");
+      console.error("No payment ID o no es merchant_order");
       return res.sendStatus(200);
     }
 
-    //Todo lo que sigue se procesa en segundo plano
-    //Importante: los errores se capturan, ya que ya respondimos
     try {
-      const payment = await mercadopago.payment.findById(paymentId);
+      // 1. Buscar la orden
+      const order = await mercadopago.merchant_orders.findById(paymentId);
+      const pagos = order.body.payments;
+
+      // 2. Obtener pago aprobado
+      const pagoAprobado = pagos.find(p => p.status === 'approved');
+      if (!pagoAprobado) {
+        console.log(`Orden ${paymentId} no tiene pagos aprobados aún`);
+        return res.sendStatus(200);
+      }
+
+      // 3. Buscar el payment real
+      const realPaymentId = pagoAprobado.id;
+      const payment = await mercadopago.payment.findById(realPaymentId);
       const status = payment.body?.status;
 
-      if (status !== 'approved') return;
+      if (status !== 'approved') return res.sendStatus(200);
 
-      // Chequeo de idempotencia
+      // 4. Chequeo de idempotencia
       const existing = await transactionModel.findOne({
-        'compradores.transaccionId': paymentId
+        'compradores.transaccionId': realPaymentId
       });
 
       if (existing) {
-        console.log(`Pago ${paymentId} ya procesado — omitido`);
-        return;
+        console.log(`Pago ${realPaymentId} ya procesado — omitido`);
+        return res.sendStatus(200);
       }
 
-      // Extraer metadata
+      // 5. Extraer metadata del payment
       const {
         prod_id,
         nombre_evento,
@@ -830,15 +843,13 @@ export const mercadoPagoWebhookController = async (req, res) => {
         dni
       } = payment.body.metadata;
 
-      console.log("Metadata del pago:", payment.body.metadata);
-
       if (!quantities || !mail || !prod_id || !total) {
         console.error("Metadata incompleta:", payment.body.metadata);
-        return;
+        return res.sendStatus(200);
       }
 
-      // Procesamos el pago exitoso
-      /*await handleSuccessfulPayment({
+      // 6. Encolar procesamiento
+      await paymentQueue.add('ejecutar-pago', {
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -848,25 +859,25 @@ export const mercadoPagoWebhookController = async (req, res) => {
         emailHash: email_hash,
         nombreCompleto: nombre_completo,
         dni,
-        paymentId
-      });*/
-      await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
-        {
-          attempts: 3, // Reintentar 3 veces si falla
-          backoff: {
-            type: 'exponential', // o 'fixed'
-            delay: 5000 // 5 segundos de espera antes de reintentar
-          },
-          removeOnComplete: true, // limpia el job si se completó
-          removeOnFail: false // puedes dejarlo en false para revisar errores
-        })
+        paymentId: realPaymentId
+      }, {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 5000
+        },
+        removeOnComplete: true,
+        removeOnFail: false
+      });
 
     } catch (err) {
       console.error("Error procesando pago en background:", err);
     }
 
+    return res.sendStatus(200); // ✅ Siempre respondemos OK
+
   } catch (error) {
-    console.error('Error en webhook:', error.message, error.stack);
+    console.error('Error general en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
