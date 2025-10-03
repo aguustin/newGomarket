@@ -796,12 +796,10 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
     console.log('Webhook recibido:', topic, paymentId);
 
-    // ✅ Solo procesamos pagos
+    //Solo procesamos pagos
     if (!paymentId || topic !== 'payment') {
       return res.sendStatus(200);
     }
-
-    res.sendStatus(200); // Respondemos rápido
 
     // Trabajo en segundo plano
     (async () => {

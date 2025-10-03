@@ -2,15 +2,15 @@ import Queue from 'bull'
 import dotenv from "dotenv"
 dotenv.config()
 
-const redisOptions = {
+/*const redisOptions = {
   redis: {
     host: process.env.REDIS_HOST,
     port: 6379,
     password: process.env.REDIS_PASSWORD,
     tls: {} // para que funcione con Upstash
   }
-};
+};*/
 
-export const paymentQueue = new Queue('ejecutar-pago', redisOptions)
+export const paymentQueue = new Queue('ejecutar-pago', process.env.REDIS_URL)
 
-export const refundQueue = new Queue('reembolsar-pago', redisOptions)
+export const refundQueue = new Queue('reembolsar-pago', process.env.REDIS_URL)
