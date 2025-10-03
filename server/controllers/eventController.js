@@ -800,75 +800,102 @@ export const mercadoPagoWebhookController = async (req, res) => {
       return res.sendStatus(400);
     }
 
-    if (topic === 'merchant_order') {
-      const merchantOrder = await mercadopago.merchant_orders.findById(id);
-      const payments = merchantOrder.body.payments;
+    let payment = null;
 
-      const approvedPayment = payments.find(p => p.status === 'approved');
-      if (!approvedPayment) {
-        console.log(`Merchant order ${id} no tiene pagos aprobados aún`);
-        return res.sendStatus(200);
+    if (topic === 'payment') {
+      // 🔍 Caso 1: Webhook de tipo payment
+      try {
+        const response = await mercadopago.payment.findById(id);
+        payment = response.body;
+      } catch (err) {
+        console.error(`Error buscando payment ${id}:`, err.message);
+        return res.sendStatus(200); // No reenviar
       }
 
-      const paymentId = approvedPayment.id;
+    } else if (topic === 'merchant_order') {
+      // 🔍 Caso 2: Webhook de tipo merchant_order
+      try {
+        const merchantOrder = await mercadopago.merchant_orders.findById(id);
+        const approvedPayment = merchantOrder.body.payments.find(p => p.status === 'approved');
 
-      // Ahora sí buscamos el pago por ID
-      const payment = await mercadopago.payment.findById(paymentId);
-      
-      // Aquí continúa tu lógica como antes...
-      const {
-        prodId,
-        nombreEvento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash,
-        nombreCompleto,
-        dni
-      } = payment.body.metadata || {};
+        if (!approvedPayment) {
+          console.log(`Merchant order ${id} no tiene pagos aprobados aún`);
+          return res.sendStatus(200); // Esperamos otro intento de webhook
+        }
 
-      if (!quantities || !mail || !prodId || !total) {
-        console.error("Metadata incompleta:", payment.body.metadata);
-        return res.sendStatus(200);
+        const response = await mercadopago.payment.findById(approvedPayment.id);
+        payment = response.body;
+
+      } catch (err) {
+        console.error(`Error al procesar merchant_order ${id}:`, err.message);
+        return res.sendStatus(200); // No reenviar
       }
 
-      const existing = await transactionModel.findOne({
-        'compradores.transaccionId': paymentId
-      });
-
-      if (existing) {
-        console.log(`Pago ${paymentId} ya procesado`);
-        return res.sendStatus(200);
-      }
-
-      await paymentQueue.add('ejecutar-pago', {
-        prodId,
-        nombreEvento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash,
-        nombreCompleto,
-        dni,
-        paymentId
-      }, {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 5000 },
-        removeOnComplete: true,
-        removeOnFail: false
-      });
-
-      console.log(`Pago ${paymentId} encolado con éxito`);
+    } else {
+      // Descartamos otros tipos (envíos, etc.)
+      console.log(`Webhook con topic no soportado: ${topic}`);
       return res.sendStatus(200);
     }
 
-    // Si el topic no es merchant_order, lo ignoramos
+    // ✅ Validar estado del pago
+    if (!payment || payment.status !== 'approved') {
+      console.log(`Pago ${payment?.id} no está aprobado (estado: ${payment?.status})`);
+      return res.sendStatus(200);
+    }
+
+    const {
+      prodId,
+      nombreEvento,
+      quantities,
+      mail,
+      state,
+      total,
+      emailHash,
+      nombreCompleto,
+      dni
+    } = payment.metadata || {};
+
+    if (!quantities || !mail || !prodId || !total) {
+      console.error("Metadata incompleta:", payment.metadata);
+      return res.sendStatus(200);
+    }
+
+    const paymentId = payment.id;
+
+    // ⛔ Verificar si ya fue procesado
+    const existing = await transactionModel.findOne({
+      'compradores.transaccionId': paymentId
+    });
+
+    if (existing) {
+      console.log(`Pago ${paymentId} ya procesado`);
+      return res.sendStatus(200);
+    }
+
+    // 🛠️ Encolar el procesamiento
+    await paymentQueue.add('ejecutar-pago', {
+      prodId,
+      nombreEvento,
+      quantities,
+      mail,
+      state,
+      total,
+      emailHash,
+      nombreCompleto,
+      dni,
+      paymentId
+    }, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 5000 },
+      removeOnComplete: true,
+      removeOnFail: false
+    });
+
+    console.log(`Pago ${paymentId} encolado con éxito`);
     return res.sendStatus(200);
 
   } catch (error) {
-    console.error('Error general en webhook:', error);
+    console.error('Error general en webhook:', error.message);
     return res.sendStatus(500);
   }
 };
