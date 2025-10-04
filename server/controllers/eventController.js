@@ -645,16 +645,25 @@ const validarYGuardarPago = async (data) => {
 
   const cacheKey = `payment_processed:${paymentId}`;
 
-  // Revisar si ya se procesó el pago
-  const cached = await redisClient.get(cacheKey);
-  if (cached) {
-    console.log(`Pago ${paymentId} ya procesado (cache).`);
+  // Paso 1: Verificar si ya se procesó o está en proceso
+  const estadoEnCache = await redisClient.get(cacheKey);
+  if (estadoEnCache === 'true') {
+    console.log(`⏭️ Pago ${paymentId} ya procesado anteriormente.`);
     return false;
   }
 
+  if (estadoEnCache === 'processing') {
+    console.log(`⏳ Pago ${paymentId} en proceso por otra instancia.`);
+    return false;
+  }
+
+  // Paso 2: Marcar como "en proceso" para bloquear duplicados
+  await redisClient.set(cacheKey, "processing", 'EX', 60); // bloqueamos por 60s
+
+  // Paso 3: Validaciones + guardado
   const event = await ticketModel.findOne({ _id: prodIdVal }).lean();
   if (!event) {
-    console.error("Evento no encontrado:", prodIdVal);
+    console.error("❌ Evento no encontrado:", prodIdVal);
     return false;
   }
 
@@ -667,11 +676,11 @@ const validarYGuardarPago = async (data) => {
   );
 
   if (!fueGuardado) {
-    await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 });
+    await redisClient.set(cacheKey, "true", 'EX', 60 * 60 * 24); // para evitar futuros reintentos
     return false;
   }
 
-  // Ya pasó validaciones básicas → enviar job al worker
+  // Paso 4: Encolar job para generar QR y enviar email
   await paymentQueue.add('generar-qr-y-mail', {
     prodIdVal,
     mail,
@@ -689,11 +698,13 @@ const validarYGuardarPago = async (data) => {
     removeOnFail: true
   });
 
-  await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 });
+  // Paso 5: Marcamos como procesado (el worker también puede hacerlo si querés)
+  await redisClient.set(cacheKey, "true", 'EX', 60 * 60 * 24);
 
-  console.log(`Pago ${paymentId} validado y enviado al worker.`);
+  console.log(`✅ Pago ${paymentId} validado y encolado.`);
   return true;
 };
+
 
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
@@ -797,7 +808,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
 
 export const qrGeneratorController = async (prodIdVal, quantities, mail, state, nombreCompleto, dni) => {
-  console.log('entra a generar qr')
+  console.log('entra a generar qr ', nombreCompleto)
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
     const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
       updateOne: {
@@ -1159,7 +1170,7 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-  console.log('llega a querer enviar el mail', email)
+  console.log('llega a querer enviar el mail', nombreCompleto, " ", tickets[0]?.nombreCompleto)
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
       const qrCid = `qrcodeimg${index}`;

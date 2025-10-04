@@ -1,5 +1,6 @@
 import { connecDb } from "../../connection.js";
 import { obtenerRRPPDesdeHash, procesarVentaGeneral, procesarVentaRRPP, qrGeneratorController, refundsFunc } from "../../controllers/eventController.js";
+import { redisClient } from "../../lib/redisClient.js";
 import ticketModel from "../../models/ticketsModel.js";
 import { paymentQueue, refundQueue } from "../paymentQueue.js";
 import dotenv from 'dotenv';
@@ -19,7 +20,13 @@ paymentQueue.process('generar-qr-y-mail', async (job) => {
     quantities
   } = job.data;
 
-  console.log(`🛠 Procesando generación de QR para pago ${paymentId}`);
+  const cacheKey = `payment_processed:${paymentId}`;
+  console.log('nombre Completo: ', nombreCompleto)
+  const estado = await redisClient.get(cacheKey);
+  if (estado === 'true') {
+    console.log(`Worker: pago ${paymentId} ya fue procesado. Abortando.`);
+    return;
+  }
 
   try {
     const event = await ticketModel.findOne({ _id: prodIdVal }).lean();
@@ -32,15 +39,15 @@ paymentQueue.process('generar-qr-y-mail', async (job) => {
 
     // 👉 Generamos QRs y enviamos mail
     await qrGeneratorController(prodIdVal, quantities, mail, state, nombreCompleto, dni);
-
     // 👉 Procesar venta general
     await procesarVentaGeneral(event, quantities, total);
-
+    
     // 👉 Procesar venta RRPP si corresponde
     if (rrppMatch && decryptedMail) {
       await procesarVentaRRPP(event, quantities, decryptedMail);
     }
-
+    
+    await redisClient.set(cacheKey, "true", 'EX', 60 * 60 * 24);
     console.log(`✅ Pago ${paymentId} procesado por el worker.`);
   } catch (err) {
     console.error("❌ Error en worker al procesar QR y venta:", err);
