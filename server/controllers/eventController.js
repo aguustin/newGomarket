@@ -918,25 +918,26 @@ export const mercadoPagoWebhookController = async (req, res) => {
       nombreCompleto,
       dni
     } = payment.metadata || {};
-    console.log("el payment: ", payment.metadata)
-    console.log("datos que deberian estar: ", quantities, " mail: ", mail, "prod: ", payment.metadata.prod_id, "total: ", total)
+   
     if (!quantities || !mail || !payment.metadata.prod_id || !total) {
       console.error("Metadata incompleta:", payment.metadata);
       return res.sendStatus(200);
     }
 
     const paymentId = payment.id;
-
+    console.log("paymentId: ", paymentId)
     // ⛔ Verificar si ya fue procesado
     const existing = await transactionModel.findOne({
       'compradores.transaccionId': paymentId
     });
 
+    console.log("existing: ", existing)
+
     if (existing) {
       console.log(`Pago ${paymentId} ya procesado`);
       return res.sendStatus(200);
     }
-
+    console.log("por encolar la tarea: ")
     // 🛠️ Encolar el procesamiento
     await paymentQueue.add('ejecutar-pago', {
       prodId,
