@@ -11,6 +11,13 @@ dotenv.config()
   }
 };*/
 
-export const paymentQueue = new Queue('ejecutar-pago', process.env.REDIS_URL)
+export const paymentQueue = new Queue('ejecutar-pago', {
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: 6379,
+    password: process.env.REDIS_PASSWORD,
+    tls: {} // para que funcione con Upstash
+  }
+});
 
 export const refundQueue = new Queue('reembolsar-pago', process.env.REDIS_URL)
