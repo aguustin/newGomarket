@@ -1,5 +1,6 @@
 import { connecDb } from "../../connection.js";
 import { obtenerRRPPDesdeHash, procesarVentaGeneral, procesarVentaRRPP, qrGeneratorController, refundsFunc } from "../../controllers/eventController.js";
+import ticketModel from "../../models/ticketsModel.js";
 import { paymentQueue, refundQueue } from "../paymentQueue.js";
 import dotenv from 'dotenv';
 dotenv.config();
