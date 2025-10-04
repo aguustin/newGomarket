@@ -1,5 +1,5 @@
 import { connecDb } from "../../connection.js";
-import { handleSuccessfulPayment, refundsFunc } from "../../controllers/eventController.js";
+import { refundsFunc } from "../../controllers/eventController.js";
 import { paymentQueue, refundQueue } from "../paymentQueue.js";
 import dotenv from 'dotenv';
 dotenv.config();
