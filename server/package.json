@@ -10,9 +10,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon app.js --ignore client",
-    "start": "node --max-old-space-size=4096 app.js",
+    "start": "node --max-old-space-size=8192 app.js",
     "worker": "node queues/workers/worker.js",
-    "build": "node --max-old-space-size=4096"
+    "build": "node --max-old-space-size=8192"
   },
   "dependencies": {
     "axios": "^1.12.2",

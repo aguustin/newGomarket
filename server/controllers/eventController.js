@@ -853,6 +853,71 @@ export const buyEventTicketsController = async (req, res) => {
 
 };
 
+const validarYGuardarPago = async (data) => {
+  const {
+    prodId,
+    quantities,
+    mail,
+    state,
+    total,
+    emailHash,
+    nombreCompleto,
+    dni,
+    paymentId
+  } = data;
+
+  const cacheKey = `payment_processed:${paymentId}`;
+
+  // Revisar si ya se procesó el pago
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    console.log(`Pago ${paymentId} ya procesado (cache).`);
+    return false;
+  }
+
+  const event = await ticketModel.findOne({ _id: prodId }).lean();
+  if (!event) {
+    console.error("Evento no encontrado:", prodId);
+    return false;
+  }
+
+  const fueGuardado = await guardarTransaccionExitosa(
+    prodId,
+    nombreCompleto,
+    mail,
+    total,
+    paymentId
+  );
+
+  if (!fueGuardado) {
+    await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 });
+    return false;
+  }
+
+  // Ya pasó validaciones básicas → enviar job al worker
+  await paymentQueue.add('generar-qr-y-mail', {
+    prodId,
+    mail,
+    total,
+    paymentId,
+    emailHash,
+    nombreCompleto,
+    dni,
+    state,
+    quantities
+  }, {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5000 },
+    removeOnComplete: true,
+    removeOnFail: true
+  });
+
+  await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 });
+
+  console.log(`Pago ${paymentId} validado y enviado al worker.`);
+  return true;
+};
+
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
     const id = req.query.id || req.query['data.id'];
@@ -867,24 +932,22 @@ export const mercadoPagoWebhookController = async (req, res) => {
     let payment = null;
 
     if (topic === 'payment') {
-      // 🔍 Caso 1: Webhook de tipo payment
       try {
         const response = await mercadopago.payment.findById(id);
         payment = response.body;
       } catch (err) {
         console.error(`Error buscando payment ${id}:`, err.message);
-        return res.sendStatus(200); // No reenviar
+        return res.sendStatus(200);
       }
 
     } else if (topic === 'merchant_order') {
-      // 🔍 Caso 2: Webhook de tipo merchant_order
       try {
         const merchantOrder = await mercadopago.merchant_orders.findById(id);
         const approvedPayment = merchantOrder.body.payments.find(p => p.status === 'approved');
 
         if (!approvedPayment) {
           console.log(`Merchant order ${id} no tiene pagos aprobados aún`);
-          return res.sendStatus(200); // Esperamos otro intento de webhook
+          return res.sendStatus(200);
         }
 
         const response = await mercadopago.payment.findById(approvedPayment.id);
@@ -892,16 +955,14 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
       } catch (err) {
         console.error(`Error al procesar merchant_order ${id}:`, err.message);
-        return res.sendStatus(200); // No reenviar
+        return res.sendStatus(200);
       }
 
     } else {
-      // Descartamos otros tipos (envíos, etc.)
       console.log(`Webhook con topic no soportado: ${topic}`);
       return res.sendStatus(200);
     }
 
-    // ✅ Validar estado del pago
     if (!payment || payment.status !== 'approved') {
       console.log(`Pago ${payment?.id} no está aprobado (estado: ${payment?.status})`);
       return res.sendStatus(200);
@@ -918,28 +979,17 @@ export const mercadoPagoWebhookController = async (req, res) => {
       nombreCompleto,
       dni
     } = payment.metadata || {};
-   
-    if (!quantities || !mail || !payment.metadata.prod_id || !total) {
+
+    if (!quantities || !mail || !prodId || !total) {
       console.error("Metadata incompleta:", payment.metadata);
       return res.sendStatus(200);
     }
 
     const paymentId = payment.id;
-    console.log("paymentId: ", paymentId)
-    // ⛔ Verificar si ya fue procesado
-    const existing = await transactionModel.findOne({
-      'compradores.transaccionId': paymentId
-    });
+    console.log("paymentId: ", paymentId);
 
-    console.log("existing: ", existing)
-
-    if (existing) {
-      console.log(`Pago ${paymentId} ya procesado`);
-      return res.sendStatus(200);
-    }
-    console.log("por encolar la tarea: ")
-    // 🛠️ Encolar el procesamiento
-    await paymentQueue.add('ejecutar-pago', {
+    // Aquí usamos la función que valida y guarda + encola
+    const resultado = await validarYGuardarPago({
       prodId,
       nombreEvento,
       quantities,
@@ -950,14 +1000,15 @@ export const mercadoPagoWebhookController = async (req, res) => {
       nombreCompleto,
       dni,
       paymentId
-    }, {
-      attempts: 3,
-      backoff: { type: 'exponential', delay: 5000 },
-      removeOnComplete: true,
-      removeOnFail: true
     });
 
-    console.log(`Pago ${paymentId} encolado con éxito`);
+    if (!resultado) {
+      console.log(`Pago ${paymentId} ya fue procesado o hubo error en validación`);
+      return res.sendStatus(200);
+    }
+
+    console.log(`Pago ${paymentId} validado y enviado al worker`);
+
     return res.sendStatus(200);
 
   } catch (error) {

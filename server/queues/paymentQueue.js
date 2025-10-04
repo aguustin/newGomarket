@@ -1,30 +1,19 @@
-import Queue from 'bull'
-import dotenv from "dotenv"
-dotenv.config()
+// paymentQueue.js
+import Queue from 'bull';
+import dotenv from 'dotenv';
+dotenv.config();
+import { URL } from 'url';
 
-/*const redisOptions = {
-  redis: {
-    host: process.env.REDIS_HOST,
-    port: 6379,
-    password: process.env.REDIS_PASSWORD,
-    tls: {} // para que funcione con Upstash
-  }
-};*/
+// Parseamos la URL de Upstash (rediss://...)
+const redisUrl = new URL(process.env.REDIS_URL);
 
-export const paymentQueue = new Queue('ejecutar-pago', {
-  redis: {
-    host: process.env.REDIS_HOST,
-    port: 6379,
-    password: process.env.REDIS_PASSWORD,
-    tls: {} // para que funcione con Upstash
-  }
-});
+const redisConfig = {
+  host: redisUrl.hostname,
+  port: parseInt(redisUrl.port),
+  password: redisUrl.password,
+  tls: redisUrl.protocol === 'rediss:' ? {} : undefined
+};
 
-export const refundQueue = new Queue('reembolsar-pago', {
-  redis: {
-    host: process.env.REDIS_HOST,
-    port: 6379,
-    password: process.env.REDIS_PASSWORD,
-    tls: {} // para que funcione con Upstash
-  }
-})
+// Creamos la cola con esa configuración
+export const paymentQueue = new Queue('generar-qr-y-mail', { redis: redisConfig });
+export const refundQueue = new Queue('reembolsar-pago', { redis: redisConfig });

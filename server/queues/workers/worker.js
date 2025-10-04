@@ -5,18 +5,47 @@ import dotenv from 'dotenv';
 dotenv.config();
 await connecDb();
 
-paymentQueue.process('ejecutar-pago', async (job) => {
-  console.log(`Procesando job ID: ${job.id}`);
-  console.log('Payload recibido:', job.data);
+paymentQueue.process('generar-qr-y-mail', async (job) => {
+  const {
+    prodId,
+    mail,
+    total,
+    paymentId,
+    emailHash,
+    nombreCompleto,
+    dni,
+    state,
+    quantities
+  } = job.data;
+
+  console.log(`🛠 Procesando generación de QR para pago ${paymentId}`);
 
   try {
-    await handleSuccessfulPayment(job.data);
-    console.log(`Job ${job.id} procesado con éxito.`);
+    const event = await ticketModel.findOne({ _id: prodId }).lean();
+    if (!event) {
+      console.error("Evento no encontrado:", prodId);
+      return;
+    }
+
+    const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
+
+    // 👉 Generamos QRs y enviamos mail
+    await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
+
+    // 👉 Procesar venta general
+    await procesarVentaGeneral(event, quantities, total);
+
+    // 👉 Procesar venta RRPP si corresponde
+    if (rrppMatch && decryptedMail) {
+      await procesarVentaRRPP(event, quantities, decryptedMail);
+    }
+
+    console.log(`✅ Pago ${paymentId} procesado por el worker.`);
   } catch (err) {
-    console.error(`Job ${job.id} falló:`, err);
-    throw err; // esto marca el job como failed
+    console.error("❌ Error en worker al procesar QR y venta:", err);
+    throw err; // Para que se reintente
   }
-})
+});
 
 refundQueue.process('reembolsar-pago', async (job) => {
     try {
