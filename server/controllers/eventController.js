@@ -719,74 +719,6 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 };
 
 export const buyEventTicketsController = async (req, res) => {
- /* const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
-  
-  if(total <= 0){
-    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
-    return res.status(200).json(3)
-  }
- 
-  try {
-      const preference = {
-        items: [
-          {
-            title: `Ticket para ${nombreEvento}`,
-            quantity: 1,
-            unit_price: 1, // aca va "total"
-            currency_id: 'ARS',
-          },
-        ],
-        payer: {
-          name: nombreCompleto,
-          surname: nombreCompleto,
-          email: mail,
-        },
-        back_urls: {
-          success: `${process.env.URL_BACK}/payment-success`,
-          failure: `${process.env.URL_BACK}/payment-failure`,
-          pending: `${process.env.URL_BACK}/payment-pending`,
-        },
-        external_reference: "164382724",
-        auto_return: 'approved',
-        notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
-        metadata: {
-              prodId,
-              nombreEvento,
-              quantities,
-              mail,
-              state,
-              total,
-              emailHash,
-              nombreCompleto,
-              dni
-        },
-    };
-    const response = await mercadopago.preferences.create(preference);
-
-    if(response.body && response.body.init_point){
-      //await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });//esta va en "desarrollo - dev" y lo reemplazo con el paymentQueue para probar si funciona mas rapido
-      
-      /*await paymentQueue.add('ejecutar-pago', 
-        {prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni},
-        {
-          attempts: 3, // Reintentar 3 veces si falla
-          backoff: {
-            type: 'exponential', // o 'fixed'
-            delay: 5000 // 5 segundos de espera antes de reintentar
-          },
-          removeOnComplete: true, // limpia el job si se completó
-          removeOnFail: false // puedes dejarlo en false para revisar errores
-        }
-      )*/
-      
-      /*return res.status(200).json({
-        init_point: response.body.init_point,
-      });
-    }
-  } catch (error) {
-    console.error('Error al crear preferencia:', error);
-    res.status(500).json({ message: 'Error creando la preferencia' });
-  }*/
 
   const {
     prodId,
@@ -855,7 +787,7 @@ export const buyEventTicketsController = async (req, res) => {
 
 const validarYGuardarPago = async (data) => {
   const {
-    prodId,
+    prodIdVal,
     quantities,
     mail,
     state,
@@ -875,14 +807,14 @@ const validarYGuardarPago = async (data) => {
     return false;
   }
 
-  const event = await ticketModel.findOne({ _id: prodId }).lean();
+  const event = await ticketModel.findOne({ _id: prodIdVal }).lean();
   if (!event) {
-    console.error("Evento no encontrado:", prodId);
+    console.error("Evento no encontrado:", prodIdVal);
     return false;
   }
 
   const fueGuardado = await guardarTransaccionExitosa(
-    prodId,
+    prodIdVal,
     nombreCompleto,
     mail,
     total,
