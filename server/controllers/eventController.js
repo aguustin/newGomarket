@@ -986,11 +986,12 @@ export const mercadoPagoWebhookController = async (req, res) => {
     }
 
     const paymentId = payment.id;
-    console.log("paymentId: ", paymentId);
+    const prodIdVal = payment.metadata.prod_id
+    console.log("paymentId: ", prodIdVal);
 
     // Aquí usamos la función que valida y guarda + encola
     const resultado = await validarYGuardarPago({
-      prodId,
+      prodIdVal,
       nombreEvento,
       quantities,
       mail,
