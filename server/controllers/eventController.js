@@ -838,7 +838,6 @@ export const buyEventTicketsController = async (req, res) => {
         dni,
       },
     };
-
     const response = await mercadopago.preferences.create(preference);
 
     if (response.body?.init_point) {
@@ -919,7 +918,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       nombreCompleto,
       dni
     } = payment.metadata || {};
-
+    console.log("el payment: ", payment)
     if (!quantities || !mail || !prodId || !total) {
       console.error("Metadata incompleta:", payment.metadata);
       return res.sendStatus(200);
