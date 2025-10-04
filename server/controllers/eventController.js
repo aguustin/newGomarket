@@ -826,7 +826,7 @@ export const buyEventTicketsController = async (req, res) => {
       external_reference: `${prodId}-${Date.now()}`, // algo único por preferencia
       auto_return: 'approved',
       notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,
-      /*metadata: {
+      metadata: {
         prodId,
         nombreEvento,
         quantities,
@@ -836,7 +836,7 @@ export const buyEventTicketsController = async (req, res) => {
         emailHash,
         nombreCompleto,
         dni,
-      },*/
+      },
     };
 
     const response = await mercadopago.preferences.create(preference);
@@ -953,7 +953,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       attempts: 3,
       backoff: { type: 'exponential', delay: 5000 },
       removeOnComplete: true,
-      removeOnFail: false
+      removeOnFail: true
     });
 
     console.log(`Pago ${paymentId} encolado con éxito`);
