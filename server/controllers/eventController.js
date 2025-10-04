@@ -333,7 +333,7 @@ export const getEventToBuyController = async (req, res) => {
     res.send(getProd)
 }
 
-const obtenerRRPPDesdeHash = (event, emailHash) => {
+export const obtenerRRPPDesdeHash = (event, emailHash) => {
   let rrppMatch = null;
   let decryptedMail = null;
 
@@ -351,7 +351,7 @@ const obtenerRRPPDesdeHash = (event, emailHash) => {
   return { rrppMatch: null, decryptedMail: null };
 };
 
-const procesarVentaGeneral = async (event, quantities, total) => {
+export const procesarVentaGeneral = async (event, quantities, total) => {
   const prodId = event._id;
   const bulkOps = Object.entries(quantities).map(([ticketId, qty]) => ({
     updateOne: {
@@ -382,7 +382,7 @@ const procesarVentaGeneral = async (event, quantities, total) => {
 };
 
 
-const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
+export const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
   const prodId = event._id;
   const rrpp = event.rrpp.find(r => r.mail === decryptedMail);
   if (!rrpp) return;
@@ -464,7 +464,7 @@ const guardarTransaccionExitosa = async (prodIdVal, nombreCompleto, mail, total,
 
   const result = await transactionModel.updateOne(
     {
-      prodIdVal,
+      prodId: prodIdVal,
       'compradores.transaccionId': { $ne: paymentId }  // Solo si este paymentId NO existe ya
     },
     {
@@ -477,7 +477,7 @@ const guardarTransaccionExitosa = async (prodIdVal, nombreCompleto, mail, total,
         }
       },
       $inc: { montoPagado: totalPagoEntradas },
-      $setOnInsert: { prodIdVal }
+      $setOnInsert: { prodId: prodIdVal }
     },
     { upsert: true }
   );
