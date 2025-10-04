@@ -811,7 +811,7 @@ export const buyEventTicketsController = async (req, res) => {
         {
           title: `Ticket para ${nombreEvento}`,
           quantity: 1,
-          unit_price: Number(total), // ⚠️ Asegurate de que sea un número
+          unit_price: Number(total),
           currency_id: 'ARS',
         },
       ],
@@ -826,7 +826,7 @@ export const buyEventTicketsController = async (req, res) => {
       external_reference: `${prodId}-${Date.now()}`, // algo único por preferencia
       auto_return: 'approved',
       notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,
-      metadata: {
+      /*metadata: {
         prodId,
         nombreEvento,
         quantities,
@@ -836,7 +836,7 @@ export const buyEventTicketsController = async (req, res) => {
         emailHash,
         nombreCompleto,
         dni,
-      },
+      },*/
     };
 
     const response = await mercadopago.preferences.create(preference);
