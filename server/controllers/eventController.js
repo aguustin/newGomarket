@@ -980,8 +980,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
       dni
     } = payment.metadata || {};
 
-    if (!quantities || !mail || !prodId || !total) {
-      console.error("Metadata incompleta:", payment.metadata);
+    if (!quantities || !mail || !payment.metadata.prod_id || !total) {
+      console.error("Metadata incompleta:", payment.metadata.prod_id);
       return res.sendStatus(200);
     }
 
