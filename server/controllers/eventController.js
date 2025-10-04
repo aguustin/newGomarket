@@ -918,7 +918,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
       nombreCompleto,
       dni
     } = payment.metadata || {};
-    console.log("el payment: ", payment)
+    console.log("el payment: ", payment.metadata)
+    console.log("datos que deberian estar: ", quantities, " mail: ", mail, "prod: ", prodId, "total: ", total)
     if (!quantities || !mail || !prodId || !total) {
       console.error("Metadata incompleta:", payment.metadata);
       return res.sendStatus(200);
@@ -1633,7 +1634,7 @@ export const cancelarEventoController = async (req, res) => {
       delay: 5000 // 5 segundos de espera antes de reintentar
     },
       removeOnComplete: true, // limpia el job si se completó
-      removeOnFail: false // puedes dejarlo en false para revisar errores
+      removeOnFail: true // puedes dejarlo en false para revisar errores
     }
   )
 
