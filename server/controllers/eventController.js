@@ -459,47 +459,44 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 };
 
 
-const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
-  const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
+export const guardarTransaccionExitosa = async (
+  prodId,
+  nombreCompleto,
+  mail,
+  total,
+  paymentId
+) => {
+  try {
+    // Chequeo: ¿ya existe una transacción con este paymentId?
+    const yaExiste = await transactionModel.findOne({
+      'compradores.transaccionId': paymentId
+    });
 
-  // 1) Verificar si paymentId ya está registrado en cualquier comprador para evitar duplicados
-  const existing = await transactionModel.findOne({
-    prodId,
-    'compradores.transaccionId': paymentId
-  });
-  if (existing) {
-    console.log(`Pago duplicado omitido: ${paymentId}`);
-    return false;
-  }
-
-  // 2) Actualizar comprador existente con ese mail o agregar nuevo comprador
-  const result = await transactionModel.updateOne(
-    { prodId, 'compradores.email': mail },
-    {
-      $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
+    if (yaExiste) {
+      return false; // Ya procesado
     }
-  );
 
-  if (result.matchedCount === 0) {
-    // No existía comprador con ese mail, crear nuevo comprador
+    // Si no existe, crear la transacción
     await transactionModel.updateOne(
-      { prodId },
+      { _id: prodId },
       {
         $push: {
           compradores: {
-            nombre: nombreCompleto,
-            email: mail,
-            montoPagado: totalPagoEntradas,
-            transaccionId: paymentId
+            nombreCompleto,
+            mail,
+            montoPagado: total,
+            transaccionId: paymentId,
+            fecha: new Date()
           }
         }
-      },
-      { upsert: true }
+      }
     );
-  }
 
-  console.log(`✅ Transacción guardada para paymentId: ${paymentId}`);
-  return true;
+    return true; // Guardado con éxito
+  } catch (error) {
+    console.error('Error guardando transacción:', error);
+    throw error;
+  }
 };
 
 
