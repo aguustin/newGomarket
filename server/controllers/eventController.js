@@ -477,7 +477,6 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
     { prodId, 'compradores.email': mail },
     {
       $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
-      $addToSet: { 'compradores.$.transaccionId': paymentId } // para guardar todos los paymentIds?
     }
   );
 
