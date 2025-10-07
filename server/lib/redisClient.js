@@ -1,4 +1,4 @@
-import { createClient } from "redis";
+/*import { createClient } from "redis";  DESCOMENTAR PARA UTILIZAR REDIS Y USAR EN PRODUCCION
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -10,4 +10,4 @@ redisClient.on("error", (err) => console.error("Redis Client Error", err));
 await redisClient.connect();
 await redisClient.set('foo','bar');
 
-console.log("Redis connected successfully!");
+console.log("Redis connected successfully!");*/

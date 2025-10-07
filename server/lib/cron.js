@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import ticketModel from '../models/ticketsModel.js';
 
-cron.schedule('0 * * * *', async () => {
+cron.schedule('0 0 * * 0', async () => {
     const now = new Date();
 
     try {

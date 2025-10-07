@@ -16,7 +16,7 @@ import { formatDateB } from "../lib/dates.js";
 import ExcelJS from 'exceljs';
 import axios from "axios";
 import { paymentQueue, refundQueue } from "../queues/paymentQueue.js";
-import { redisClient } from "../lib/redisClient.js";
+//import { redisClient } from "../lib/redisClient.js"; //DESCOMENTAR PARA PRODUCCION
 import { resend } from "../lib/resendDomain.js";
 
 dotenv.config();
@@ -616,7 +616,7 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
       }
     });
 
-// Sumar montoTotalVendidoRRPP
+ // Sumar montoTotalVendidoRRPP
   bulkOpsRRPP.push({
     updateOne: {
       filter: { "rrpp.mail": getDecryptedMail },
@@ -631,7 +631,7 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
     }
   });
 
-// Ejecutar operaciones
+  // Ejecutar operaciones
   await Promise.all([
     ticketModel.updateOne(
       { _id: prodId },
@@ -665,11 +665,11 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 
   try {
     // Revisar si ya se procesó el pago (cache Redis)
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
+    // const cached = await redisClient.get(cacheKey); //expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
+    /*if (cached) { // DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS Y PARA QUE FUNCIONE TODO BIEN
       console.log(`Pago ${paymentId} ya procesado (cache).`);
       return;
-    }
+    }*/
 
     // Si no está en cache, validar en DB (tu función actual)
     const event = await ticketModel.findOne({ _id: prodId }).lean();
@@ -690,9 +690,9 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     );
 
     if (!guardado) {
-      console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
+       console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
       // Marcar en cache para acelerar futuros chequeos
-      await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas
+      // await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
       return;
     }
 
@@ -705,11 +705,10 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     if (rrppMatch && decryptedMail) {
       tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
     }
-
     await Promise.all(tasks);
 
     // Marcar como procesado en cache
-    await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas
+    //await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
 
     console.log(`Pago ${paymentId} procesado y cacheado.`);
   } catch (error) {
@@ -793,7 +792,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
   try {
     const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
-    console.log(paymentId, ' ', topic)
+    
     if (!paymentId || topic !== 'payment') {
       console.error("No payment ID or topic !== 'payment'");
       return res.sendStatus(400);
@@ -838,7 +837,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       }
 
       // Procesamos el pago exitoso
-      /*await handleSuccessfulPayment({
+      await handleSuccessfulPayment({
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -849,8 +848,9 @@ export const mercadoPagoWebhookController = async (req, res) => {
         nombreCompleto: nombre_completo,
         dni,
         paymentId
-      });*/
-      await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
+      });
+
+      /*await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
         {
           attempts: 3, // Reintentar 3 veces si falla
           backoff: {
@@ -859,10 +859,11 @@ export const mercadoPagoWebhookController = async (req, res) => {
           },
           removeOnComplete: true, // limpia el job si se completó
           removeOnFail: false // puedes dejarlo en false para revisar errores
-        })
-
+      })*/
+      return res.sendStatus(200)
     } catch (err) {
       console.error("Error procesando pago en background:", err);
+      return res.sendStatus(500)
     }
 
   } catch (error) {
@@ -874,7 +875,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
 
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
-  console.log('entra a generar qr')
+  
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
     const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
       updateOne: {
