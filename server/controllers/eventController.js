@@ -1367,7 +1367,7 @@ const getPaymentsIds = await transactionModel.findOne({prodId})
       {"amount": pays.montoPagado},
       {
         headers:{
-          Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN}`,
+          Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`,
           'Content-Type': 'application/json'
         }
       }
@@ -1389,9 +1389,9 @@ const getPaymentsIds = await transactionModel.findOne({prodId})
     console.warn('Algunos reembolsos fallaron:', fallidos);
   }
  // await transactionModel.deleteOne({prodId: prodId})
-  return 1;
+  return res.sendStatus(200);
 }catch(err){
-  return 2;
+  return res.sendStatus(500);
 }
 }
 
