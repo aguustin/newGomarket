@@ -462,23 +462,26 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
   const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
-  // 1. Intentar incrementar el montoPagado si el email ya existe
-const updateResult = await transactionModel.updateOne(
-  {
-    prodId,
-    'compradores.email': mail,  // Encontrar comprador con email
-    'compradores.transaccionId': { $ne: paymentId } // Verificar que transaccionId no exista
-  },
-  {
-    $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
-    $addToSet: { 'compradores.$.transaccionId': paymentId }  // Evitar transacciones duplicadas
-  }
-);
+  // 1. Intentar incrementar el montoPagado si el email ya existe y paymentId no está
+  const updateResult = await transactionModel.updateOne(
+    {
+      prodId,
+      'compradores.email': mail,
+      'compradores.transaccionId': { $ne: paymentId } // paymentId NO debe existir aún
+    },
+    {
+      $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
+      $addToSet: { 'compradores.$.transaccionId': paymentId }
+    }
+  );
 
-if (updateResult.matchedCount === 0) {
-    // 2. Si no se encontró, insertar nuevo comprador
-    await transactionModel.updateOne(
-      { prodId },
+  if (updateResult.matchedCount === 0) {
+    // 2. No existe comprador con ese email y paymentId: insertamos nuevo comprador
+    const insertResult = await transactionModel.updateOne(
+      {
+        prodId,
+        'compradores.transaccionId': { $ne: paymentId } // Asegurar no duplicar transacción
+      },
       {
         $push: {
           compradores: {
@@ -491,9 +494,14 @@ if (updateResult.matchedCount === 0) {
       },
       { upsert: true }
     );
-  }
-  if (result.modifiedCount === 0) {
-    // Ya se había procesado este paymentId => no seguimos
+
+    if (insertResult.modifiedCount === 0) {
+      // Ya se había procesado este paymentId => no seguimos
+      console.log(`Pago duplicado omitido: ${paymentId}`);
+      return false;
+    }
+  } else if (updateResult.modifiedCount === 0) {
+    // El paymentId ya estaba procesado para ese comprador
     console.log(`Pago duplicado omitido: ${paymentId}`);
     return false;
   }
@@ -501,6 +509,7 @@ if (updateResult.matchedCount === 0) {
   console.log(`✅ Transacción guardada para paymentId: ${paymentId}`);
   return true;
 };
+
 
 
 export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULPAYMENT ES EL DE PRODUCCION Y EL ACTUAL QUE TOMA EL PAYMENT ID Y TRANSACCIONES DE MERCADOPAGO
