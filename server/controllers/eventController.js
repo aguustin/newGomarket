@@ -462,35 +462,47 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
   const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
-  const result = await transactionModel.updateOne(
-    {
-      prodId,
-      'compradores.transaccionId': { $ne: paymentId }  // Solo si este paymentId NO existe ya
-    },
-    {
-      $push: {
-        compradores: {
-          nombre: nombreCompleto,
-          email: mail,
-          montoPagado: totalPagoEntradas,
-          transaccionId: paymentId
-        }
-      },
-      $inc: { montoPagado: totalPagoEntradas },
-      $setOnInsert: { prodId }
-    },
-    { upsert: true }
-  );
-
-  if (result.modifiedCount === 0) {
-    // Ya se había procesado este paymentId => no seguimos
+  // 1) Verificar si paymentId ya está registrado en cualquier comprador para evitar duplicados
+  const existing = await transactionModel.findOne({
+    prodId,
+    'compradores.transaccionId': paymentId
+  });
+  if (existing) {
     console.log(`Pago duplicado omitido: ${paymentId}`);
     return false;
+  }
+
+  // 2) Actualizar comprador existente con ese mail o agregar nuevo comprador
+  const result = await transactionModel.updateOne(
+    { prodId, 'compradores.email': mail },
+    {
+      $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
+      $addToSet: { 'compradores.$.transaccionId': paymentId } // para guardar todos los paymentIds?
+    }
+  );
+
+  if (result.matchedCount === 0) {
+    // No existía comprador con ese mail, crear nuevo comprador
+    await transactionModel.updateOne(
+      { prodId },
+      {
+        $push: {
+          compradores: {
+            nombre: nombreCompleto,
+            email: mail,
+            montoPagado: totalPagoEntradas,
+            transaccionId: paymentId
+          }
+        }
+      },
+      { upsert: true }
+    );
   }
 
   console.log(`✅ Transacción guardada para paymentId: ${paymentId}`);
   return true;
 };
+
 
 /*export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {  //este es solo para probar el envio de los mails nada mas que eso despues hay que borrarlo
   console.log('entra a handle succesful')
@@ -719,7 +731,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 
 export const buyEventTicketsController = async (req, res) => {
   const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
-  
+  const externalReference = `${prodId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   if(total <= 0){
     qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
     return res.status(200).json(3)
@@ -731,7 +743,7 @@ export const buyEventTicketsController = async (req, res) => {
           {
             title: `Ticket para ${nombreEvento}`,
             quantity: 1,
-            unit_price: 1, // aca va "total"
+            unit_price: total, // aca va "total"
             currency_id: 'ARS',
           },
         ],
@@ -745,7 +757,7 @@ export const buyEventTicketsController = async (req, res) => {
           failure: `${process.env.URL_BACK}/payment-failure`,
           pending: `${process.env.URL_BACK}/payment-pending`,
         },
-        external_reference: "164382724",
+        external_reference: externalReference,
         auto_return: 'approved',
         notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
         metadata: {
@@ -795,7 +807,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
     
     if (!paymentId || topic !== 'payment') {
       console.error("No payment ID or topic !== 'payment'");
-      return res.sendStatus(400);
+      return res.sendStatus(200);
     }
 
     //Todo lo que sigue se procesa en segundo plano
@@ -804,7 +816,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       const payment = await mercadopago.payment.findById(paymentId);
       const status = payment.body?.status;
 
-      if (status !== 'approved') return;
+      if (status !== 'approved') return res.sendStatus(200);
 
       // Chequeo de idempotencia
       const existing = await transactionModel.findOne({
@@ -813,7 +825,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
       if (existing) {
         console.log(`Pago ${paymentId} ya procesado — omitido`);
-        return;
+        return res.sendStatus(200);
       }
 
       // Extraer metadata
@@ -833,7 +845,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
       if (!quantities || !mail || !prod_id || !total) {
         console.error("Metadata incompleta:", payment.body.metadata);
-        return;
+        return res.sendStatus(200);
       }
 
       // Procesamos el pago exitoso
