@@ -462,26 +462,36 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
   const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
-  const result = await transactionModel.updateOne(
-    {
-      prodId,
-      'compradores.transaccionId': { $ne: paymentId }  // Solo si este paymentId NO existe ya
-    },
-    {
-      $push: {
-        compradores: {
-          nombre: nombreCompleto,
-          email: mail,
-          montoPagado: totalPagoEntradas,
-          transaccionId: paymentId
+  // 1. Intentar incrementar el montoPagado si el email ya existe
+const updateResult = await transactionModel.updateOne(
+  {
+    prodId,
+    'compradores.email': mail,  // Encontrar comprador con email
+    'compradores.transaccionId': { $ne: paymentId } // Verificar que transaccionId no exista
+  },
+  {
+    $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
+    $addToSet: { 'compradores.$.transaccionId': paymentId }  // Evitar transacciones duplicadas
+  }
+);
+
+if (updateResult.matchedCount === 0) {
+    // 2. Si no se encontró, insertar nuevo comprador
+    await transactionModel.updateOne(
+      { prodId },
+      {
+        $push: {
+          compradores: {
+            nombre: nombreCompleto,
+            email: mail,
+            montoPagado: totalPagoEntradas,
+            transaccionId: paymentId
+          }
         }
       },
-      $inc: { montoPagado: totalPagoEntradas },
-      $setOnInsert: { prodId }
-    },
-    { upsert: true }
-  );
-
+      { upsert: true }
+    );
+  }
   if (result.modifiedCount === 0) {
     // Ya se había procesado este paymentId => no seguimos
     console.log(`Pago duplicado omitido: ${paymentId}`);
