@@ -477,22 +477,28 @@ export const guardarTransaccionExitosa = async (
     }
 
     // Si no existe, crear la transacción
-    await transactionModel.updateOne(
-      { _id: prodId },
-      {
-        $push: {
-          compradores: {
-            nombreCompleto,
-            mail,
-            montoPagado: total,
-            transaccionId: paymentId,
-            fecha: new Date()
-          }
+    const result = await transactionModel.updateOne(
+    {
+      _id: prodId,
+      'compradores.transaccionId': { $ne: paymentId }
+    },
+    {
+      $push: {
+        compradores: {
+          nombreCompleto,
+          mail,
+          montoPagado: total,
+          transaccionId: paymentId,
+          fecha: new Date()
         }
       }
-    );
+    }
+  );
 
-    return true; // Guardado con éxito
+  if (result.modifiedCount === 0) {
+     console.log(`Pago ${paymentId} ya estaba procesado — se evita reenvío.`);
+     return;
+  }
   } catch (error) {
     console.error('Error guardando transacción:', error);
     throw error;
