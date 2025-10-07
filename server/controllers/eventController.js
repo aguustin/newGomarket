@@ -837,7 +837,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       }
 
       // Procesamos el pago exitoso
-      await handleSuccessfulPayment({
+      await handleSuccessfulPayment({ //COMENTARLO Y DESCOMENTAR PAYMENTQUEUE.ADD PARA UTILIZARLO EN PRODUCCION
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
