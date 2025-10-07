@@ -459,207 +459,38 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 };
 
 
-export const guardarTransaccionExitosa = async (
-  prodId,
-  nombreCompleto,
-  mail,
-  total,
-  paymentId
-) => {
-  try {
-    // Chequeo: ¿ya existe una transacción con este paymentId?
-    const yaExiste = await transactionModel.findOne({
-      'compradores.transaccionId': paymentId
-    });
+const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
+  const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
-    if (yaExiste) {
-      return false; // Ya procesado
-    }
-
-    // Si no existe, crear la transacción
-    const result = await transactionModel.updateOne(
+  const result = await transactionModel.updateOne(
     {
-      _id: prodId,
-      'compradores.transaccionId': { $ne: paymentId }
+      prodId,
+      'compradores.transaccionId': { $ne: paymentId }  // Solo si este paymentId NO existe ya
     },
     {
       $push: {
         compradores: {
-          nombreCompleto,
-          mail,
-          montoPagado: total,
-          transaccionId: paymentId,
-          fecha: new Date()
+          nombre: nombreCompleto,
+          email: mail,
+          montoPagado: totalPagoEntradas,
+          transaccionId: paymentId
         }
-      }
-    }
+      },
+      $inc: { montoPagado: totalPagoEntradas },
+      $setOnInsert: { prodId }
+    },
+    { upsert: true }
   );
 
   if (result.modifiedCount === 0) {
-     console.log(`Pago ${paymentId} ya estaba procesado — se evita reenvío.`);
-     return;
+    // Ya se había procesado este paymentId => no seguimos
+    console.log(`Pago duplicado omitido: ${paymentId}`);
+    return false;
   }
-  } catch (error) {
-    console.error('Error guardando transacción:', error);
-    throw error;
-  }
+
+  console.log(`✅ Transacción guardada para paymentId: ${paymentId}`);
+  return true;
 };
-
-
-/*export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {  //este es solo para probar el envio de los mails nada mas que eso despues hay que borrarlo
-  console.log('entra a handle succesful')
-  
-    await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
-      console.log('no llega aca despues del qr')
-    let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
-    let rrppMatch;
-    let getDecryptedMail
-
-    if(updateRRPP.length <= 0){
-      updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
-      rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
-      getDecryptedMail = decrypt(rrppMatch.prodMail);
-    }else{
-      rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
-      getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
-    }
-
-    const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
-    
-    if (!doc){
-      const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
-        updateOne: {
-          filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
-          update: {
-            $inc: {
-              "tickets.$.ventas": quantity,
-              "tickets.$.cantidad": -quantity,
-            },
-          },
-        },
-      }));
-      const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
-      await Promise.all([
-        ticketModel.updateOne(
-          { _id: prodId },
-          {
-            $inc: {
-              totalVentas: ventasTotales,
-              totalMontoVendido: total,
-            },
-          }
-        ),
-        ticketModel.bulkWrite([...bulkOps])
-      ]);
-      return 1
-    }
-
-    const rrpp = doc.rrpp.find(r => r.mail === getDecryptedMail);
-    const existingTicketIds = rrpp?.ventasRRPP.map(v => v.ticketId) || [];
-
-    const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
-    const tickets = doc.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
-
-    const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
-
-    const sumaTotal = tickets.reduce((acc, ticket) => {
-      const ticketId = ticket._id.toString();
-      const vendidos = quantities[ticketId];
-      return acc + vendidos * ticket.precio;
-    }, 0);
-
-    // Actualiza tickets
-    const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
-      updateOne: {
-        filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
-        update: {
-          $inc: {
-            "tickets.$.ventas": quantity,
-            "tickets.$.cantidad": -quantity,
-          },
-        },
-      },
-    }));
-
-// Actualiza RRPP
-  const bulkOpsRRPP = tickets.map(ticket => {
-  const ticketId = ticket._id.toString();
-  const vendidos = quantities[ticketId];
-  const total = vendidos * ticket.precio;
-  const nombreCategoria = ticket.nombreTicket;
-  const alreadyExists = existingTicketIds.includes(ticketId);
-
-  if (alreadyExists) {
-    return {
-      updateOne: {
-        filter: {
-          "rrpp.mail": getDecryptedMail,
-          "rrpp.ventasRRPP.ticketId": ticketId,
-        },
-        update: {
-          $inc: {
-            "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].vendidos": vendidos,
-            "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].total": total
-          },
-        },
-        arrayFilters: [
-          { "rrppElem.mail": getDecryptedMail },
-          { "ventaElem.ticketId": ticketId },
-        ],
-      }
-    };
-  } else {
-    return {
-        updateOne: {
-            filter: { "rrpp.mail": getDecryptedMail },
-            update: {
-              $push: {
-                "rrpp.$[rrppElem].ventasRRPP": {
-                  ticketId,
-                  nombreCategoria,
-                  vendidos,
-                  total
-                }
-              }
-            },
-            arrayFilters: [
-              { "rrppElem.mail": getDecryptedMail },
-            ],
-          }
-        };
-      }
-    });
-
- // Sumar montoTotalVendidoRRPP
-  bulkOpsRRPP.push({
-    updateOne: {
-      filter: { "rrpp.mail": getDecryptedMail },
-      update: {
-        $inc: {
-          "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal
-        }
-      },
-      arrayFilters: [
-        { "rrppElem.mail": getDecryptedMail }
-      ]
-    }
-  });
-
-  // Ejecutar operaciones
-  await Promise.all([
-    ticketModel.updateOne(
-      { _id: prodId },
-      {
-        $inc: {
-          totalVentas: ventasTotales,
-          totalMontoVendido: total,
-        },
-      }
-    ),
-    ticketModel.bulkWrite([...bulkOps, ...bulkOpsRRPP])
-  ]);
-
-};*/
 
 
 export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULPAYMENT ES EL DE PRODUCCION Y EL ACTUAL QUE TOMA EL PAYMENT ID Y TRANSACCIONES DE MERCADOPAGO
@@ -733,7 +564,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 
 export const buyEventTicketsController = async (req, res) => {
   const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
-  const externalReference = `${prodId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  
   if(total <= 0){
     qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
     return res.status(200).json(3)
@@ -745,7 +576,7 @@ export const buyEventTicketsController = async (req, res) => {
           {
             title: `Ticket para ${nombreEvento}`,
             quantity: 1,
-            unit_price: total, // aca va "total"
+            unit_price: 1, // aca va "total"
             currency_id: 'ARS',
           },
         ],
@@ -759,7 +590,7 @@ export const buyEventTicketsController = async (req, res) => {
           failure: `${process.env.URL_BACK}/payment-failure`,
           pending: `${process.env.URL_BACK}/payment-pending`,
         },
-        external_reference: externalReference,
+        external_reference: "164382724",
         auto_return: 'approved',
         notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
         metadata: {
@@ -809,7 +640,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
     
     if (!paymentId || topic !== 'payment') {
       console.error("No payment ID or topic !== 'payment'");
-      return res.sendStatus(200);
+      return res.sendStatus(400);
     }
 
     //Todo lo que sigue se procesa en segundo plano
@@ -818,7 +649,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       const payment = await mercadopago.payment.findById(paymentId);
       const status = payment.body?.status;
 
-      if (status !== 'approved') return res.sendStatus(200);
+      if (status !== 'approved') return;
 
       // Chequeo de idempotencia
       const existing = await transactionModel.findOne({
@@ -827,7 +658,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
       if (existing) {
         console.log(`Pago ${paymentId} ya procesado — omitido`);
-        return res.sendStatus(200);
+        return;
       }
 
       // Extraer metadata
@@ -847,11 +678,11 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
       if (!quantities || !mail || !prod_id || !total) {
         console.error("Metadata incompleta:", payment.body.metadata);
-        return res.sendStatus(200);
+        return;
       }
 
       // Procesamos el pago exitoso
-      await handleSuccessfulPayment({ //COMENTARLO Y DESCOMENTAR PAYMENTQUEUE.ADD PARA UTILIZARLO EN PRODUCCION
+      await handleSuccessfulPayment({
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -1565,3 +1396,158 @@ export const cancelarEventoController = async (req, res) => {
   }
   return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
 }
+
+/*export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {  //este es solo para probar el envio de los mails nada mas que eso despues hay que borrarlo
+  console.log('entra a handle succesful')
+  
+    await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
+      console.log('no llega aca despues del qr')
+    let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
+    let rrppMatch;
+    let getDecryptedMail
+
+    if(updateRRPP.length <= 0){
+      updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
+      rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
+      getDecryptedMail = decrypt(rrppMatch.prodMail);
+    }else{
+      rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
+      getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
+    }
+
+    const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
+    
+    if (!doc){
+      const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
+        updateOne: {
+          filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
+          update: {
+            $inc: {
+              "tickets.$.ventas": quantity,
+              "tickets.$.cantidad": -quantity,
+            },
+          },
+        },
+      }));
+      const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+      await Promise.all([
+        ticketModel.updateOne(
+          { _id: prodId },
+          {
+            $inc: {
+              totalVentas: ventasTotales,
+              totalMontoVendido: total,
+            },
+          }
+        ),
+        ticketModel.bulkWrite([...bulkOps])
+      ]);
+      return 1
+    }
+
+    const rrpp = doc.rrpp.find(r => r.mail === getDecryptedMail);
+    const existingTicketIds = rrpp?.ventasRRPP.map(v => v.ticketId) || [];
+
+    const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
+    const tickets = doc.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
+
+    const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+
+    const sumaTotal = tickets.reduce((acc, ticket) => {
+      const ticketId = ticket._id.toString();
+      const vendidos = quantities[ticketId];
+      return acc + vendidos * ticket.precio;
+    }, 0);
+
+    // Actualiza tickets
+    const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
+      updateOne: {
+        filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
+        update: {
+          $inc: {
+            "tickets.$.ventas": quantity,
+            "tickets.$.cantidad": -quantity,
+          },
+        },
+      },
+    }));
+
+// Actualiza RRPP
+  const bulkOpsRRPP = tickets.map(ticket => {
+  const ticketId = ticket._id.toString();
+  const vendidos = quantities[ticketId];
+  const total = vendidos * ticket.precio;
+  const nombreCategoria = ticket.nombreTicket;
+  const alreadyExists = existingTicketIds.includes(ticketId);
+
+  if (alreadyExists) {
+    return {
+      updateOne: {
+        filter: {
+          "rrpp.mail": getDecryptedMail,
+          "rrpp.ventasRRPP.ticketId": ticketId,
+        },
+        update: {
+          $inc: {
+            "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].vendidos": vendidos,
+            "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].total": total
+          },
+        },
+        arrayFilters: [
+          { "rrppElem.mail": getDecryptedMail },
+          { "ventaElem.ticketId": ticketId },
+        ],
+      }
+    };
+  } else {
+    return {
+        updateOne: {
+            filter: { "rrpp.mail": getDecryptedMail },
+            update: {
+              $push: {
+                "rrpp.$[rrppElem].ventasRRPP": {
+                  ticketId,
+                  nombreCategoria,
+                  vendidos,
+                  total
+                }
+              }
+            },
+            arrayFilters: [
+              { "rrppElem.mail": getDecryptedMail },
+            ],
+          }
+        };
+      }
+    });
+
+ // Sumar montoTotalVendidoRRPP
+  bulkOpsRRPP.push({
+    updateOne: {
+      filter: { "rrpp.mail": getDecryptedMail },
+      update: {
+        $inc: {
+          "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal
+        }
+      },
+      arrayFilters: [
+        { "rrppElem.mail": getDecryptedMail }
+      ]
+    }
+  });
+
+  // Ejecutar operaciones
+  await Promise.all([
+    ticketModel.updateOne(
+      { _id: prodId },
+      {
+        $inc: {
+          totalVentas: ventasTotales,
+          totalMontoVendido: total,
+        },
+      }
+    ),
+    ticketModel.bulkWrite([...bulkOps, ...bulkOpsRRPP])
+  ]);
+
+};*/
