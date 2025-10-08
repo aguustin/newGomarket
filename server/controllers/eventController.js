@@ -1363,12 +1363,14 @@ const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
 
  const refundPromises = getPaymentsIds.compradores.map((pays) => {
     console.log("transaccion id", ' ', pays.transaccionId, 'montopagado: ', pays.montoPagado)
+    const idempotencyKey = `refund-${uuidv4()}`;
     return axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
       {"amount": pays.montoPagado},
       {
         headers:{
           Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Idempotency-Key': idempotencyKey
         }
       }
     )
@@ -1398,7 +1400,7 @@ const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
 
 export const cancelarEventoController = async (req, res) => {
   const {prodId} = req.body;
-   const { success, fallidos } =await refundsFunc({prodId})
+   const { success, fallidos } = await refundsFunc({prodId})
   /*const result = await refundQueue.add('reembolsar-pago', 
     {prodId},
     {
