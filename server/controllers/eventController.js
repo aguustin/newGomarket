@@ -1389,16 +1389,16 @@ const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
     console.warn('Algunos reembolsos fallaron:', fallidos);
   }
  // await transactionModel.deleteOne({prodId: prodId})
-  return 1;
+  return { success: true, fallidos };
 }catch(err){
   console.log(err)
-  return 2;
+  return { success: false, fallidos: [] };
 }
 }
 
 export const cancelarEventoController = async (req, res) => {
   const {prodId} = req.body;
-  const result = await refundsFunc({prodId})
+   const { success, fallidos } =await refundsFunc({prodId})
   /*const result = await refundQueue.add('reembolsar-pago', 
     {prodId},
     {
@@ -1412,10 +1412,18 @@ export const cancelarEventoController = async (req, res) => {
     }
   )*/
 
-  if(result === 1){
-    return res.status(200).json({ message: 'Reembolsos procesados', fallidos: fallidos });
+  if (success) {
+    return res.status(200).json({
+      message: 'Reembolsos procesados',
+      fallidos: fallidos.length,
+      detalles: fallidos.map(f => f.reason?.response?.data || f.reason), // opcional
+    });
   }
-  return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos });
+
+  return res.status(500).json({
+    message: 'Fallo el reembolso',
+    fallidos: fallidos.length,
+  });
 }
 
 /*export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {  //este es solo para probar el envio de los mails nada mas que eso despues hay que borrarlo
