@@ -624,7 +624,7 @@ export const buyEventTicketsController = async (req, res) => {
               dni
         },
     };
-    console.log("NOMBRE COMPLETOl ", nombreCompleto)
+
     const response = await mercadopago.preferences.create(preference);
 
     if(response.body && response.body.init_point){
@@ -660,9 +660,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
     
     if (!paymentId || topic !== 'payment') {
       console.error("No payment ID or topic !== 'payment'");
-      return res.sendStatus(400);
+      return res.sendStatus(200);
     }
-
     //Todo lo que sigue se procesa en segundo plano
     //Importante: los errores se capturan, ya que ya respondimos
     try {
@@ -714,7 +713,6 @@ export const mercadoPagoWebhookController = async (req, res) => {
         dni,
         paymentId
       });
-
       /*await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
         {
           attempts: 3, // Reintentar 3 veces si falla
@@ -844,7 +842,7 @@ console.log("QRs generados y enviados.");
 export const addRRPPController = async (req, res) => {
  const {prodId, rrppMail, nombreEvento, eventImg} = req.body
     const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
-    console.log('Intentando enviar correo a 0');
+
     if(rrppExist){
       const inf = await resend.emails.send({
         from: '"GoTickets" <no-reply@goticketonline.com>',
@@ -857,14 +855,14 @@ export const addRRPPController = async (req, res) => {
                 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
               </style>
             </head>
-            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
+            <body style="font-family: 'Poppins', sans-serif; padding:10px text-align:center;">
               <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
                 <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
               </div>
               <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
-                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-                  <p style="font-size:18px">Evento: ${nombreEvento} </p>
+                  <h3 style="font-size:4vw; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p style="font-size:3vw; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p style="font-size:3vw">Evento: ${nombreEvento} </p>
                   <img src="${eventImg}"  alt="${nombreEvento}" style="width:230px; height:230px;"/>
               </div>
               <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
@@ -878,18 +876,18 @@ export const addRRPPController = async (req, res) => {
       return res.status(200).json({msg:'El colaborador ya existe en este evento'})
     }else{
 
-      await ticketModel.updateOne(
-        {_id: prodId, 'rrpp.mail': {$ne: rrppMail}},
-        {
-          $addToSet:{
-            rrpp:
-              {
-                mail: rrppMail
-              }
-          }
+    await ticketModel.updateOne(
+      {_id: prodId, 'rrpp.mail': {$ne: rrppMail}},
+      {
+        $addToSet:{
+          rrpp:
+            {
+              mail: rrppMail
+            }
         }
-      )
-      console.log('Intentando enviar correo a 1');
+      }
+    )
+  
     await resend.emails.send({
     from: '"GoTickets" <no-reply@goticketonline.com>',
     to: [rrppMail],
@@ -901,15 +899,15 @@ export const addRRPPController = async (req, res) => {
                 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
               </style>
             </head>
-            <body style="font-family: 'Poppins', sans-serif; padding:50px text-align:center;">
+            <body style="font-family: 'Poppins', sans-serif; padding:10px text-align:center;">
                 <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
                   <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
                 </div>
                 <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
-                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:18px; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-                  <p style="font-size:18px">Evento:</p>
-                  <img src="${eventImg}"  alt="" style="width:200px;height:200px;"/>
+                  <h3 style="font-size:4vw; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p style="font-size:3vw; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p style="font-size:3vw">Evento:</p>
+                  <img src="${eventImg}"  alt="" style="width:230px;height:230px;"/>
                 </div>
                 <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
                 <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
@@ -1365,7 +1363,7 @@ try{
 const getPaymentsIds = await transactionModel.findOne({prodId})
 
  const refundPromises = getPaymentsIds.compradores.map((pays) => {
-    console.log(pays.transaccionId, ' ', pays.montoPagado)
+    console.log("transaccion id", ' ', pays.transaccionId, 'montopagado: ', pays.montoPagado)
     axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
       {"amount": pays.montoPagado},
       {
