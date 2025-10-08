@@ -1026,7 +1026,7 @@ export const sendQrStaffQrController = async (req, res) => {
   });*/
 
   try {
-    console.log('Intentando enviar correo a 2');
+    
     const inf = await resend.emails.send({
       from: '"GoTickets" <no-reply@goticketonline.com>',
       to: [mail],
@@ -1102,7 +1102,7 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-  console.log('llega a querer enviar el mail', email)
+
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
       const qrCid = `qrcodeimg${index}`;
@@ -1153,7 +1153,7 @@ const sendQrEmail = async (
       </html>
     `;
     
-    console.log('Intentando enviar correo a 3');
+    
     const attachments = tickets.map((ticket, index) => ({
        filename: `qrcode-${index + 1}.png`,
         content: ticket.qrImage,       // Buffer o base64
@@ -1391,9 +1391,9 @@ const getPaymentsIds = await transactionModel.findOne({prodId})
     console.warn('Algunos reembolsos fallaron:', fallidos);
   }
  // await transactionModel.deleteOne({prodId: prodId})
-  return res.status(200).json(1);
+  return 1;
 }catch(err){
-  return res.sendStatus(500);
+  return 2;
 }
 }
 
@@ -1413,7 +1413,7 @@ export const cancelarEventoController = async (req, res) => {
     }
   )*/
 
-  if(result.data === 1){
+  if(result === 1){
     return res.status(200).json({ message: 'Reembolsos procesados', fallidos: fallidos.length });
   }
   return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
