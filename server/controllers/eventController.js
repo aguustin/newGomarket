@@ -502,7 +502,7 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
     }
   } else if (updateResult.modifiedCount === 0) {
     // El paymentId ya estaba procesado para ese comprador
-    console.log(`Pago duplicado omitido: ${paymentId}`);
+    console.log(`Pago procesado omitido: ${paymentId}`);
     return false;
   }
 
