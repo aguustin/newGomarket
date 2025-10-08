@@ -615,6 +615,7 @@ export const buyEventTicketsController = async (req, res) => {
         dni,
       },
     };
+    console.log("NOMBRE COMPLETOl ", nombreCompleto)
     const response = await mercadopago.preferences.create(preference);
 
     if (response.body?.init_point) {
