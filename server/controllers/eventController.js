@@ -467,7 +467,6 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
     {
       prodId,
       'compradores.email': mail,
-      'compradores.transaccionId': { $ne: paymentId } // paymentId NO debe existir aún
     },
     {
       $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
