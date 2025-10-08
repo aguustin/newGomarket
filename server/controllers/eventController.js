@@ -1360,11 +1360,11 @@ export const refundsFunc = async ({prodId}) => {
   console.log("prodId: ", prodId)
 try{
 
-const getPaymentsIds = await transactionModel.findOne({prodId})
+const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
 
  const refundPromises = getPaymentsIds.compradores.map((pays) => {
     console.log("transaccion id", ' ', pays.transaccionId, 'montopagado: ', pays.montoPagado)
-    axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
+    return axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
       {"amount": pays.montoPagado},
       {
         headers:{
