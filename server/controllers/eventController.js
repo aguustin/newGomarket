@@ -1359,6 +1359,7 @@ export const descargarCompradoresController = async (req, res) => {
 }
 
 export const refundsFunc = async ({prodId}) => {
+  console.log("prodId: ", prodId)
 try{
 
 const getPaymentsIds = await transactionModel.findOne({prodId})
@@ -1390,7 +1391,7 @@ const getPaymentsIds = await transactionModel.findOne({prodId})
     console.warn('Algunos reembolsos fallaron:', fallidos);
   }
  // await transactionModel.deleteOne({prodId: prodId})
-  return res.sendStatus(200);
+  return res.status(200).json(1);
 }catch(err){
   return res.sendStatus(500);
 }
@@ -1398,7 +1399,8 @@ const getPaymentsIds = await transactionModel.findOne({prodId})
 
 export const cancelarEventoController = async (req, res) => {
   const {prodId} = req.body;
-  const result = await refundQueue.add('reembolsar-pago', 
+  const result = await refundsFunc({prodId})
+  /*const result = await refundQueue.add('reembolsar-pago', 
     {prodId},
     {
     attempts: 3, // Reintentar 3 veces si falla
@@ -1409,9 +1411,9 @@ export const cancelarEventoController = async (req, res) => {
       removeOnComplete: true, // limpia el job si se completó
       removeOnFail: false // puedes dejarlo en false para revisar errores
     }
-  )
+  )*/
 
-  if(result === 1){
+  if(result.data === 1){
     return res.status(200).json({ message: 'Reembolsos procesados', fallidos: fallidos.length });
   }
   return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
