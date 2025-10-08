@@ -1365,6 +1365,7 @@ try{
 const getPaymentsIds = await transactionModel.findOne({prodId})
 
  const refundPromises = getPaymentsIds.compradores.map((pays) => {
+    console.log(pays.transaccionId, ' ', pays.montoPagado)
     axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
       {"amount": pays.montoPagado},
       {
