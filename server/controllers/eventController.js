@@ -16,7 +16,7 @@ import { formatDateB } from "../lib/dates.js";
 import ExcelJS from 'exceljs';
 import axios from "axios";
 import { paymentQueue, refundQueue } from "../queues/paymentQueue.js";
-import { redisClient } from "../lib/redisClient.js";
+//import { redisClient } from "../lib/redisClient.js"; //DESCOMENTAR PARA PRODUCCION
 import { resend } from "../lib/resendDomain.js";
 
 dotenv.config();
@@ -333,7 +333,7 @@ export const getEventToBuyController = async (req, res) => {
     res.send(getProd)
 }
 
-export const obtenerRRPPDesdeHash = (event, emailHash) => {
+const obtenerRRPPDesdeHash = (event, emailHash) => {
   let rrppMatch = null;
   let decryptedMail = null;
 
@@ -351,7 +351,7 @@ export const obtenerRRPPDesdeHash = (event, emailHash) => {
   return { rrppMatch: null, decryptedMail: null };
 };
 
-export const procesarVentaGeneral = async (event, quantities, total) => {
+const procesarVentaGeneral = async (event, quantities, total) => {
   const prodId = event._id;
   const bulkOps = Object.entries(quantities).map(([ticketId, qty]) => ({
     updateOne: {
@@ -382,7 +382,7 @@ export const procesarVentaGeneral = async (event, quantities, total) => {
 };
 
 
-export const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
+const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
   const prodId = event._id;
   const rrpp = event.rrpp.find(r => r.mail === decryptedMail);
   if (!rrpp) return;
@@ -459,31 +459,49 @@ export const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 };
 
 
-const guardarTransaccionExitosa = async (prodIdVal, nombreCompleto, mail, total, paymentId) => {
+const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
   const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
-  const result = await transactionModel.updateOne(
+  // 1. Intentar incrementar el montoPagado si el email ya existe y paymentId no está
+  const updateResult = await transactionModel.updateOne(
     {
-      prodId: prodIdVal,
-      'compradores.transaccionId': { $ne: paymentId }  // Solo si este paymentId NO existe ya
+      prodId,
+      'compradores.email': mail,
+      'compradores.transaccionId': { $ne: paymentId } // paymentId NO debe existir aún
     },
     {
-      $push: {
-        compradores: {
-          nombre: nombreCompleto,
-          email: mail,
-          montoPagado: totalPagoEntradas,
-          transaccionId: paymentId
-        }
-      },
-      $inc: { montoPagado: totalPagoEntradas },
-      $setOnInsert: { prodId: prodIdVal }
-    },
-    { upsert: true }
+      $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
+      $set: { 'compradores.$.transaccionId': paymentId }
+    }
   );
 
-  if (result.modifiedCount === 0) {
-    // Ya se había procesado este paymentId => no seguimos
+  if (updateResult.matchedCount === 0) {
+    // 2. No existe comprador con ese email y paymentId: insertamos nuevo comprador
+    const insertResult = await transactionModel.updateOne(
+      {
+        prodId,
+        'compradores.transaccionId': { $ne: paymentId } // Asegurar no duplicar transacción
+      },
+      {
+        $push: {
+          compradores: {
+            nombre: nombreCompleto,
+            email: mail,
+            montoPagado: totalPagoEntradas,
+            transaccionId: paymentId
+          }
+        }
+      },
+      { upsert: true }
+    );
+
+    if (insertResult.modifiedCount === 0) {
+      // Ya se había procesado este paymentId => no seguimos
+      console.log(`Pago duplicado omitido: ${paymentId}`);
+      return false;
+    }
+  } else if (updateResult.modifiedCount === 0) {
+    // El paymentId ya estaba procesado para ese comprador
     console.log(`Pago duplicado omitido: ${paymentId}`);
     return false;
   }
@@ -493,7 +511,8 @@ const guardarTransaccionExitosa = async (prodIdVal, nombreCompleto, mail, total,
 };
 
 
-/*export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULPAYMENT ES EL DE PRODUCCION Y EL ACTUAL QUE TOMA EL PAYMENT ID Y TRANSACCIONES DE MERCADOPAGO
+
+export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULPAYMENT ES EL DE PRODUCCION Y EL ACTUAL QUE TOMA EL PAYMENT ID Y TRANSACCIONES DE MERCADOPAGO
   const {
     prodId,
     quantities,
@@ -510,11 +529,11 @@ const guardarTransaccionExitosa = async (prodIdVal, nombreCompleto, mail, total,
 
   try {
     // Revisar si ya se procesó el pago (cache Redis)
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
+    // const cached = await redisClient.get(cacheKey); //expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
+    /*if (cached) { // DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS Y PARA QUE FUNCIONE TODO BIEN
       console.log(`Pago ${paymentId} ya procesado (cache).`);
       return;
-    }
+    }*/
 
     // Si no está en cache, validar en DB (tu función actual)
     const event = await ticketModel.findOne({ _id: prodId }).lean();
@@ -535,9 +554,9 @@ const guardarTransaccionExitosa = async (prodIdVal, nombreCompleto, mail, total,
     );
 
     if (!guardado) {
-      console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
+       console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
       // Marcar en cache para acelerar futuros chequeos
-      await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas
+      // await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
       return;
     }
 
@@ -550,266 +569,178 @@ const guardarTransaccionExitosa = async (prodIdVal, nombreCompleto, mail, total,
     if (rrppMatch && decryptedMail) {
       tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
     }
-
     await Promise.all(tasks);
 
     // Marcar como procesado en cache
-    await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas
+    //await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
 
     console.log(`Pago ${paymentId} procesado y cacheado.`);
   } catch (error) {
     console.error("Error en handleSuccessfulPayment:", error);
     throw error;
   }
-};*/
+};
 
 export const buyEventTicketsController = async (req, res) => {
-
-  const {
-    prodId,
-    nombreEvento,
-    quantities,
-    mail,
-    state,
-    total,
-    emailHash,
-    nombreCompleto,
-    dni
-  } = req.body;
-
-  // ⚠️ Validación básica
-  if (!prodId || !nombreEvento || !quantities || !mail || !total || total <= 0) {
-    return res.status(400).json({ message: 'Datos inválidos para generar la preferencia.' });
+  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
+  
+  if(total <= 0){
+    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
+    return res.status(200).json(3)
   }
-
+ 
   try {
-    const preference = {
-      items: [
-        {
-          title: `Ticket para ${nombreEvento}`,
-          quantity: 1,
-          unit_price: Number(total),
-          currency_id: 'ARS',
+      const preference = {
+        items: [
+          {
+            title: `Ticket para ${nombreEvento}`,
+            quantity: 1,
+            unit_price: 1, // aca va "total"
+            currency_id: 'ARS',
+          },
+        ],
+        payer: {
+          name: nombreCompleto,
+          surname: nombreCompleto,
+          email: mail,
         },
-      ],
-      payer: {
-        email: mail, // Solo es obligatorio el email en Checkout Pro
-      },
-      back_urls: {
-        success: `${process.env.URL_BACK}/payment-success`,
-        failure: `${process.env.URL_BACK}/payment-failure`,
-        pending: `${process.env.URL_BACK}/payment-pending`,
-      },
-      external_reference: `${prodId}-${Date.now()}`, // algo único por preferencia
-      auto_return: 'approved',
-      notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,
-      metadata: {
-        prodId,
-        nombreEvento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash,
-        nombreCompleto,
-        dni,
-      },
+        back_urls: {
+          success: `${process.env.URL_BACK}/payment-success`,
+          failure: `${process.env.URL_BACK}/payment-failure`,
+          pending: `${process.env.URL_BACK}/payment-pending`,
+        },
+        external_reference: "164382724",
+        auto_return: 'approved',
+        notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
+        metadata: {
+              prodId,
+              nombreEvento,
+              quantities,
+              mail,
+              state,
+              total,
+              emailHash,
+              nombreCompleto,
+              dni
+        },
     };
     console.log("NOMBRE COMPLETOl ", nombreCompleto)
     const response = await mercadopago.preferences.create(preference);
 
-    if (response.body?.init_point) {
-      return res.status(200).json({ init_point: response.body.init_point });
-    } else {
-      return res.status(500).json({ message: 'No se pudo crear la preferencia.' });
+    if(response.body && response.body.init_point){
+      //await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });//esta va en "desarrollo - dev" y lo reemplazo con el paymentQueue para probar si funciona mas rapido
+      
+      /*await paymentQueue.add('ejecutar-pago', 
+        {prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni},
+        {
+          attempts: 3, // Reintentar 3 veces si falla
+          backoff: {
+            type: 'exponential', // o 'fixed'
+            delay: 5000 // 5 segundos de espera antes de reintentar
+          },
+          removeOnComplete: true, // limpia el job si se completó
+          removeOnFail: false // puedes dejarlo en false para revisar errores
+        }
+      )*/
+      
+      return res.status(200).json({
+        init_point: response.body.init_point,
+      });
     }
-
   } catch (error) {
-    console.error('Error al crear preferencia:', error.response?.body || error.message);
-    return res.status(500).json({ message: 'Error creando la preferencia.' });
+    console.error('Error al crear preferencia:', error);
+    res.status(500).json({ message: 'Error creando la preferencia' });
   }
-
 };
-
-const validarYGuardarPago = async (data) => {
-  const {
-    prodIdVal,
-    quantities,
-    mail,
-    state,
-    total,
-    emailHash,
-    nombreCompleto,
-    dni,
-    paymentId
-  } = data;
-
-  const cacheKey = `payment_processed:${paymentId}`;
-
-  // Paso 1: Verificar si ya se procesó o está en proceso
-  const estadoEnCache = await redisClient.get(cacheKey);
-  if (estadoEnCache === 'true') {
-    console.log(`⏭️ Pago ${paymentId} ya procesado anteriormente.`);
-    return false;
-  }
-
-  if (estadoEnCache === 'processing') {
-    console.log(`⏳ Pago ${paymentId} en proceso por otra instancia.`);
-    return false;
-  }
-
-  // Paso 2: Marcar como "en proceso" para bloquear duplicados
-  await redisClient.set(cacheKey, "processing", 'EX', 60); // bloqueamos por 60s
-
-  // Paso 3: Validaciones + guardado
-  const event = await ticketModel.findOne({ _id: prodIdVal }).lean();
-  if (!event) {
-    console.error("❌ Evento no encontrado:", prodIdVal);
-    return false;
-  }
-
-  const fueGuardado = await guardarTransaccionExitosa(
-    prodIdVal,
-    nombreCompleto,
-    mail,
-    total,
-    paymentId
-  );
-
-  if (!fueGuardado) {
-    await redisClient.set(cacheKey, "true", 'EX', 60 * 60 * 24); // para evitar futuros reintentos
-    return false;
-  }
-
-  // Paso 4: Encolar job para generar QR y enviar email
-  await paymentQueue.add('generar-qr-y-mail', {
-    prodIdVal,
-    mail,
-    total,
-    paymentId,
-    emailHash,
-    nombreCompleto,
-    dni,
-    state,
-    quantities
-  }, {
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 5000 },
-    removeOnComplete: true,
-    removeOnFail: true
-  });
-
-  // Paso 5: Marcamos como procesado (el worker también puede hacerlo si querés)
-  await redisClient.set(cacheKey, "true", 'EX', 60 * 60 * 24);
-
-  console.log(`✅ Pago ${paymentId} validado y encolado.`);
-  return true;
-};
-
 
 export const mercadoPagoWebhookController = async (req, res) => {
   try {
-    const id = req.query.id || req.query['data.id'];
+    const paymentId = req.query.id || req.query['data.id'];
     const topic = req.query.topic || req.query.type;
-
-    console.log('Webhook recibido:', topic, id);
-
-    if (!id || !topic) {
+    
+    if (!paymentId || topic !== 'payment') {
+      console.error("No payment ID or topic !== 'payment'");
       return res.sendStatus(400);
     }
 
-    let payment = null;
+    //Todo lo que sigue se procesa en segundo plano
+    //Importante: los errores se capturan, ya que ya respondimos
+    try {
+      const payment = await mercadopago.payment.findById(paymentId);
+      const status = payment.body?.status;
 
-    if (topic === 'payment') {
-      try {
-        const response = await mercadopago.payment.findById(id);
-        payment = response.body;
-      } catch (err) {
-        console.error(`Error buscando payment ${id}:`, err.message);
-        return res.sendStatus(200);
+      if (status !== 'approved') return;
+
+      // Chequeo de idempotencia
+      const existing = await transactionModel.findOne({
+        'compradores.transaccionId': paymentId
+      });
+
+      if (existing) {
+        console.log(`Pago ${paymentId} ya procesado — omitido`);
+        return;
       }
 
-    } else if (topic === 'merchant_order') {
-      try {
-        const merchantOrder = await mercadopago.merchant_orders.findById(id);
-        const approvedPayment = merchantOrder.body.payments.find(p => p.status === 'approved');
+      // Extraer metadata
+      const {
+        prod_id,
+        nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        email_hash,
+        nombre_completo,
+        dni
+      } = payment.body.metadata;
 
-        if (!approvedPayment) {
-          console.log(`Merchant order ${id} no tiene pagos aprobados aún`);
-          return res.sendStatus(200);
-        }
+      console.log("Metadata del pago:", payment.body.metadata);
 
-        const response = await mercadopago.payment.findById(approvedPayment.id);
-        payment = response.body;
-
-      } catch (err) {
-        console.error(`Error al procesar merchant_order ${id}:`, err.message);
-        return res.sendStatus(200);
+      if (!quantities || !mail || !prod_id || !total) {
+        console.error("Metadata incompleta:", payment.body.metadata);
+        return;
       }
 
-    } else {
-      console.log(`Webhook con topic no soportado: ${topic}`);
-      return res.sendStatus(200);
+      // Procesamos el pago exitoso
+      await handleSuccessfulPayment({
+        prodId: prod_id,
+        nombreEvento: nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        emailHash: email_hash,
+        nombreCompleto: nombre_completo,
+        dni,
+        paymentId
+      });
+
+      /*await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
+        {
+          attempts: 3, // Reintentar 3 veces si falla
+          backoff: {
+            type: 'exponential', // o 'fixed'
+            delay: 5000 // 5 segundos de espera antes de reintentar
+          },
+          removeOnComplete: true, // limpia el job si se completó
+          removeOnFail: false // puedes dejarlo en false para revisar errores
+      })*/
+      return res.sendStatus(200)
+    } catch (err) {
+      console.error("Error procesando pago en background:", err);
+      return res.sendStatus(500)
     }
-
-    if (!payment || payment.status !== 'approved') {
-      console.log(`Pago ${payment?.id} no está aprobado (estado: ${payment?.status})`);
-      return res.sendStatus(200);
-    }
-
-    const {
-      prodId,
-      nombreEvento,
-      quantities,
-      mail,
-      state,
-      total,
-      emailHash,
-      nombreCompleto,
-      dni
-    } = payment.metadata || {};
-
-    if (!quantities || !mail || !payment.metadata.prod_id || !total) {
-      console.error("Metadata incompleta:", payment.metadata.prod_id);
-      return res.sendStatus(200);
-    }
-
-    const paymentId = payment.id;
-    const prodIdVal = payment.metadata.prod_id
-    console.log("paymentId: ", prodIdVal);
-
-    // Aquí usamos la función que valida y guarda + encola
-    const resultado = await validarYGuardarPago({
-      prodIdVal,
-      nombreEvento,
-      quantities,
-      mail,
-      state,
-      total,
-      emailHash,
-      nombreCompleto,
-      dni,
-      paymentId
-    });
-
-    if (!resultado) {
-      console.log(`Pago ${paymentId} ya fue procesado o hubo error en validación`);
-      return res.sendStatus(200);
-    }
-
-    console.log(`Pago ${paymentId} validado y enviado al worker`);
-
-    return res.sendStatus(200);
 
   } catch (error) {
-    console.error('Error general en webhook:', error.message);
+    console.error('Error en webhook:', error.message, error.stack);
     return res.sendStatus(500);
   }
 };
 
 
-export const qrGeneratorController = async (prodIdVal, quantities, mail, state, nombreCompleto, dni) => {
-  console.log('entra a generar qr ', nombreCompleto)
+
+export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
+  
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
     const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
       updateOne: {
@@ -834,7 +765,7 @@ export const qrGeneratorController = async (prodIdVal, quantities, mail, state, 
   }
   try {
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
-  const event = await ticketModel.findById(prodIdVal);
+  const event = await ticketModel.findById(prodId);
 
   if (!event) {
     console.log("Evento no encontrado.");
@@ -1171,7 +1102,7 @@ const sendQrEmail = async (
   state,
   nombreCompleto
 ) => {
-  console.log('llega a querer enviar el mail', nombreCompleto, " ", tickets[0]?.nombreCompleto)
+  console.log('llega a querer enviar el mail', email)
   try {
     const ticketsHTML = tickets.map((ticket, index) => {
       const qrCid = `qrcodeimg${index}`;
@@ -1437,7 +1368,7 @@ const getPaymentsIds = await transactionModel.findOne({prodId})
       {"amount": pays.montoPagado},
       {
         headers:{
-          Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN_DEV}`,
+          Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`,
           'Content-Type': 'application/json'
         }
       }
@@ -1459,9 +1390,9 @@ const getPaymentsIds = await transactionModel.findOne({prodId})
     console.warn('Algunos reembolsos fallaron:', fallidos);
   }
  // await transactionModel.deleteOne({prodId: prodId})
-  return 1;
+  return res.sendStatus(200);
 }catch(err){
-  return 2;
+  return res.sendStatus(500);
 }
 }
 
@@ -1476,7 +1407,7 @@ export const cancelarEventoController = async (req, res) => {
       delay: 5000 // 5 segundos de espera antes de reintentar
     },
       removeOnComplete: true, // limpia el job si se completó
-      removeOnFail: true // puedes dejarlo en false para revisar errores
+      removeOnFail: false // puedes dejarlo en false para revisar errores
     }
   )
 
@@ -1485,3 +1416,158 @@ export const cancelarEventoController = async (req, res) => {
   }
   return res.status(404).json({ message: 'Fallo el reembolso', fallidos: fallidos.length });
 }
+
+/*export const handleSuccessfulPayment = async ({ prodId, quantities, mail, state, total, emailHash, nombreCompleto, dni }) => {  //este es solo para probar el envio de los mails nada mas que eso despues hay que borrarlo
+  console.log('entra a handle succesful')
+  
+    await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
+      console.log('no llega aca despues del qr')
+    let updateRRPP = await ticketModel.find({ _id: prodId, 'rrpp.mailHash': emailHash });
+    let rrppMatch;
+    let getDecryptedMail
+
+    if(updateRRPP.length <= 0){
+      updateRRPP = await ticketModel.find({ _id: prodId, prodMail: emailHash });
+      rrppMatch = updateRRPP.find(p => p.prodMail === emailHash)
+      getDecryptedMail = decrypt(rrppMatch.prodMail);
+    }else{
+      rrppMatch = updateRRPP[0]?.rrpp.find(r => r.mailHash === emailHash);
+      getDecryptedMail = decrypt(rrppMatch.mailEncriptado);
+    }
+
+    const doc = await ticketModel.findOne({ "rrpp.mail": getDecryptedMail });
+    
+    if (!doc){
+      const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
+        updateOne: {
+          filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
+          update: {
+            $inc: {
+              "tickets.$.ventas": quantity,
+              "tickets.$.cantidad": -quantity,
+            },
+          },
+        },
+      }));
+      const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+      await Promise.all([
+        ticketModel.updateOne(
+          { _id: prodId },
+          {
+            $inc: {
+              totalVentas: ventasTotales,
+              totalMontoVendido: total,
+            },
+          }
+        ),
+        ticketModel.bulkWrite([...bulkOps])
+      ]);
+      return 1
+    }
+
+    const rrpp = doc.rrpp.find(r => r.mail === getDecryptedMail);
+    const existingTicketIds = rrpp?.ventasRRPP.map(v => v.ticketId) || [];
+
+    const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
+    const tickets = doc.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
+
+    const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+
+    const sumaTotal = tickets.reduce((acc, ticket) => {
+      const ticketId = ticket._id.toString();
+      const vendidos = quantities[ticketId];
+      return acc + vendidos * ticket.precio;
+    }, 0);
+
+    // Actualiza tickets
+    const bulkOps = Object.entries(quantities).map(([id, quantity]) => ({
+      updateOne: {
+        filter: { "tickets._id": new mongoose.Types.ObjectId(id) },
+        update: {
+          $inc: {
+            "tickets.$.ventas": quantity,
+            "tickets.$.cantidad": -quantity,
+          },
+        },
+      },
+    }));
+
+// Actualiza RRPP
+  const bulkOpsRRPP = tickets.map(ticket => {
+  const ticketId = ticket._id.toString();
+  const vendidos = quantities[ticketId];
+  const total = vendidos * ticket.precio;
+  const nombreCategoria = ticket.nombreTicket;
+  const alreadyExists = existingTicketIds.includes(ticketId);
+
+  if (alreadyExists) {
+    return {
+      updateOne: {
+        filter: {
+          "rrpp.mail": getDecryptedMail,
+          "rrpp.ventasRRPP.ticketId": ticketId,
+        },
+        update: {
+          $inc: {
+            "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].vendidos": vendidos,
+            "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].total": total
+          },
+        },
+        arrayFilters: [
+          { "rrppElem.mail": getDecryptedMail },
+          { "ventaElem.ticketId": ticketId },
+        ],
+      }
+    };
+  } else {
+    return {
+        updateOne: {
+            filter: { "rrpp.mail": getDecryptedMail },
+            update: {
+              $push: {
+                "rrpp.$[rrppElem].ventasRRPP": {
+                  ticketId,
+                  nombreCategoria,
+                  vendidos,
+                  total
+                }
+              }
+            },
+            arrayFilters: [
+              { "rrppElem.mail": getDecryptedMail },
+            ],
+          }
+        };
+      }
+    });
+
+ // Sumar montoTotalVendidoRRPP
+  bulkOpsRRPP.push({
+    updateOne: {
+      filter: { "rrpp.mail": getDecryptedMail },
+      update: {
+        $inc: {
+          "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal
+        }
+      },
+      arrayFilters: [
+        { "rrppElem.mail": getDecryptedMail }
+      ]
+    }
+  });
+
+  // Ejecutar operaciones
+  await Promise.all([
+    ticketModel.updateOne(
+      { _id: prodId },
+      {
+        $inc: {
+          totalVentas: ventasTotales,
+          totalMontoVendido: total,
+        },
+      }
+    ),
+    ticketModel.bulkWrite([...bulkOps, ...bulkOpsRRPP])
+  ]);
+
+};*/
