@@ -313,7 +313,7 @@ const EditProd = () => {
                                         </div>
                                         <div>
                                             <label>Monto de ventas estimado:</label><br></br>
-                                            <input type="number" placeholder="0" value={eventosEditados[p._id]?.montoVentas ??  p.montoVentas} onChange={(e) => handleChangeEvento(e, p._id, 'montoVentas')} name="montoVentas"></input>
+                                            <input type="number" min="0" placeholder="0" value={eventosEditados[p._id]?.montoVentas ??  p.montoVentas} onChange={(e) => handleChangeEvento(e, p._id, 'montoVentas')} name="montoVentas"></input>
                                         </div>
                                     </div>
                                     <div className="relative p-3">
@@ -393,11 +393,11 @@ const EditProd = () => {
                                     {estado !== '3' &&
                                     <div>
                                         <label>Precio del ticket:</label>
-                                        <input className="w-[120px]" type="number" placeholder="..." name="precio" required></input>
+                                        <input className="w-[120px]" type="number" min="1" placeholder="..." name="precio" required></input>
                                     </div>  }
                                     <div className="qty">
                                         <label>Cantidad:</label>
-                                        <input className="w-[120px]" type="number" placeholder="..." name="cantidad"></input>
+                                        <input className="w-[120px]" type="number" min="1" placeholder="..." name="cantidad"></input>
                                     </div>
                                     <div className="est ml-3">
                                         <label>Estado:</label><br></br>
@@ -505,7 +505,7 @@ const EditProd = () => {
                                             </div>
                                             <div>
                                                 <label>Precio:</label><br></br>
-                                                <input type="number" name="precio" value={ticketData[tick._id]?.precio ?? tick.precio}  onChange={(e) =>
+                                                <input  type="number" min="1" name="precio" value={ticketData[tick._id]?.precio ?? tick.precio}  onChange={(e) =>
                                                 setTicketData(prev => ({
                                                 ...prev,
                                                 [tick._id]: {
@@ -517,7 +517,7 @@ const EditProd = () => {
                                             </div>
                                             <div>
                                                 <label>Cantidad:</label><br></br>
-                                                <input type="number" name="cantidad" value={ticketData[tick._id]?.cantidad ?? tick.cantidad}  onChange={(e) =>
+                                                <input type="number"  min="1" name="cantidad" value={ticketData[tick._id]?.cantidad ?? tick.cantidad}  onChange={(e) =>
                                                 setTicketData(prev => ({
                                                 ...prev,
                                                 [tick._id]: {
@@ -529,7 +529,7 @@ const EditProd = () => {
                                             </div>
                                             <div>
                                                 <label>Limite:</label><br></br>
-                                                <input type="number" name="limit" value={ticketData[tick._id]?.limit ?? tick.limit}  onChange={(e) =>
+                                                <input type="number"  min="1" name="limit" value={ticketData[tick._id]?.limit ?? tick.limit}  onChange={(e) =>
                                                 setTicketData(prev => ({
                                                 ...prev,
                                                 [tick._id]: {

@@ -61,7 +61,7 @@ button:focus{
   transition: background-color .5s;
 }
 /*------------------------------------------------------- REGISTER FORM --------------------------------------------*/
-.form-background{
+.form-background, .cont{
   background: linear-gradient(135deg, #6a5cff 0%, #b14ee3 50%, #ff3c84 100%);
 }
 

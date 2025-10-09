@@ -29,6 +29,7 @@ const Contact = () => {
 
     return(
         <>
+        <div className="form-background pt-1 pb-1">
             <form className="register-form h-full mt-9 mb-9 mx-auto w-[450px] rounded-lg" onSubmit={(e) => contactarFunc(e)}>
                 <div className="text-center p-4">
                     <h2 className="text-3xl">Comunicate con nosotros</h2>
@@ -44,6 +45,7 @@ const Contact = () => {
                     {showMsg ? <p className="text-lg text-center">Tu mensaje fue enviado con exito!</p> : <button className="w-full mt-3 primary-button h-[40px] rounded-lg" type="submit">Enviar</button>}
                 </div>
             </form>
+        </div>
         </>
     )
 }

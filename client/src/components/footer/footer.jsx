@@ -1,9 +1,9 @@
-import logoPruebaJpg from '../../assets/LogoPrueba.jpg'
 import instagramPng from '../../assets/redes/instagram.png'
 import twitterPng from '../../assets/redes/twitter.png'
 import whatsappPng from '../../assets/redes/whatsapp.png'
 import gmailPng from '../../assets/redes/gmail.png'
 import { Link } from 'react-router'
+import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
 
 const Footer = ({texto}) => {
     return(
@@ -16,7 +16,7 @@ const Footer = ({texto}) => {
             </div>
             <div className="relative bottom-0 w-screen pl-14 pr-14 text-center">
                 <p className='text-sm primary-p'>Importante: Go Ticket no se hace responsable de la calidad o satisfacción de los eventos publicados. Go Ticket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los términos y condiciones de la aplicación. Copyright © 2025 Go Ticket.</p>
-            <img className="w-[100px] mx-auto mt-6" src={logoPruebaJpg} alt="" loading="lazy"></img>
+            <img className="w-[100px] mx-auto mt-6" src={goPng} alt="" loading="lazy"></img>
             </div>
         </footer>
     )

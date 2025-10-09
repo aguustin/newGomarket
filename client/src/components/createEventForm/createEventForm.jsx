@@ -276,7 +276,7 @@ const CreateEventForm = () => {
                             <div>
                                 <label>Monto de ventas estimado</label>
                                 <div>
-                                    <input type="number" placeholder="0" name="montoVentas" required></input>
+                                    <input type="number" min="1" placeholder="0" name="montoVentas" required></input>
                                 </div>
                             </div>
                             <div>
@@ -371,11 +371,11 @@ const CreateEventForm = () => {
                                     <div className="div-inputs-tickets w-[50%] min-w-[270px] p-3">
                                         <div>
                                             <label>Precio del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" placeholder="..." name="precio" required></input>
+                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" min="1" placeholder="..." name="precio" required></input>
                                         </div>
                                         <div>
                                             <label>Cantidad</label>
-                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" placeholder="..." name="cantidad" required></input>
+                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" min="1" placeholder="..." name="cantidad" required></input>
                                         </div> 
                                     </div>
                                 </div>

@@ -4,6 +4,7 @@ import logoPruebaJpg from '../../assets/LogoPrueba.jpg'
 import logoutPng from "../../assets/botones/logout.png"
 import menuPng from "../../assets/images/menu.png"
 import { Link, useNavigate } from "react-router"
+import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
 
 const Nav = () => {
 
@@ -34,12 +35,12 @@ const Nav = () => {
     }
 
     const closeMenu = () => setShowMobileNav(false)
-console.log(width)
+
     return(
         <nav className="nav relative w-full flex fixed items-center top-0 p-6 h-[80px]">
            { width >= 950 ? 
             <>
-                <img className="w-[100px]" src={logoPruebaJpg} alt="" loading="lazy"></img>
+                <img className="w-[100px]" src={goPng} alt="" loading="lazy"></img>
                 <div className="absolute w-[560px] right-50 left-50 mx-auto flex justify-between items-center">
                         <Link className="text-lg primary-p" to="/Home">Inicio</Link>
                         <Link className="text-lg primary-p" to="/Contact">Contacto</Link>
@@ -58,7 +59,7 @@ console.log(width)
             :
             <>
                 
-                    <img className="w-[100px]" src={logoPruebaJpg} alt="" loading="lazy"></img>
+                    <img className="w-[100px]" src={goPng} alt="" loading="lazy"></img>
                     <button className="menu-b absolute right-8" onClick={() => setShowMobileNav(!showMobileNav)}><img className="w-[40px]" src={menuPng} alt="" loading="lazy"></img></button>
                     {showMobileNav && 
                     <div className="nav-mobile-options w-full absolute right-0 top-[80px] ">
