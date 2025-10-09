@@ -48,9 +48,10 @@ const Register = () => {
 
     return(
         <>
+        <div className="form-background pt-1 pb-1">
             <form className="register-form mt-10 mb-10 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => registerUser(e)}>
                 <div className="text-center p-4">
-                    <h3 className="text-5xl">Registrate</h3>
+                    <h3 className="text-4xl font-bold">Registrate</h3>
                     <p className="mt-3 secondary-p">Registra tu cuenta de Goticket y disfruta de tus eventos favoritos</p>
                 </div>
                     <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="text" placeholder="Nombre completo" name="nombreCompleto" required></input>
@@ -77,6 +78,7 @@ const Register = () => {
                     {loading ? <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="primary-button w-full p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>}
                 </div>
             </form>
+            </div>
         </>
     )
 }

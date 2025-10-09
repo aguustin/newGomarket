@@ -183,7 +183,6 @@ const EditProd = () => {
         formData.append('ticketId', ticketId)
         formData.append('nombreTicket', dataToUpdate?.nombreTicket ?? nombreTicket)
         formData.append('descripcionTicket', dataToUpdate?.descripcionTicket ?? descripcionTicket)
-        formData.append('aviso', dataToUpdate?.aviso ?? aviso)
         formData.append('precio', dataToUpdate?.precio ?? precio)
         formData.append('cantidad', dataToUpdate?.cantidad ?? cantidad)
         formData.append('limit', dataToUpdate?.limit ?? limit)

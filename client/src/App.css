@@ -61,6 +61,9 @@ button:focus{
   transition: background-color .5s;
 }
 /*------------------------------------------------------- REGISTER FORM --------------------------------------------*/
+.form-background{
+  background: linear-gradient(135deg, #6a5cff 0%, #b14ee3 50%, #ff3c84 100%);
+}
 
 .register-form{
   color-scheme: light dark;
@@ -74,6 +77,7 @@ button:focus{
   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
+  
 }
 
 .register-form input, .register-form textarea{
@@ -499,6 +503,8 @@ border: 1px solid #e0e0e0;
 
   .esc-tit{
     text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
  
   .search-form{
@@ -797,6 +803,11 @@ border: 1px solid #e0e0e0;
   .tickets-edit-prod > div{
     width: 100%;
   }
+  .buy-butt{
+    font-size: 17px;
+    width: 200px;
+    padding: 12px;
+  }
 } 
 
 
@@ -804,7 +815,6 @@ border: 1px solid #e0e0e0;
   footer{
     display: block;
     height: auto;
-    padding: 20px;
     text-align: center;
   }
 
@@ -998,6 +1008,13 @@ border: 1px solid #e0e0e0;
   }
   .create-event-form{
     margin: 0px !important;
+  }
+  .register-form{
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }
 

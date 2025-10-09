@@ -51,8 +51,9 @@ const Login = () => {
 
     return(
         <>
+        <div className="form-background pt-10 pb-10">
             {recoverPass ?
-             <form className="register-form h-full mt-35 mb-35 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
+             <form className="register-form mt-35 mb-35 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
                     <div className="text-center p-4">
                         <h3 className="text-3xl">Recuperar contraseña</h3>
                         <p className="mt-3 secondary-p">Ingresa tu email y te enviaremos un correo para que recuperes tu contraseña</p>
@@ -71,10 +72,12 @@ const Login = () => {
                     <button onClick={() => setRecoverPass(false)}>Volver</button>
                 </div>
             </form>
+                       
              :
-             <form className="register-form h-full mt-10 mb-10 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => loginUser(e)}>
+             
+             <form className="register-form mx-auto max-w-[450px] p-6 rounded-lg" onSubmit={(e) => loginUser(e)}>
                     <div className="text-center p-4">
-                        <h3 className="text-5xl">Ingresar</h3>
+                        <h3 className="text-4xl font-bold">Ingresar</h3>
                         <p className="mt-3 secondary-p">Ingresa tu cuenta de Goticket y disfruta de tus eventos favoritos</p>
                     </div>
                     <input className="p-3 mt-3 w-full" type="mail" minLength="5" maxLength="30" placeholder="Ingresa tu email" name="mail" required></input>
@@ -82,8 +85,8 @@ const Login = () => {
                     <div className="flex items-center justify-center mt-6">
                         <div className="text-center">
                             {message ? <p className="text-red-600! mb-3">Las contraseñas no coinciden</p> : ''}
-                            <div className="flex"><p>¿Has olvidado tu contraseña?</p><button className="secondary-p ml-2 underline!" onClick={() => setRecoverPass(true)}>Haz click aqui!</button></div>
-                            <div className="flex mt-5 items-center"> <p>O registrate haciendo click aqui: </p><Link className="secondary-p ml-2 underline!" to="/register"> Registrarse</Link></div>
+                            <div className="flex flex-wrap justify-center"><p>¿Has olvidado tu contraseña?</p><button className="secondary-p ml-2 underline!" onClick={() => setRecoverPass(true)}>Haz click aqui!</button></div>
+                            <div className="flex flex-wrap justify-center mt-5 items-center"> <p>O registrate haciendo click aqui: </p><Link className="secondary-p ml-2 underline!" to="/register"> Registrarse</Link></div>
                         </div>
                     </div>
                     <div className="flex justify-center mt-5">
@@ -95,9 +98,11 @@ const Login = () => {
                       } 
                     </div>
                 <div className="text-center">
-                   {loading ? <button className="login-b w-[98px] h-[56px] bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="login-b w-full h-[56px] primary-button p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>}
+                   {loading ? <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="login-b w-full h-[56px] primary-button p-4 rounded-lg mt-6 cursor-pointer" type="submit">Ingresar</button>}
                 </div>
-            </form>  }
+            </form>  
+            }
+            </div>
         </>
     )
 }

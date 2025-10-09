@@ -463,47 +463,23 @@ const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, pa
   const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
 
   // 1. Intentar incrementar el montoPagado si el email ya existe y paymentId no está
-  const updateResult = await transactionModel.updateOne(
+  await transactionModel.updateOne(
     {
       prodId,
-      'compradores.email': mail,
+      'compradores.transaccionId': {$ne: paymentId}
     },
     {
-      $inc: { 'compradores.$.montoPagado': totalPagoEntradas },
-      $set: { 'compradores.$.transaccionId': paymentId }
-    }
-  );
-
-  if (updateResult.matchedCount === 0) {
-    // 2. No existe comprador con ese email y paymentId: insertamos nuevo comprador
-    const insertResult = await transactionModel.updateOne(
-      {
-        prodId,
-        'compradores.transaccionId': { $ne: paymentId } // Asegurar no duplicar transacción
-      },
-      {
-        $push: {
-          compradores: {
-            nombre: nombreCompleto,
-            email: mail,
-            montoPagado: totalPagoEntradas,
-            transaccionId: paymentId
-          }
+      $push:{
+        compradores:{
+          transaccionId: paymentId,
+          nombre: nombreCompleto,
+          email: mail,
+          montoPagado: totalPagoEntradas,
         }
-      },
-      { upsert: true }
-    );
-
-    if (insertResult.modifiedCount === 0) {
-      // Ya se había procesado este paymentId => no seguimos
-      console.log(`Pago duplicado omitido: ${paymentId}`);
-      return false;
-    }
-  } else if (updateResult.modifiedCount === 0) {
-    // El paymentId ya estaba procesado para ese comprador
-    console.log(`Pago procesado omitido: ${paymentId}`);
-    return false;
-  }
+      }
+    },
+    { upsert: true }
+  );
 
   console.log(`✅ Transacción guardada para paymentId: ${paymentId}`);
   return true;
@@ -1356,13 +1332,11 @@ export const descargarCompradoresController = async (req, res) => {
 }
 
 export const refundsFunc = async ({prodId}) => {
-  console.log("prodId: ", prodId)
+  
 try{
-
 const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
 
  const refundPromises = getPaymentsIds.compradores.map((pays) => {
-    console.log("transaccion id", ' ', pays.transaccionId, 'montopagado: ', pays.montoPagado)
     const idempotencyKey = `refund-${uuidv4()}`;
     return axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
       {"amount": pays.montoPagado},

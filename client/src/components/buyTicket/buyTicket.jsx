@@ -56,7 +56,7 @@ const BuyTicket = () => {
 
             return prev;
         });
-
+        console.log(total)
     };
 
     const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => {
@@ -71,7 +71,7 @@ const BuyTicket = () => {
         const dni = e.target.elements.dni.value
 
         const hasTickets = Object.values(quantities).some(value => parseInt(value) > 0);
-        console.log(hasTickets)
+        
         if (!hasTickets) {
             setShowMsg(1)
             return; // Detiene la ejecución si todos son <= 0
@@ -229,10 +229,10 @@ const BuyTicket = () => {
                 })}
                 </div>
                 <div className="relative h-[120px]">
-                    <p className="absolute top-[-30px] right-6 text-2xl primary-p">Total:${formatNumber(total)}</p>
+                    <p className="absolute top-[-30px] right-6 text-2xl primary-p">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 1 && <p className="text-lg text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
                     {showMsg === 2 && <p className="text-lg text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
-                     <button className="primary-button w-[300px] mx-auto flex items-center justify-center bottom-3 mt-16 p-4 rounded-3xl cursor-pointer text-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
+                     <button className="buy-butt primary-button w-[300px] mx-auto flex items-center justify-center bottom-3 mt-16 p-4 rounded-3xl cursor-pointer text-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>
         </div>
