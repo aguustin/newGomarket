@@ -44,8 +44,8 @@ const Nav = () => {
                 <div className="absolute w-[560px] right-50 left-50 mx-auto flex justify-between items-center">
                         <Link className="text-lg primary-p" to="/Home">Inicio</Link>
                         <Link className="text-lg primary-p" to="/Contact">Contacto</Link>
-                        {session?.userFinded?.length > 0 ? <Link className="text-lg primary-p" to="/Create_event" onClick={closeMenu}>Crear evento</Link> : <Link className="text-lg" to="/" onClick={closeMenu}>Crear evento</Link>}
-                        {session?.userFinded?.length > 0 ? <Link className="text-lg primary-p" to="/productions" onClick={closeMenu}>Mis producciones</Link> : <Link className="text-lg" to="/" onClick={closeMenu}>Mis producciones</Link>}
+                        {session?.userFinded?.length > 0 && <Link className="text-lg primary-p" to="/Create_event" onClick={closeMenu}>Crear evento</Link>}
+                        {session?.userFinded?.length > 0 && <Link className="text-lg primary-p" to="/productions" onClick={closeMenu}>Mis producciones</Link>}
                         {/*session?.userFinded?.length > 0 ? <Link className="text-lg" to="/profile" onClick={closeMenu}>Mi perfil</Link> : ''*/}
                 </div>
                 {session?.userFinded?.length > 0 ? 

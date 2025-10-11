@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useParams } from "react-router"
 import { buyTicketsRequest, getEventToBuyRequest } from "../../api/eventRequests"
 import { formatDate, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import UserContext from "../../context/userContext"
+import { useNavigate } from "react-router"
 
 const BuyTicket = () => {
+    const {session} = useContext(UserContext)
     const {prodId, emailHash} = useParams()
     const [prod, setProd] = useState([])
     const [quantities, setQuantities] = useState({});
@@ -13,8 +16,13 @@ const BuyTicket = () => {
     const [showMsg, setShowMsg] = useState(0)
     const [loading, setLoading] = useState(false)
     const [showMap, setShowMap] = useState(false)
+    const navigate = useNavigate()
 
     useEffect(() => {
+            if(session?.userFinded?.length === null){
+                console.log('no entro')
+                navigate('/')
+            }
             const getOneEvent = async () => {
                 const res = await getEventToBuyRequest(prodId)
                 setProd(res.data)
