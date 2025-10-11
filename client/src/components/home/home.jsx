@@ -205,6 +205,19 @@ const Home = () => {
                             </div>
                         </div>
                     }
+                        {width > 1375 &&
+                            <div className="w-full  mt-3">
+                                <div className="w-full pb-1 flex bg-gradient-to-r from-purple-500 to-pink-500 transition-all">
+                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("")}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setEdad(1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
+                                    <button className="flex justify-center  items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setEdad(2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
+                                </div>
+                            </div>
+                        }
                     <div className="events-and-categories flex items-start">
                         <div className="events-container flex flex-wrap items-start max-h-[1200px] w-[100%] mb-9">
                        {allEvents
@@ -299,21 +312,6 @@ const Home = () => {
                                     </div>
                                 ))}
                         </div>
-                        {width > 1375 &&
-                            <div className="secondary-button-fucsia categories-web-container rounded-xl mt-8">
-                                <div className="w-[400px] pl-4 pr-4 pt-7 pb-7">
-                                    <p className="text-lg font-bold">Categorias</p>
-                                    <button className="flex items-center bg-white text-left mt-7 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("")}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                    <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                    <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                    <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                    <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                    <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setEdad(1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
-                                    <button className="flex items-center bg-white text-left mt-2 p-3 rounded-2xl w-[100%] text-[#111827]" onClick={() => setEdad(2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
-                                </div>
-
-                            </div>
-                        }
                     </div>
                 </div>
             </div>
