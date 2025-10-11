@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
 import { buyTicketsRequest, getEventToBuyRequest } from "../../api/eventRequests"
-import { formatDate, formatNumber, LoadingButton, Message, Timer } from "../../globalscomp/globalscomp"
+import { formatDate, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
 const BuyTicket = () => {
     const {prodId, emailHash} = useParams()
@@ -11,6 +12,7 @@ const BuyTicket = () => {
     const [totalQuantity, setTotalQuantity] = useState(0)
     const [showMsg, setShowMsg] = useState(0)
     const [loading, setLoading] = useState(false)
+    const [showMap, setShowMap] = useState(false)
 
     useEffect(() => {
             const getOneEvent = async () => {
@@ -103,7 +105,7 @@ const BuyTicket = () => {
                             <h2 className="text-2xl">Comprar tickets</h2>
                             <img className="w-[370px] h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
                         </div>
-                        <div className="text-left ml-4 mt-9">
+                        <div className="desc-and-map text-left ml-4 mt-9">
                             <h2 className="text-xl text-[#111827]">Evento: {p.nombreEvento}</h2>
                             <p className="mb-2 secondary-p">Dirección: {p.direccion}</p>
                             <div className="flex items-center mt-2">
@@ -113,10 +115,12 @@ const BuyTicket = () => {
                             <div className="flex items-center mt-2">
                                 <p className="secondary-p">Artistas: {p.artistas}</p>
                             </div>
-                            <div>
+                            <div className="mb-2">
                                 <p className="secondary-p mt-3 text-sm">{p.descripcionEvento}</p>
                                 {p?.aviso?.length > 0 && <p className="primary-p mt-3 text-sm bg-pink-400! p-2">{p.aviso}</p> }
                             </div>
+                            <button className="text-[#111827] mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
+                            {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
                         </div>
                     </div>
             )}

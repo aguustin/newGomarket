@@ -18,6 +18,7 @@ import { Country, State, City } from "country-state-city"
 import djPartyPng from '../../assets/dj-party-meaning.png'
 import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
 
+
 const Home = () => {
     const { session } = useContext(UserContext)
     const [allEvents, setAllEvents] = useState([])
@@ -125,7 +126,7 @@ const Home = () => {
 
     return (
         <>
-            <div className="home pt-10 pr-10 pl-10 mb-16">
+            <div className="home mb-16">
                 <div className="relative w-full h-[500px]">
                     <img
                         className="absolute top-0 left-0 w-full h-full object-cover"
@@ -133,7 +134,7 @@ const Home = () => {
                         alt="Imagen fondo"
                     />
                     <div className="absolute top-0 left-0 w-full h-full bg-black opacity-[50%]"></div>
-                    <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center">
+                    <div className="relative z-3 flex flex-col items-center justify-center h-full text-white text-center">
                         <div className="filtrar-eventos w-full max-w-3xl px-4">
                             <img src={goOriginalPng} alt=""></img>
                             {/*<h1 className="text-3xl font-bold mb-4 text-white!">Encuentra tu evento:</h1>*/}
@@ -190,8 +191,7 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
-                <div className="w-[100%] relative">
-
+                <div className="events w-[100%] pr-10 pl-10 relative">
                     {width < 1376 &&
                         <div className="flex justify-center relative mx-6">
                             <div className="flex flex-wrap justify-around">
@@ -273,7 +273,8 @@ const Home = () => {
                                         <div className="event-desc rounded-b-lg bottom-0 mt-6">
                                             <h3 className="text-xl font-semibold">{allEv.nombreEvento}</h3>
                                             <p className="secondary-p event-desc-text  mb-2">
-                                                {truncarConElipsis(allEv.descripcionEvento, 80)}
+                                                {/*truncarConElipsis(allEv.descripcionEvento, 80)*/}
+                                                {`${allEv.provincia} - ${allEv.direccion}`}
                                             </p>
                                             <label className="text-lg secondary-p">{formatDateB(allEv.fechaInicio)}</label>
                                         </div>

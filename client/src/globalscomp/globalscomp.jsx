@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import defaultImage from "../assets/LogoPrueba.jpg"
 import { useNavigate } from "react-router";
 import timerPng from "../assets/images/timer.png"
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
 export const Timer = ({duration}) => {
     const [time, setTime] = useState(duration)
@@ -39,14 +40,14 @@ export default function FadeInImage({ src, alt, className }) {
             <img
                 src={defaultImage}
                 alt="placeholder"
-                className={`absolute top-0 left-0 w-full h-[120px] object-cover object-top ${loaded ? "opacity-0" : "opacity-100"} transition-opacity duration-800`}
+                className={`absolute top-0 left-0 w-full h-[240px]! object-cover object-top ${loaded ? "opacity-0" : "opacity-100"} transition-opacity duration-800`}
                 loading="lazy"/>
             {/* Imagen real con fade-in */}
             <img
                 src={src}
                 alt={alt}
                 onLoad={() => setLoaded(true)}
-                className={`w-full h-[120px] object-cover object-top transition-opacity duration-800 ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
+                className={`w-full h-[240px]! object-cover object-top transition-opacity duration-800 ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
                 loading="lazy"/>
         </div>
     );
@@ -88,6 +89,45 @@ export const formatDateB = (isoString) => {
   const minutes = String(date.getMinutes()).padStart(2, '0');
 
   return `${day} ${month} ${year}, ${hours}:${minutes}`;
+};
+
+
+
+export const MapComponent = ({provincia, direccion}) => {
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: 'AIzaSyCkG-UlLJza07eEo_nQylQULUjL4pc83aY',
+    libraries: ['places'],
+  });
+
+  const [center, setCenter] = useState({ lat: 0, lng: 0 });
+
+  useEffect(() => {
+    if (isLoaded) {
+      const geocoder = new window.google.maps.Geocoder();
+
+      geocoder.geocode({ address: `${provincia}, ${direccion}`}, (results, status) => {
+        if (status === 'OK' && results && results[0]) {
+          const location = results[0].geometry.location;
+          setCenter({
+            lat: location.lat(),
+            lng: location.lng()
+          });
+        } else {
+          console.error('Error en geocodificación:', status);
+        }
+      });
+    }
+  }, [isLoaded]);
+
+  return isLoaded ? (
+    <GoogleMap
+      center={center}
+      zoom={12}
+      mapContainerStyle={{ width: '100%', height: '200px' }}
+    />
+  ) : (
+    <p>Cargando mapa...</p>
+  );
 };
 
 export const formatearFechaParaInput = (fecha) => {
