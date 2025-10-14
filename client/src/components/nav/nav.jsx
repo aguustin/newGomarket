@@ -37,15 +37,15 @@ const Nav = () => {
     const closeMenu = () => setShowMobileNav(false)
 
     return(
-        <nav className="nav relative w-full flex fixed items-center top-0 p-6 h-[80px]">
+        <nav className="nav relative w-full flex fixed items-center top-0 p-6 h-[70px]">
            { width >= 950 ? 
             <>
                 <img className="w-[100px]" src={goPng} alt="" loading="lazy"></img>
                 <div className="absolute w-[560px] right-50 left-50 mx-auto flex justify-between items-center">
-                        <Link className="text-lg primary-p" to="/Home">Inicio</Link>
-                        <Link className="text-lg primary-p" to="/Contact">Contacto</Link>
-                        {session?.userFinded?.length > 0 && <Link className="text-lg primary-p" to="/Create_event" onClick={closeMenu}>Crear evento</Link>}
-                        {session?.userFinded?.length > 0 && <Link className="text-lg primary-p" to="/productions" onClick={closeMenu}>Mis producciones</Link>}
+                        <Link className="text-md primary-p" to="/Home">Inicio</Link>
+                        <Link className="text-md primary-p" to="/Contact">Contacto</Link>
+                        {session?.userFinded?.length > 0 && <Link className="text-md primary-p" to="/Create_event" onClick={closeMenu}>Crear evento</Link>}
+                        {session?.userFinded?.length > 0 && <Link className="text-md primary-p" to="/productions" onClick={closeMenu}>Mis producciones</Link>}
                         {/*session?.userFinded?.length > 0 ? <Link className="text-lg" to="/profile" onClick={closeMenu}>Mi perfil</Link> : ''*/}
                 </div>
                 {session?.userFinded?.length > 0 ? 

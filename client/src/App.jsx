@@ -16,7 +16,7 @@ import RRPPEvents from './components/rrppEvents/rrppEvents'
 import Statistics from './components/statistics/statistics'
 import Contact from './components/contact/contact'
 import RecoverPass from './components/recoverPass/recoverPass'
-import {BrowserRouter, Routes, Route} from 'react-router'
+import {BrowserRouter, Routes, Route, useLocation} from 'react-router'
 import { UserContextProvider } from './context/userContext'
 import Cortesies from './components/cortesies/cortesies'
 import NewCortesie from './components/newCortesie/newCortesie'
@@ -24,38 +24,49 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import LegalConditions from './components/conditions/legalConditions'
 import MyFavoritesEvents from './components/myFavoritesEvents/myFavoritesEvents'
 
-function App() {
+function AppRoutes() {
+  const location = useLocation();
+  const hideNavOnPaths = ['/', '/register', '/recover_password'];
+  const shouldHideNav = hideNavOnPaths.includes(location.pathname);
+
   return (
     <>
+      {!shouldHideNav && <Nav />}
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/recover_password" element={<RecoverPass />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/my_favorites_events" element={<MyFavoritesEvents />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/create_event" element={<CreateEventForm />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/productions" element={<Productions />} />
+        <Route path="/editar_evento/:prodId" element={<EditProd />} />
+        <Route path="/buy_tickets/:prodId/:emailHash?" element={<BuyTicket />} />
+        <Route path="/editar_evento/staff/:prodId" element={<Staff />} />
+        <Route path="/get_my_rrpp_events/:mail" element={<RRPPEvents />} />
+        <Route path="/rrpp_get_event_free/:prodId/:mail" element={<SendFree />} />
+        <Route path="/ticket/validate/:token" element={<TicketQr />} />
+        <Route path="/statistics/:prodId/:userId" element={<Statistics />} />
+        <Route path="/cortesies/:prodId" element={<Cortesies />} />
+        <Route path="/new_excel/:prodId" element={<NewCortesie />} />
+        <Route path="/conditions" element={<LegalConditions />} />
+      </Routes>
+      <Footer />
+    </>
+  );
+}
+
+function App() {
+
+  return (
     <BrowserRouter>
       <UserContextProvider>
-        <Nav></Nav>
-          <Routes>
-            <Route path="/" element={<Login/>}></Route>
-            <Route path="/register" element={<Register/>}></Route>
-            <Route path="/recover_password" element={<RecoverPass/>}></Route>
-            <Route path="/home" element={<Home/>}></Route>
-            <Route path="/my_favorites_events" element={<MyFavoritesEvents/>}></Route>
-            <Route path="/contact" element={<Contact/>}></Route>
-            <Route path="/create_event" element={<CreateEventForm/>}></Route>
-            <Route path="/profile" element={<Profile/>}></Route>
-            <Route path='/productions' element={<Productions/>}></Route>
-            <Route path='/editar_evento/:prodId' element={<EditProd/>}></Route>
-            <Route path='/buy_tickets/:prodId/:emailHash?' element={<BuyTicket/>}></Route>
-            <Route path='/editar_evento/staff/:prodId' element={<Staff/>}></Route>
-            <Route path='/get_my_rrpp_events/:mail' element={<RRPPEvents/>}></Route>
-            <Route path='/rrpp_get_event_free/:prodId/:mail' element={<SendFree/>}></Route>
-            <Route path='/ticket/validate/:token' element={<TicketQr/>}></Route>
-            <Route path='/statistics/:prodId/:userId' element={<Statistics/>}></Route>
-            <Route path='/cortesies/:prodId' element={<Cortesies/>}></Route>
-            <Route path='/new_excel/:prodId' element={<NewCortesie/>}></Route>
-            <Route path='/conditions' element={<LegalConditions/>}></Route>
-          </Routes>
-          <Footer></Footer>
+        <AppRoutes />
       </UserContextProvider>
     </BrowserRouter>
-    </>
-  )
+  );
 }
 
 export default App

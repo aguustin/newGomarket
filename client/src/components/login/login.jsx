@@ -51,7 +51,7 @@ const Login = () => {
 
     return(
         <>
-        <div className="form-background pt-10 pb-10">
+        <div className="form-background pt-20 pb-29">
             {recoverPass ?
              <form className="register-form mt-35 mb-35 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
                     <div className="text-center p-4">

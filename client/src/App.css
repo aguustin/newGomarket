@@ -14,7 +14,7 @@ button:focus{
 
 .nav, footer, .nav-mobile-options, .conditions-container{
   z-index: 4;
-  background-color: #ffffff;
+  background-color: #e0e0e0;
   box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
   -webkit-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
   -moz-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
@@ -126,7 +126,11 @@ button:focus{
 .categories-web-container > div button:hover{
   transition: all .5s;
 } 
-
+.categories button:hover{
+  background-color: #f97316;
+  transform: translateY(-3px);
+  transition: all .5s;
+}
 /*---------------------------------------------------------------- BUY TICKET ------------------------------------------------------------------------------*/
 .buy-ticket input{
   width: 280px !important;

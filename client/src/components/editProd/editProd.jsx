@@ -367,7 +367,7 @@ const EditProd = () => {
                                             <label>Lugar del evento:</label><br></br>
                                             <input type="text" value={eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento} onChange={(e) => handleChangeEvento(e, p._id, 'lugarEvento')} name="lugarEvento"></input>
                                         </div>
-                                         <button className="secondary-button-fucsia absolute right-3 bottom-[-60px] rounded-2xl p-3 text-xl text-white!" type="submit">{loading ? <LoadingButton/> : <div className="flex items-center"><img src={updatePng} alt=""></img><p className="ml-3">Actualizar evento</p></div>}</button>
+                                         <button className="secondary-button-fucsia absolute right-3 bottom-[-60px] rounded-2xl p-3 text-md text-white!" type="submit">{loading ? <LoadingButton/> : <div className="flex items-center"><img src={updatePng} alt=""></img><p className="ml-3">Actualizar evento</p></div>}</button>
                                     </div>
                                 </div>
                             </form>
@@ -460,15 +460,15 @@ const EditProd = () => {
                             pr.tickets.map((tick) => 
                                 <div key={tick._id}>
                                         <div className="flex justify-center mx-auto text-center" key={tick._id}>
-                                            <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3">
-                                                <img className="ticket-img w-[130px] h-[120px] rounded-xl" src={tick.imgTicket} alt="" loading="lazy"></img>
+                                            <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3 p-1!">
+                                                <img className="ticket-img w-[60px] h-[60px] rounded-xl ml-1" src={tick.imgTicket} alt="" loading="lazy"></img>
                                                 <div className="summary-event-info text-left w-full">
-                                                    <p className="primary-p text-xl ml-3" >{tick.nombreTicket}</p>
-                                                    <p className="secondary-p text-xl ml-3 ">${tick.precio}</p>
-                                                    <p className="secondary-p text-xl ml-3 flex items-center">Cant. :<img className="h-[32px]! w-[32px]! ml-2 mr-1" src={ticketCantPng} alt=""></img>{tick.cantidad}</p>
-                                                    <p className="secondary-p text-xl ml-3 flex flex-wrap items-center">Cierre: <img className="h-[24px]! w-[24px]! ml-2 mr-1" src={calendarPng} alt=""></img>{formatDate(tick.fechaDeCierre)}</p>     
+                                                    <p className="primary-p text-sm ml-3" >{tick.nombreTicket}</p>
+                                                    <p className="secondary-p text-sm ml-3 ">${tick.precio}</p>
+                                                    <p className="secondary-p text-sm ml-3 flex items-center">Cant. :<img className="h-[16px]! w-[16px]! ml-2 mr-1" src={ticketCantPng} alt=""></img>{tick.cantidad}</p>
+                                                    <p className="secondary-p text-sm ml-3 flex flex-wrap items-center">Cierre: <img className="h-[16px]! w-[16px]! ml-2 mr-1" src={calendarPng} alt=""></img>{formatDate(tick.fechaDeCierre)}</p>     
                                                 </div>
-                                            <button className="editProd-edit-ticket primary-p p-3 cursor-pointer text-xl rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
+                                            <button className="editProd-edit-ticket primary-p p-3 cursor-pointer text-md rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
                                             </div>
                                         </div>
                                         {openTicketId === tick._id && ( 
@@ -600,10 +600,10 @@ const EditProd = () => {
                              {message == 1 && <p className="text-lg ml-3 text-[#111827]">Se añadio el colaborador al evento!</p>}
                         </form>
                         <div className="edit-prod-bottom-buttons flex items-center">
-                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white!" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Enviar Invitaciónes</p></Link>
-                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white!" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Crear lista de invitaciónes</p></Link>
-                            <button className="flex items-center ml-6 p-2 bg-[#EC4899] rounded-lg text-white!" onClick={() => setCancelAlert(true)}><img src={cancelPng} alt="" loading="lazy"></img><p className="ml-2">Cancelar evento</p></button>
-                            <Link className="flex items-center ml-6 p-2 bg-black rounded-lg text-white!" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-2">Volver</p></Link>
+                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white! text-sm!" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Enviar Invitaciónes</p></Link>
+                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white! text-sm!" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Crear lista de invitaciónes</p></Link>
+                            <button className="flex items-center ml-6 p-2 bg-[#EC4899] rounded-lg text-white! text-sm!" onClick={() => setCancelAlert(true)}><img src={cancelPng} alt="" loading="lazy"></img><p className="ml-2">Cancelar evento</p></button>
+                            <Link className="flex items-center ml-6 p-2 bg-black rounded-lg text-white! text-sm!" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-2">Volver</p></Link>
                         </div>
                     </div>
                 </div>

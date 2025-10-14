@@ -11,13 +11,16 @@ import musicPng from '../../assets/botones/musical-note.png'
 import discoPng from '../../assets/botones/dance.png'
 import artPng from '../../assets/botones/paint.png'
 import footprintsPng from '../../assets/botones/footprints.png'
+import footballPng from '../../assets/botones/football.png'
+import starPng from '../../assets/botones/star.png'
+import starBPng from '../../assets/botones/starB.png'
+import mapPng from '../../assets/botones/map.png'
 import Skeleton from 'react-loading-skeleton';
 import { saveEventRequest } from "../../api/userRequests"
 import { useContext } from "react"
 import { Country, State, City } from "country-state-city"
 import djPartyPng from '../../assets/dj-party-meaning.png'
 import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
-
 
 const Home = () => {
     const { session } = useContext(UserContext)
@@ -35,7 +38,16 @@ const Home = () => {
     const [localidades, setLocalidades] = useState([]);
     const [provinciaSeleccionada, setProvinciaSeleccionada] = useState("");
     const [localidadSeleccionada, setLocalidadSeleccionada] = useState("");
-    const [fechaSeleccionada, setFechaSeleccionada] = useState("");
+    const [fechaInicioFiltro, setFechaInicioFiltro] = useState("");
+    const [fechaFinFiltro, setFechaFinFiltro] = useState("");
+
+    const toggleCategoria = (categoria) => {
+    setCategoriaSeleccionada((prev) => (prev === categoria ? '' : categoria));
+    };
+
+    const toggleEdad = (edad) => {
+        setEdad((prev) => (prev === edad ? null : edad));
+    };
 
     useEffect(() => {
         const provinciasArg = State.getStatesOfCountry("AR");
@@ -136,20 +148,17 @@ const Home = () => {
                     <div className="absolute top-0 left-0 w-full h-full bg-black opacity-[50%]"></div>
                     <div className="relative z-3 flex flex-col items-center justify-center h-full text-white text-center">
                         <div className="filtrar-eventos w-full max-w-3xl px-4">
-                            <img src={goOriginalPng} alt=""></img>
+                            <img className="w-[600px] h-[150px] mx-auto" src={goOriginalPng} alt=""></img>
                             {/*<h1 className="text-3xl font-bold mb-4 text-white!">Encuentra tu evento:</h1>*/}
                             <form className="search-form justify-center flex items-center w-full">
                                 <p className="text-lg w-[170px] text-white">Buscar evento:</p>
                                 <input
                                     className="w-full bg-white text-black ml-3 p-3 border-[1px] border-gray-200 rounded-3xl"
-                                    placeholder="Escribe el titulo del evento"
+                                    placeholder="Go busqueda"
                                     name="searchEvent"
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
                             </form>
-                            <p className="mt-6 text-sm text-gray-300">
-                                Escribe para filtrar por título. Usa categorías para explorar.
-                            </p>
                         </div>
                         <div className="mt-6 flex flex-wrap gap-4 justify-center items-center">
                              <p
@@ -185,42 +194,51 @@ const Home = () => {
                             <input
                                 type="date"
                                 className="px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                value={fechaSeleccionada}
-                                onChange={(e) => setFechaSeleccionada(e.target.value)}
+                                value={fechaInicioFiltro}
+                                onChange={(e) => setFechaInicioFiltro(e.target.value)}
+                            />
+                            a:
+                            <input
+                                type="date"
+                                className="px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                value={fechaFinFiltro}
+                                onChange={(e) => setFechaFinFiltro(e.target.value)}
                             />
                         </div>
                     </div>
                 </div>
                 <div className="events w-[100%] pr-10 pl-10 relative">
                     {width < 1376 &&
-                        <div className="flex justify-center relative mx-6">
+                        <div className="categories flex justify-center relative mx-6">
                             <div className="flex flex-wrap justify-around">
-                                <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada('')}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setEdad(1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
-                                <button className="flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827]" onClick={() => setEdad(2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === '' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada('')}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("deporte")} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${edad === 1 ? 'bg-[#f97316]' : ''}`} onClick={() => setEdad(edad === 1 ? 0 : 1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${edad === 2 ? 'bg-[#f97316]' : ''}`} onClick={() => setEdad(edad === 2 ? 0 : 2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
                             </div>
                         </div>
                     }
                         {width > 1375 &&
-                            <div className="w-full  mt-3">
+                            <div className="categories w-full  mt-3">
                                 <div className="w-full pb-1 flex bg-gradient-to-r from-purple-500 to-pink-500 transition-all">
-                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("")}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                    <button className="flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setEdad(1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
-                                    <button className="flex justify-center  items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827]" onClick={() => setEdad(2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === '' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("")}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("deporte")} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 1 ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setEdad(edad === 1 ? 0 : 1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
+                                    <button className={`flex justify-center  items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 2 ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setEdad(edad === 2 ? 0 : 2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
                                 </div>
                             </div>
                         }
                     <div className="events-and-categories flex items-start">
                         <div className="events-container flex flex-wrap items-start max-h-[1200px] w-[100%] mb-9">
-                       {allEvents
+   {allEvents
   .filter((allEv) => {
     const searchLower = search.toLowerCase().trim();
     const matchesSearch =
@@ -249,7 +267,6 @@ const Home = () => {
               ? eventoEdad >= 18
               : true;
 
-    // Provincia y localidad vienen del evento?
     const matchesProvincia =
       provinciaSeleccionada === '' ||
       allEv.provincia?.toLowerCase() ===
@@ -259,9 +276,11 @@ const Home = () => {
       localidadSeleccionada === '' ||
       allEv.localidad?.toLowerCase() === localidadSeleccionada.toLowerCase();
 
-    const matchesFecha =
-      fechaSeleccionada === '' ||
-      allEv.fechaInicio?.slice(0, 10) === fechaSeleccionada;
+    const fechaEvento = allEv.fechaInicio?.slice(0, 10); // "YYYY-MM-DD"
+    
+    const matchesFechaRango =
+      (!fechaInicioFiltro || !fechaFinFiltro) || // Si alguna no está definida, no filtra
+      (fechaEvento >= fechaInicioFiltro && fechaEvento <= fechaFinFiltro);
 
     return (
       matchesSearch &&
@@ -270,44 +289,40 @@ const Home = () => {
       matchesEdad &&
       matchesProvincia &&
       matchesLocalidad &&
-      matchesFecha
+      matchesFechaRango
     );
   })
                                 .map((allEv) => (
 
-                                    <div key={allEv?._id} className="primary-div w-[300px] p-4 relative mt-8 mx-3 rounded-xl border-[1px] border-gray-200">
+                                    <div key={allEv?._id} className="primary-div w-[300px] relative mt-8 mx-3 rounded-xl border-[1px] border-gray-200">
                                         <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
                                             <FadeInImage
                                                 src={allEv.imgEvento}
                                                 alt={allEv.nombreEvento}
-                                                className="mx-auto brightness-70"
+                                                className="mx-auto rounded-t-xl brightness-70"
                                             />
                                         </Link>
-                                        <div className="event-desc rounded-b-lg bottom-0 mt-6">
-                                            <h3 className="text-xl font-semibold">{allEv.nombreEvento}</h3>
-                                            <p className="secondary-p event-desc-text  mb-2">
-                                                {/*truncarConElipsis(allEv.descripcionEvento, 80)*/}
-                                                {`${allEv.provincia} - ${allEv.direccion}`}
-                                            </p>
-                                            <label className="text-lg secondary-p">{formatDateB(allEv.fechaInicio)}</label>
-                                        </div>
-                                        <div className="flex items-center justify-between mt-5">
-                                            {favoriteEventIds.includes(allEv._id) ? (
+                                        <div className="event-desc relative rounded-b-lg bottom-0 p-4 h-[156px]">
+                                              {favoriteEventIds.includes(allEv._id) ? (
                                                 <button
-                                                    className="primary-p bg-gray-400 p-2 rounded-xl"
+                                                    className="primary-p absolute right-4 top-3 p-1 rounded-xl"
                                                     onClick={() => saveEvent(allEv._id)}
                                                 >
-                                                    Guardado
+                                                    <img src={starBPng} alt=""></img>
                                                 </button>
                                             ) : (
                                                 <button
-                                                    className="primary-p bg-orange-500 p-2 rounded-xl"
+                                                    className="primary-p absolute right-4 top-3 p-1 rounded-xl"
                                                     onClick={() => saveEvent(allEv._id)}
                                                 >
-                                                    Guardar
+                                                    <img src={starPng} alt=""></img>
                                                 </button>
                                             )}
-                                            <Link className="primary-button p-2 rounded-xl" to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>Ver más</Link>
+                                            <h3 className="text-xl font-semibold w-[225px]">{allEv.nombreEvento}</h3>
+                                            <p className="secondary-p event-desc-text mt-3 mb-2">
+                                                {`${allEv.provincia} - ${truncarConElipsis(allEv.direccion, 45)}`}
+                                            </p>
+                                            <label className="text-xl text-[#111827]!">{formatDateB(allEv.fechaInicio)}</label>
                                         </div>
                                     </div>
                                 ))}

@@ -76,12 +76,21 @@ label{
 }
 
 button:hover {
-  color: #FFFFFF !important;
   cursor: pointer;
 }
-
 
 .primary-div{
   background-color: #FFFFFF;
 }
 
+.primary-div:hover{
+  background-color: #ebebeb;
+  cursor: pointer;
+  transform: translateY(-3px);
+  transition: all .3s;
+}
+
+.primary-div:hover img {
+  filter:brightness(80%);
+  transition: all .3s;
+}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import defaultImage from "../assets/LogoPrueba.jpg"
 import { useNavigate } from "react-router";
 import timerPng from "../assets/images/timer.png"
-import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 
 export const Timer = ({duration}) => {
     const [time, setTime] = useState(duration)
@@ -93,38 +93,64 @@ export const formatDateB = (isoString) => {
 
 
 
-export const MapComponent = ({provincia, direccion}) => {
+export const MapComponent = ({ provincia, direccion }) => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: 'AIzaSyCkG-UlLJza07eEo_nQylQULUjL4pc83aY',
     libraries: ['places'],
   });
 
   const [center, setCenter] = useState({ lat: 0, lng: 0 });
+  const [shareUrl, setShareUrl] = useState('');
 
   useEffect(() => {
     if (isLoaded) {
       const geocoder = new window.google.maps.Geocoder();
 
-      geocoder.geocode({ address: `${provincia}, ${direccion}`}, (results, status) => {
+      geocoder.geocode({ address: `${provincia}, ${direccion}` }, (results, status) => {
         if (status === 'OK' && results && results[0]) {
           const location = results[0].geometry.location;
-          setCenter({
-            lat: location.lat(),
-            lng: location.lng()
-          });
+          const lat = location.lat();
+          const lng = location.lng();
+          setCenter({ lat, lng });
+
+          // Crear URL para compartir
+          const url = `https://www.google.com/maps?q=${lat},${lng}`;
+          setShareUrl(url);
         } else {
           console.error('Error en geocodificación:', status);
         }
       });
     }
-  }, [isLoaded]);
+  }, [isLoaded, provincia, direccion]);
+
+  const handleShare = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl)
+        .then(() => alert('Enlace copiado al portapapeles'))
+        .catch(err => console.error('Error al copiar el enlace:', err));
+    }
+  };
 
   return isLoaded ? (
-    <GoogleMap
-      center={center}
-      zoom={12}
-      mapContainerStyle={{ width: '100%', height: '200px' }}
-    />
+    <div>
+      <GoogleMap
+        center={center}
+        zoom={15}
+        mapContainerStyle={{ width: '100%', height: '200px' }}
+      >
+        <Marker position={center} />
+      </GoogleMap>
+      {shareUrl && (
+        <>
+          <button onClick={handleShare}>Compartir mapa</button>
+          <p>
+            <a href={shareUrl} target="_blank" rel="noopener noreferrer">
+              Ver en Google Maps
+            </a>
+          </p>
+        </>
+      )}
+    </div>
   ) : (
     <p>Cargando mapa...</p>
   );

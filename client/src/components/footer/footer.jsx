@@ -7,7 +7,7 @@ import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
 
 const Footer = ({texto}) => {
     return(
-        <footer className='pt-6 pb-6'>
+        <footer className='pt-6 '>
             <div className='flex items-center justify-around w-[200px] text-center mx-auto mb-3'>
                 <Link href="/"><img src={instagramPng} alt="" loading="lazy"></img></Link>
                 <Link href="/"><img src={twitterPng} alt="" loading="lazy"></img></Link>
@@ -16,7 +16,7 @@ const Footer = ({texto}) => {
             </div>
             <div className="relative bottom-0 w-screen pl-14 pr-14 text-center">
                 <p className='text-sm primary-p'>Importante: Go Ticket no se hace responsable de la calidad o satisfacción de los eventos publicados. Go Ticket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los términos y condiciones de la aplicación. Copyright © 2025 Go Ticket.</p>
-                <img className="w-[100px] mx-auto mt-6" src={goPng} alt="" loading="lazy"></img>
+                <img className="w-[100px] mx-auto mt-1" src={goPng} alt="" loading="lazy"></img>
             </div>
         </footer>
     )
