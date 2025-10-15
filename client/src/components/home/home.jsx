@@ -154,7 +154,7 @@ const Home = () => {
                                 <p className="text-lg w-[170px] text-white">Buscar evento:</p>
                                 <input
                                     className="w-full bg-white text-black ml-3 p-3 border-[1px] border-gray-200 rounded-3xl"
-                                    placeholder="Go busqueda"
+                                    placeholder="Go Busqueda"
                                     name="searchEvent"
                                     onChange={(e) => setSearch(e.target.value)}
                                 />

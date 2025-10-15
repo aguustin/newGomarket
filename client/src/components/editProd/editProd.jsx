@@ -248,9 +248,14 @@ const EditProd = () => {
         const nombreEvento = prod[0]?.nombreEvento
         const eventImg = prod[0]?.imgEvento
         const res = await addRRPPRequest({prodId, rrppMail, nombreEvento, eventImg})
+        console.log(res.data.msg)
         if(res.data.msg === 1){
+            console.log('eeee')
             setMessage(1)
             setTimeout(() => setMessage(0) , 3000);
+        }else{
+            setMessage(4)
+            setTimeout(() => setMessage(0) , 5000);
         }
     }
 
@@ -592,12 +597,12 @@ const EditProd = () => {
 
                         </div>
                     </div>
-                    
                     <div className="send-back relative flex flex-wrap justify-between items-center h-[150px]">
-                          <form className="add-colab-form flex flex-wrap items-center mt-9 mb-6" onSubmit={(e) => addRRPP(e)}>
+                        <form className="add-colab-form flex flex-wrap items-center mt-9 mb-6" onSubmit={(e) => addRRPP(e)}>
                              <input className="h-[40px]" type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
                              <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl ml-3" type="submit">Añadir Colaborador</button>
                              {message == 1 && <p className="text-lg ml-3 text-[#111827]">Se añadio el colaborador al evento!</p>}
+                             {message == 4 && <p className="text-lg ml-3 text-[#111827]">El colaborador ya existe!</p>}
                         </form>
                         <div className="edit-prod-bottom-buttons flex items-center">
                             <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white! text-sm!" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Enviar Invitaciónes</p></Link>

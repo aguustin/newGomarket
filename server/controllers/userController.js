@@ -5,6 +5,7 @@ import nodemailer from 'nodemailer';
 import jwt from "jsonwebtoken"
 import ticketModel from "../models/ticketsModel.js";
 import { Console } from "console";
+import cloudinary from "../middleware/cloudinary.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
@@ -174,4 +175,49 @@ export const getMySavedEventsController = async (req, res) => {
     })
 
     res.send(favoriteEvents).json({empty:false})
+}
+
+export const createSellerController = async (req, res) => {
+    const {nombre, dni, domicilio, cuit, dataA, dataB, dataC, cbu, dataD, nombreTitular, tipo} = req.body
+
+
+    const buildData = (imgUrl) => {
+    if (tipo === 1) {  // SI EL ESTADO ES DIFERENTE DE 3 (DE CORTESIA) SE LE AGREGA EL ESTADO PARA DIFERENCIAR LOS TICKETS NORMALES A LOS DE CORTESIA
+      return {
+          
+      };
+    } else {  
+      return {  //SE CREA EL TICKET DE CORTESIA (SIN PRECIO)
+          nombreTicket,
+          descripcionTicket,
+          cantidadDeCortesias: cantidad,
+          entregados: 0,
+          fechaDeCierre: fechaDeCierre,
+          imgTicket: imgUrl,
+          estado: estadoToInt,
+          distribution: distributionToInt,
+          limit: limitToInt || 30
+      };
+    }
+  };
+    
+    cloudinary.uploader.upload_stream(
+        { resource_type: 'auto', folder: 'GoTicketsT' },
+        async (error, result) => {
+          if (error) {
+            console.log(error);
+            return res.status(204).json({ error: 'Error uploading to Cloudinary' });
+          }
+          
+          const imagenProductora = buildData(result.secure_url);
+          
+          console.log(imagenProductora)
+          await ticketModel.updateOne(
+            { _id: prodId },
+            { $set: updatePayload }
+          );
+    
+          return res.status(200).json({ url: result.secure_url, estado: 1 });
+        }
+      ).end(req.file.buffer); 
 }

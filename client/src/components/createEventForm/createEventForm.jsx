@@ -181,7 +181,7 @@ const CreateEventForm = () => {
         e.preventDefault()
         setCategorias(categorias.filter(c => !c.includes(categoryName)))
     }
-   console.log(pubOrPriv)
+ 
     return(
         <>
         <div className="create-event-and-ticket-container mx-auto mt-[20px] mb-[20px] pl-12 pr-12">
@@ -256,6 +256,7 @@ const CreateEventForm = () => {
                                     <option value="musica">Música</option>
                                     <option value="arte">Arte</option>
                                     <option value="teatro">Teatro</option>
+                                    <option value="deporte">Deporte</option>
                                 </select>
                                 {/*<input type="text"  placeholder="..." name="categorias" required></input>*/ }
                             </div>

@@ -4,6 +4,7 @@ import {Link, useNavigate} from 'react-router'
 import { LoadingButton } from "../../globalscomp/globalscomp"
 import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
+import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
 
 const Login = () => {
     const { setSession, message, loginContext} = useContext(UserContext)
@@ -52,6 +53,7 @@ const Login = () => {
     return(
         <>
         <div className="form-background pt-20 pb-29">
+            <img className="h-[70px] mx-auto mb-5" src={goOriginalPng} alt=""></img>
             {recoverPass ?
              <form className="register-form mt-35 mb-35 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
                     <div className="text-center p-4">

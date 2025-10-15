@@ -23,6 +23,7 @@ import NewCortesie from './components/newCortesie/newCortesie'
 import 'react-loading-skeleton/dist/skeleton.css';
 import LegalConditions from './components/conditions/legalConditions'
 import MyFavoritesEvents from './components/myFavoritesEvents/myFavoritesEvents'
+import UserInfo from './components/userInfo/userInfo'
 
 function AppRoutes() {
   const location = useLocation();
@@ -37,6 +38,7 @@ function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/recover_password" element={<RecoverPass />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/user_info" element={<UserInfo/>} />
         <Route path="/my_favorites_events" element={<MyFavoritesEvents />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/create_event" element={<CreateEventForm />} />

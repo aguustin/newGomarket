@@ -835,9 +835,9 @@ export const addRRPPController = async (req, res) => {
                 <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
               </div>
               <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
-                  <h3 style="font-size:4vw; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:3vw; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-                  <p style="font-size:3vw">Evento: ${nombreEvento} </p>
+                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+                  <p margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
+                  <p>Evento: ${nombreEvento} </p>
                   <img src="${eventImg}"  alt="${nombreEvento}" style="width:230px; height:230px;"/>
               </div>
               <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
@@ -891,7 +891,6 @@ export const addRRPPController = async (req, res) => {
           </html>
         `,
     });
-    console.log(inf)
       return res.status(200).json({msg:1})
     }
 };
