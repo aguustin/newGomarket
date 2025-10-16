@@ -178,46 +178,76 @@ export const getMySavedEventsController = async (req, res) => {
 }
 
 export const createSellerController = async (req, res) => {
-    const {nombre, dni, domicilio, cuit, dataA, dataB, dataC, cbu, dataD, nombreTitular, tipo} = req.body
-
-
+    const {userId, nombre, dni, domicilio, cuit, dataA, dataB, dataC, cbu, dataD, nombreTitular, tipo, imgProductora} = req.body
+    const tipoNumber = Number(req.body.tipo)
     const buildData = (imgUrl) => {
-    if (tipo === 1) {  // SI EL ESTADO ES DIFERENTE DE 3 (DE CORTESIA) SE LE AGREGA EL ESTADO PARA DIFERENCIAR LOS TICKETS NORMALES A LOS DE CORTESIA
+    if (tipoNumber === 1) {  
       return {
-          
+          imagenProductora: imgUrl,
+          nombreCompleto: nombre,
+          dni: dni,
+          domicilio: domicilio,
+          cuit: cuit,
+          mail: dataA,
+          telefono: dataB,
+          pais: dataC,
+          cbu: cbu,
+          alias: dataD,
+          nombreTitular: nombreTitular
       };
+     
     } else {  
-      return {  //SE CREA EL TICKET DE CORTESIA (SIN PRECIO)
-          nombreTicket,
-          descripcionTicket,
-          cantidadDeCortesias: cantidad,
-          entregados: 0,
-          fechaDeCierre: fechaDeCierre,
-          imgTicket: imgUrl,
-          estado: estadoToInt,
-          distribution: distributionToInt,
-          limit: limitToInt || 30
+      return {
+          imagenProductora: imgUrl, 
+          nombreProductora: nombre,
+          telefonoProductora: dataB,
+          paisProductora: dataC,
+          razonSocial: dataA,
+          cuitProductora: cuit,
+          domicilioProductora: domicilio,
+          dniRepresentante: dni,
+          nombreBanco: dataC,
+          numeroCuenta: dataB,
+          cbuProductora: cbu,
+          codigoInternacional: dataD,
+          nombreTitular: nombreTitular
       };
     }
   };
-    
-    cloudinary.uploader.upload_stream(
-        { resource_type: 'auto', folder: 'GoTicketsT' },
-        async (error, result) => {
-          if (error) {
-            console.log(error);
-            return res.status(204).json({ error: 'Error uploading to Cloudinary' });
-          }
-          
-          const imagenProductora = buildData(result.secure_url);
-          
-          console.log(imagenProductora)
-          await ticketModel.updateOne(
-            { _id: prodId },
-            { $set: updatePayload }
-          );
-    
-          return res.status(200).json({ url: result.secure_url, estado: 1 });
+    if(req.file){
+        cloudinary.uploader.upload_stream(
+            { resource_type: 'auto', folder: 'gotickets_profiles' },
+            async (error, result) => {
+              if (error) {
+                console.log(error);
+                return res.status(204).json({ error: 'Error uploading to Cloudinary' });
+              }
+              
+              const userData = buildData(result.secure_url);
+              
+              await userModel.updateOne(
+                { _id: userId },
+                { $set: userData }
+              );
+        
+              return res.status(200).json({ url: result.secure_url, estado: 1 });
+            }
+          ).end(req.file.buffer); 
+    }else{
+        if(imgProductora && imgProductora.length > 0){
+            const userData = buildData(imgProductora);
+            await userModel.updateOne(
+                { _id: userId },
+                { $set: userData }
+        );
+        }else{
+            const userData = buildData(null);
+            await userModel.updateOne(
+                { _id: userId },
+                { $set: userData }
+            );
         }
-      ).end(req.file.buffer); 
+        return res.sendStatus(200)
+    }
+
 }
