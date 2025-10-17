@@ -178,39 +178,42 @@ export const getMySavedEventsController = async (req, res) => {
 }
 
 export const createSellerController = async (req, res) => {
-    const {userId, nombre, dni, domicilio, cuit, dataA, dataB, dataC, cbu, dataD, nombreTitular, tipo, imgProductora} = req.body
+    const {userId, dataA, dataB, dataC, dataD, dataE, dataF, dataG, dataH, dataI, dataJ, dataK, dataL, dataM, dataN, imgProductora} = req.body
+    console.log(dataA,'' , dataB, '' ,dataC, '' ,dataD, '' ,dataE, '' ,dataF,'' , dataG,'' , dataH,'' , dataI,'' , dataJ,'' , dataK,'' , dataL,'' , dataM,'' , dataN)
     const tipoNumber = Number(req.body.tipo)
     const buildData = (imgUrl) => {
     if (tipoNumber === 1) {  
       return {
-          imagenProductora: imgUrl,
-          nombreCompleto: nombre,
-          dni: dni,
-          domicilio: domicilio,
-          cuit: cuit,
-          mail: dataA,
-          telefono: dataB,
-          pais: dataC,
-          cbu: cbu,
-          alias: dataD,
-          nombreTitular: nombreTitular
+          nombreCompleto: dataA,
+          dni:  dataB,
+          domicilio:  dataC,
+          cuit:  dataD,
+          mail:  dataE,
+          telefono:  dataF,
+          pais:  dataG,
+          cbu:  dataH,
+          alias:  dataI,
+          nombreTitular: dataJ, 
+          imagenProductora: imgUrl
       };
      
     } else {  
       return {
-          imagenProductora: imgUrl, 
-          nombreProductora: nombre,
-          telefonoProductora: dataB,
-          paisProductora: dataC,
-          razonSocial: dataA,
-          cuitProductora: cuit,
-          domicilioProductora: domicilio,
-          dniRepresentante: dni,
-          nombreBanco: dataC,
-          numeroCuenta: dataB,
-          cbuProductora: cbu,
-          codigoInternacional: dataD,
-          nombreTitular: nombreTitular
+          nombreProductora: dataA,
+          dniRepresentante: dataB,
+          domicilioProductora: dataC,
+          mailProductora: dataD,
+          cuitProductora: dataE,
+          telefonoProductora: dataF,
+          paisProductora: dataG,
+          cbuProductora: dataH,
+          aliasProductora: dataI,
+          nombreTitularProductora: dataJ,
+          razonSocial: dataK,
+          numeroCuenta: dataL,
+          nombreBanco: dataM,
+          codigoInternacional: dataN,
+          imagenProductora: imgUrl 
       };
     }
   };

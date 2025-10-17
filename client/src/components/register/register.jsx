@@ -3,6 +3,7 @@ import { registerUserRequest } from "../../api/userRequests"
 import {Link, useNavigate} from 'react-router';
 import ReCAPTCHA from "react-google-recaptcha";
 import { LoadingButton } from "../../globalscomp/globalscomp";
+import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
 
 const Register = () => {
     const navigate = useNavigate() 
@@ -49,7 +50,8 @@ const Register = () => {
     return(
         <>
         <div className="form-background pt-1 pb-1">
-            <form className="register-form mt-10 mb-10 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => registerUser(e)}>
+             <img className="h-[70px] mx-auto mt-2" src={goOriginalPng} alt=""></img>
+            <form className="register-form mt-6 mb-10 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => registerUser(e)}>
                 <div className="text-center p-4">
                     <h3 className="text-4xl font-bold">Registrate</h3>
                     <p className="mt-3 secondary-p">Registra tu cuenta de Goticket y disfruta de tus eventos favoritos</p>

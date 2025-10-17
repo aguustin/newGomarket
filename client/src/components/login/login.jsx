@@ -52,7 +52,7 @@ const Login = () => {
 
     return(
         <>
-        <div className="form-background pt-20 pb-29">
+        <div className="form-background pt-6 pb-29">
             <img className="h-[70px] mx-auto mb-5" src={goOriginalPng} alt=""></img>
             {recoverPass ?
              <form className="register-form mt-35 mb-35 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
