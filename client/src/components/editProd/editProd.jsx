@@ -23,6 +23,8 @@ const EditProd = () => {
     const {session} = useContext(UserContext)
     const {prodId} = useParams()
     const fileRef = useRef(null);
+    const fileRefBanner = useRef(null)
+    const fileRefDescriptiveImg = useRef(null)
     const fileRefsB = useRef({})
     const estadoRef = useRef()
     const [closeDate, setCloseDate] = useState()
@@ -45,6 +47,10 @@ const EditProd = () => {
     const [cities, setCities] = useState([])
     const [localidad, setLocalidad] = useState(null)
     const [cancelAlert, setCancelAlert] = useState(false)
+    const [previewBanner, setPreviewBanner] = useState(null)
+    const [imageBanner, setImageBanner] = useState()
+    const [previewDescriptive, setPreviewDescriptive] = useState(null)
+    const [imageDescriptive, setImageDescriptive] = useState()
 
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
@@ -74,6 +80,8 @@ const EditProd = () => {
     e,
     eventId,
     imgEvento,
+    bannerEvento,
+    imagenDescriptiva,
     nombreEvento,
     descripcionEvento,
     eventoEdad,
@@ -115,7 +123,7 @@ const EditProd = () => {
 
     // Imagen: si se subió una nueva, usamos esa. Si no, usamos la existente (URL).
     if (fileRef.current?.files?.[0]) {
-        formData.append('imgEvento', fileRef.current.files[0]);
+        formData.append('imgEvento', fileRef?.current?.files[0]);
     } else {
         formData.append('imgEvento', imgEvento);
     }
@@ -144,6 +152,14 @@ const EditProd = () => {
     formData.append('localidad', edited.localidad ?? localidad);
     formData.append('direccion', edited.direccion ?? direccion);
     formData.append('lugarEvento', edited.lugarEvento ?? lugarEvento);
+
+    if (fileRefBanner.current?.files?.[0]) {
+        formData.append('bannerEvento', fileRefBanner.current.files[0]);
+    } // no uses else para mandar la URL existente
+
+    if (fileRefDescriptiveImg.current?.files?.[0]) {
+        formData.append('imagenDescriptiva', fileRefDescriptiveImg.current.files[0]);
+    }
 
     // Enviar al backend
     try {
@@ -268,6 +284,24 @@ const EditProd = () => {
         const res = await cancelarEventoRequest({prodId})
     }
 
+      const handleBannerChange = (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            setPreviewBanner(imageUrl);
+            setImageBanner(file);
+            }
+        };
+
+  const handleDescriptiveChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+        const imageUrl = URL.createObjectURL(file);
+        setPreviewDescriptive(imageUrl);
+        setImageDescriptive(file);
+        }
+  };
+
     return(
         <>
             <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-white border-[1px] border-gray-100 rounded-2xl p-5">
@@ -320,6 +354,14 @@ const EditProd = () => {
                                             <label>Monto de ventas estimado:</label><br></br>
                                             <input type="number" min="0" placeholder="0" value={eventosEditados[p._id]?.montoVentas ??  p.montoVentas} onChange={(e) => handleChangeEvento(e, p._id, 'montoVentas')} name="montoVentas"></input>
                                         </div>
+                                         <div>
+                                            <label htmlFor="fileUploadBanner" className="text-[#111827]">Banner del evento (opcional)</label>
+                                            <input id="fileUploadBanner" className="" type="file" name="bannerEvento" onChange={handleBannerChange} ref={fileRefBanner}/>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="fileUploadDescriptive" className="text-[#111827]">Imagen descriptiva (opcional)</label>
+                                            <input id="fileUploadDescriptive" className="" type="file" name="imagenDescriptiva" onChange={handleDescriptiveChange}  ref={fileRefDescriptiveImg}/>
+                                        </div>
                                     </div>
                                     <div className="relative p-3">
                                         <div>
@@ -371,6 +413,24 @@ const EditProd = () => {
                                         <div>
                                             <label>Lugar del evento:</label><br></br>
                                             <input type="text" value={eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento} onChange={(e) => handleChangeEvento(e, p._id, 'lugarEvento')} name="lugarEvento"></input>
+                                        </div>
+                                        <div className="flex flex-wrap items-center">
+                                                       {previewBanner && 
+                        <div className="w-[50%] min-w-[230px] bg-white rounded-2xl p-1">
+                            <img className="w-full object-cover h-[160px] rounded-2xl mx-auto mt-3" src={previewBanner} alt="" loading="lazy"></img>
+                            <div className="portal-evento text-center rounded-2xl">
+                                <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Banner del evento</label>
+                                <input id="fileUpload" className="hidden" type="file" name="bannerEvento" onChange={handleBannerChange} />
+                            </div>
+                        </div> }
+                        {previewDescriptive && 
+                        <div className="w-[50%] min-w-[230px] bg-white rounded-2xl p-1">
+                            <img className="w-full object-cover h-[160px] rounded-2xl mx-auto mt-3" src={previewDescriptive} alt="" loading="lazy"></img>
+                            <div className="portal-evento text-center rounded-2xl">
+                                <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Imagen descriptiva</label>
+                                <input id="fileUpload" className="hidden" type="file" name="imagenDescriptiva" onChange={handleDescriptiveChange} />
+                            </div>
+                        </div>}
                                         </div>
                                          <button className="secondary-button-fucsia absolute right-3 bottom-[-60px] rounded-2xl p-3 text-md text-white!" type="submit">{loading ? <LoadingButton/> : <div className="flex items-center"><img src={updatePng} alt=""></img><p className="ml-3">Actualizar evento</p></div>}</button>
                                     </div>

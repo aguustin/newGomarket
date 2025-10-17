@@ -51,7 +51,7 @@ const Nav = () => {
                 <button className="session-b absolute right-9 cursor-pointer p-4 text-[#111827] rounded-3xl" onClick={() => setOpenProfileCong(!openProfileConf)}>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9 primary-p">Iniciar sesion</Link>}
                 {openProfileConf && <div className="logout-b bg-white absolute top-[70px] right-0 w-[200px]">
                         {/*<div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div> */}
-                        <Link to="/my_profile" className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827]"><img className="ml-3" src={logoutPng} alt="" loading="lazy"></img><p className="ml-4">Ver mi perfil</p></Link>
+                        <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827]"><img className="ml-3" src={logoutPng} alt="" loading="lazy"></img><p className="ml-4">Ver mi perfil</p></Link>
                         <Link to="/user_info" className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827]"><img className="ml-3" src={logoutPng} alt="" loading="lazy"></img><p className="ml-4">Editar perfil</p></Link>
                         <button onClick={() => logoutFunc()} className=" flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827]"><img className="ml-3" src={logoutPng} alt="" loading="lazy"></img><p className="ml-4">Salir</p></button>
                 </div>}

@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { contactController, getAllUsersController, getMySavedEventsController, loginController, newPasswordController, recoverPassController, registerController, saveEventsController, createSellerController } from "../controllers/userController.js";
+import { contactController, getAllUsersController, getMySavedEventsController, loginController, newPasswordController, recoverPassController, registerController, saveEventsController, createSellerController, getUserProfileController } from "../controllers/userController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const router = Router()
+
+router.post('/get_profile', getUserProfileController)
 
 router.get('/getAllUsers', getAllUsersController)
 

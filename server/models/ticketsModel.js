@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const ticketSchema = new mongoose.Schema({
+    identificadorEventos: {type: String},
     userId: {type: String},
     prodMail: {type: String}, 
     numeroEvento:{type: Number},
@@ -37,6 +38,8 @@ const ticketSchema = new mongoose.Schema({
     direccion: {type: String},
     lugarEvento: {type: String},
     imgEvento: {type: String},
+    bannerEvento: {type: String},
+    imagenDescriptiva: {type: String},
     linkVideo:{type:String},
     tickets:[{
         nombreTicket: {type: String},

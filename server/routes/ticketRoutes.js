@@ -8,11 +8,11 @@ const router = Router()
 
 router.get('/getAllEvents', getAllEventsController)
 
-router.post('/createEvent', upload.single('imgEvento'), createEventController)
+router.post('/createEvent', upload.fields([{name:'imgEvento', maxCount: 1}, {name:'bannerEvento', maxCount: 1}, {name:'imagenDescriptiva', maxCount: 1}]), createEventController)
 
 router.post('/createEventTickets', upload.single('imgTicket'), createEventTicketsController)
 
-router.post('/updateEvent', upload.single('imgEvento'),  updateEventController)
+router.post('/updateEvent', upload.fields([{name:'imgEvento'}, {name: 'bannerEvento', maxCount: 1}, {name: 'imagenDescriptiva', maxCount: 1}]),  updateEventController)
 
 router.post('/updateTickets', upload.single('imgTicket'), updateEventTicketsController)
 

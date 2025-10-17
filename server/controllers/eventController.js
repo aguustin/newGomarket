@@ -30,87 +30,102 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
     res.send(getEvents)
 }
 
-export const createEventController = async (req, res) => {  //CREATE EVENTO
-    const {userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento, eventoEdad, nombreEvento, descripcionEvento, aviso, categoriasEventos, artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad, tipoMoneda, direccion, lugarEvento, linkVideo } = req.body
-    const eventoEdadPush =  eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && eventoEdad !== 'null' && eventoEdad !== 'undefined' && !isNaN(Number(eventoEdad)) ? Number(eventoEdad) : undefined;
+export const createEventController = async (req, res) => {
+  const {
+    userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento,
+    eventoEdad, nombreEvento, descripcionEvento, aviso, categoriasEventos,
+    artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad,
+    tipoMoneda, direccion, lugarEvento, linkVideo
+  } = req.body;
 
-    const parsedCategorias = JSON.parse(categoriasEventos)
-    console.log(parsedCategorias)
-    const encryptedMail = encrypt(prodMail)
+  const eventoEdadPush = (eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' &&
+    eventoEdad !== 'null' && eventoEdad !== 'undefined' && !isNaN(Number(eventoEdad)))
+    ? Number(eventoEdad)
+    : undefined;
 
-    if(!req.file){   //CREA EL EVENTO CON UNA IMAGEN POR DEFECTO SI NO HAY UNA IMAGEN SUBIDA
-            const createdEvent = await ticketModel.create({
-                    userId: userId,
-                    prodMail: encryptedMail,
-                    codigoPais: codigoPais,
-                    codigoCiudad: codigoCiudad,
-                    paisDestino: paisDestino,
-                    tipoEvento: tipoEvento,
-                    eventoEdad: eventoEdadPush,
-                    nombreEvento: nombreEvento,
-                    descripcionEvento: descripcionEvento,
-                    aviso: aviso,
-                    categoriasEventos: parsedCategorias,
-                    artistas: artistas,
-                    montoVentas: montoVentas,
-                    fechaInicio: fechaInicio,
-                    fechaFin: fechaFin,
-                    provincia: provincia,
-                    localidad: localidad,
-                    direccion: direccion,
-                    lugarEvento: lugarEvento,
-                    linkVideo: linkVideo,
-                    imgEvento: 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg',
-                    tipoMoneda: tipoMoneda,
-                    totalVentas: 0,
-                    totalDevoluciones:0,
-                    totalMontoVendido: 0,
-                    totalMontoDevoluciones:0,
-                    totalMontoDescuento:0,
-                    montoTotal: 0
-                })
-            return res.status(200).json({ url: 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg', estado: 1, eventId: createdEvent._id  });
-    }
+  const parsedCategorias = JSON.parse(categoriasEventos);
+  const encryptedMail = encrypt(prodMail);
 
-    cloudinary.uploader.upload_stream({ resource_type: 'auto', folder:'eventsGoTicket' }, async (error, result) => {
-        if (error) {
-            console.log(error);
-            return res.status(204).json({ error: 'Error uploading to Cloudinary' });
+  const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
+
+  const files = req.files || {};
+
+  const uploadToCloudinary = (file) => {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { resource_type: 'auto', folder: 'eventsGoTicket' },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            return reject(error);
+          }
+          resolve(result.secure_url);
         }
-           const createdEvent = await ticketModel.create({   //SE CREA EL EVENTO SI HAY UNA IMAGEN SUBIDA
-                userId: userId,
-                prodMail: encryptedMail,
-                codigoPais: codigoPais,
-                codigoCiudad: codigoCiudad,
-                paisDestino: paisDestino,
-                tipoEvento: tipoEvento,
-                eventoEdad: eventoEdad,
-                nombreEvento: nombreEvento,
-                descripcionEvento: descripcionEvento,
-                aviso: aviso,
-                categoriasEventos: parsedCategorias,
-                artistas: artistas,
-                montoVentas: montoVentas,
-                fechaInicio: fechaInicio, //fechaInicio
-                fechaFin: fechaFin, //fechaFin
-                provincia: provincia,
-                localidad: localidad,
-                direccion: direccion,
-                tipoMoneda: tipoMoneda,
-                lugarEvento: lugarEvento,
-                linkVideo: linkVideo,
-                imgEvento:  result.secure_url,
-                totalVentas: 0,
-                totalDevoluciones:0,
-                totalMontoVendido: 0,
-                totalMontoDevoluciones:0,
-                totalMontoDescuento:0,
-                montoTotal: 0
-            })
-        return res.status(200).json({ url: result.secure_url, estado: 1, eventId: createdEvent._id  });
-    }).end(req.file.buffer); 
-   
+      ).end(file.buffer);
+    });
+  };
+
+  try {
+    // Subir imágenes si existen, sino usar por defecto
+    const imgEventoFile = files?.imgEvento?.[0];
+    const bannerEventoFile = files?.bannerEvento?.[0];
+    const imagenDescriptivaFile = files?.imagenDescriptiva?.[0];
+
+    const [imgEventoUrl, bannerEventoUrl, imagenDescriptivaUrl] = await Promise.all([
+      imgEventoFile ? uploadToCloudinary(imgEventoFile) : defaultImage,
+      bannerEventoFile ? uploadToCloudinary(bannerEventoFile) : defaultImage,
+      imagenDescriptivaFile ? uploadToCloudinary(imagenDescriptivaFile) : defaultImage,
+    ]);
+
+    const createdEvent = await ticketModel.create({
+      userId,
+      prodMail: encryptedMail,
+      codigoPais,
+      codigoCiudad,
+      paisDestino,
+      tipoEvento,
+      eventoEdad: eventoEdadPush,
+      nombreEvento,
+      descripcionEvento,
+      aviso,
+      categoriasEventos: parsedCategorias,
+      artistas,
+      montoVentas,
+      fechaInicio,
+      fechaFin,
+      provincia,
+      localidad,
+      direccion,
+      tipoMoneda,
+      lugarEvento,
+      linkVideo,
+      imgEvento: imgEventoUrl,
+      bannerEvento: bannerEventoUrl,
+      imagenDescriptiva: imagenDescriptivaUrl,
+      totalVentas: 0,
+      totalDevoluciones: 0,
+      totalMontoVendido: 0,
+      totalMontoDevoluciones: 0,
+      totalMontoDescuento: 0,
+      montoTotal: 0
+    });
+
+    return res.status(200).json({
+      estado: 1,
+      eventId: createdEvent._id,
+      urls: {
+        imgEvento: imgEventoUrl,
+        bannerEvento: bannerEventoUrl,
+        imagenDescriptiva: imagenDescriptivaUrl
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating event:', error);
+    return res.status(500).json({ error: 'Error al crear el evento.' });
+  }
 };
+
 
 export const createEventTicketsController = async (req, res) => {  //CREA TICKETS DEL EVENTO
   const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado, distribution, limit} = req.body
@@ -203,44 +218,107 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
 }
 
 
-export const updateEventController = async (req, res) => {  //ACTUALIZA LA INFO DEL EVENTO
-    const { eventId, nombreEvento, descripcionEvento, aviso, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento} = req.body;
-    // Construir los campos que siempre se actualizan
-    const updateFields = { nombreEvento, descripcionEvento, aviso, eventoEdad, /*categorias,*/ artistas, montoVentas, fechaInicio, fechaFin, provincia, tipoEvento, localidad, direccion, lugarEvento};
-    
-    if (req.file) {      //SE ACTUALIZAN LOS DATOS CON UNA IMAGEN NUEVA
-    cloudinary.uploader.upload_stream(
-        { resource_type: 'auto', folder: 'eventsGoTicket' },
-        async (error, result) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).json({ error: 'Error uploading to Cloudinary' });
-        }
+export const updateEventController = async (req, res) => {
+  const {
+    eventId,
+    nombreEvento,
+    descripcionEvento,
+    aviso,
+    eventoEdad,
+    artistas,
+    montoVentas,
+    fechaInicio,
+    fechaFin,
+    provincia,
+    tipoEvento,
+    localidad,
+    direccion,
+    lugarEvento
+  } = req.body;
 
-        // Agregar la URL de la imagen subida
-        updateFields.imgEvento = result.secure_url;
+  // Campos siempre actualizables
+  const updateFields = {
+    nombreEvento,
+    descripcionEvento,
+    aviso,
+    eventoEdad,
+    artistas,
+    montoVentas,
+    fechaInicio,
+    fechaFin,
+    provincia,
+    tipoEvento,
+    localidad,
+    direccion,
+    lugarEvento
+  };
 
-        const updateResult = await ticketModel.updateOne(
-            { _id: eventId },
-            { $set: updateFields }
-        );
-
-        return res.status(200).json({ url: result.secure_url, updated: updateResult.modifiedCount > 0, state: 1});
-        }
-    ).end(req.file.buffer);
-    } else {  //SE ACTUALIZA LA INFO SIN IMAGEN NUEVA
-        const updateResult = await ticketModel.updateOne(
-            { _id: eventId },
-            { $set: updateFields }
-        );
-
-        if (updateResult.modifiedCount > 0) {
-            return res.status(200).json({state:1});
-        } else {
-            return res.status(204).json({state:2}); // No se modificó ningún documento
-        }
-    }
+  if (!isNaN(Number(eventoEdad))) {
+  updateFields.eventoEdad = Number(eventoEdad);
 }
+
+if (!isNaN(Number(tipoEvento))) {
+  updateFields.tipoEvento = Number(tipoEvento);
+}
+
+  const files = req.files || {};
+  console.log(req.files)
+  // Función para subir a Cloudinary
+  const uploadToCloudinary = (file) => {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { resource_type: 'auto', folder: 'eventsGoTicket' },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            return reject(error);
+          }
+          resolve(result.secure_url);
+        }
+      ).end(file.buffer);
+    });
+  };
+
+  try {
+    // Subir imágenes si existen
+    if (files?.imgEvento?.[0]) {
+      console.log(updateFields.imgEvento)
+      updateFields.imgEvento = await uploadToCloudinary(files.imgEvento[0]);
+    }
+
+    if (files?.bannerEvento?.[0]) {
+      console.log('banner: ', updateFields.bannerEvento)
+      updateFields.bannerEvento = await uploadToCloudinary(files.bannerEvento[0]);
+    }
+
+    if (files?.imagenDescriptiva?.[0]) {
+      updateFields.imagenDescriptiva = await uploadToCloudinary(files.imagenDescriptiva[0]);
+    }
+
+    // Ejecutar la actualización
+    const updateResult = await ticketModel.updateOne(
+      { _id: eventId },
+      { $set: updateFields }
+    );
+
+    if (updateResult.modifiedCount > 0) {
+      return res.status(200).json({
+        state: 1,
+        updated: true,
+        updatedFields: Object.keys(updateFields)
+      });
+    } else {
+      return res.status(204).json({
+        state: 2,
+        updated: false,
+        message: 'No se modificó ningún campo'
+      });
+    }
+  } catch (err) {
+    console.error('Error al actualizar el evento:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
 
 export const updateEventTicketsController = async (req, res) => {   //SE ACTUALIZAN LOS TICKETS DEL EVENTO
   const {

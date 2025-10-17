@@ -9,6 +9,12 @@ import cloudinary from "../middleware/cloudinary.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
+export const getUserProfileController = async (req, res) => {
+    const {userId} = req.body
+    const getUsers = await userModel.find({_id: userId})
+    res.send(getUsers)
+}
+
 export const getAllUsersController = async (req, res) => {
     const getUsers = await userModel.find({})
     res.send(getUsers)

@@ -35,6 +35,10 @@ const CreateEventForm = () => {
     const [showEventInfo, setShowEventInfo] = useState(true)
     const [previewImage, setPreviewImage] = useState(null)
     const [imageFile, setImageFile] = useState()
+    const [previewBanner, setPreviewBanner] = useState(null)
+    const [imageBanner, setImageBanner] = useState()
+    const [previewDescriptive, setPreviewDescriptive] = useState(null)
+    const [imageDescriptive, setImageDescriptive] = useState()
     const [loading, setLoading] = useState(false)
     const [categorias, setCategorias] = useState([])
     const [dateMsg, setDateMsg] = useState(0)
@@ -89,6 +93,8 @@ const CreateEventForm = () => {
                 formData.append('lugarEvento', e.target.elements.lugarEvento.value)
                 formData.append('linkVideo', e.target.elements.linkVideo.value)
                 formData.append('imgEvento', imageFile)
+                formData.append('bannerEvento', imageBanner)
+                formData.append('imagenDescriptiva', imageDescriptive)
 
                 const res = await createEventRequest(formData)
     
@@ -159,7 +165,7 @@ const CreateEventForm = () => {
         setSelectedCity(city)
     }
 
-    const handleImageChange = (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
@@ -167,6 +173,25 @@ const CreateEventForm = () => {
       setImageFile(file);
     }
   };
+
+  const handleBannerChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewBanner(imageUrl);
+      setImageBanner(file);
+    }
+  };
+
+  const handleDescriptiveChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewDescriptive(imageUrl);
+      setImageDescriptive(file);
+    }
+  };
+
 
     const handleChange = (e) => {
         const selected = e.target.value;
@@ -245,6 +270,14 @@ const CreateEventForm = () => {
                                 <textarea className="h-[165px]" type="text"  placeholder="..." name="aviso"></textarea>
                             </div>
                         </div>
+                        <div>
+                            <label htmlFor="fileUpload" className="text-[#111827]">Banner del evento (opcional)</label>
+                            <input id="fileUpload" className="" type="file" name="bannerEvento" onChange={handleBannerChange} />
+                        </div>
+                        <div>
+                            <label htmlFor="fileUpload" className="text-[#111827]">Imagen descriptiva (opcional)</label>
+                            <input id="fileUpload" className="" type="file" name="imagenDescriptiva" onChange={handleDescriptiveChange} />
+                        </div>
                     </div>
                     <div className="create-event-form-div-child w-[50%]">
                         <div>
@@ -260,7 +293,7 @@ const CreateEventForm = () => {
                                 </select>
                                 {/*<input type="text"  placeholder="..." name="categorias" required></input>*/ }
                             </div>
-                            <div className="flex items-center mb-4">
+                            <div className="flex items-center ">
                             {categorias.map((cat, i) => ( 
                             <div key={i} className="flex ml-1 pt-2 pb-2 pl-3 pr-3 rounded-lg bg-orange-500">
                                 <label className="rounded-xl text-white!">{cat}</label>
@@ -330,12 +363,32 @@ const CreateEventForm = () => {
                                     <input name="linkVideo" placeholder="..."></input>
                                 </div>
                             </div>
+                            
                 </div>
-                        
-                    <div className="relative mt-10 flex items-center">
+                <div>
+                    <div className="banner-descImg flex flex-wrap justify-center">
+                        {previewBanner && 
+                        <div className="w-[300px] bg-white rounded-2xl p-1">
+                            <img className="object-cover rounded-2xl mx-auto mt-3" src={previewBanner} alt="" loading="lazy"></img>
+                            <div className="portal-evento text-center rounded-2xl">
+                                <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Banner del evento</label>
+                                <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
+                            </div>
+                        </div> }
+                        {previewDescriptive && 
+                        <div className="w-[300px] bg-white rounded-2xl p-1">
+                            <img className="object-cover rounded-2xl mx-auto mt-3" src={previewDescriptive} alt="" loading="lazy"></img>
+                            <div className="portal-evento text-center rounded-2xl">
+                                <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Imagen descriptiva</label>
+                                <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
+                            </div>
+                        </div>}
+                    </div>
+                    <div className="relative mt-10 items-center flex">
                         <label className="text-md text-[#EC4899]">Acepto términos y condiciones</label>
-                        <input className="mt-3" type="checkbox" required></input>
+                        <input className="mt-3 ml-2 w-[15px]!" type="checkbox" required></input>
                     </div> 
+                </div>
                     <button className="absolute right-4 bottom-4 primary-button p-4 rounded-lg" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
             </form> 
                 </div>   

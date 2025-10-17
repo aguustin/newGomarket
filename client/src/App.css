@@ -150,6 +150,7 @@ button:focus{
   border: 1px solid #b4b4b4;
 }
 
+
 /*------------------------------------------------------------------- EDITAR EVENTRO ------------------------------------------------------------------------*/
 
 .edit-info-event > div{
@@ -767,6 +768,14 @@ border: 1px solid #e0e0e0;
   .desc-and-map{
     margin-left: 5px;
     margin-right: 5px;
+  }
+  .banner-descImg > div{
+    width: 50% !important;
+    font-size: 14px;
+  }
+
+   .banner-descImg > div label{
+    padding: 5px !important;
   }
 }
 
