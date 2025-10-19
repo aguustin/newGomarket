@@ -47,7 +47,7 @@ const Login = () => {
     const recoverPassFunc = async (e) => {
         e.preventDefault()
         const mail = e.target.elements.mail.value
-        const res = await recoverPassRequest({mail})
+        await recoverPassRequest({mail})
     }
 
     return(

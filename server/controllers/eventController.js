@@ -252,12 +252,13 @@ export const updateEventController = async (req, res) => {
     direccion,
     lugarEvento
   };
-
+  
   if (!isNaN(Number(eventoEdad))) {
   updateFields.eventoEdad = Number(eventoEdad);
 }
 
 if (!isNaN(Number(tipoEvento))) {
+  console.log('tipo evento', tipoEvento)
   updateFields.tipoEvento = Number(tipoEvento);
 }
 
@@ -308,7 +309,7 @@ if (!isNaN(Number(tipoEvento))) {
         updatedFields: Object.keys(updateFields)
       });
     } else {
-      return res.status(204).json({
+      return res.status(200).json({
         state: 2,
         updated: false,
         message: 'No se modificó ningún campo'

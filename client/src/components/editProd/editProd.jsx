@@ -80,19 +80,21 @@ const EditProd = () => {
     e,
     eventId,
     imgEvento,
-    bannerEvento,
-    imagenDescriptiva,
     nombreEvento,
     descripcionEvento,
+    aviso,
     eventoEdad,
     artistas,
     montoVentas,
     fechaInicio,
     fechaFin,
+    tipoEvento,
     provincia,
     localidad,
     direccion,
-    lugarEvento
+    lugarEvento,
+    bannerEvento,
+    imagenDescriptiva
 ) => {
     e.preventDefault();
     setLoading(true);
@@ -134,20 +136,18 @@ const EditProd = () => {
     formData.append('codigoPais', localidad.countryCode ?? cities[0]?.countryCode); //cambiado ahora el 22/09/2025
     formData.append('codigoCiudad', localidad.stateCode ?? cities[0]?.stateCode); //cambiado ahora el 22/09/2025
     formData.append('descripcionEvento', edited.descripcionEvento ?? descripcionEvento);
-
-    if (eventoEdad && !isNaN(Number(eventoEdad))) {
-        formData.append('eventoEdad', eventoEdad);
-    }
+    formData.append('aviso', aviso ?? edited.aviso)
+    formData.append('eventoEdad', eventoEdad ?? edited.eventoEdad);
+    
 
     formData.append('artistas', edited.artistas ?? artistas);
     formData.append('montoVentas', edited.montoVentas ?? montoVentas);
-    formData.append('fechaInicio', fechaInicioFinal.toISOString());
-    formData.append('fechaFin', fechaFinFinal.toISOString());
+    console.log(edited.montoVentas, ' ', montoVentas)
+    formData.append('fechaInicio', fechaInicioFinal); //.toISOString
+    formData.append('fechaFin', fechaFinFinal); //.toISOString
     formData.append('provincia', edited.provincia ?? provincia);
-
-    if(eventVisibility !== '' || eventVisibility !== 0){
-        formData.append('tipoEvento', edited.tipoEvento ?? eventVisibility);
-    }
+    console.log('tipo evento: ', eventVisibility , ' ', tipoEvento)
+    formData.append('tipoEvento', eventVisibility ?? tipoEvento);
 
     formData.append('localidad', edited.localidad ?? localidad);
     formData.append('direccion', edited.direccion ?? direccion);
@@ -155,24 +155,29 @@ const EditProd = () => {
 
     if (fileRefBanner.current?.files?.[0]) {
         formData.append('bannerEvento', fileRefBanner.current.files[0]);
-    } // no uses else para mandar la URL existente
+    }else{
+         formData.append('bannerEvento', bannerEvento ?? null);
+    }
 
     if (fileRefDescriptiveImg.current?.files?.[0]) {
         formData.append('imagenDescriptiva', fileRefDescriptiveImg.current.files[0]);
+    }else{
+         formData.append('imagenDescriptiva', imagenDescriptiva ?? null);
     }
+
 
     // Enviar al backend
     try {
         const res = await updateEventRequest(formData);
-        console.log(res);
-        if (res.data.estado > 0) {
+        console.log('dasdasdasdas', res);
+        if (res.data.state > 0) {
             setLoading(false);
-            // Podés agregar lógica adicional acá si es necesario
+            setMessage(5);
         }
     } catch (error) {
         console.error('Error al actualizar evento:', error);
         setLoading(false);
-        // Mostrar mensaje de error general si querés
+        
     }
 };
 
@@ -281,7 +286,7 @@ const EditProd = () => {
     }
 
     const cancelarEvento = async (prodId) => {
-        const res = await cancelarEventoRequest({prodId})
+        await cancelarEventoRequest({prodId})
     }
 
       const handleBannerChange = (e) => {
@@ -308,7 +313,7 @@ const EditProd = () => {
                     <div>
                         {prod.map((p) => 
                         <>
-                           <form className="form-edit-event" key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.provincia, p.localidad, p.direccion, p.lugarEvento) }} encType="multipart/form-data">
+                           <form className="form-edit-event" key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.aviso, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.tipoEvento, p.provincia,p.localidad, p.direccion, p.lugarEvento, p.bannerEvento, p.imagenDescriptiva) }} encType="multipart/form-data">
                                  <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center">
                                     <div className="">
                                         <h2 className="text-2xl">Editar evento</h2>
@@ -377,9 +382,18 @@ const EditProd = () => {
                                          <div className="prov-localidad flex items-center">
                                             <div className="w-[100%]!">
                                                 <label>Visibilidad del evento: {p.tipoEvento === 1 ? 'Publico' : 'Privado'}</label><br></br>
-                                                <select className="pr-2 pl-2 rounded-lg" name="tipoEvent" onChange={(e) => setEventVisibility(e.target.value)}>
-                                                    <option value={1}>Publico</option>
-                                                    <option value={2}>Privado</option>
+                                                <select className="pr-2 pl-2 rounded-lg" name="tipoEvento" value={eventosEditados[p._id]?.tipoEvento ??  eventVisibility} onChange={(e) => setEventVisibility(e.target.value)} defaultValue="orange">
+                                                    {p.tipoEvento === 1 ?
+                                                        <>
+                                                        <option value={1} selected>Publico</option>
+                                                        <option value={2}>Privado</option>
+                                                        </>
+                                                        :
+                                                        <>
+                                                        <option value={1}>Publico</option>
+                                                        <option value={2} selected>Privado</option>
+                                                        </> 
+                                                    }
                                                 </select>
                                             </div>
                                         </div>
@@ -414,9 +428,9 @@ const EditProd = () => {
                                             <label>Lugar del evento:</label><br></br>
                                             <input type="text" value={eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento} onChange={(e) => handleChangeEvento(e, p._id, 'lugarEvento')} name="lugarEvento"></input>
                                         </div>
-                                        <div className="flex flex-wrap items-center">
+                    <div className="flex flex-wrap items-center p-0">
                                                        {previewBanner && 
-                        <div className="w-[50%] min-w-[230px] bg-white rounded-2xl p-1">
+                        <div className="w-[50%] min-w-[180px] bg-white rounded-2xl p-1">
                             <img className="w-full object-cover h-[160px] rounded-2xl mx-auto mt-3" src={previewBanner} alt="" loading="lazy"></img>
                             <div className="portal-evento text-center rounded-2xl">
                                 <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Banner del evento</label>
@@ -424,7 +438,7 @@ const EditProd = () => {
                             </div>
                         </div> }
                         {previewDescriptive && 
-                        <div className="w-[50%] min-w-[230px] bg-white rounded-2xl p-1">
+                        <div className="w-[50%] min-w-[180px] bg-white rounded-2xl p-1">
                             <img className="w-full object-cover h-[160px] rounded-2xl mx-auto mt-3" src={previewDescriptive} alt="" loading="lazy"></img>
                             <div className="portal-evento text-center rounded-2xl">
                                 <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Imagen descriptiva</label>
@@ -436,6 +450,9 @@ const EditProd = () => {
                                     </div>
                                 </div>
                             </form>
+                            {message === 5 && <div className="mb-10 mt-[-20px]">
+                                <p className="text-green-700 text-2xl text-center">El evento se actualizo exitosamente!</p>
+                                </div>}
                             </>
                         )}
                        {showCreateTicketForm &&  <>
@@ -515,7 +532,7 @@ const EditProd = () => {
                     <div className="flex items-center">
                         {/*<button className="flex items-center text-xl mt-16 bg-violet-900 pl-6 pr-6 pt-3 pb-3 rounded-lg cursor-pointer"><p>Editar tickets</p><img className="w-[15px] h-[15px] ml-3" src={downArrow} alt=""></img></button> */}
                     </div>
-                    <div className="edit-tickets-container mt-24">
+                    <div className="edit-tickets-container mt-10">
                         <div className="add-ticket flex items-center mb-3">
                             <h2 className="text-xl underline">Tickets</h2>
                             <button className="bg-orange-500! flex items-center pt-1 pb-1 pl-3 pr-3 cursor-pointer rounded-lg primary-p ml-3" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar nuevo ticket +</button>
@@ -657,18 +674,20 @@ const EditProd = () => {
 
                         </div>
                     </div>
-                    <div className="send-back relative flex flex-wrap justify-between items-center h-[150px]">
-                        <form className="add-colab-form flex flex-wrap items-center mt-9 mb-6" onSubmit={(e) => addRRPP(e)}>
-                             <input className="h-[40px]" type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
-                             <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl ml-3" type="submit">Añadir Colaborador</button>
-                             {message == 1 && <p className="text-lg ml-3 text-[#111827]">Se añadio el colaborador al evento!</p>}
-                             {message == 4 && <p className="text-lg ml-3 text-[#111827]">El colaborador ya existe!</p>}
+                    <div className="send-back relative flex flex-wrap justify-between items-center">
+                        <form className="add-colab-form items-center mt-9 mb-6" onSubmit={(e) => addRRPP(e)}>
+                            <div className="flex flex-wrap items-center">
+                                <input className="h-[40px]" type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
+                                <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl ml-3" type="submit">Añadir Colaborador</button>
+                            </div>
+                             {message == 1 && <p className="text-lg mt-2 text-green-700 text-center">Se añadio el colaborador al evento!</p>}
+                             {message == 4 && <p className="text-lg mt-2 text-[#111827]! text-center">El colaborador ya existe!</p>}
                         </form>
-                        <div className="edit-prod-bottom-buttons flex items-center">
-                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white! text-sm!" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Enviar Invitaciónes</p></Link>
-                            <Link className="flex items-center ml-6 p-2 primary-button rounded-lg text-white! text-sm!" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Crear lista de invitaciónes</p></Link>
-                            <button className="flex items-center ml-6 p-2 bg-[#EC4899] rounded-lg text-white! text-sm!" onClick={() => setCancelAlert(true)}><img src={cancelPng} alt="" loading="lazy"></img><p className="ml-2">Cancelar evento</p></button>
-                            <Link className="flex items-center ml-6 p-2 bg-black rounded-lg text-white! text-sm!" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-2">Volver</p></Link>
+                        <div className="edit-prod-bottom-buttons flex flex-wrap justify-center items-center mt-2">
+                            <Link className="flex items-center mx-2 p-2 border-[1px] border-gray-300 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2!" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Enviar Invitaciónes</p></Link>
+                            <Link className="flex items-center mx-2 p-2 border-[1px] border-gray-300 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2!" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Crear lista de invitaciónes</p></Link>
+                            <button className="flex items-center mx-2 p-2 bg-[#EC4899] rounded-lg text-white! text-sm! min-w-[173px] mt-2!" onClick={() => setCancelAlert(true)}><img src={cancelPng} alt="" loading="lazy"></img><p className="ml-2">Cancelar evento</p></button>
+                            <Link className="flex items-center mx-2 p-2 bg-orange-500 rounded-lg text-white! text-sm! min-w-[172px] mt-2!" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-2">Continuar</p></Link>
                         </div>
                     </div>
                 </div>

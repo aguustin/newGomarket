@@ -2,6 +2,8 @@ import { useContext, useEffect, useState } from 'react';
 import advicePng from '../../assets/images/advice.png'
 import { createSellerProfileRequest } from '../../api/userRequests';
 import UserContext from '../../context/userContext';
+import userPng from "../../assets/user.png"
+import { Link } from 'react-router';
 
 const UserInfo = () => {
     const {session} = useContext(UserContext)
@@ -65,15 +67,17 @@ const UserInfo = () => {
         setMailProductora(session?.userFinded?.[0]?.mail)
         setNombreTitularProductora(session?.userFinded?.[0]?.nombreTitularProductora)
 
-        setImgProductora(session?.userFinded?.[0]?.imgProductora)
+        setImgProductora(session?.userFinded?.[0]?.imagenProductora)
     }
+
 }, [session]);
+console.log(imgProductora)
 
     const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setPreviewImage(imageUrl);
+      setImgProductora(imageUrl);
       setImageFile(file);
     }
   };
@@ -145,7 +149,16 @@ const UserInfo = () => {
             <p className="max-w-[1035px] flex items-center p-3 bg-[#ffdeca] mx-auto mt-3  mb-2 rounded-xl text-[#111827]!"><img className='mr-2' src={advicePng} alt=""></img>Asegurate de que todos los datos sean correctos. Estos seran los datos que se utilizaran para enviar el dinero a tu cuenta.</p>
                 <form className="max-w-[455px] bg-white rounded-2xl p-3 mx-auto text-center mb-3">
                     <b className="text-[#111827] text-xl">Imagen de perfil (opcional)</b>
-                    <img className="object-cover rounded-2xl mx-auto mt-3" src={previewImage ?? imgProductora} alt="" loading="lazy"></img>
+                      
+                               <div className="flex justify-center mb-4 mt-3">
+                                  <div className="relative">
+                                    <img 
+                                      src={imgProductora ?? userPng} 
+                                      alt="Perfil"
+                                      className="w-42 h-42 rounded-full object-cover border-4 border-gray-300"
+                                    />
+                                  </div>
+                                </div>
                     <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827] text-left"><img className='mr-3' src={advicePng} alt=""></img> Recomendación: 250 x 300px JPG/PNG</p>
                     <div className="portal-evento bg-orange-500 p-3 text-center rounded-2xl">
                         <label htmlFor="fileUpload" className="text-[#111827]!">Imagen de perfil</label>
@@ -153,9 +166,18 @@ const UserInfo = () => {
                     </div>
                 </form>
             </div>
-            <div className='flex items-start'>
-                <form className="relative border-[2px] border-gray-200 text-[#111827] rounded-lg bg-white w-[100%] mx-3 p-6" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 1)}>
-                    <h1 className="text-center">Particular</h1>
+            <div className='grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-start'>
+                <form className="relative bg-white rounded-3xl p-8 pb-20 border-2 border-gray-200" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 1)}>
+                     <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-indigo-100 p-3 rounded-xl">
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Particular</h2>
+              </div>
+              <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold">
+                Personal
+              </span>
+            </div>
                     <div className="mt-3">
                         <label className="text-[#111827]!">Nombre completo</label><br></br>
                         <input className="border-[1px] border-gray-200 w-[100%] p-2" type="text" name="nombreCompleto" value={nombre} onChange={(e) => setNombre(e.target.value)} required></input>
@@ -192,18 +214,28 @@ const UserInfo = () => {
                         <label className="text-[#111827]!">Alias</label><br></br>
                         <input className="border-[1px] border-gray-200 w-[100%] p-2" type="text" name="alias" value={alias} onChange={(e) => setAlias(e.target.value)} required></input>
                     </div>
-                     <div className="mt-3 mb-16">
+                     <div className="mt-3">
                         <label className="text-[#111827]!">Nombre del titular</label><br></br>
                         <input className="border-[1px] border-gray-200 w-[100%] p-2" type="text" name="nombreTitular" value={nombreTitular} onChange={(e) => setNombreTitular(e.target.value)} required></input>
                     </div>
-                    <button className="absolute right-5 bottom-5 p-3 rounded-lg bg-orange-500 text-[#111827] font-bold" type="submit">Guardar particular</button>
+                    {message === 1 ? <Link className='absolute w-[86.5%] text-center bottom-4 bg-orange-500! text-white! font-semibold py-3 px-6 rounded-xl' to="/home">Ir a inicio</Link> : <button className="absolute w-[86.5%] text-center bottom-4 bg-[#EC4899] hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar particular</button>}
+                    {message === 1 && <p className='text-green-600! text-center mt-4'>Productora actualizada con exito!</p>}
                 </form>
 
 
 
                 
-                <form className="relative border-[2px] border-gray-200 text-[#111827] rounded-lg bg-white w-[100%] mx-3 p-6 pb-22" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 2)}>
-                    <h1 className="text-center">Productora</h1>
+                <form className="relative bg-white rounded-3xl p-8 pb-20 border-2 border-gray-200" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 2)}>
+                         <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-indigo-100 p-3 rounded-xl">
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Productora</h2>
+              </div>
+              <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold">
+                Empresa
+              </span>
+            </div>
                      <div className="mt-3">
                         <label className="text-[#111827]!">Nombre de productora</label><br></br>
                         <input className="border-[1px] border-gray-200 w-[100%] p-2" type="text" name="nombreProductora" value={nombreProductora} onChange={(e) => setNombreProductora(e.target.value)} required></input>
@@ -260,7 +292,8 @@ const UserInfo = () => {
                         <label className="text-[#111827]!">Nombre del titular</label><br></br>
                         <input className="border-[1px] border-gray-200 w-[100%] p-2" type="text" name="nombreTitularProductora" value={nombreTitularProductora} onChange={(e) => setNombreTitularProductora(e.target.value)} required></input>
                     </div>
-                    <button className="absolute right-5 bottom-5 p-3 rounded-lg bg-orange-500 text-[#111827] font-bold" type="submit">Guardar productora</button>
+                    {message === 2 ? <Link className='absolute w-[86.5%] text-center bottom-4 bg-orange-500! text-white! font-semibold py-3 px-6 rounded-xl' to="/home">Ir a inicio</Link> : <button className="absolute w-[86.5%] text-center bottom-4 bg-[#EC4899] hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar productora</button>}
+                    {message === 2 && <p className='text-green-600! text-center mt-4'>Productora actualizada con exito!</p>}
                 </form>
                 </div>
             </div>

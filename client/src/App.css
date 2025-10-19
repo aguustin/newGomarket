@@ -14,7 +14,7 @@ button:focus{
 
 .nav, footer, .nav-mobile-options, .conditions-container{
   z-index: 4;
-  background-color: #e0e0e0;
+  background-color: #f4f4f4;
   box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
   -webkit-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
   -moz-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
@@ -26,15 +26,12 @@ button:focus{
   -moz-box-shadow: 2px 4px 5px 0px rgba(0,0,0,0.75);
 }
 
-.settings > div:hover, .settings > button:hover, .logout-b:hover{
+.settings > div:hover, .settings > button:hover{
   background-color: #e0e0e0 !important;
   transition: background-color .5s;
   color: #111827 !important;
 }
 
-.logout-b:hover{
-  background-color: transparent;
-}
 
 .link-profile{
   border-bottom: 1px solid white;
@@ -681,7 +678,6 @@ border: 1px solid #e0e0e0;
     margin-top: 20px;
   }
   .send-back{
-    height: 350px;
     justify-content: center !important;
   }
   .send-back > div{
@@ -972,9 +968,12 @@ border: 1px solid #e0e0e0;
     width: 300px;
   }
 
-  .edit-prod-bottom-buttons a{
-    margin-left: 0;
-    margin: 5px;
+  .edit-prod-bottom-buttons{
+    display: block;
+  }
+  .edit-prod-bottom-buttons button, a{
+    width: 100%;
+    margin: 0;
   }
 }
 

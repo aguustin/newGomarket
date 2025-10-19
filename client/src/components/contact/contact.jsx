@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { contactarRequest } from "../../api/userRequests"
 import { useNavigate } from "react-router"
+import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
 
 const Contact = () => {
     const navigate = useNavigate()
@@ -30,7 +31,8 @@ const Contact = () => {
     return(
         <>
         <div className="form-background pt-1 pb-1">
-            <form className="register-form h-full mt-9 mb-9 mx-auto w-[450px] rounded-lg" onSubmit={(e) => contactarFunc(e)}>
+            <img className="h-[70px] mx-auto mt-9 " src={goOriginalPng} alt=""></img>
+            <form className="register-form h-full mt-4 mb-9 mx-auto w-[450px] rounded-lg" onSubmit={(e) => contactarFunc(e)}>
                 <div className="text-center p-4">
                     <h2 className="text-3xl">Comunicate con nosotros</h2>
                 </div>

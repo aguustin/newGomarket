@@ -20,7 +20,7 @@ const ProfileCards = () => {
 
     getUserProfileFunc()
   },[])
-  console.log(profile)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -52,7 +52,6 @@ const ProfileCards = () => {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="bg-indigo-100 p-3 rounded-xl">
-                
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">Particular</h2>
               </div>
