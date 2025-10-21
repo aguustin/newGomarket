@@ -219,7 +219,7 @@ console.log(imgProductora)
                         <input className="border-[1px] border-gray-200 w-[100%] p-2" type="text" name="nombreTitular" value={nombreTitular} onChange={(e) => setNombreTitular(e.target.value)} required></input>
                     </div>
                     {message === 1 ? <Link className='absolute w-[86.5%] text-center bottom-4 bg-orange-500! text-white! font-semibold py-3 px-6 rounded-xl' to="/home">Ir a inicio</Link> : <button className="absolute w-[86.5%] text-center bottom-4 bg-[#EC4899] hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar particular</button>}
-                    {message === 1 && <p className='text-green-600! text-center mt-4'>Productora actualizada con exito!</p>}
+                    {message === 1 && <p className='text-green-600! text-center mt-4'>Particular actualizada con exito!</p>}
                 </form>
 
 

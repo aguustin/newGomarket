@@ -34,7 +34,7 @@ export const createEventController = async (req, res) => {
   const {
     userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento,
     eventoEdad, nombreEvento, descripcionEvento, aviso, categoriasEventos,
-    artistas, montoVentas, fechaInicio, fechaFin, provincia, localidad,
+    artistas, montoVentas, porcentajeRRPP, fechaInicio, fechaFin, provincia, localidad,
     tipoMoneda, direccion, lugarEvento, linkVideo
   } = req.body;
 
@@ -91,6 +91,7 @@ export const createEventController = async (req, res) => {
       categoriasEventos: parsedCategorias,
       artistas,
       montoVentas,
+      porcentajeRRPP,
       fechaInicio,
       fechaFin,
       provincia,
@@ -375,7 +376,7 @@ const updateTicket = async (imgUrl = null) => {
   );
 
   return updateResult;
-};
+ };
 
   // Si hay imagen, sube a Cloudinary
   if (req.file) {
@@ -463,6 +464,7 @@ const procesarVentaGeneral = async (event, quantities, total) => {
 
 const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
   const prodId = event._id;
+  const getPorcentaje = await ticketModel.find({_id: prodId})
   const rrpp = event.rrpp.find(r => r.mail === decryptedMail);
   if (!rrpp) return;
 
@@ -472,6 +474,7 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 
   const bulkOpsRRPP = [];
   let sumaTotal = 0;
+  let porcentajeTotal = 0;
 
   for (const ticket of tickets) {
     const ticketId = ticket._id.toString();
@@ -521,12 +524,18 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
     }
   }
 
+  if(getPorcentaje.porcentajeRRPP > 0){  //ES PROBABLE QUE FALTE [0] O ALGO PARA TOMAR BIEN LA VARIABLE
+    porcentajeTotal = (sumaTotal * getPorcentaje.porcentajeRRPP) / 100
+  }else{
+    porcentajeTotal = 0
+  }
   // Incrementar montoTotalVendidoRRPP
   bulkOpsRRPP.push({
     updateOne: {
       filter: { "rrpp.mail": decryptedMail },
       update: {
         $inc: {
+          "rrpp.$[rrppElem].montoCorrespondienteRRPP": porcentajeTotal,
           "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal,
         },
       },

@@ -137,7 +137,7 @@ console.log(prod)
                             </div>
                             <button className="text-[#111827] flex items-center mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}><img className="mr-2" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
                             {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
-                            <img className="w-full" src={p.bannerEvento} alt=""></img>
+                            <img className="w-[70%] mx-auto mt-3 mb-3" src={p.bannerEvento} alt=""></img>
                         </div>
                     </div>
             )}
@@ -164,13 +164,14 @@ console.log(prod)
                     <Timer duration={720000}></Timer>
                 </div>
                 
-            <div className="cortesies-desc-container mt-10 text-center max-h-[432px]! mb-10"> 
+            <div> 
               {prod.map((p) => {
                     return (
                         <>
                             <div>
-                                <img src={p.imagenDescriptiva} alt=""></img>
+                                <img className="w-[350px] mx-auto mt-10" src={p.imagenDescriptiva} alt=""></img>
                             </div>
+                            <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-10">
                             {p.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
                                 <div className="flex justify-center mx-auto text-center" key={tck._id}>
                                     <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3 p-1!">
@@ -259,6 +260,7 @@ console.log(prod)
                                     </div>
                                 </div>
                             ))}
+                            </div>
                         </>
                     );
                 })}

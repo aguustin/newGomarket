@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { createEventRequest, createEventTicketsRequest } from "../../api/eventRequests"
 import eventoJpg from '../../assets/imgpruebaEventos.jpg'
 import continueArrowPng from '../../assets/botones/continue_arrow.png'
@@ -12,6 +12,7 @@ import closePng from '../../assets/botones/close.png'
 import advicePng from '../../assets/images/advice.png'
 import megaphonePng from '../../assets/images/megaphone.png'
 import uploadPng from '../../assets/botones/upload.png'
+
 
 const CreateEventForm = () => {
     const {session} = useContext(UserContext)
@@ -44,6 +45,7 @@ const CreateEventForm = () => {
     const [dateMsg, setDateMsg] = useState(0)
     const [pubOrPriv, setPubOrPriv] = useState(1)
     let message = ''
+  
 
     const createEvent = async (e) => {
             e.preventDefault()
@@ -84,6 +86,7 @@ const CreateEventForm = () => {
                 formData.append('categoriasEventos', JSON.stringify(categorias))
                 formData.append('artistas', e.target.elements.artistas.value)
                 formData.append('montoVentas', e.target.elements.montoVentas.value)
+                formData.append('porcentajeRRPP', e.target.elements.porcentajeRRPP.value)
                 formData.append('fechaInicio',  new Date(startDate).toISOString())
                 formData.append('fechaFin', new Date(endDate).toISOString())
                 formData.append('provincia', selectedState?.name)
@@ -220,6 +223,7 @@ const CreateEventForm = () => {
                         <label htmlFor="fileUpload" className="text-[#111827]">Portada del evento</label>
                         <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
                     </div>
+                   {/* <button onClick={() => window.navigator.clipboard.writeText()}></button> */}
                 </div>
                  <div className="event-form max-w-[70vw]">
                     <div className="mx-6 mb-3">
@@ -308,11 +312,17 @@ const CreateEventForm = () => {
                             </div>
                         </div>
                             <div>
-                                <label>Monto de ventas estimado</label>
+                                <label>Monto de ventas estimado:</label>
                                 <div>
                                     <input type="number" min="1" placeholder="0" name="montoVentas" required></input>
                                 </div>
                             </div>
+                            <div>
+                                <label>Comision para colaboradores por venta:</label>
+                                <div>
+                                    <input type="number" min="0" max="100" placeholder="0%" name="porcentajeRRPP" defaultValue={0} required></input>
+                                </div>
+                            </div>   
                             <div>
                                 <label>Fecha y hora de inicio:</label>
                                 <div>
@@ -325,7 +335,6 @@ const CreateEventForm = () => {
                                     <input type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
                                 </div>
                             </div>
-                            
                                 <div>
                                     <label>Provincia:</label>
                                     <select name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))} required>

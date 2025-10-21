@@ -39,7 +39,13 @@ button:focus{
 }
 
 .session-b:hover{
-  background-color: #e0e0e0 !important;
+  background-color: #dbdbdb !important;
+  color: #111827 !important;
+  transition: all .3s;
+}
+
+.session-b-img:hover{
+  background-color: #e4e4e4 !important;
   color: #111827 !important;
   transition: all .3s;
 }

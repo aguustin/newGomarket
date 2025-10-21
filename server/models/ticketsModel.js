@@ -14,6 +14,7 @@ const ticketSchema = new mongoose.Schema({
     consumoDeCarta: {type: String},
     nombreEvento:{type: String},
     montoVentas:{type: Number},
+    porcentajeRRPP:{type: Number},
     efectivo: {type: Number}, /*(es si hay entradas en efectivo o no hay),*/
     linkEvento: {type: String},
     categorias:[{
@@ -41,6 +42,9 @@ const ticketSchema = new mongoose.Schema({
     bannerEvento: {type: String},
     imagenDescriptiva: {type: String},
     linkVideo:{type:String},
+    eventosRelacionados:[{
+        numeroDeEvento:{type: String}
+    }],
     tickets:[{
         nombreTicket: {type: String},
         descripcionTicket: {type: String},
@@ -81,6 +85,7 @@ const ticketSchema = new mongoose.Schema({
             ticketIdCortesia: {type: String},
             cantidadDeCortesias: {type:Number}
         }],
+        montoCorrespondienteRRPP: {type: Number},
         montoTotalVendidoRRPP: {type: Number}
     }],
     totalVentas: {type: Number},

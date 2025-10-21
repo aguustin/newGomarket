@@ -6,6 +6,7 @@ import exitPng from "../../assets/botones/exit.png"
 import menuPng from "../../assets/images/menu.png"
 import { Link, useNavigate } from "react-router"
 import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
+import userImgPng from "../../assets/user.png"
 
 const Nav = () => {
 
@@ -42,16 +43,16 @@ const Nav = () => {
            { width >= 950 ? 
             <>
                 <img className="w-[100px]" src={goPng} alt="" loading="lazy"></img>
-                <div className="absolute w-[560px] right-50 left-50 mx-auto flex justify-between items-center">
+                <div className="absolute w-[560px] right-50 left-50 mx-auto flex justify-left items-center">
                         <Link className="session-b p-4 rounded-3xl text-md primary-p" to="/Home">Inicio</Link>
                         <Link className="session-b p-4 rounded-3xl text-md primary-p" to="/Contact">Contacto</Link>
-                        {session?.userFinded?.length > 0 && <Link className="session-b p-4 rounded-3xl  text-md primary-p" to="/Create_event" onClick={closeMenu}>Crear evento</Link>}
-                        {session?.userFinded?.length > 0 && <Link className="session-b p-4 rounded-3xl text-md primary-p" to="/productions" onClick={closeMenu}>Mis producciones</Link>}
+                        <Link className="session-b p-4 rounded-3xl  text-md primary-p" to={session?.userFinded?.length > 0 ? "/Create_event" : "/" } onClick={closeMenu}>Crear evento</Link>
+                        <Link className="session-b p-4 rounded-3xl text-md primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/"} onClick={closeMenu}>Mis producciones</Link>
                         {/*session?.userFinded?.length > 0 ? <Link className="text-lg" to="/profile" onClick={closeMenu}>Mi perfil</Link> : ''*/}
                 </div>
                 {session?.userFinded?.length > 0 ? 
-                <button className="session-b absolute right-9 cursor-pointer p-4 text-[#111827] rounded-3xl" onClick={() => setOpenProfileCong(!openProfileConf)}>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9 primary-p">Iniciar sesion</Link>}
-                {openProfileConf && <div className="logout-b bg-[#f4f4f4] absolute top-[70px] right-0 w-[200px]">
+                <button className="session-b-img flex items-center absolute right-5 cursor-pointer pl-2 pr-2 text-[#111827] rounded-2xl" onClick={() => setOpenProfileCong(!openProfileConf)}><img className="mr-2 w-16 h-16 rounded-full object-cover border-4 border-gray-300" src={session?.userFinded[0]?.imagenProductora ?? userImgPng} alt=""></img>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9 primary-p">Iniciar sesion</Link>}
+                {openProfileConf && <div className="logout-b bg-[#f4f4f4] absolute top-[70px] right-0 w-[210px]">
                         {/*<div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div> */}
                         <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827] hover:bg-white! transition-all duration-300"><img className="ml-3" src={userPng} alt="" loading="lazy"></img><p className="ml-4">Ver mi perfil</p></Link>
                         <Link to="/user_info" className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827] hover:bg-white! transition-all duration-300"><img className="ml-3" src={editProfilePng} alt="" loading="lazy"></img><p className="ml-4">Editar perfil</p></Link>
@@ -72,20 +73,20 @@ const Nav = () => {
                             <Link className="text-lg primary-p" to="/Contact" onClick={() => setShowMobileNav(!showMobileNav)}>Contacto</Link>
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300 hover:bg-white! transition-all duration-300">
-                            {session?.userFinded?.length > 0 ? <Link className="text-lg primary-p" to="/Create_event" onClick={() => setShowMobileNav(!showMobileNav)}>Crear evento</Link> : <Link className="text-lg" to="/">Crear evento</Link>}
+                            <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/Create_event" : "/"} onClick={() => setShowMobileNav(!showMobileNav)}>Crear evento</Link>
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300 hover:bg-white! transition-all duration-300">
-                            {session?.userFinded?.length > 0 ? <Link className="text-lg primary-p" to="/productions" onClick={() => setShowMobileNav(!showMobileNav)}>Mis producciones</Link> : <Link className="text-lg" to="/">Mis producciones</Link>}
+                            <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/"} onClick={() => setShowMobileNav(!showMobileNav)}>Mis producciones</Link> 
                         </div>
-                        <div className="text-center p-4 pl-10 pr-10 border-b-1 border-gray-300 hover:bg-white! transition-all duration-300">
-                            {session?.userFinded?.length > 0 && <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} onClick={() => setShowMobileNav(!showMobileNav)} className="text-lg primary-p">Ver mi perfil</Link>}
-                        </div>
-                        <div className="text-center p-4 pl-10 pr-10 border-b-1 border-gray-300 hover:bg-white! transition-all duration-300">
-                            {session?.userFinded?.length > 0 && <Link to="/user_info" onClick={() => setShowMobileNav(!showMobileNav)} className="text-lg primary-p">Editar perfil</Link>}
-                        </div>
-                        <div className="text-center p-4 pl-10 pr-10 border-b-1 hover:bg-white! transition-all duration-300">
-                            {session?.userFinded?.length > 0 && <button onClick={() => logoutFunc()} className="text-lg primary-p"><p>Salir</p></button>}
-                        </div>
+                        {session?.userFinded?.length > 0 && <div className="text-center p-4 pl-10 pr-10 border-b-1 border-gray-300 hover:bg-white! transition-all duration-300">
+                            <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} onClick={() => setShowMobileNav(!showMobileNav)} className="text-lg primary-p">Ver mi perfil</Link>
+                        </div> }
+                        {session?.userFinded?.length > 0  && <div className="text-center p-4 pl-10 pr-10 border-b-1 border-gray-300 hover:bg-white! transition-all duration-300">
+                            <Link to="/user_info" onClick={() => setShowMobileNav(!showMobileNav)} className="text-lg primary-p">Editar perfil</Link>
+                        </div> }
+                        {session?.userFinded?.length > 0 && <div className="text-center p-4 pl-10 pr-10 border-b-1 hover:bg-white! transition-all duration-300">
+                            <button onClick={() => logoutFunc()} className="text-lg primary-p"><p>Salir</p></button>
+                        </div>}
                         {/*<div className="text-center p-4">
                             {session?.userFinded?.length > 0 && <Link className="text-lg pl-10 pr-10" to="/profile">Mi perfil</Link>}
                         </div> */ }
