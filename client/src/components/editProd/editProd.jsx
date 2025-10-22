@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { addRRPPRequest, cancelarEventoRequest, createEventTicketsRequest, getOneProdRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
+import { addRRPPRequest, cancelarEventoRequest, createEventTicketsRequest, getOneProdRequest, getProdsRequest, relateEventsRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
 import {Country, State, City} from "country-state-city"
-import { convertirInputADateTimeLocal, formatDate, formatearFechaParaInput, LoadingButton } from "../../globalscomp/globalscomp"
+import { convertirInputADateTimeLocal, formatDate, formatDateB, formatearFechaParaInput, LoadingButton } from "../../globalscomp/globalscomp"
 import qrCodePng from '../../assets/images/qr-code.png'
 import backArrowPng from '../../assets/images/back-arrow.png'
 import ticketPng from '../../assets/images/ticket.png'
@@ -51,13 +51,17 @@ const EditProd = () => {
     const [imageBanner, setImageBanner] = useState()
     const [previewDescriptive, setPreviewDescriptive] = useState(null)
     const [imageDescriptive, setImageDescriptive] = useState()
-
+    const [othersProds, setOthersProds] = useState([])
+    const [showOthersProds, setShowOthersProds] = useState(false)
+    const [relacionesLocales, setRelacionesLocales] = useState([]);
+    
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
             const res = await getOneProdRequest(prodId, userId) //userId va la session del usuario
             setProd(res.data)
-            console.log(res.data[0]?.codigoCiudad)
+            const othersRes = await getProdsRequest(userId);
+            setOthersProds(othersRes.data);
             setCities(City?.getCitiesOfState(res?.data[0]?.codigoPais, res?.data[0]?.codigoCiudad))
         }
         getOneProd()
@@ -307,6 +311,17 @@ const EditProd = () => {
         }
   };
 
+  const relateEvents = async (e, prodId, otherId) => {
+    e.preventDefault()
+    const res = await relateEventsRequest({prodId, otherId})
+    if(res.data.msg === 2){
+        setRelacionesLocales((prev) => [...prev, otherId]);
+        return setMessage(6)
+    }
+    setRelacionesLocales((prev) => prev.filter(id => id !== otherId));
+     return setMessage(7)
+  }
+
     return(
         <>
             <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-white border-[1px] border-gray-100 rounded-2xl p-5">
@@ -326,6 +341,32 @@ const EditProd = () => {
                                     <div className="edit-evet-img-upload top-15 right-10">
                                         <label htmlFor="imgEventoHtml" className="flex items-center border-[1px] border-gray-300 text-[#111827] p-3 rounded-2xl"><img className="mr-3" src={uploadPng} alt=""></img>Cargar nueva portada</label><br></br>
                                         <input id="imgEventoHtml" className="border-none hidden" type="file" name="imgEvento" ref={fileRef} />
+                                    </div>
+                                    <div>
+
+                                        <button className="relation-buttons secondary-button-fucsia text-white! p-3 rounded-lg translate-x-auto!" onClick={() => setShowOthersProds(!showOthersProds)}>Relacionar eventos</button>
+                                        <div className="bg-[#f4f4f4] p-3">
+                                            {othersProds.map((others) => 
+                                                <div className="border-b-1 border-gray-300 ">
+                                                    <div className="flex flex-wrap text-[#111827] text-left mb-3 justify-between">
+                                                        <div className="flex items-center">
+                                                            <img className="w-20 h-20 rounded-lg" src={others.imgEvento} alt=""></img>
+                                                            <div className="ml-2">
+                                                                <p>{others.nombreEvento}</p>
+                                                                <p>Inicio: {formatDateB(others.fechaInicio)}</p>
+                                                                <p>Cierre: {formatDateB(others.fechaFin)}</p>
+                                                            </div>
+
+                                                        </div>
+                                                        <div className="w-[180px] h-auto">
+                                                            <button className="relation-buttons w-full bg-orange-500! p-1" onClick={(e) => relateEvents(e, p._id, others._id)}>{p.eventosRelacionados.some(er => String(er.idEvento) === String(others._id)) ? 'Desvincular eventos' : 'Relacionar evento'}</button>
+                                                            <a className="relation-buttons bg-transparent border-1 border-gray-300! rounded-lg p-1" href={`/editar_evento/${others._id}`}>Ver evento</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}    
+                                            {message === 6 && <p>La operacion se realizo con exito!</p>}
+                                        </div> 
                                     </div>
                                     </div>
                                  </div>

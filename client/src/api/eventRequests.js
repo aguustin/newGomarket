@@ -131,6 +131,10 @@ export const descargarCompradoresRequest = async ({ prodId, nombreEvento }) => {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
-}; 
+};
+
+export const relateEventsRequest = async ({prodId, otherId}) => axios.post(`${import.meta.env.VITE_URL}/relacionar_eventos`, {prodId, otherId})
+
+export const getRelateEventsRequest = async ({prodId}) => axios.get(`${import.meta.env.VITE_URL}/obtener_eventos_relacionados/${prodId}`)
 
 export const cancelarEventoRequest = async ({prodId}) => axios.post(`${import.meta.env.VITE_URL}/cancelar_evento`, {prodId})

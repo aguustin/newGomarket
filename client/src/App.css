@@ -327,6 +327,15 @@ button:focus{
     margin: auto;
   }
 
+  .relation-buttons{
+    position: relative;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: translateX(0%) !important;
+    margin: 10px !important;
+  } 
+
   .add-tickets-form{
     width: 400px;
     margin: auto;
@@ -884,10 +893,7 @@ border: 1px solid #e0e0e0;
   .primary-div{
     width: 100%;
   }
-  .primary-div img{
-    height: 150px;
-    object-fit: cover;
-  }
+
   .primary-div h3{
     font-size: 19px;
   }

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { useParams } from "react-router"
-import { buyTicketsRequest, getEventToBuyRequest } from "../../api/eventRequests"
+import { buyTicketsRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
 import { formatDate, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 import mapPng from "../../assets/botones/map.png"
@@ -17,19 +17,37 @@ const BuyTicket = () => {
     const [showMsg, setShowMsg] = useState(0)
     const [loading, setLoading] = useState(false)
     const [showMap, setShowMap] = useState(false)
+    const [relates, setRelates] = useState([])
     const navigate = useNavigate()
 
-    useEffect(() => {
-            if(session?.userFinded?.length === null){
-                console.log('no entro')
-                navigate('/')
-            }
-            const getOneEvent = async () => {
-                const res = await getEventToBuyRequest(prodId)
-                setProd(res.data)
-            }
-            getOneEvent()
-    }, [])
+ useEffect(() => {
+  // Si session aún no está disponible, no hacer nada
+  if (!session) return;
+
+  // Si userFinded aún no se cargó, esperar
+  if (!Array.isArray(session.userFinded)) return;
+
+  // Si la sesión es inválida (array vacío), redirigir
+  if (session.userFinded.length === 0) {
+    console.log('Sesión inválida');
+    navigate('/');
+    return;
+  }
+
+  const fetchData = async () => {
+    try {
+      const resEvent = await getEventToBuyRequest(prodId);
+      setProd(resEvent.data);
+
+      const resRelated = await getRelateEventsRequest(prodId);
+      setRelates(resRelated.data.relacionados);
+    } catch (error) {
+      console.error('Error al obtener eventos:', error);
+    }
+  };
+
+  fetchData();
+}, [session, prodId, navigate]);
 
     const currencyFormatter = new Intl.NumberFormat('es-AR', {
     style: 'currency',

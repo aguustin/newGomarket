@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addRRPPController, buyEventTicketsController, cancelarEventoController, createEventController, createEventTicketsController, descargarCompradoresController, generateMyRRPPLinkController, getAllEventsController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, qrGeneratorController, sendQrStaffQrController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
+import { addRRPPController, buyEventTicketsController, cancelarEventoController, createEventController, createEventTicketsController, descargarCompradoresController, generateMyRRPPLinkController, getAllEventsController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRelateEventsController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, qrGeneratorController, relateEventsController, sendQrStaffQrController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -43,6 +43,10 @@ router.post('/generate_rrpp_url', generateMyRRPPLinkController)
 router.get('/tokens', verTokensController)
 
 router.post('/descargar_compradores', descargarCompradoresController)
+
+router.post('/relacionar_eventos', relateEventsController)
+
+router.get('/obtener_eventos_relacionados/:prodId', getRelateEventsController)
 
 router.post('/cancelar_evento', cancelarEventoController)
 

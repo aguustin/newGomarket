@@ -120,7 +120,7 @@ const ProfileCards = () => {
             </div>
 
             {/* Action Button */}
-            {userId === session?.userFinded?.[0]?._id && <Link to={'/user_info'} className="absolute w-[86.5%] text-center bottom-4 bg-orange-500 hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105">
+            {userId === session?.userFinded?.[0]?._id && <Link to={'/user_info'} className="absolute w-[86.5%]! text-center bottom-4 bg-orange-500 hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105">
               Editar Perfil
             </Link>}
           </div>
@@ -209,7 +209,7 @@ const ProfileCards = () => {
             </div>
 
             {/* Action Button */}
-            {userId === session?.userFinded?.[0]?._id && <Link to={'/user_info'} className="absolute w-[86.5%] text-center bottom-4 bg-orange-500 hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105">
+            {userId === session?.userFinded?.[0]?._id && <Link to={'/user_info'} className="absolute w-[86.5%]! text-center bottom-4 bg-orange-500 hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105">
               Editar Perfil
             </Link>}
           </div>

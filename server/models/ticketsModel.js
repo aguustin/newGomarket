@@ -43,7 +43,7 @@ const ticketSchema = new mongoose.Schema({
     imagenDescriptiva: {type: String},
     linkVideo:{type:String},
     eventosRelacionados:[{
-        numeroDeEvento:{type: String}
+        idEvento: {type: String},
     }],
     tickets:[{
         nombreTicket: {type: String},

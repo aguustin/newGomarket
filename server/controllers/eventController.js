@@ -1459,6 +1459,86 @@ const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
 }
 }
 
+export const relateEventsController = async (req, res) => {
+  const {prodId, otherId} = req.body
+
+  const findCoincidence = await ticketModel.findOne({_id: prodId, 'eventosRelacionados.idEvento': otherId})
+
+  if(findCoincidence){
+    await ticketModel.updateOne(
+    { _id: prodId },
+    {
+      $pull: {
+        eventosRelacionados: { idEvento: otherId }
+      }
+    }
+  );
+
+  await ticketModel.updateOne(
+    { _id: otherId },
+    {
+      $pull: {
+        eventosRelacionados: { idEvento: prodId }
+      }
+    }
+  );
+    return res.status(200).json({msg: 1})
+  }
+
+  await ticketModel.updateOne(
+    {_id: prodId},
+    {
+      $addToSet:{
+        eventosRelacionados:{idEvento: otherId}
+      }
+    }
+  )
+
+  await ticketModel.updateOne(
+    {_id: otherId},
+    {
+      $addToSet:{
+        eventosRelacionados:{idEvento: prodId}
+      }
+    }
+  )
+
+  return res.status(200).json({msg: 2})
+}
+
+export const getRelateEventsController = async (req, res) => {
+  const { prodId } = req.params;
+
+  try {
+    // 1. Buscar el evento principal
+    const eventoPrincipal = await ticketModel.findById(prodId);
+
+    if (!eventoPrincipal) {
+      return res.status(404).json({ msg: 'Evento no encontrado' });
+    }
+
+    // 2. Extraer los ID de eventos relacionados
+    const idsRelacionados = eventoPrincipal.eventosRelacionados.map(
+      (rel) => rel.idEvento
+    );
+
+    if (idsRelacionados.length === 0) {
+      return res.status(200).json({ relacionados: [] }); // no hay eventos relacionados
+    }
+
+    // 3. Buscar los documentos relacionados por _id
+    const eventosRelacionados = await ticketModel.find({
+      _id: { $in: idsRelacionados },
+    });
+
+    return res.status(200).json({ relacionados: eventosRelacionados });
+
+  } catch (error) {
+    console.error('Error al obtener eventos relacionados:', error);
+    return res.status(500).json({ msg: 'Error del servidor' });
+  }
+};
+
 export const cancelarEventoController = async (req, res) => {
   const {prodId} = req.body;
    const { success, fallidos } = await refundsFunc({prodId})

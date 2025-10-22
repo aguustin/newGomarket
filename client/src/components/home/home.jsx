@@ -14,7 +14,6 @@ import footprintsPng from '../../assets/botones/footprints.png'
 import footballPng from '../../assets/botones/football.png'
 import starPng from '../../assets/botones/star.png'
 import starBPng from '../../assets/botones/starB.png'
-import mapPng from '../../assets/botones/map.png'
 import Skeleton from 'react-loading-skeleton';
 import { saveEventRequest } from "../../api/userRequests"
 import { useContext } from "react"
@@ -139,7 +138,7 @@ const Home = () => {
     return (
         <>
             <div className="home mb-16">
-                <div className="relative w-full h-[500px]">
+                <div className="relative w-full h-[500px] max-[440px]:h-[540px]">
                     <img
                         className="absolute top-0 left-0 w-full h-full object-cover"
                         src={djPartyPng}
@@ -148,19 +147,19 @@ const Home = () => {
                     <div className="absolute top-0 left-0 w-full h-full bg-black opacity-[50%]"></div>
                     <div className="relative z-3 flex flex-col items-center justify-center h-full text-white text-center">
                         <div className="filtrar-eventos w-full max-w-3xl px-4">
-                            <img className="w-[600px] h-[150px] mx-auto" src={goOriginalPng} alt=""></img>
+                            <img className="w-[600px] h-[150px] mx-auto max-[620px]:h-auto" src={goOriginalPng} alt=""></img>
                             {/*<h1 className="text-3xl font-bold mb-4 text-white!">Encuentra tu evento:</h1>*/}
                             <form className="search-form justify-center flex items-center w-full">
                                 <p className="text-lg w-[170px] text-white">Buscar evento:</p>
                                 <input
-                                    className="w-full bg-white text-black ml-3 p-3 border-[1px] border-gray-200 rounded-3xl"
+                                    className="max-[575px]:w-[90%] w-full bg-white text-black ml-3 p-3 border-[1px] border-gray-200 rounded-3xl"
                                     placeholder="Go Busqueda"
                                     name="searchEvent"
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
                             </form>
                         </div>
-                        <div className="mt-6 flex flex-wrap gap-4 justify-center items-center">
+                        <div className="max-[575px]:w-[96%] mt-6 flex flex-wrap gap-4 justify-center items-center">
                              <p
                                 className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
                             >
@@ -179,7 +178,7 @@ const Home = () => {
                                 ))}
                             </select>
                             <select
-                                className="px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="max-[575px]:w-[70%]! px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={localidadSeleccionada}
                                 onChange={(e) => setLocalidadSeleccionada(e.target.value)}
                                 disabled={!provinciaSeleccionada}
@@ -193,14 +192,14 @@ const Home = () => {
                             </select>
                             <input
                                 type="date"
-                                className="px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={fechaInicioFiltro}
                                 onChange={(e) => setFechaInicioFiltro(e.target.value)}
                             />
-                            a:
+                            
                             <input
                                 type="date"
-                                className="px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={fechaFinFiltro}
                                 onChange={(e) => setFechaFinFiltro(e.target.value)}
                             />
