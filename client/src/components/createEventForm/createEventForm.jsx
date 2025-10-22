@@ -326,13 +326,13 @@ const CreateEventForm = () => {
                             <div>
                                 <label>Fecha y hora de inicio:</label>
                                 <div>
-                                <input type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
+                                <input className="bg-gradient-to-r from-purple-500 to-pink-500 text-white!" type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
                                 </div>
                             </div>
                             <div>
                                 <label>Fecha y hora de fin:</label>
                                 <div>
-                                    <input type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
+                                    <input className="bg-gradient-to-r from-purple-500 to-pink-500 text-white!" type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
                                 </div>
                             </div>
                                 <div>
@@ -393,9 +393,10 @@ const CreateEventForm = () => {
                             </div>
                         </div>}
                     </div>
-                    <div className="relative mt-10 items-center flex">
-                        <label className="text-md text-[#EC4899]">Acepto términos y condiciones</label>
-                        <input className="mt-3 ml-2 w-[15px]!" type="checkbox" required></input>
+                    <div className="relative mt-10 items-center flex flex-wrap">
+                        <Link className='text-blue-500! underline!' to={"/conditions"}>Terminos y condiciones.</Link>
+                        <label className="text-md text-[#EC4899] ml-1">Acepto términos y condiciones</label>
+                        <input className="mt-3 ml-2 w-[15px]! min-w-[15px]!" type="checkbox" required></input>
                     </div> 
                 </div>
                     <button className="absolute right-4 bottom-4 primary-button p-4 rounded-lg" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>

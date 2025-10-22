@@ -60,7 +60,7 @@ return(
         <>
         <div className=" h-full mb-24">
              <div className={`productions overflow-x-scroll w-screen sm:rounded-lg ${width >= 1110 ? 'pl-2 pr-2 pb-10 pt-9' : 'pl-2 pr-2 pb-10 pt-9'}`}>
-                <table className="min-w-[790px] w-full text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827]">
+                <table className="min-w-[832px]! w-full text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827]">
                     <thead className="text-xs uppercase bg-gray-50 bg-orange-500 text-[#111827]">
                         <tr>
                             <th scope="col" className="px-6 py-3">
@@ -118,7 +118,7 @@ return(
                                 <Link to={`/editar_evento/${prod._id}`} className="font-medium underline! text-[#111827]">Editar</Link><br></br>
                                 <Link to={`/statistics/${prod._id}/${session?.userFinded?.[0]?._id}`} className="text-[#111827]!">Estadisticas</Link><br></br>
                                 <button onClick={() => setShowRRPPData(showRRPPData === prod._id ? null : prod._id)} className="text-[#111827]!">Tus RRPP</button><br></br>
-                                <button className="text-[#111827]" onClick={() => descargarCompradores(prod._id, prod.nombreEvento)}>Lista de compradores</button><br></br>
+                                <button className="text-[#111827]" onClick={() => descargarCompradores(prod._id, prod.nombreEvento)}>Lista compradores</button><br></br>
                                 <button
                                     type="button"
                                     onClick={() => navigator.clipboard.writeText(`http://localhost:5173/buy_tickets/${prod._id}/${prod.prodMail}`)}

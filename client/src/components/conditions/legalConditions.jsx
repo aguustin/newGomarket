@@ -1,7 +1,7 @@
 const LegalConditions = () => {
     return(
         <>
-            <div className="p-18">
+            <div className="p-10">
                 <div className="conditions-container rounded-2xl bg-white pl-6 pr-6 pt-3 pb-3">
                     <div className="text-center text-slate-600! mt-4 mb-8">
                         <h2 className="text-4xl mb-4">Condiciones Legales</h2>
