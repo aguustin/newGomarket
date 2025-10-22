@@ -1510,23 +1510,23 @@ export const getRelateEventsController = async (req, res) => {
   const { prodId } = req.params;
 
   try {
-    // 1. Buscar el evento principal
+   
     const eventoPrincipal = await ticketModel.findById(prodId);
 
     if (!eventoPrincipal) {
       return res.status(404).json({ msg: 'Evento no encontrado' });
     }
 
-    // 2. Extraer los ID de eventos relacionados
+   
     const idsRelacionados = eventoPrincipal.eventosRelacionados.map(
       (rel) => rel.idEvento
     );
 
     if (idsRelacionados.length === 0) {
-      return res.status(200).json({ relacionados: [] }); // no hay eventos relacionados
+      return res.status(200).json({ relacionados: [] }); 
     }
 
-    // 3. Buscar los documentos relacionados por _id
+    
     const eventosRelacionados = await ticketModel.find({
       _id: { $in: idsRelacionados },
     });
