@@ -38,7 +38,7 @@ const ProfileCards = () => {
            <div className="flex justify-center mb-6">
               <div className="relative">
                 <img 
-                  src={pr.imagenProductora ?? userPng} 
+                  src={session?.userFinded?.[0]?.imagenProductora ?? userPng} 
                   alt="Perfil"
                   className="w-42 h-42 rounded-full object-cover border-4 border-gray-300"
                 />
@@ -48,7 +48,7 @@ const ProfileCards = () => {
         {/* Profile Cards Grid */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-start">
           {/* Perfil Particular */}
-          <div className="relative bg-white rounded-3xl p-8 pb-20 border-2 border-gray-200 hover:border-indigo-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+          <div className="relative bg-white rounded-3xl p-8 pb-8 border-2 border-gray-200 hover:border-indigo-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="bg-indigo-100 p-3 rounded-xl">
@@ -120,13 +120,13 @@ const ProfileCards = () => {
             </div>
 
             {/* Action Button */}
-            {userId === session?.userFinded?.[0]?._id && <Link to={'/user_info'} className="absolute w-[86.5%]! text-center bottom-4 bg-orange-500 hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105">
+            {userId === session?.userFinded?.[0]?._id && <button className="w-[100%] text-center mt-6 bg-[#EC4899] bg-orange-500! hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link to={'/user_info'} className="text-white! font-semibold">
               Editar Perfil
-            </Link>}
+            </Link></button>}
           </div>
 
           {/* Perfil Productora */}
-          <div className="relative bg-white rounded-3xl p-8 pb-20 border-2 border-gray-200 hover:border-indigo-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+          <div className="relative bg-white rounded-3xl p-8 pb-8 border-2 border-gray-200 hover:border-indigo-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="bg-pink-100 p-3 rounded-xl">
@@ -209,9 +209,9 @@ const ProfileCards = () => {
             </div>
 
             {/* Action Button */}
-            {userId === session?.userFinded?.[0]?._id && <Link to={'/user_info'} className="absolute w-[86.5%]! text-center bottom-4 bg-orange-500 hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105">
-              Editar Perfil
-            </Link>}
+            {userId === session?.userFinded?.[0]?._id && <button className="w-[100%] text-center mt-6 bg-[#EC4899] bg-orange-500! hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link to={'/user_info'} className="text-white! font-semibold">
+              Editar perfil
+            </Link></button>}
           </div>
         </div>
       </div>

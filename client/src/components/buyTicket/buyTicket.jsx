@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react"
-import { useParams } from "react-router"
+import { Link, useParams } from "react-router"
 import { buyTicketsRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
-import { formatDate, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
+import { formatDate, formatDateB, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 import mapPng from "../../assets/botones/map.png"
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
@@ -18,6 +18,7 @@ const BuyTicket = () => {
     const [loading, setLoading] = useState(false)
     const [showMap, setShowMap] = useState(false)
     const [relates, setRelates] = useState([])
+    const [selectedEvent, setSelectedEvent] = useState(null)
     const navigate = useNavigate()
 
  useEffect(() => {
@@ -54,7 +55,7 @@ const BuyTicket = () => {
     currency: 'ARS',
 });
 
-console.log(prod)
+
  const restQuantity = (e, ticketId) => {
     e.preventDefault();
     setQuantities(prev => {
@@ -129,6 +130,17 @@ console.log(prod)
             console.error("Error en handlePayment:", error);
         }
     }
+
+   const handleEventChange = (eventId) => {
+        if (eventId === '') {
+            setSelectedEvent(null);
+        } else {
+            const foundEvent = relates.find((rel) => rel._id === eventId);
+            setSelectedEvent(foundEvent);
+        }
+    };
+
+    const eventToRender = selectedEvent || prod[0];
     
     return(
          
@@ -183,14 +195,22 @@ console.log(prod)
                 </div>
                 
             <div> 
-              {prod.map((p) => {
-                    return (
+              {eventToRender && (
+                    
                         <>
-                            <div>
-                                <img className="w-[350px] mx-auto mt-10" src={p.imagenDescriptiva} alt=""></img>
+                            <div >
+                                <img className="w-[350px] mx-auto mt-5" src={prod?.[0]?.imagenDescriptiva} alt=""></img>
+                            </div>
+                            <div className="max-[750px]:text-center mt-5">
+                                <p className="secondary-p">Filtrar tickets por fecha:</p>
+                                <select className="w-auto mt-1 mb-3 bg-[#f4f4f4] p-3 border border-gray-300 rounded-lg appearance-none" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)} required>
+                                    <option value=''>Cambiar fecha</option>
+                                    {relates.map((rel) => (<option key={rel._id} value={rel._id}>{rel.nombreEvento} - {formatDateB(rel.fechaInicio)}</option>))}
+                                </select>
+                                <Link className="ml-3! secondary-button-fucsia text-white! rounded-lg p-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
                             </div>
                             <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-10">
-                            {p.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
+                            {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
                                 <div className="flex justify-center mx-auto text-center" key={tck._id}>
                                     <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3 p-1!">
                                         <div className="flex items-center w-full justify-between">
@@ -234,11 +254,10 @@ console.log(prod)
                                                 </div>
                                                 }
                                         </div>
-                                    
                                     </div>
                                 </div>
                             ))}
-                            {p.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
+                            {eventToRender.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
                                 <div className="flex justify-center mx-auto text-center" key={crt._id}>
                                     <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3 p-1!">
                                         <div className="flex items-center w-full justify-between">
@@ -280,15 +299,15 @@ console.log(prod)
                             ))}
                             </div>
                         </>
-                    );
-                })}
+                   
+                )}
                 </div>
                 <div className="relative h-[120px]">
-                    <p className="absolute top-[-30px] right-6 text-2xl primary-p">Total:{currencyFormatter.format(total)}</p>
+                    <p className="text-center text-2xl primary-p">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
-                    <button className="buy-butt primary-button w-[300px] mx-auto flex items-center justify-center bottom-3 mt-16 p-4 rounded-3xl cursor-pointer text-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
+                    <button className="buy-butt secondary-button-fucsia w-[auto] mx-auto flex items-center justify-center bottom-3 mt-5 p-4 rounded-3xl cursor-pointer text-lg" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>
         </div>

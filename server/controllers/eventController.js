@@ -1508,7 +1508,7 @@ export const relateEventsController = async (req, res) => {
 
 export const getRelateEventsController = async (req, res) => {
   const { prodId } = req.params;
-
+  console.log(prodId)
   try {
    
     const eventoPrincipal = await ticketModel.findById(prodId);

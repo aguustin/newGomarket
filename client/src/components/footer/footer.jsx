@@ -15,7 +15,7 @@ const Footer = ({texto}) => {
                 <Link href="/"><img src={gmailPng} alt="" loading="lazy"></img></Link>
             </div>
             <div className="relative bottom-0 w-screen pl-14 pr-14 text-center">
-                <p className='text-sm primary-p'>Importante: Go Ticket no se hace responsable de la calidad o satisfacción de los eventos publicados. Go Ticket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los términos y condiciones de la aplicación. Copyright © 2025 Go Ticket.</p>
+                <p className='text-sm primary-p'>Importante: Go Ticket no se hace responsable de la calidad o satisfacción de los eventos publicados. Go Ticket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los términos y condiciones de la aplicación. Copyright © 2025 Go Ticket. <Link className='text-blue-500! underline!' to={"/conditions"}>Terminos y condiciones.</Link></p>
                 <img className="w-[100px] mx-auto mt-1" src={goPng} alt="" loading="lazy"></img>
             </div>
         </footer>

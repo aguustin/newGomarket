@@ -345,28 +345,29 @@ const EditProd = () => {
                                     <div>
 
                                         <button className="relation-buttons secondary-button-fucsia text-white! p-3 rounded-lg translate-x-auto!" onClick={() => setShowOthersProds(!showOthersProds)}>Relacionar eventos</button>
-                                        <div className="bg-[#f4f4f4] p-3">
-                                            {othersProds.map((others) => 
-                                                <div className="border-b-1 border-gray-300 ">
+                                        {showOthersProds && <div className="bg-white! mt-2">
+                                            {othersProds.filter((othP) => !prod.some((p) => p._id === othP._id)).map((filteredProd) => (
+                                                <div className="bg-[#f4f4f4] border-b-1 border-gray-300 p-2" key={filteredProd._id}>
                                                     <div className="flex flex-wrap text-[#111827] text-left mb-3 justify-between">
                                                         <div className="flex items-center">
-                                                            <img className="w-20 h-20 rounded-lg" src={others.imgEvento} alt=""></img>
+                                                            <img className="w-20 h-20 rounded-lg" src={filteredProd.imgEvento} alt=""></img>
                                                             <div className="ml-2">
-                                                                <p>{others.nombreEvento}</p>
-                                                                <p>Inicio: {formatDateB(others.fechaInicio)}</p>
-                                                                <p>Cierre: {formatDateB(others.fechaFin)}</p>
+                                                                <p>{filteredProd.nombreEvento}</p>
+                                                                <p>Inicio: {formatDateB(filteredProd.fechaInicio)}</p>
+                                                                <p>Cierre: {formatDateB(filteredProd.fechaFin)}</p>
                                                             </div>
 
                                                         </div>
                                                         <div className="w-[180px] h-auto">
-                                                            <button className="relation-buttons w-full bg-orange-500! p-1" onClick={(e) => relateEvents(e, p._id, others._id)}>{p.eventosRelacionados.some(er => String(er.idEvento) === String(others._id)) ? 'Desvincular eventos' : 'Relacionar evento'}</button>
-                                                            <a className="relation-buttons bg-transparent border-1 border-gray-300! rounded-lg p-1" href={`/editar_evento/${others._id}`}>Ver evento</a>
+                                                            <button className="relation-buttons ml-0! w-full bg-orange-500! rounded-lg p-1 mb-3" onClick={(e) => relateEvents(e, p._id, filteredProd._id)}>{p.eventosRelacionados.some(er => String(er.idEvento) === String(filteredProd._id)) ? 'Desvincular eventos' : 'Relacionar evento'}</button>
+                                                            <a className="bg-transparent border-1 border-gray-300! rounded-lg p-1" href={`/editar_evento/${filteredProd._id}`}>Ver evento</a>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                )
                                             )}    
-                                            {message === 6 && <p>La operacion se realizo con exito!</p>}
-                                        </div> 
+                                            {message === 6 && <p className="bg-white! text-green-700! mt-2">La operacion se realizo con exito!</p>}
+                                        </div>}
                                     </div>
                                     </div>
                                  </div>
@@ -412,12 +413,12 @@ const EditProd = () => {
                                     <div className="relative p-3">
                                         <div>
                                             <label>Fecha y hora de inicio:</label><br></br> 
-                                            <input type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaInicio ??  p.fechaInicio)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
+                                            <input className="bg-gradient-to-r from-purple-500 to-pink-500 text-white!" type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaInicio ??  p.fechaInicio)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
                                             {dateMessage == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
                                         </div>
                                         <div>
                                             <label>Fecha y hora de fin:</label><br></br>
-                                            <input type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaFin ??  p.fechaFin)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
+                                            <input className="bg-gradient-to-r from-purple-500 to-pink-500 text-white!" type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaFin ??  p.fechaFin)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
                                             {dateMessage == 2 && <p className="text-red-600!">La fecha de fin no puede ser menor a la fecha de inicio</p>}
                                         </div>
                                          <div className="prov-localidad flex items-center">

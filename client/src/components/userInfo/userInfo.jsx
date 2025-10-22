@@ -167,7 +167,7 @@ console.log(imgProductora)
                 </form>
             </div>
             <div className='grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-start'>
-                <form className="relative bg-white rounded-3xl p-8 pb-20 border-2 border-gray-200" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 1)}>
+                <form className="relative bg-white rounded-3xl p-8 pb-8 border-2 border-gray-200" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 1)}>
                      <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="bg-indigo-100 p-3 rounded-xl">
@@ -218,14 +218,14 @@ console.log(imgProductora)
                         <label className="text-[#111827]!">Nombre del titular</label><br></br>
                         <input className="border-[1px] border-gray-200 w-[100%] p-2" type="text" name="nombreTitular" value={nombreTitular} onChange={(e) => setNombreTitular(e.target.value)} required></input>
                     </div>
-                    {message === 1 ? <Link className='absolute w-[86.5%] text-center bottom-4 bg-orange-500! text-white! font-semibold py-3 px-6 rounded-xl' to="/home">Ir a inicio</Link> : <button className="absolute w-[86.5%] text-center bottom-4 bg-[#EC4899] hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar particular</button>}
-                    {message === 1 && <p className='text-green-600! text-center mt-4'>Particular actualizada con exito!</p>}
+                    {message === 1 ? <button className="w-[100%] text-center mt-6 bg-[#EC4899] bg-orange-500! hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link className=' text-white! font-semibold' to="/home">Ir a inicio</Link></button> : <button className="w-[100%] text-center mt-6 bg-[#EC4899] hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar particular</button>}
+                    {message === 1 && <p className='text-green-600! text-center mt-6'>Particular actualizada con exito!</p>}
                 </form>
 
 
 
                 
-                <form className="relative bg-white rounded-3xl p-8 pb-20 border-2 border-gray-200" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 2)}>
+                <form className="relative bg-white rounded-3xl p-8 pb-8 border-2 border-gray-200" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 2)}>
                          <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="bg-indigo-100 p-3 rounded-xl">
@@ -292,7 +292,7 @@ console.log(imgProductora)
                         <label className="text-[#111827]!">Nombre del titular</label><br></br>
                         <input className="border-[1px] border-gray-200 w-[100%] p-2" type="text" name="nombreTitularProductora" value={nombreTitularProductora} onChange={(e) => setNombreTitularProductora(e.target.value)} required></input>
                     </div>
-                    {message === 2 ? <Link className='absolute w-[86.5%] text-center bottom-4 bg-orange-500! text-white! font-semibold py-3 px-6 rounded-xl' to="/home">Ir a inicio</Link> : <button className="absolute w-[86.5%] text-center bottom-4 bg-[#EC4899] hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar productora</button>}
+                    {message === 2 ? <button className="w-[100%] text-center mt-6 bg-[#EC4899] bg-orange-500! hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link className='text-white! font-semibold' to="/home">Ir a inicio</Link></button> : <button className="w-[100%] text-center mt-4 bg-[#EC4899] hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar productora</button>}
                     {message === 2 && <p className='text-green-600! text-center mt-4'>Productora actualizada con exito!</p>}
                 </form>
                 </div>
