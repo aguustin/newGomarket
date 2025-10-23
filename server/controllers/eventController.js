@@ -494,10 +494,7 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
       console.log('SE ENCONTRO EL TICKET DENTRO DE LAS VENTASRRPP')
       bulkOpsRRPP.push({
         updateOne: {
-          filter: {
-            "rrpp.mail": decryptedMail,
-            "rrpp.ventasRRPP.ticketId": ticketId,
-          },
+          filter: { _id: new ObjectId(eventId) },
           update: {
             $inc: {
               "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].vendidos": vendidos,
@@ -509,25 +506,28 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
             { "ventaElem.ticketId": ticketId },
           ],
         },
-      });
+    });
     } else {
       console.log('SE ESTA AGRENGANDO EL NUEVO TICKET A VENTASRRPP')
-      bulkOpsRRPP.push({
-        updateOne: {
-          filter: { "rrpp.mail": decryptedMail },
-          update: {
-            $push: {
-              "rrpp.$[rrppElem].ventasRRPP": {
-                ticketId,
-                nombreCategoria,
-                vendidos,
-                total,
-              },
+    bulkOpsRRPP.push({
+      updateOne: {
+        filter: {
+          _id: prodId, // el ID del evento
+        },
+        update: {
+          $push: {
+            "rrpp.$[rrppElem].ventasRRPP": {
+              ticketId,
+              nombreCategoria,
+              vendidos,
+              total,
             },
           },
-          arrayFilters: [{ "rrppElem.mail": decryptedMail }],
         },
-      });
+        arrayFilters: [{ "rrppElem.mail": decryptedMail }],
+      },
+    });
+
     }
   }
   console.log('GET PORCENTAJE: ' ,getPorcentaje)
@@ -541,17 +541,17 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
   console.log('INCREMENTANDO EL MONTO VENDIDO')
   // Incrementar montoTotalVendidoRRPP
   bulkOpsRRPP.push({
-    updateOne: {
-      filter: { "rrpp.mail": decryptedMail },
-      update: {
-        $inc: {
-          "rrpp.$[rrppElem].montoCorrespondienteRRPP": porcentajeTotal,
-          "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal,
-        },
+  updateOne: {
+    filter: { _id: prodId },
+    update: {
+      $inc: {
+        "rrpp.$[rrppElem].montoCorrespondienteRRPP": porcentajeTotal,
+        "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal,
       },
-      arrayFilters: [{ "rrppElem.mail": decryptedMail }],
     },
-  });
+    arrayFilters: [{ "rrppElem.mail": decryptedMail }],
+  },
+});
 
   await ticketModel.bulkWrite(bulkOpsRRPP);
 };
