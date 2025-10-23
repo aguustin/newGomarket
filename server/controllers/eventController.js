@@ -488,6 +488,8 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
     const nombreCategoria = ticket.nombreTicket;
     const alreadyExists = existingTicketIds.includes(ticketId);
 
+    console.log('TICKETID: ', ticketId, ' ', 'VENDIDOS: ', vendidos, ' ', 'TOTAL: ', total, ' ', 'NOMBRE CATEGORIA: ', nombreCategoria)
+
     if (alreadyExists) {
       console.log('SE ENCONTRO EL TICKET DENTRO DE LAS VENTASRRPP')
       bulkOpsRRPP.push({
@@ -528,7 +530,7 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
       });
     }
   }
-
+  console.log('GET PORCENTAJE: ' ,getPorcentaje)
   if(getPorcentaje.porcentajeRRPP > 0){  //ES PROBABLE QUE FALTE [0] O ALGO PARA TOMAR BIEN LA VARIABLE
     porcentajeTotal = (sumaTotal * getPorcentaje.porcentajeRRPP) / 100
     console.log('PORCENTAJE TOTAL: ', porcentajeTotal)
@@ -536,7 +538,7 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
     porcentajeTotal = 0
   }
 
-   console.log('INCREMENTANDO EL MONTO VENDIDO')
+  console.log('INCREMENTANDO EL MONTO VENDIDO')
   // Incrementar montoTotalVendidoRRPP
   bulkOpsRRPP.push({
     updateOne: {
@@ -773,7 +775,26 @@ export const mercadoPagoWebhookController = async (req, res) => {
       }
 
       // Procesamos el pago exitoso
-      await handleSuccessfulPayment({
+      try {  //DEBERIA EVITAR EL DUPLICADO DE TRANSACTIONID (PAYMENTID) PERO EN EL CASO DE NO FUNCIONAR DESCOMENTAR EL HANDLESUCCESFULPAYMENT QUE ESTA DEBAJO
+        await handleSuccessfulPayment({ 
+        prodId: prod_id,
+        nombreEvento: nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        emailHash: email_hash,
+        nombreCompleto: nombre_completo,
+        dni,
+        paymentId});
+      } catch (err) {
+        if (err.code === 11000) {
+          console.log(`Pago ${paymentId} ya estaba registrado — ignorado`);
+          return;
+        }
+        throw err;
+      }
+     /* await handleSuccessfulPayment({  /COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -784,7 +805,11 @@ export const mercadoPagoWebhookController = async (req, res) => {
         nombreCompleto: nombre_completo,
         dni,
         paymentId
-      });
+      });*/
+
+
+
+      //PAYMENTQUEUE HACE EL PAGO BIEN SIN DUPLICAR EL PAYMENTID PERO SOLO LO VOY A USAR EN PRODUCCION CUANDO ESTE TODO ANDANDO BIEN
       /*await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
         {
           attempts: 3, // Reintentar 3 veces si falla
