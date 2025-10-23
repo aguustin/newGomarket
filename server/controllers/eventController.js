@@ -463,11 +463,12 @@ const procesarVentaGeneral = async (event, quantities, total) => {
 
 
 const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
+  console.log('ENTRO A PROCESARVENTARRPP', 'event: ', event, ' ', 'decryptedMail: ', decryptedMail)
   const prodId = event._id;
   const getPorcentaje = await ticketModel.find({_id: prodId})
   const rrpp = event.rrpp.find(r => r.mail === decryptedMail);
   if (!rrpp) return;
-
+  console.log('SE ENCONTRO EL RRPP')
   const existingTicketIds = rrpp.ventasRRPP.map(v => v.ticketId);
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
   const tickets = event.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
@@ -477,6 +478,8 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
   let porcentajeTotal = 0;
 
   for (const ticket of tickets) {
+
+    console.log('SE ESTA RECORRIENDO EL TICKET')
     const ticketId = ticket._id.toString();
     const vendidos = quantities[ticketId];
     const total = vendidos * ticket.precio;
@@ -486,6 +489,7 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
     const alreadyExists = existingTicketIds.includes(ticketId);
 
     if (alreadyExists) {
+      console.log('SE ENCONTRO EL TICKET DENTRO DE LAS VENTASRRPP')
       bulkOpsRRPP.push({
         updateOne: {
           filter: {
@@ -505,6 +509,7 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
         },
       });
     } else {
+      console.log('SE ESTA AGRENGANDO EL NUEVO TICKET A VENTASRRPP')
       bulkOpsRRPP.push({
         updateOne: {
           filter: { "rrpp.mail": decryptedMail },
@@ -526,9 +531,12 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 
   if(getPorcentaje.porcentajeRRPP > 0){  //ES PROBABLE QUE FALTE [0] O ALGO PARA TOMAR BIEN LA VARIABLE
     porcentajeTotal = (sumaTotal * getPorcentaje.porcentajeRRPP) / 100
+    console.log('PORCENTAJE TOTAL: ', porcentajeTotal)
   }else{
     porcentajeTotal = 0
   }
+
+   console.log('INCREMENTANDO EL MONTO VENDIDO')
   // Incrementar montoTotalVendidoRRPP
   bulkOpsRRPP.push({
     updateOne: {
@@ -630,6 +638,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     ];
 
     if (rrppMatch && decryptedMail) {
+      console.log('SI EJECUTA LA FUNCION PARA PROCESAR LA VENTA: ', rrppMatch, ' ', decryptedMail)
       tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
     }
     await Promise.all(tasks);
@@ -658,7 +667,7 @@ export const buyEventTicketsController = async (req, res) => {
           {
             title: `Ticket para ${nombreEvento}`,
             quantity: 1,
-            unit_price: total, // aca va "total"
+            unit_price: 1, // aca va "total"
             currency_id: 'ARS',
           },
         ],
