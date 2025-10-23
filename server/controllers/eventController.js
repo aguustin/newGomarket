@@ -775,7 +775,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       }
 
       // Procesamos el pago exitoso
-      try {  //DEBERIA EVITAR EL DUPLICADO DE TRANSACTIONID (PAYMENTID) PERO EN EL CASO DE NO FUNCIONAR DESCOMENTAR EL HANDLESUCCESFULPAYMENT QUE ESTA DEBAJO
+      /*try {  //DEBERIA EVITAR EL DUPLICADO DE TRANSACTIONID (PAYMENTID) PERO EN EL CASO DE NO FUNCIONAR DESCOMENTAR EL HANDLESUCCESFULPAYMENT QUE ESTA DEBAJO
         await handleSuccessfulPayment({ 
         prodId: prod_id,
         nombreEvento: nombre_evento,
@@ -793,8 +793,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
           return;
         }
         throw err;
-      }
-     /* await handleSuccessfulPayment({  /COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
+      }*/
+      await handleSuccessfulPayment({  /COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -805,7 +805,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
         nombreCompleto: nombre_completo,
         dni,
         paymentId
-      });*/
+      });
 
 
 
