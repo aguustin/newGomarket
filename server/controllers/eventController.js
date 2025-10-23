@@ -794,7 +794,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
         }
         throw err;
       }*/
-      await handleSuccessfulPayment({  /COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
+      await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
