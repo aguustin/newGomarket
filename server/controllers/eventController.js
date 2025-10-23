@@ -465,7 +465,7 @@ const procesarVentaGeneral = async (event, quantities, total) => {
 const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
   console.log('ENTRO A PROCESARVENTARRPP', 'event: ', event, ' ', 'decryptedMail: ', decryptedMail)
   const prodId = event._id;
-  const getPorcentaje = await ticketModel.find({_id: prodId})
+  const getPorcentaje = await ticketModel.findById(prodId)
   const rrpp = event.rrpp.find(r => r.mail === decryptedMail);
   if (!rrpp) return;
   console.log('SE ENCONTRO EL RRPP')
@@ -531,7 +531,7 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
     }
   }
   console.log('GET PORCENTAJE: ' ,getPorcentaje)
-  if(getPorcentaje.porcentajeRRPP > 0){  //ES PROBABLE QUE FALTE [0] O ALGO PARA TOMAR BIEN LA VARIABLE
+  if(getPorcentaje?.porcentajeRRPP > 0){  //ES PROBABLE QUE FALTE [0] O ALGO PARA TOMAR BIEN LA VARIABLE
     porcentajeTotal = (sumaTotal * getPorcentaje.porcentajeRRPP) / 100
     console.log('PORCENTAJE TOTAL: ', porcentajeTotal)
   }else{
@@ -775,26 +775,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
       }
 
       // Procesamos el pago exitoso
-      try {  //DEBERIA EVITAR EL DUPLICADO DE TRANSACTIONID (PAYMENTID) PERO EN EL CASO DE NO FUNCIONAR DESCOMENTAR EL HANDLESUCCESFULPAYMENT QUE ESTA DEBAJO
-        await handleSuccessfulPayment({ 
-        prodId: prod_id,
-        nombreEvento: nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash: email_hash,
-        nombreCompleto: nombre_completo,
-        dni,
-        paymentId});
-      } catch (err) {
-        if (err.code === 11000) {
-          console.log(`Pago ${paymentId} ya estaba registrado — ignorado`);
-          return;
-        }
-        throw err;
-      }
-      /*await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
+
+      await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -805,7 +787,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
         nombreCompleto: nombre_completo,
         dni,
         paymentId
-      });*/
+      });
 
 
 
