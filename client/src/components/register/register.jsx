@@ -20,6 +20,7 @@ const Register = () => {
         setLoading(true)
         if(captchaStatus){ 
             
+        }
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg(true)
             }else{
@@ -44,7 +45,6 @@ const Register = () => {
             }
             //hasta aca llega el if
             setLoading(false)
-        }
     }
 
     return(
@@ -74,7 +74,7 @@ const Register = () => {
                             />
                             } 
                         </div>
-                        <div className="flex items-center"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/">Ingresar</Link></div>
+                        <div className="flex items-center max-[650px]:block"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/">Ingresar</Link></div>
                     </div>
                 </div>
                     {loading ? <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="primary-button w-full p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>}

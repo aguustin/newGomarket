@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { contactController, getAllUsersController, getMySavedEventsController, loginController, newPasswordController, recoverPassController, registerController, saveEventsController, createSellerController, getUserProfileController } from "../controllers/userController.js";
+import { contactController, getAllUsersController, getMySavedEventsController, loginController, newPasswordController, recoverPassController, registerController, saveEventsController, createSellerController, getUserProfileController, getFavoritesEventsController } from "../controllers/userController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -25,5 +25,7 @@ router.post('/save_event', saveEventsController)
 router.post('/obtain_saved_event', getMySavedEventsController)
 
 router.post('/create_seller_profile', upload.single('productoraImg'), createSellerController)
+
+router.post('/get_favorites', getFavoritesEventsController)
 
 export default router

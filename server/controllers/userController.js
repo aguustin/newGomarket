@@ -258,5 +258,28 @@ export const createSellerController = async (req, res) => {
         }
         return res.sendStatus(200)
     }
+}
 
+export const getFavoritesEventsController = async (req, res) => {
+    const {userId} = req.body
+
+    const user = await userModel.findById({_id: userId})
+
+     if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const favoriteEventIds = user.favorites.map(fav => fav.eventId);
+
+    if (favoriteEventIds.length === 0) {
+      return res.status(200).json({ favorites: [] });
+    }
+
+    const favoriteEvents = user.favorites.map((fvE) => fvE.eventId)
+
+    const getFavoritesEvents = await ticketModel.find(
+        {_id: {$in: favoriteEvents  } }
+    )
+
+    return res.status(200).json({favorites: getFavoritesEvents})
 }
