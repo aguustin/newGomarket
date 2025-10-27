@@ -840,6 +840,9 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
     
     await ticketModel.bulkWrite(bulkOps);
   }
+
+  
+
   try {
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
   const event = await ticketModel.findById(prodId);
@@ -1138,7 +1141,6 @@ export const sendQrStaffQrController = async (req, res) => {
         </html>
       `
     });
-    console.log(inf)
     return res.status(200).json({ state: 1 }); // Éxito
   } catch (error) {
     console.error("Error al enviar el correo:", error);
@@ -1149,9 +1151,7 @@ export const sendQrStaffQrController = async (req, res) => {
 
 export const getRRPPInfoController = async (req,res) => {
     const {mail} = req.params
-
     const rrppData = await ticketModel.find({"rrpp.mail": mail})
-
     res.send(rrppData)
 }
 

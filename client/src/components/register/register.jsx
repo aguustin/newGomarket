@@ -20,6 +20,7 @@ const Register = () => {
         setLoading(true)
         if(captchaStatus){ 
             
+        }
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg(true)
             }else{
@@ -44,7 +45,6 @@ const Register = () => {
             }
             //hasta aca llega el if
             setLoading(false)
-        }
     }
 
     return(

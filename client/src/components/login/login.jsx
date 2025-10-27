@@ -55,7 +55,7 @@ const Login = () => {
         <div className="form-background pt-6 pb-29">
             <img className="h-[70px] mx-auto mb-5" src={goOriginalPng} alt=""></img>
             {recoverPass ?
-             <form className="register-form mt-35 mb-35 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
+             <form className="register-form mb-30 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
                     <div className="text-center p-4">
                         <h3 className="text-3xl">Recuperar contraseña</h3>
                         <p className="mt-3 secondary-p">Ingresa tu email y te enviaremos un correo para que recuperes tu contraseña</p>
@@ -68,7 +68,7 @@ const Login = () => {
                         </div>
                     </div>
                 <div className="text-center">
-                    <button className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" type="submit">Recuperar contraseña</button>
+                    <button className="primary-button p-4 rounded-lg mt-6 cursor-pointer" type="submit">Recuperar contraseña</button>
                 </div>
                 <div className="text-center mt-6">
                     <button onClick={() => setRecoverPass(false)}>Volver</button>

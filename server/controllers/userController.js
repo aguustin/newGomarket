@@ -6,12 +6,14 @@ import jwt from "jsonwebtoken"
 import ticketModel from "../models/ticketsModel.js";
 import { Console } from "console";
 import cloudinary from "../middleware/cloudinary.js";
+import { resend } from "../lib/resendDomain.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
 export const getUserProfileController = async (req, res) => {
     const {userId} = req.body
-    const getUsers = await userModel.find({_id: userId})
+    console.log(userId)
+    const getUsers = await userModel.findById(userId)
     res.send(getUsers)
 }
 
@@ -24,19 +26,82 @@ export const registerController = async (req, res) => {
     const {nombreCompleto, mail, dni, pais, contrasenia, repetirContrasenia} = req.body
     
     const findUser = await userModel.find({mail: mail})
-    console.log(nombreCompleto, contrasenia)
-    console.log(findUser)
+
     if(findUser.length > 0){
         return res.status(200).json({msj:'El usuario ya existe'})
     }
-
+    
     if(contrasenia !== repetirContrasenia){
         return res.status(200).json({msj:'Las contraseñas no coinciden'})
     }
-
+    
     const encriptContrasenia = await bcrypt.hash(contrasenia, 12);
+    
+    const secret = JWT_SECRET
+ 
+    const token = jwt.sign({nombreCompleto, mail, dni, pais, encriptContrasenia}, secret, {expiresIn: '20m'});
 
-    await userModel.create({
+    await resend.emails.send({
+         from: 'GoTickets <no-reply@goticketonline.com>',
+        to: [mail],
+        subject: 'Verifica tu correo para completar tu registro en Go Tickets',
+        html: `
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        background-color: #f4f4f4;
+                        font-family: Arial, sans-serif;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background-color: #ffffff;
+                        padding: 20px;
+                    }
+                    .button {
+                        display: inline-block;
+                        padding: 12px 25px;
+                        background-color: #ff6b01;
+                        color: #ffffff;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 20px;
+                    }
+                    @media only screen and (max-width: 600px) {
+                        .container {
+                            width: 90% !important;
+                            padding: 15px !important;
+                        }
+                        .button {
+                            width: 100% !important;
+                            text-align: center;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <p>Gracias por registrarte en <strong>Go Tickets</strong>. Para completar tu registro y empezar a disfrutar de todos nuestros servicios, necesitamos que verifiques tu dirección de correo electrónico.</p>
+                    <p>
+                        <a href="http://localhost:4000/verify_account/${token}" class="button">Verificar mi correo</a>
+                    </p>
+                    <p>Si no creaste una cuenta en Go Tickets, puedes ignorar este correo.</p>
+                    <p>¡Bienvenido a <strong>Go Tickets</strong>!<br>El equipo de Go Tickets</p>
+                </div>
+            </body>
+            </html>
+    `,
+    });
+
+    
+    return res.sendStatus(200)
+    /*await userModel.create({
             nombreCompleto: nombreCompleto,
             mail: mail,
             dni: dni,
@@ -44,7 +109,23 @@ export const registerController = async (req, res) => {
             contrasenia: encriptContrasenia,
     })
 
-    return res.status(200).json({msj:1});
+    return res.status(200).json({msj:1});*/
+}
+
+export const verifyAccountController = async (req, res) => {
+    const {token} = req.params
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { nombreCompleto, mail, dni, pais, encriptContrasenia } = decoded;
+
+    await userModel.create({
+            nombreCompleto: nombreCompleto,
+            mail: mail,
+            dni: dni,
+            pais: pais,
+            contrasenia: encriptContrasenia
+    })
+
+    return res.redirect('http://localhost:5173');
 }
 
 export const loginController = async (req, res) => {
@@ -69,9 +150,7 @@ export const recoverPassController = async (req, res) => {
 
     const secret = process.env.JWT_SECRET
 
-    const token = jwt.sign(mail, secret, {expiresIn: '300'});
-
-    console.log("token generated", token)
+    const token = jwt.sign({mail}, secret, {expiresIn: '60 * 60'});
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -82,11 +161,11 @@ export const recoverPassController = async (req, res) => {
     });
     
     await transporter.sendMail({
-        from: '"GoTickets" <no-reply@gotickets.com>',
+        from: 'GoTickets <no-reply@gotickets.com>',
         to: mail,
         subject: `Recuperar contraseña para ${mail} - Gotickets`,
-        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="https://newgomarket.onrender.com/recover_password/${token}" />`,
-        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="https://newgomarket.onrender.com/recover_password/${token}" />`
+        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="https://www.goticketonline.com/recover_password/${token}" />`,
+        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="https://www.goticketonline.com/recover_password/${token}" />`
     });
 
     res.sendStatus(200)
@@ -95,7 +174,7 @@ export const recoverPassController = async (req, res) => {
 export const newPasswordController = async (req, res) => {
     const {token, nuevaContrasenia} = req.body
 
-       const decoded = jwt.verify(token, JWT_SECRET);
+       const decoded = www.goticketonlinerify(token, JWT_SECRET);
        const { mail } = decoded;
 
        const encryptPass = await bcrypt.hash(nuevaContrasenia, 12)

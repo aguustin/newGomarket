@@ -12,7 +12,7 @@ export const confirmNewPassRequest = ({token, nuevaContrasenia}) => axios.post('
 
 export const contactarRequest = (mailData) => axios.post('http://localhost:4000/contactar', mailData)*/
 
-export const getUserProfileRequest = ({userId}) => axios.post(`${import.meta.env.VITE_URL}/get_profile`, {userId})
+export const getUserProfileRequest = (userId) => axios.post(`${import.meta.env.VITE_URL}/get_profile`, {userId})
 
 export const getAllUsers = () => axios.get(`${import.meta.env.VITE_URL}/getAllUsers`)
 
