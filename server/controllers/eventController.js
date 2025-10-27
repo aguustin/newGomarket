@@ -837,11 +837,10 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
       }
     }));
 
-    
     await ticketModel.bulkWrite(bulkOps);
   }
 
-  
+
 
   try {
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
@@ -875,6 +874,17 @@ for (const ticket of filteredTickets) {
       iat: Math.floor(Date.now() / 1000),
       jti: uuidv4()
     };
+
+    if(ticket?.free){  //  seguir aca
+      await userModel.updateOne(
+        {mail: mail},
+        {
+          $addToSet:{
+            cortesias: {cortesiaId: ticket._id}
+          }
+        }
+      )
+    }
 
     const token = jwt.sign(payload, JWT_SECRET);
     const saveToken = new tokenModel({ token });
