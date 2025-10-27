@@ -7,7 +7,8 @@ import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
 
 const Register = () => {
     const navigate = useNavigate() 
-    const [showMsg, setShowMsg] = useState(false)
+    const [showMsg, setShowMsg] = useState()
+    const [showMsgB, setShowMsgB] = useState()
     const [captchaStatus, setCaptchaStatus] = useState(false)
     const [loading, setLoading] = useState(false)
     
@@ -22,7 +23,7 @@ const Register = () => {
             
         }
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
-                setShowMsg(true)
+                setShowMsg('Las contrasñas no coinciden')
             }else{
                 const userData = {
                     nombreCompleto: e.target.elements.nombreCompleto.value,
@@ -36,11 +37,12 @@ const Register = () => {
                 
                 if(res.data.msj === 1){
                     setTimeout(() => { // Set the timeout
+                        setShowMsgB('Verifica tu correo electronico confirmar tu registro!')
                         navigate('/')
                     }, 3000)
                 }else{
                     setLoading(false)
-                    console.log(res.data.msj)
+                    setShowMsg(res.data.msj)
                 }
             }
             //hasta aca llega el if
@@ -65,7 +67,8 @@ const Register = () => {
                 <div className="text-center">
                 <div className="flex items-center justify-center mt-6">
                     <div>
-                        {showMsg ? <p className="text-red-600! mb-3">Las contraseñas no coinciden</p> : ''}
+                        {showMsg?.length > 0 && <p className="text-red-600! mb-3 text-center text-xl!">{showMsg}</p>}
+                        {showMsgB?.length > 0 && <p className="text-green-600! mb-3 text-center text-xl!">{showMsgB}</p>}
                         <div className="flex justify-center mt-4 mb-5">
                             {
                             <ReCAPTCHA
@@ -74,6 +77,7 @@ const Register = () => {
                             />
                             } 
                         </div>
+                        
                         <div className="flex items-center max-[650px]:block"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/">Ingresar</Link></div>
                     </div>
                 </div>

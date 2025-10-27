@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken"
 import ticketModel from "../models/ticketsModel.js";
 import { Console } from "console";
 import cloudinary from "../middleware/cloudinary.js";
+import { resend } from "../lib/resendDomain.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
@@ -26,6 +27,7 @@ export const registerController = async (req, res) => {
     const findUser = await userModel.find({mail: mail})
     console.log(nombreCompleto, contrasenia)
     console.log(findUser)
+
     if(findUser.length > 0){
         return res.status(200).json({msj:'El usuario ya existe'})
     }
@@ -69,24 +71,15 @@ export const recoverPassController = async (req, res) => {
 
     const secret = process.env.JWT_SECRET
 
-    const token = jwt.sign(mail, secret, {expiresIn: '300'});
+    const token = jwt.sign({mail:mail}, secret, {expiresIn: '60 * 60'});
 
     console.log("token generated", token)
 
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: user_mail,
-            pass: pass,
-        },
-    });
-    
-    await transporter.sendMail({
-        from: '"GoTickets" <no-reply@gotickets.com>',
-        to: mail,
-        subject: `Recuperar contraseña para ${mail} - Gotickets`,
-        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="https://newgomarket.onrender.com/recover_password/${token}" />`,
-        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="https://newgomarket.onrender.com/recover_password/${token}" />`
+    await resend.emails.send({
+        from: '"GoTickets" <no-reply@goticketonline.com>',
+        to: [mail],
+        subject: `Recuperar contraseña para ${mail} - Go Tickets`,
+        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${process.env.URL_FRONT_DEV}/recover_password/${token}">Recuperar mi contraseña</a>`
     });
 
     res.sendStatus(200)
@@ -238,8 +231,10 @@ export const createSellerController = async (req, res) => {
                 { _id: userId },
                 { $set: userData }
               );
-        
-              return res.status(200).json({ url: result.secure_url, estado: 1 });
+              const userFinded = await userModel.find({_id: userId})
+              
+              return res.status(200).json({userFinded, estado: 1 })
+    
             }
           ).end(req.file.buffer); 
     }else{
@@ -256,7 +251,9 @@ export const createSellerController = async (req, res) => {
                 { $set: userData }
             );
         }
-        return res.sendStatus(200)
+        const userFinded = await userModel.find({_id: userId})
+        
+        return res.status(200).json({userFinded, estado: 1 })
     }
 }
 
