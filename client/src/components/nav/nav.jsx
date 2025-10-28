@@ -44,14 +44,14 @@ const Nav = () => {
             <>
                 <img className="w-[100px]" src={goPng} alt="" loading="lazy"></img>
                 <div className="absolute w-[560px] right-50 left-50 mx-auto flex justify-left items-center">
-                        <Link className="session-b p-4 rounded-3xl text-md primary-p" to="/Home">Inicio</Link>
+                        <Link className="session-b p-4 rounded-3xl text-md primary-p" to="/">Inicio</Link>
                         <Link className="session-b p-4 rounded-3xl text-md primary-p" to="/Contact">Contacto</Link>
-                        <Link className="session-b p-4 rounded-3xl  text-md primary-p" to={session?.userFinded?.length > 0 ? "/Create_event" : "/" } onClick={closeMenu}>Crear evento</Link>
-                        <Link className="session-b p-4 rounded-3xl text-md primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/"} onClick={closeMenu}>Mis producciones</Link>
+                        <Link className="session-b p-4 rounded-3xl  text-md primary-p" to={session?.userFinded?.length > 0 ? "/Create_event" : "/login" } onClick={closeMenu}>Crear evento</Link>
+                        <Link className="session-b p-4 rounded-3xl text-md primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/login"} onClick={closeMenu}>Mis producciones</Link>
                         {/*session?.userFinded?.length > 0 ? <Link className="text-lg" to="/profile" onClick={closeMenu}>Mi perfil</Link> : ''*/}
                 </div>
                 {session?.userFinded?.length > 0 ? 
-                <button className="session-b-img flex items-center absolute right-5 cursor-pointer pl-2 pr-2 text-[#111827] rounded-2xl" onClick={() => setOpenProfileCong(!openProfileConf)}><img className="mr-2 w-16 h-16 rounded-full object-cover border-4 border-gray-300" src={session?.userFinded[0]?.imagenProductora ?? userImgPng} alt=""></img>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/" className="absolute right-9 primary-p">Iniciar sesion</Link>}
+                <button className="session-b-img flex items-center absolute right-5 cursor-pointer pl-2 pr-2 text-[#111827] rounded-2xl" onClick={() => setOpenProfileCong(!openProfileConf)}><img className="mr-2 w-16 h-16 rounded-full object-cover border-4 border-gray-300" src={session?.userFinded[0]?.imagenProductora ?? userImgPng} alt=""></img>{session?.userFinded[0]?.nombreCompleto}</button> : <Link to="/login" className="absolute right-9 primary-p">Iniciar sesion</Link>}
                 {openProfileConf && <div className="logout-b bg-[#f4f4f4] absolute top-[70px] right-0 w-[210px]">
                         {/*<div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div> */}
                         <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827] hover:bg-white! transition-all duration-300"><img className="ml-3" src={userPng} alt="" loading="lazy"></img><p className="ml-4">Ver mi perfil</p></Link>
@@ -67,16 +67,16 @@ const Nav = () => {
                     {showMobileNav && 
                     <div className="nav-mobile-options w-full absolute right-0 top-[70px] ">
                         <div className="text-center p-4 pl-10 pr-10 border-t-2 border-b-2 border-gray-300 hover:bg-white! transition-all duration-300">
-                            <Link className="text-lg primary-p" to="/Home" onClick={() => setShowMobileNav(!showMobileNav)}>Inicio</Link>
+                            <Link className="text-lg primary-p" to="/" onClick={() => setShowMobileNav(!showMobileNav)}>Inicio</Link>
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300 hover:bg-white! transition-all duration-300">
                             <Link className="text-lg primary-p" to="/Contact" onClick={() => setShowMobileNav(!showMobileNav)}>Contacto</Link>
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300 hover:bg-white! transition-all duration-300">
-                            <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/Create_event" : "/"} onClick={() => setShowMobileNav(!showMobileNav)}>Crear evento</Link>
+                            <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/Create_event" : "/login"} onClick={() => setShowMobileNav(!showMobileNav)}>Crear evento</Link>
                         </div>
                         <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300 hover:bg-white! transition-all duration-300">
-                            <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/"} onClick={() => setShowMobileNav(!showMobileNav)}>Mis producciones</Link> 
+                            <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/login"} onClick={() => setShowMobileNav(!showMobileNav)}>Mis producciones</Link> 
                         </div>
                         {session?.userFinded?.length > 0 && <div className="text-center p-4 pl-10 pr-10 border-b-1 border-gray-300 hover:bg-white! transition-all duration-300">
                             <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} onClick={() => setShowMobileNav(!showMobileNav)} className="text-lg primary-p">Ver mi perfil</Link>

@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgn
 export const getUserProfileController = async (req, res) => {
     const {userId} = req.body
     console.log(userId)
-    const getUsers = await userModel.findById(userId)
+    const getUsers = await userModel.find({_id:userId})
     res.send(getUsers)
 }
 
@@ -124,7 +124,7 @@ export const verifyAccountController = async (req, res) => {
             contrasenia: encriptContrasenia
     })
 
-    return res.redirect('https://www.goticketonline.com');
+    return res.redirect('https://www.goticketonline.com/login');
 }
 
 export const loginController = async (req, res) => {

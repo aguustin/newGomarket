@@ -4,7 +4,7 @@ import { buyTicketsRequest, getEventToBuyRequest, getRelateEventsRequest } from 
 import { formatDate, formatDateB, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 import mapPng from "../../assets/botones/map.png"
-import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import copyPng from "../../assets/botones/copy.png"
 import UserContext from "../../context/userContext"
 import { useNavigate } from "react-router"
 
@@ -22,24 +22,11 @@ const BuyTicket = () => {
     const navigate = useNavigate()
 
  useEffect(() => {
-  // Si session aún no está disponible, no hacer nada
-  if (!session) return;
-
-  // Si userFinded aún no se cargó, esperar
-  if (!Array.isArray(session.userFinded)) return;
-
-  // Si la sesión es inválida (array vacío), redirigir
-  if (session.userFinded.length === 0) {
-    console.log('Sesión inválida');
-    navigate('/');
-    return;
-  }
 
   const fetchData = async () => {
     try {
       const resEvent = await getEventToBuyRequest(prodId);
       setProd(resEvent.data);
-
       const resRelated = await getRelateEventsRequest(prodId);
       setRelates(resRelated.data.relacionados);
     } catch (error) {
@@ -153,7 +140,7 @@ const BuyTicket = () => {
                             <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
                         </div>
                         <div className="desc-and-map text-left ml-4 mt-9">
-                            <h2 className="text-xl text-[#111827]">Evento: {p.nombreEvento}</h2>
+                            <h2 className="text-xl text-[#111827] mb-2">Evento: {p.nombreEvento}</h2>
                             <p className="mb-2 secondary-p">Dirección: {p.direccion}</p>
                             <div className="flex items-center mt-2">
                                 <p className="secondary-p">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
@@ -162,11 +149,14 @@ const BuyTicket = () => {
                             <div className="flex items-center mt-2">
                                 <p className="secondary-p">Artistas: {p.artistas}</p>
                             </div>
-                            <div className="mb-2">
+                            <div className="mb-3">
                                 <p className="secondary-p mt-3 text-sm">{p.descripcionEvento}</p>
-                                {p?.aviso?.length > 0 && <p className="primary-p mt-3 text-sm bg-pink-400! p-2">{p.aviso}</p> }
+                                {p?.aviso?.length > 0 && <p className="primary-p mt-1 text-sm bg-pink-400! p-2">{p.aviso}</p> }
                             </div>
-                            <button className="text-[#111827] flex items-center mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}><img className="mr-2" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
+                            <div className="flex items-center">
+                                <button className="text-[#111827] flex items-center mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
+                                <button className="text-[#111827] flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
+                            </div>
                             {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
                             <img className="w-[70%] mx-auto mt-3 mb-3" src={p.bannerEvento} alt=""></img>
                         </div>

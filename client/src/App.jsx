@@ -29,17 +29,17 @@ import ProfileCards from './components/seeProfile/seeProfile'
 
 function AppRoutes() {
   const location = useLocation();
-  const hideNavOnPaths = ['/', '/register', '/recover_password'];
+  const hideNavOnPaths = ['/login', '/register', '/recover_password'];
   const shouldHideNav = hideNavOnPaths.includes(location.pathname);
 
   return (
     <>
       {!shouldHideNav && <Nav />}
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/recover_password/:token" element={<RecoverPass />} />
-        <Route path="/home" element={<Home />} />
         <Route path="/see_profile/:userId" element={<ProfileCards />} />
         <Route path="/user_info" element={<UserInfo/>} />
         <Route path="/my_favorites_events" element={<MyFavoritesEvents />} />

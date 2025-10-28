@@ -38,7 +38,7 @@ const Register = () => {
                 if(res.data.msj === 1){
                     setTimeout(() => { // Set the timeout
                         setShowMsgB('Verifica tu correo electronico confirmar tu registro!')
-                        navigate('/')
+                        navigate('/login')
                     }, 3000)
                 }else{
                     setLoading(false)
@@ -78,7 +78,7 @@ const Register = () => {
                             } 
                         </div>
                         
-                        <div className="flex items-center max-[650px]:block"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/">Ingresar</Link></div>
+                        <div className="flex items-center max-[650px]:block"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/login">Ingresar</Link></div>
                     </div>
                 </div>
                     {loading ? <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="primary-button w-full p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>}

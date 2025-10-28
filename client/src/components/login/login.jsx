@@ -35,7 +35,7 @@ const Login = () => {
         const res = await loginContext(userData)
         
         if(res.data?.estado === 1){
-            navigate('/home')
+            navigate('/')
         }
         if(res.estado === 2){
             setLoading(false)
