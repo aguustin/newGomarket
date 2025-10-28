@@ -861,10 +861,9 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
   const ticketDataArray = [];
 
 for (const ticket of filteredTickets) {
-  //const quantity = quantities[ticket._id.toString()];
-  const {quantity, free} = quantities[ticket._id.toString() || {}];
+  const quantity = quantities[ticket._id.toString()];
+  //const {quantity, free} = quantities[ticket._id.toString() || {}];
 
-  if(!quantity) continue
   for (let i = 0; i < quantity; i++) {
     const payload = {
       nombreCompleto,
@@ -875,7 +874,7 @@ for (const ticket of filteredTickets) {
       jti: uuidv4()
     };
 
-     if(free){  //  seguir aca
+    /* if(free){  //  seguir aca
       await userModel.updateOne(
         {mail: mail},
         {
@@ -888,7 +887,7 @@ for (const ticket of filteredTickets) {
           }
         }
       )
-    }
+    }*/
 
     const token = jwt.sign(payload, JWT_SECRET);
     const saveToken = new tokenModel({ token });
