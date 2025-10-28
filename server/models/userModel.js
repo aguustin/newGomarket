@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
     }],
     cortesias:[{
         cortesiaId:{type:String},
-        limit:{type:Number}
+        qty:{type:Number}
     }],
     redes:[{
         instagram:{type: String},

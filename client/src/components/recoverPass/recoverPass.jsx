@@ -6,7 +6,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 const RecoverPass = () => {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams();
-     const { token } = useParams();
+    const { token } = useParams();
     const [message, setMessage] = useState(false)
     const [error, setError] = useState(false)
 

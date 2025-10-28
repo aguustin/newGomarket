@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import advicePng from '../../assets/images/advice.png'
-import { createSellerProfileRequest, getUserProfileRequest } from '../../api/userRequests';
+import { createSellerProfileRequest } from '../../api/userRequests';
 import UserContext from '../../context/userContext';
 import userPng from "../../assets/user.png"
 import { Link } from 'react-router';

@@ -71,7 +71,7 @@ const BuyTicket = () => {
         return prev;
     });
 };
-    const addQuantity = (e, ticketId, limit, cantidad) => {
+    const addQuantity = (e, ticketId, limit, cantidad, free) => {
         e.preventDefault();
         setQuantities(prev => {
             const current = prev[ticketId] || 0;
@@ -82,6 +82,7 @@ const BuyTicket = () => {
                 return {
                     ...prev,
                     [ticketId]: current + 1,
+                    ...(free ? { free: true } : {})
                 };
             }
 
@@ -283,7 +284,7 @@ const BuyTicket = () => {
                                                     <p className="text-md w-[50px] secondary-p">{quantities[crt._id] || 0}</p>
                                                     <button
                                                         className="text-xl bg-orange-500 cursor-pointer rounded-r-xl w-[40px] h-[40px] text-[#111827]!"
-                                                        onClick={(e) => addQuantity(e, crt._id, crt.limit, crt.cantidadDeCortesias)}
+                                                        onClick={(e) => addQuantity(e, crt._id, crt.limit, crt.cantidadDeCortesias, true)}
                                                     >
                                                         +
                                                     </button>
