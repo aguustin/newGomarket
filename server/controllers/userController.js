@@ -89,7 +89,7 @@ export const registerController = async (req, res) => {
                 <div class="container">
                     <p>Gracias por registrarte en <strong>Go Tickets</strong>. Para completar tu registro y empezar a disfrutar de todos nuestros servicios, necesitamos que verifiques tu dirección de correo electrónico.</p>
                     <p>
-                        <a href="http://localhost:4000/verify_account/${token}" class="button">Verificar mi correo</a>
+                        <a href="https://gomarket-1-backend.onrender.com/verify_account/${token}" class="button">Verificar mi correo</a>
                     </p>
                     <p>Si no creaste una cuenta en Go Tickets, puedes ignorar este correo.</p>
                     <p>¡Bienvenido a <strong>Go Tickets</strong>!<br>El equipo de Go Tickets</p>
@@ -125,7 +125,7 @@ export const verifyAccountController = async (req, res) => {
             contrasenia: encriptContrasenia
     })
 
-    return res.redirect('http://localhost:5173');
+    return res.redirect('https://www.goticketonline.com');
 }
 
 export const loginController = async (req, res) => {
@@ -137,11 +137,10 @@ export const loginController = async (req, res) => {
         if(decryptContrasenia){
             return res.status(200).json({userFinded, estado: 1 })
         }else{
-            return res.status(200).json(2)
+            return res.status(200).json({estado:2})
         }
-
     }else{
-       return  res.status(200).json(3);
+       return res.status(200).json({estado:3});
     }
 }
 
@@ -150,7 +149,7 @@ export const recoverPassController = async (req, res) => {
 
     const secret = process.env.JWT_SECRET
 
-    const token = jwt.sign({mail}, secret, {expiresIn: '60 * 60'});
+    const token = jwt.sign({mail}, secret, {expiresIn: '20m'});
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -168,7 +167,7 @@ export const recoverPassController = async (req, res) => {
         html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="https://www.goticketonline.com/recover_password/${token}" />`
     });
 
-    res.sendStatus(200)
+    res.status(200).json({enviado: 1})
 }
 
 export const newPasswordController = async (req, res) => {

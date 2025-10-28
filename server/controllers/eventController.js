@@ -875,17 +875,6 @@ for (const ticket of filteredTickets) {
       jti: uuidv4()
     };
 
-    if(ticket?.free){  //  seguir aca
-      await userModel.updateOne(
-        {mail: mail},
-        {
-          $addToSet:{
-            cortesias: {cortesiaId: ticket._id}
-          }
-        }
-      )
-    }
-
     const token = jwt.sign(payload, JWT_SECRET);
     const saveToken = new tokenModel({ token });
     await saveToken.save();

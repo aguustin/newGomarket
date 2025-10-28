@@ -8,7 +8,7 @@ import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
 
 const Login = () => {
     const { setSession, message, loginContext} = useContext(UserContext)
-    const [showMsg, setShowMsg] = useState(false)
+    const [showMsg, setShowMsg] = useState('')
     const [recoverPass, setRecoverPass] = useState(false)
     const [captchaStatus, setCaptchaStatus] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -34,20 +34,40 @@ const Login = () => {
         }   
         const res = await loginContext(userData)
         
-        if(res.data.estado === 1){
+        if(res.data?.estado === 1){
             navigate('/home')
-        }else{
-            setLoading(false)
-            setShowMsg(true)
         }
+        if(res.estado === 2){
+            setLoading(false)
+            setShowMsg('La contraseña es incorrecta')
+            setTimeout(() => {
+                setShowMsg('')
+            }, 3000)
+        }
+        if(res.estado === 3){
+            setLoading(false)
+            setShowMsg('El email es incorrecto')
+            setTimeout(() => {
+                setShowMsg('')
+            }, 3000)
+        }
+
         if(captchaStatus){ 
         }
     }
     
     const recoverPassFunc = async (e) => {
         e.preventDefault()
+        setLoading(true)
         const mail = e.target.elements.mail.value
-        await recoverPassRequest({mail})
+        const res = await recoverPassRequest({mail})
+        if(res.data.enviado === 1){
+            setLoading(false)
+            setShowMsg('Se envió un correo electronico a tu email para recuperar tu contraseña')
+            setTimeout(() => {
+                setShowMsg('')
+            }, 3000)
+        }
     }
 
     return(
@@ -58,19 +78,20 @@ const Login = () => {
              <form className="register-form mb-30 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
                     <div className="text-center p-4">
                         <h3 className="text-3xl">Recuperar contraseña</h3>
-                        <p className="mt-3 secondary-p">Ingresa tu email y te enviaremos un correo para que recuperes tu contraseña</p>
+                        <p className="mt-3 secondary-p text-md">Ingresa tu email y te enviaremos un correo para que recuperes tu contraseña</p>
                     </div>
-                    <input className="p-3 mt-3 w-full" type="mail" minLength="5" maxLength="30" placeholder="Ingresa tu email" name="mail" required></input>
-                    <div className="flex items-center justify-center mt-6">
+                    <input className="p-3 w-full" type="mail" minLength="5" maxLength="30" placeholder="Ingresa tu email" name="mail" required></input>
+                    <div className="flex items-center justify-center mt-4">
                         <div className="text-center">
                             {message ? <p className="text-red-600! mb-3">Las contraseñas no coinciden</p> : ''}
-                            <div className="flex mt-2 items-center"> <p>O registrate haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/register"> Registrarse</Link></div>
+                            <p className="text-green-600! mb-3 text-sm">{showMsg}</p>
+                            <div className="flex mt-2 items-center justify-center"> <p>O registrate haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/register"> Registrarse</Link></div>
                         </div>
                     </div>
                 <div className="text-center">
-                    <button className="primary-button p-4 rounded-lg mt-6 cursor-pointer" type="submit">Recuperar contraseña</button>
+                    {loading ? <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="primary-button p-4 rounded-lg mt-3 cursor-pointer" type="submit">Recuperar contraseña</button>}
                 </div>
-                <div className="text-center mt-6">
+                <div className="text-center mt-4">
                     <button onClick={() => setRecoverPass(false)}>Volver</button>
                 </div>
             </form>
@@ -82,13 +103,14 @@ const Login = () => {
                         <h3 className="text-4xl font-bold">Ingresar</h3>
                         <p className="mt-3 secondary-p">Ingresa tu cuenta de Goticket y disfruta de tus eventos favoritos</p>
                     </div>
-                    <input className="p-3 mt-3 w-full" type="mail" minLength="5" maxLength="30" placeholder="Ingresa tu email" name="mail" required></input>
+                    <input className="p-3  w-full" type="mail" minLength="5" maxLength="30" placeholder="Ingresa tu email" name="mail" required></input>
                     <input className="p-3 mt-3 w-full" type="password" minLength="5" maxLength="30" placeholder="Tu contraseña" name="contrasenia" required></input>
-                    <div className="flex items-center justify-center mt-6">
+                    <p className="text-red-600! mt-3 text-center text-sm">{showMsg}</p>
+                    <div className="flex items-center justify-center mt-3">
                         <div className="text-center">
                             {message ? <p className="text-red-600! mb-3">Las contraseñas no coinciden</p> : ''}
                             <div className="flex flex-wrap justify-center"><p>¿Has olvidado tu contraseña?</p><button className="secondary-p ml-2 underline!" onClick={() => setRecoverPass(true)}>Haz click aqui!</button></div>
-                            <div className="flex flex-wrap justify-center mt-5 items-center"> <p>O registrate haciendo click aqui: </p><Link className="secondary-p ml-2 underline!" to="/register"> Registrarse</Link></div>
+                            <div className="flex flex-wrap justify-center mt-3 items-center"> <p>O registrate haciendo click aqui: </p><Link className="secondary-p ml-2 underline!" to="/register"> Registrarse</Link></div>
                         </div>
                     </div>
                     <div className="flex justify-center mt-5">
