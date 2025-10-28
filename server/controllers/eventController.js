@@ -862,7 +862,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
 
 for (const ticket of filteredTickets) {
  // const quantity = quantities[ticket._id.toString()];
-  const { quantity, free } = quantities[ticket._id.toString()] || {};
+  const { quantity, free } = quantities[ticket._id.toString()];
 
   for (let i = 0; i < quantity; i++) {
     const payload = {
@@ -873,8 +873,9 @@ for (const ticket of filteredTickets) {
       iat: Math.floor(Date.now() / 1000),
       jti: uuidv4()
     };
-
-     if(free){  //  seguir aca
+    console.log("QUANTITY: ", quantity, "FREE: ", free)
+     if(free){ 
+      console.log('asdasdasdas al freeeeeeeeeeeee')
       await userModel.updateOne(
         {mail: mail},
         {
