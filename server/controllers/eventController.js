@@ -863,18 +863,7 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
 for (const ticket of filteredTickets) {
   const quantity = quantities[ticket._id.toString()];
   const free = typeof quantity === "object" ? quantity?.free === true : false;
-
-  for (let i = 0; i < quantity; i++) {
-    const payload = {
-      nombreCompleto,
-      dni,
-      eventId: event._id,
-      ticketId: ticket._id,
-      iat: Math.floor(Date.now() / 1000),
-      jti: uuidv4()
-    };
-    console.log("QUANTITY: ", quantity, "FREE: ", free)
-     if(free){ 
+  if(free){ 
       console.log('asdasdasdas al freeeeeeeeeeeee')
       await userModel.updateOne(
         {mail: mail},
@@ -888,7 +877,16 @@ for (const ticket of filteredTickets) {
           }
         }
       )
-    }
+  }
+  for (let i = 0; i < quantity; i++) {
+    const payload = {
+      nombreCompleto,
+      dni,
+      eventId: event._id,
+      ticketId: ticket._id,
+      iat: Math.floor(Date.now() / 1000),
+      jti: uuidv4()
+    };    
 
     const token = jwt.sign(payload, JWT_SECRET);
     const saveToken = new tokenModel({ token });
