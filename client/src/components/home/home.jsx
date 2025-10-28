@@ -15,7 +15,7 @@ import footballPng from '../../assets/botones/football.png'
 import starPng from '../../assets/botones/star.png'
 import starBPng from '../../assets/botones/starB.png'
 import Skeleton from 'react-loading-skeleton';
-import { saveEventRequest } from "../../api/userRequests"
+import { getFavoritesEventsRequest, saveEventRequest } from "../../api/userRequests"
 import { useContext } from "react"
 import { Country, State, City } from "country-state-city"
 import djPartyPng from '../../assets/dj-party-meaning.png'
@@ -33,6 +33,7 @@ const Home = () => {
         const userFavorites = session?.userFinded?.[0]?.favorites || [];
         return userFavorites.map(fav => fav?.eventId);
     });
+    const [favoritesFilter, setFavoritesFilter] = useState(null)
     const [provincias, setProvincias] = useState([]);
     const [localidades, setLocalidades] = useState([]);
     const [provinciaSeleccionada, setProvinciaSeleccionada] = useState("");
@@ -135,6 +136,16 @@ const Home = () => {
         }
     }
 
+    const getFavoritesEventsFunc = async () => {
+        if(favoritesFilter?.length > 0){
+           return setFavoritesFilter(null)
+        }
+        const res = await getFavoritesEventsRequest(session?.userFinded?.[0]?._id)
+        setFavoritesFilter(res.data.favorites)
+    }
+
+    const eventsToRender = favoritesFilter || allEvents
+    console.log("favoritos: " ,favoritesFilter)
     return (
         <>
             <div className="home mb-16">
@@ -210,34 +221,36 @@ const Home = () => {
                     {width < 1376 &&
                         <div className="categories flex justify-center relative mx-6">
                             <div className="flex flex-wrap justify-around">
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === '' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada('')}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-[#f97316]' : ''}`} onClick={() => setCategoriaSeleccionada("deporte")} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${edad === 1 ? 'bg-[#f97316]' : ''}`} onClick={() => setEdad(edad === 1 ? 0 : 1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${edad === 2 ? 'bg-[#f97316]' : ''}`} onClick={() => setEdad(edad === 2 ? 0 : 2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === '' ? 'bg-[#f97316]' : ''}`} onClick={() =>{ setCategoriaSeleccionada(''); setFavoritesFilter(null)}}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada('baile'); setFavoritesFilter(null)}} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada('musica'); setFavoritesFilter(null)}} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada('arte'); setFavoritesFilter(null)}} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada('teatro'); setFavoritesFilter(null)}} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada('deporte'); setFavoritesFilter(null)}} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${favoritesFilter?.length > 0 ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada(''); getFavoritesEventsFunc()}} name="favoritos"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Favoritos</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${edad === 1 ? 'bg-[#f97316]' : ''}`} onClick={() => {setEdad(edad === 1 ? 0 : 1); setFavoritesFilter(null)}} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
+                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${edad === 2 ? 'bg-[#f97316]' : ''}`} onClick={() => {setEdad(edad === 2 ? 0 : 2); setFavoritesFilter(null)}} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
                             </div>
                         </div>
-                    }
+                    } 
                         {width > 1375 &&
                             <div className="categories w-full  mt-3">
                                 <div className="w-full pb-1 flex bg-gradient-to-r from-purple-500 to-pink-500 transition-all">
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === '' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("")}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("baile")} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("musica")} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("arte")} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("teatro")} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setCategoriaSeleccionada("deporte")} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 1 ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setEdad(edad === 1 ? 0 : 1)} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
-                                    <button className={`flex justify-center  items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 2 ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => setEdad(edad === 2 ? 0 : 2)} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === '' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => {setCategoriaSeleccionada("") ; setFavoritesFilter(null)}}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => {setCategoriaSeleccionada("baile") ; setFavoritesFilter(null)}} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => {setCategoriaSeleccionada("musica") ; setFavoritesFilter(null)}} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => {setCategoriaSeleccionada("arte") ; setFavoritesFilter(null)}} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => {setCategoriaSeleccionada("teatro") ; setFavoritesFilter(null)}} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => {setCategoriaSeleccionada("deporte") ; setFavoritesFilter(null)}} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${favoritesFilter?.length > 0 ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada(''); getFavoritesEventsFunc()}}  name="favoritos"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Favoritos</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 1 ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => {setEdad(edad === 1 ? 0 : 1); setFavoritesFilter(null)}} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
+                                    <button className={`flex justify-center  items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 2 ? 'bg-gradient-to-r from-purple-700' : ''}`} onClick={() => {setEdad(edad === 2 ? 0 : 2); setFavoritesFilter(null)}} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
                                 </div>
                             </div>
                         }
                     <div className="events-and-categories flex items-start">
                         <div className="events-container flex flex-wrap items-start max-h-[1200px] w-[100%] mb-9">
-   {allEvents
+   {eventsToRender
   .filter((allEv) => {
     const searchLower = search.toLowerCase().trim();
     const matchesSearch =

@@ -9,6 +9,17 @@ button:focus{
   outline: none;
 }
 
+input[type="date"] {
+  color-scheme: light; 
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); 
+  opacity: 1;
+}
+
 
 /*------------------------------------------------------------------------------------- NAV -------------------------------------------------------------*/
 
@@ -1162,7 +1173,7 @@ border: 1px solid #e0e0e0;
     width: 100vw;
   }
   .register-form{
-    margin-top: 50px;
+    margin-top: 20px;
     margin-bottom: 50px;
   }
   .register-form p, .register-form a, .register-form button {

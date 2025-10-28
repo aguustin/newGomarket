@@ -393,13 +393,13 @@ const CreateEventForm = () => {
                             </div>
                         </div>}
                     </div>
-                    <div className="relative mt-10 items-center flex flex-wrap">
+                    <div className="relative mt-10 max-[760px]:mt-2 items-center flex flex-wrap">
                         <Link className='text-blue-500! underline!' to={"/conditions"}>Terminos y condiciones.</Link>
                         <label className="text-md text-[#EC4899] ml-1">Acepto términos y condiciones</label>
                         <input className="mt-3 ml-2 w-[15px]! min-w-[15px]!" type="checkbox" required></input>
                     </div> 
                 </div>
-                    <button className="absolute right-4 bottom-4 primary-button p-4 rounded-lg" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
+                    <button className="absolute right-4 bottom-4 primary-button p-4 rounded-lg max-[760px]:relative max-[760px]:w-full max-[760px]:mt-6 max-[760px]:right-0 max-[760px]:bottom-0" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
             </form> 
                 </div>   
             </div>

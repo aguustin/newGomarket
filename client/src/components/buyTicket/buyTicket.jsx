@@ -202,14 +202,14 @@ const BuyTicket = () => {
                             <div >
                                 <img className="w-[350px] mx-auto mt-5" src={prod?.[0]?.imagenDescriptiva} alt=""></img>
                             </div>
-                            <div className="max-[750px]:text-center mt-5">
+                           {relates.length > 0  && <div className="max-[750px]:text-center mt-5">
                                 <p className="secondary-p">Filtrar tickets por fecha:</p>
-                                <select className="w-auto mt-1 mb-3 bg-[#f4f4f4] p-3 border border-gray-300 rounded-lg appearance-none" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)} required>
+                                <select className="w-auto mt-1 mb-3 bg-[#f4f4f4] p-3 border border-gray-300 rounded-lg appearance-none" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)}>
                                     <option value=''>Cambiar fecha</option>
                                     {relates.map((rel) => (<option key={rel._id} value={rel._id}>{rel.nombreEvento} - {formatDateB(rel.fechaInicio)}</option>))}
                                 </select>
                                 <Link className="ml-3! secondary-button-fucsia text-white! rounded-lg p-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
-                            </div>
+                            </div> }
                             <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-10">
                             {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
                                 <div className="flex justify-center mx-auto text-center" key={tck._id}>

@@ -703,7 +703,7 @@ const EditProd = () => {
                                             }></input>
                                             </div> */}
                                             <div className="flex items-center justify-between">
-                                                <button className="secondary-button-fucsia mt-5 p-3 w-[100px] rounded-lg">Cancelar</button>
+                                                <button className="secondary-button-fucsia mt-5 p-3 w-[100px] rounded-lg" onClick={() =>  setOpenTicketId(null)}>Cancelar</button>
                                                 <button className="bg-orange-500! mt-5 p-3 w-[100px] rounded-lg cursor-pointer" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.cantidad, tick.limit, tick.fechaDeCierre, tick.visibilidad)}>{ticketLoading ? <LoadingButton/> : 'Editar'}</button>
                                             </div>
                                         </div>

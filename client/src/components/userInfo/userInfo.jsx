@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import advicePng from '../../assets/images/advice.png'
-import { createSellerProfileRequest, getUserProfileRequest } from '../../api/userRequests';
+import { createSellerProfileRequest } from '../../api/userRequests';
 import UserContext from '../../context/userContext';
 import userPng from "../../assets/user.png"
 import { Link } from 'react-router';
@@ -106,13 +106,14 @@ console.log(imgProductora)
         }else if(imgProductora?.length > 0){
             formData.append('productoraImg', imgProductora)
         }
-        await createSellerProfileRequest(formData)
+        const updateSessionInfo = await createSellerProfileRequest(formData)
         setMessage(1)
-
-        /*const res = await getUserProfileRequest(session?.userFinded?.[0]?._id)
-        localStorage.setItem('session', JSON.stringify(res.data));
-        setSession(res.data);
-        console.log(res.data)*/
+       
+        if (updateSessionInfo) {
+            localStorage.setItem('session', JSON.stringify(updateSessionInfo?.data));
+            const sess = JSON.parse(localStorage.getItem('session'))
+            setSession(sess);
+        }
         return;
     }
 
@@ -141,10 +142,17 @@ console.log(imgProductora)
         }else if(imgProductora?.length > 0){
             formData.append('productoraImg', imgProductora ?? session?.userFinded?.[0]?.imgProductora)
         }
-        await createSellerProfileRequest(formData)
+        const updateSessionInfo = await createSellerProfileRequest(formData)
         setMessage(2)
+
+        if (updateSessionInfo) {
+            localStorage.setItem('session', JSON.stringify(updateSessionInfo?.data));
+            const sess = JSON.parse(localStorage.getItem('session'))
+            setSession(sess);
+        }
         return;
     }
+
   }
 
     return(

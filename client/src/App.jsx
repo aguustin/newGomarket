@@ -38,7 +38,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/recover_password" element={<RecoverPass />} />
+        <Route path="/recover_password/:token" element={<RecoverPass />} />
         <Route path="/home" element={<Home />} />
         <Route path="/see_profile/:userId" element={<ProfileCards />} />
         <Route path="/user_info" element={<UserInfo/>} />

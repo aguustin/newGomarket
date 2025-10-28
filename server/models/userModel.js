@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { type } from "os";
 
 const userSchema = new mongoose.Schema({
     imagenProductora: {type: String},
@@ -34,7 +33,7 @@ const userSchema = new mongoose.Schema({
     }],
     cortesias:[{
         cortesiaId:{type:String},
-        limit:{type:Number}
+        qty:{type:Number}
     }],
     redes:[{
         instagram:{type: String},

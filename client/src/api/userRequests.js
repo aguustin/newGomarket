@@ -31,3 +31,5 @@ export const saveEventRequest = (data) => axios.post(`${import.meta.env.VITE_URL
 export const obtainMySaveEventsRequest = (userId) => axios.post(`${import.meta.env.VITE_URL}/obtain_saved_events`, userId)
 
 export const createSellerProfileRequest = (formData) => axios.post(`${import.meta.env.VITE_URL}/create_seller_profile`, formData)
+
+export const getFavoritesEventsRequest = (userId) => axios.post(`${import.meta.env.VITE_URL}/get_favorites`, {userId})

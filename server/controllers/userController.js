@@ -4,7 +4,6 @@ import bcrypt from "bcrypt"
 import nodemailer from 'nodemailer'; 
 import jwt from "jsonwebtoken"
 import ticketModel from "../models/ticketsModel.js";
-import { Console } from "console";
 import cloudinary from "../middleware/cloudinary.js";
 import { resend } from "../lib/resendDomain.js";
 
@@ -149,31 +148,25 @@ export const recoverPassController = async (req, res) => {
 
     const secret = process.env.JWT_SECRET
 
-    const token = jwt.sign({mail}, secret, {expiresIn: '20m'});
+    const token = jwt.sign({mail:mail}, secret, {expiresIn: '20m'});
 
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: user_mail,
-            pass: pass,
-        },
-    });
-    
-    await transporter.sendMail({
-        from: 'GoTickets <no-reply@gotickets.com>',
-        to: mail,
-        subject: `Recuperar contraseña para ${mail} - Gotickets`,
-        text: `Ingresa al siguiente enlace para recuperar tu contraseña <a href="https://www.goticketonline.com/recover_password/${token}" />`,
-        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="https://www.goticketonline.com/recover_password/${token}" />`
-    });
+    console.log("token generated", token)
 
-    res.status(200).json({enviado: 1})
+    await resend.emails.send({
+        from: '"GoTickets" <no-reply@goticketonline.com>',
+        to: [mail],
+        subject: `Recuperar contraseña para ${mail} - Go Tickets`,
+        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${process.env.URL_FRONT_DEV}/recover_password/${token}">Recuperar mi contraseña</a>`
+    });  
+    res.sendStatus(200)
+
 }
+
 
 export const newPasswordController = async (req, res) => {
     const {token, nuevaContrasenia} = req.body
 
-       const decoded = www.goticketonlinerify(token, JWT_SECRET);
+       const decoded = jwt.verify(token, JWT_SECRET);
        const { mail } = decoded;
 
        const encryptPass = await bcrypt.hash(nuevaContrasenia, 12)
@@ -316,8 +309,10 @@ export const createSellerController = async (req, res) => {
                 { _id: userId },
                 { $set: userData }
               );
-        
-              return res.status(200).json({ url: result.secure_url, estado: 1 });
+              const userFinded = await userModel.find({_id: userId})
+              
+              return res.status(200).json({userFinded, estado: 1 })
+    
             }
           ).end(req.file.buffer); 
     }else{
@@ -334,7 +329,32 @@ export const createSellerController = async (req, res) => {
                 { $set: userData }
             );
         }
-        return res.sendStatus(200)
+        const userFinded = await userModel.find({_id: userId})
+        
+        return res.status(200).json({userFinded, estado: 1 })
+    }
+}
+
+export const getFavoritesEventsController = async (req, res) => {
+    const {userId} = req.body
+
+    const user = await userModel.findById({_id: userId})
+
+     if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
+    const favoriteEventIds = user.favorites.map(fav => fav.eventId);
+
+    if (favoriteEventIds.length === 0) {
+      return res.status(200).json({ favorites: [] });
+    }
+
+    const favoriteEvents = user.favorites.map((fvE) => fvE.eventId)
+
+    const getFavoritesEvents = await ticketModel.find(
+        {_id: {$in: favoriteEvents  } }
+    )
+
+    return res.status(200).json({favorites: getFavoritesEvents})
 }

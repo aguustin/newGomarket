@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { confirmNewPassRequest } from "../../api/userRequests";
 import { Message } from "../../globalscomp/globalscomp"
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const RecoverPass = () => {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams();
-    const token = searchParams.get('token'); 
+    const { token } = useParams();
     const [message, setMessage] = useState(false)
     const [error, setError] = useState(false)
 
@@ -16,6 +16,7 @@ const RecoverPass = () => {
         const repetirNuevaContrasenia = e.target.elements.repetirNuevaContrasenia.value
 
         if(nuevaContrasenia === repetirNuevaContrasenia){
+            console.log(token, ' ', nuevaContrasenia)
             setError(false)
             const res = await confirmNewPassRequest({token, nuevaContrasenia})
             if(res === 1){
