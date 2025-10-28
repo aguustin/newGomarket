@@ -861,8 +861,8 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
   const ticketDataArray = [];
 
 for (const ticket of filteredTickets) {
- // const quantity = quantities[ticket._id.toString()];
-  const { quantity, free } = quantities[ticket._id.toString()] || {};
+  const quantity = quantities[ticket._id.toString()];
+  const free = typeof quantity === "object" ? quantity?.free === true : false;
 
   for (let i = 0; i < quantity; i++) {
     const payload = {
