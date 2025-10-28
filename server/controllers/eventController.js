@@ -815,7 +815,6 @@ export const mercadoPagoWebhookController = async (req, res) => {
 };
 
 
-
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
   
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
@@ -837,9 +836,9 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
       }
     }));
 
+    
     await ticketModel.bulkWrite(bulkOps);
   }
-
   try {
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
   const event = await ticketModel.findById(prodId);
@@ -862,10 +861,10 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
   const ticketDataArray = [];
 
 for (const ticket of filteredTickets) {
+  //const quantity = quantities[ticket._id.toString()];
   const {quantity, free} = quantities[ticket._id.toString() || {}];
 
   if(!quantity) continue
-
   for (let i = 0; i < quantity; i++) {
     const payload = {
       nombreCompleto,
@@ -876,7 +875,7 @@ for (const ticket of filteredTickets) {
       jti: uuidv4()
     };
 
-    if(free){  //  seguir aca
+     if(free){  //  seguir aca
       await userModel.updateOne(
         {mail: mail},
         {
