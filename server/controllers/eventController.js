@@ -869,18 +869,18 @@ for (const ticket of filteredTickets) {
   const { amount, free } = quantityObj;
   
   if(free && amount > 0){ 
-      await userModel.updateOne(
-        {mail: mail},
-        {
-          $addToSet:{
-            cortesias: {
-              cortesiaId: ticket._id,
-              qty: amount
-            }
-
-          }
-        }
-      )
+    await userModel.updateOne(
+      { mail: mail, "cortesias.cortesiaId": ticket._id },
+      { $inc: { "cortesias.$.qty": amount } }
+    )
+    .then(res => {
+      if (res.matchedCount === 0) {
+        return userModel.updateOne(
+          { mail: mail },
+          { $push: { cortesias: { cortesiaId: ticket._id, qty: amount } } }
+        );
+      }
+    });
   }
   for (let i = 0; i < amount; i++) {
     const payload = {
