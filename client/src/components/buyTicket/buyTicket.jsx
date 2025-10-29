@@ -221,7 +221,7 @@ console.log(quantities)
                                 </select>
                                 <Link className="ml-3! secondary-button-fucsia text-white! rounded-lg p-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
                             </div> }
-                            <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-10">
+                            <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">
                             {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
                                 <div className="flex justify-center mx-auto text-center" key={tck._id}>
                                     <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3 p-1!">
@@ -315,11 +315,11 @@ console.log(quantities)
                 )}
                 </div>
                 <div className="relative h-[120px]">
-                    <p className="text-center text-2xl primary-p">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
+                    <p className="text-center text-xl primary-p">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
-                    <button className="buy-butt secondary-button-fucsia w-[auto] mx-auto flex items-center justify-center bottom-3 mt-5 p-4 rounded-3xl cursor-pointer text-lg" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
+                    <button className="buy-butt secondary-button-fucsia w-[auto] mx-auto flex items-center justify-center bottom-3 mt-5 p-3 rounded-3xl cursor-pointer text-md" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>
         </div>
