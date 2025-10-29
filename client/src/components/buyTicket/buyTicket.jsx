@@ -9,7 +9,7 @@ import UserContext from "../../context/userContext"
 import { useNavigate } from "react-router"
 
 const BuyTicket = () => {
-    const {session} = useContext(UserContext)
+    const {session, setSession} = useContext(UserContext)
     const {prodId, emailHash} = useParams()
     const [prod, setProd] = useState([])
     const [quantities, setQuantities] = useState({});
@@ -134,6 +134,13 @@ console.log(quantities)
                 console.log('entro aca en sin init_point')
                 return;
             }
+          /*  const updateSessionInfo = await getUserProfileRequest(session?.userFinded[0]?._id)
+
+            if (updateSessionInfo.length > 0) {
+                localStorage.setItem('session', JSON.stringify(updateSessionInfo?.data));
+                const sess = JSON.parse(localStorage.getItem('session'))
+                setSession(sess);
+            } LO ULTIMO AGREGADO!!*/ 
             setLoading(false)
             window.location.href = data.init_point;
         } catch (error) {
@@ -273,9 +280,9 @@ console.log(quantities)
                             ))}
                             {eventToRender.cortesiaRRPP.filter((crt) => crt.estado !== 2).map(crt => {
                                  const userCortesia = session?.userFinded?.[0]?.cortesias?.find(
-                                c => c.cortesiaId === crt._id
+                                    c => c.cortesiaId === crt._id
                                 );
-
+                                console.log(userCortesia)
                                 // 2️⃣ Calcular si debe estar deshabilitado
                                 const isDisabled = userCortesia && userCortesia.qty >= crt.limit;
                             
@@ -309,11 +316,11 @@ console.log(quantities)
                                                     >
                                                         +
                                                     </button>
-                                                    {isDisabled && (
-  <p className="text-red-500 text-sm mt-2">
-    Ya alcanzaste el límite de cortesías disponibles
-  </p>
-)}
+                                                    {/*isDisabled && (
+                                                    <p className="text-red-500 text-sm mt-2">
+                                                        Ya alcanzaste el límite de cortesías disponibles
+                                                    </p>
+                                                    )*/}
                                                 </div>
                                                 <div className="buy-tickets-price mr-3">
                                                         <p className="ml-2 text-md primary-p">Cortesias</p>
