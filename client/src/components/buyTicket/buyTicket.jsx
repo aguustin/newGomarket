@@ -87,7 +87,7 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
           ...prev,
           [ticketId]: {
               amount: currentObj.amount + 1,
-              free: free || currentObj.free // conserva si ya era free
+              free: free || currentObj.free 
             }
         };
     }
