@@ -44,41 +44,62 @@ const BuyTicket = () => {
 
 
  const restQuantity = (e, ticketId) => {
-    e.preventDefault();
-    setQuantities(prev => {
-        const current = prev[ticketId] || 0;
-        if (current > 0) {
-            setTotalQuantity(totalQuantity - 1);
-            return {
-                ...prev,
-                [ticketId]: current - 1
-            };
-        }
+  e.preventDefault();
 
-        return prev;
-    });
-};
-    const addQuantity = (e, ticketId, limit, cantidad, free) => {
-        e.preventDefault();
-        setQuantities(prev => {
-            const current = prev[ticketId] || 0;
-            const maxLimit = limit !== undefined ? limit : 20; // Usa 20 si no hay limit (tickets pagos)
-            if (current < maxLimit && current < cantidad) {
-                setTotalQuantity(totalQuantity + 1);
-            
-                return {
-                    ...prev,
-                    [ticketId]: current + 1,
-                    ...(free ? { free: true } : {})
-                };
-            }
+  setQuantities(prev => {
+    const current = prev[ticketId];
 
-            return prev;
-        });
+    // Si no existe ese ticket, no hacemos nada
+    if (!current) return prev;
+
+    const newAmount = current.amount - 1;
+
+    // Si el nuevo amount es 0 o menor → eliminar ese ticket del objeto
+    if (newAmount <= 0) {
+      const updated = { ...prev };
+      delete updated[ticketId];
+      return updated;
+    }
+
+    // Sino, simplemente actualizamos el amount
+    return {
+      ...prev,
+      [ticketId]: {
+        ...current,
+        amount: newAmount
+      }
     };
+  });
+
+  // Actualizamos el total
+  setTotalQuantity(prevTotal => Math.max(prevTotal - 1, 0));
+};
+
+const addQuantity = (e, ticketId, limit, cantidad, free) => {
+  e.preventDefault();
+  setQuantities(prev => {
+    const currentObj = prev[ticketId] || { amount: 0, free: false };
+    const maxLimit = limit !== undefined ? limit : 30;
+
+    if (currentObj.amount < maxLimit && currentObj.amount < cantidad) {
+      setTotalQuantity(prev => prev + 1);
+      return {
+          ...prev,
+          [ticketId]: {
+              amount: currentObj.amount + 1,
+              free: free || currentObj.free // conserva si ya era free
+            }
+        };
+    }
+    
+    return prev;
+});
+};
+
+console.log(quantities)
 
     const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => {
-        const qty = quantities[tck._id] || 0;
+        const qty = quantities[tck._id]?.amount || 0;
         return acc + qty * tck.precio + (qty * tck.precio) / 10;
     }, 0);
 
@@ -89,7 +110,7 @@ const BuyTicket = () => {
         const nombreCompleto = e.target.elements.nombreCompleto.value
         const dni = e.target.elements.dni.value
 
-        const hasTickets = Object.values(quantities).some(value => parseInt(value) > 0);
+        const hasTickets = Object.values(quantities).some(value => parseInt(value?.amount) > 0);
         
         if (!hasTickets) {
             setShowMsg(1)
@@ -225,7 +246,7 @@ const BuyTicket = () => {
                                                     >
                                                         -
                                                     </button>
-                                                    <p className="text-md w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
+                                                    <p className="text-md w-[50px] secondary-p">{quantities[tck._id]?.amount || 0}</p>
                                                     <button
                                                         className=" text-xl bg-orange-500 cursor-pointer rounded-r-xl w-[40px] h-[40px] text-[#111827]!"
                                                         onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.cantidad)}
@@ -234,7 +255,7 @@ const BuyTicket = () => {
                                                     </button>
                                                 </div>
                                                 <div>
-                                                    <p className="buy-ticket-total-p-tck primary-p mx-3">Total: {currencyFormatter.format((quantities[tck._id] || 0) * tck.precio)}</p> 
+                                                    <p className="buy-ticket-total-p-tck primary-p mx-3">Total: {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}</p> 
                                                 </div>
                                             </div>
                                                 : 
@@ -271,7 +292,7 @@ const BuyTicket = () => {
                                                     >
                                                         -
                                                     </button>
-                                                    <p className="text-md w-[50px] secondary-p">{quantities[crt._id] || 0}</p>
+                                                    <p className="text-md w-[50px] secondary-p">{quantities[crt._id]?.amount || 0}</p>
                                                     <button
                                                         className="text-xl bg-orange-500 cursor-pointer rounded-r-xl w-[40px] h-[40px] text-[#111827]!"
                                                         onClick={(e) => addQuantity(e, crt._id, crt.limit, crt.cantidadDeCortesias, true)}

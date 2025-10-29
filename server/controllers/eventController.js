@@ -433,19 +433,23 @@ const obtenerRRPPDesdeHash = (event, emailHash) => {
 
 const procesarVentaGeneral = async (event, quantities, total) => {
   const prodId = event._id;
-  const bulkOps = Object.entries(quantities).map(([ticketId, qty]) => ({
-    updateOne: {
-      filter: { "tickets._id": new mongoose.Types.ObjectId(ticketId) },
-      update: {
-        $inc: {
-          "tickets.$.ventas": qty,
-          "tickets.$.cantidad": -qty,
+
+  const bulkOps = Object.entries(quantities).map(([ticketId, quantityObj]) => {
+    const { amount, free } = quantityObj;
+    return {
+      updateOne: {
+        filter: { "tickets._id": new mongoose.Types.ObjectId(ticketId) },
+        update: {
+          $inc: {
+            "tickets.$.ventas": amount,
+            "tickets.$.cantidad": free ? 0 : -amount, // solo decrementa si no es free
+          },
         },
       },
-    },
-  }));
+    };
+  });
 
-  const ventasTotales = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+  const ventasTotales = Object.values(quantities).reduce((sum, quantityObj) => sum + quantityObj.amount, 0);
 
   await Promise.all([
     ticketModel.updateOne(
@@ -463,38 +467,42 @@ const procesarVentaGeneral = async (event, quantities, total) => {
 
 
 const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
-  console.log('ENTRO A PROCESARVENTARRPP', 'event: ', event, ' ', 'decryptedMail: ', decryptedMail)
   const prodId = event._id;
-  const getPorcentaje = await ticketModel.findById(prodId)
   const rrpp = event.rrpp.find(r => r.mail === decryptedMail);
   if (!rrpp) return;
-  console.log('SE ENCONTRO EL RRPP')
-  const existingTicketIds = rrpp.ventasRRPP.map(v => v.ticketId);
+
+  console.log('SE ENCONTRO EL RRPP');
+
+  const existingTicketIds = rrpp.ventasRRPP.map(v => v.ticketId.toString());
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
+
+  // Filtramos solo tickets pagos
   const tickets = event.tickets.filter(t => ticketIds.some(id => id.equals(t._id)));
 
   const bulkOpsRRPP = [];
   let sumaTotal = 0;
-  let porcentajeTotal = 0;
 
   for (const ticket of tickets) {
-
-    console.log('SE ESTA RECORRIENDO EL TICKET')
     const ticketId = ticket._id.toString();
-    const vendidos = quantities[ticketId];
+    const quantityObj = quantities[ticketId];
+
+    if (!quantityObj || quantityObj.free) continue; // ignorar cortesías
+
+    const vendidos = quantityObj.amount;
+    if (vendidos <= 0) continue;
+
     const total = vendidos * ticket.precio;
     sumaTotal += total;
 
     const nombreCategoria = ticket.nombreTicket;
     const alreadyExists = existingTicketIds.includes(ticketId);
 
-    console.log('TICKETID: ', ticketId, ' ', 'VENDIDOS: ', vendidos, ' ', 'TOTAL: ', total, ' ', 'NOMBRE CATEGORIA: ', nombreCategoria)
+    console.log('TICKETID:', ticketId, 'VENDIDOS:', vendidos, 'TOTAL:', total, 'NOMBRE CATEGORIA:', nombreCategoria);
 
     if (alreadyExists) {
-      console.log('SE ENCONTRO EL TICKET DENTRO DE LAS VENTASRRPP')
       bulkOpsRRPP.push({
         updateOne: {
-          filter: { _id: new ObjectId(eventId) },
+          filter: { _id: prodId },
           update: {
             $inc: {
               "rrpp.$[rrppElem].ventasRRPP.$[ventaElem].vendidos": vendidos,
@@ -506,55 +514,50 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
             { "ventaElem.ticketId": ticketId },
           ],
         },
-    });
+      });
     } else {
-      console.log('SE ESTA AGRENGANDO EL NUEVO TICKET A VENTASRRPP')
-    bulkOpsRRPP.push({
-      updateOne: {
-        filter: {
-          _id: prodId, // el ID del evento
-        },
-        update: {
-          $push: {
-            "rrpp.$[rrppElem].ventasRRPP": {
-              ticketId,
-              nombreCategoria,
-              vendidos,
-              total,
+      bulkOpsRRPP.push({
+        updateOne: {
+          filter: { _id: prodId },
+          update: {
+            $push: {
+              "rrpp.$[rrppElem].ventasRRPP": {
+                ticketId,
+                nombreCategoria,
+                vendidos,
+                total,
+              },
             },
           },
+          arrayFilters: [{ "rrppElem.mail": decryptedMail }],
         },
-        arrayFilters: [{ "rrppElem.mail": decryptedMail }],
-      },
-    });
-
+      });
     }
   }
-  console.log('GET PORCENTAJE: ' ,getPorcentaje)
-  if(getPorcentaje?.porcentajeRRPP > 0){  //ES PROBABLE QUE FALTE [0] O ALGO PARA TOMAR BIEN LA VARIABLE
-    porcentajeTotal = (sumaTotal * getPorcentaje.porcentajeRRPP) / 100
-    console.log('PORCENTAJE TOTAL: ', porcentajeTotal)
-  }else{
-    porcentajeTotal = 0
-  }
 
-  console.log('INCREMENTANDO EL MONTO VENDIDO')
-  // Incrementar montoTotalVendidoRRPP
+  // Calcular porcentaje RRPP
+  const porcentajeRRPP = event.porcentajeRRPP || 0;
+  const porcentajeTotal = (sumaTotal * porcentajeRRPP) / 100;
+
   bulkOpsRRPP.push({
-  updateOne: {
-    filter: { _id: prodId },
-    update: {
-      $inc: {
-        "rrpp.$[rrppElem].montoCorrespondienteRRPP": porcentajeTotal,
-        "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal,
+    updateOne: {
+      filter: { _id: prodId },
+      update: {
+        $inc: {
+          "rrpp.$[rrppElem].montoCorrespondienteRRPP": porcentajeTotal,
+          "rrpp.$[rrppElem].montoTotalVendidoRRPP": sumaTotal,
+        },
       },
+      arrayFilters: [{ "rrppElem.mail": decryptedMail }],
     },
-    arrayFilters: [{ "rrppElem.mail": decryptedMail }],
-  },
-});
+  });
 
-  await ticketModel.bulkWrite(bulkOpsRRPP);
+  if (bulkOpsRRPP.length > 0) {
+    await ticketModel.bulkWrite(bulkOpsRRPP);
+    console.log('RRPP actualizado correctamente.');
+  }
 };
+
 
 
 const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
@@ -818,27 +821,26 @@ export const mercadoPagoWebhookController = async (req, res) => {
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
   
   if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
-    const bulkOps = Object.entries(quantities).filter(([_, quantity]) => quantity > 0).map(([ticketId, quantity]) => ({
-      updateOne: {
-        filter: {
-          "rrpp.mail": mail,
-          "rrpp.ticketsCortesias.ticketIdCortesia": ticketId
-        },
-        update: {
-          $inc: {
-            "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantity
-          }
-        },
-        arrayFilters: [
-          { "rrppElem.mail": mail },
-          { "ticketElem.ticketIdCortesia": ticketId }
-        ]
-      }
-    }));
-
-    
-    await ticketModel.bulkWrite(bulkOps);
+      const bulkOps = Object.entries(quantities).filter(([_, quantityObj]) => quantityObj.amount > 0).map(([ticketId, quantityObj]) => ({
+        updateOne: {
+          filter: {
+            "rrpp.mail": mail,
+            "rrpp.ticketsCortesias.ticketIdCortesia": ticketId
+          },
+          update: {
+            $inc: {
+              "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount
+            }
+          },
+          arrayFilters: [
+            { "rrppElem.mail": mail },
+            { "ticketElem.ticketIdCortesia": ticketId }
+          ]
+        }
+      }));
+      await ticketModel.bulkWrite(bulkOps);
   }
+
   try {
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
   const event = await ticketModel.findById(prodId);
@@ -861,25 +863,26 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
   const ticketDataArray = [];
 
 for (const ticket of filteredTickets) {
-  const quantity = quantities[ticket._id.toString()];
-  const free = typeof quantity === "object" ? quantity?.free === true : false;
-  console.log('free: ', free)
-  if(free){ 
-      console.log('asdasdasdas al freeeeeeeeeeeee')
+  const quantityObj = quantities[ticket._id.toString()];
+
+  if (!quantityObj) continue;
+  const { amount, free } = quantityObj;
+  
+  if(free && amount > 0){ 
       await userModel.updateOne(
         {mail: mail},
         {
           $addToSet:{
             cortesias: {
               cortesiaId: ticket._id,
-              qty: quantity
+              qty: amount
             }
 
           }
         }
       )
   }
-  for (let i = 0; i < quantity; i++) {
+  for (let i = 0; i < amount; i++) {
     const payload = {
       nombreCompleto,
       dni,
