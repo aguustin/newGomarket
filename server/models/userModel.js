@@ -28,9 +28,6 @@ const userSchema = new mongoose.Schema({
     contrasenia: {type: String},
     codigoInternacional:{type: String},
     rol: {type: Number},
-    misTickets:[{
-        categoriaId: {type: String}
-    }],
     cortesias:[{
         cortesiaId:{type:String},
         qty:{type:Number}

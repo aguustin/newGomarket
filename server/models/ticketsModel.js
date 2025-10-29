@@ -10,7 +10,7 @@ const ticketSchema = new mongoose.Schema({
     paisDestino: {type: String},
     tipoMoneda: {type: String},
     tipoEvento: {type: Number},
-    eventoEdad: { type: Number},
+    eventoEdad: {type: Number},
     consumoDeCarta: {type: String},
     nombreEvento:{type: String},
     montoVentas:{type: Number},

@@ -127,6 +127,7 @@ console.log(quantities)
         }
         
         try {
+            setLoading(true)
             const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);
             
             if (!data?.init_point) {
@@ -136,6 +137,7 @@ console.log(quantities)
             setLoading(false)
             window.location.href = data.init_point;
         } catch (error) {
+            setLoading(false)
             console.error("Error en handlePayment:", error);
         }
     }
@@ -269,8 +271,16 @@ console.log(quantities)
                                     </div>
                                 </div>
                             ))}
-                            {eventToRender.cortesiaRRPP.filter((crt) => crt.estado !== 2).map((crt) => (
-                                <div className="flex justify-center mx-auto text-center" key={crt._id}>
+                            {eventToRender.cortesiaRRPP.filter((crt) => crt.estado !== 2).map(crt => {
+                                 const userCortesia = session?.userFinded?.[0]?.cortesias?.find(
+                                c => c.cortesiaId === crt._id
+                                );
+
+                                // 2️⃣ Calcular si debe estar deshabilitado
+                                const isDisabled = userCortesia && userCortesia.qty >= crt.limit;
+                            
+                                return(
+                                <div className={`flex justify-center mx-auto text-center ${isDisabled ? "opacity-50 pointer-events-none" : ""}`} key={crt._id}>
                                     <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3 p-1!">
                                         <div className="flex items-center w-full justify-between">
                                            <div className="flex items-center">
@@ -299,6 +309,11 @@ console.log(quantities)
                                                     >
                                                         +
                                                     </button>
+                                                    {isDisabled && (
+  <p className="text-red-500 text-sm mt-2">
+    Ya alcanzaste el límite de cortesías disponibles
+  </p>
+)}
                                                 </div>
                                                 <div className="buy-tickets-price mr-3">
                                                         <p className="ml-2 text-md primary-p">Cortesias</p>
@@ -308,7 +323,8 @@ console.log(quantities)
                                      
                                     </div>
                                 </div>
-                            ))}
+                            )
+                            })}
                             </div>
                         </>
                    

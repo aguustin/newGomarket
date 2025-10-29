@@ -20,7 +20,10 @@ const Statistics = () => {
     const [currentView, setCurrentView] = useState('general'); // 'general', 'tickets', 'rrpp', 'courtesys'
     const chartRef = useRef(null);
     const chartInstanceRef = useRef(null);
-
+    const currencyFormatter = new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+    });
     useEffect(() => {
         const getProds = async () => {
             try {
@@ -171,12 +174,13 @@ const Statistics = () => {
                                     <p className="mt-3 ml-6 secondary-p flex items-center"><img className="mr-2" src={calendaryPng} alt=""></img>{formatDate(prod.fechaFin)}</p>
                                 </div>
                             </div>
+                            
                             <div className="info-container flex items-center mt-4">
                                 <div className="info p-3 pr-12 border-[1px] rounded-2xl">
                                     <p className="secondary-p">Monto esperado</p>
                                     <p className="text-[#111827] text-2xl">${prod.montoVentas}</p>
                                     <p className="secondary-p">Total vendido</p>
-                                    <p className="text-[#111827] text-2xl">${prod.totalMontoVendido}</p>
+                                    <p className="text-[#111827] text-2xl">${currencyFormatter.format(prod.totalMontoVendido)}</p>
                                 </div>
                                 <div className="info ml-3 p-3 pr-12 rounded-2xl">
                                     <p className="secondary-p">Tickets vendidos</p>

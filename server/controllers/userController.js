@@ -11,7 +11,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgn
 
 export const getUserProfileController = async (req, res) => {
     const {userId} = req.body
-    console.log(userId)
     const getUsers = await userModel.find({_id:userId})
     res.send(getUsers)
 }
