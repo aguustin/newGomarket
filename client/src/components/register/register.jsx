@@ -21,7 +21,6 @@ const Register = () => {
         setLoading(true)
         if(captchaStatus){ 
             
-        }
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg('Las contraseñas no coinciden')
             }else{
@@ -45,6 +44,7 @@ const Register = () => {
                     setShowMsg(res.data.msj)
                 }
             }
+        }
             //hasta aca llega el if
             setLoading(false)
     }

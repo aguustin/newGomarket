@@ -63,8 +63,9 @@ const ticketSchema = new mongoose.Schema({
         cantidadDeCortesias: {type: Number},
         entregados: {type: Number},
         fechaDeCierre: {type: Date},
-        imgTicket: {type: String},
+        visibilidad:{type: String},
         estado: {type: Number},
+        imgTicket: {type: String},
         distribution: {type: Number},
         email:{type: String},
         limit:{type: Number}

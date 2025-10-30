@@ -281,9 +281,7 @@ console.log(quantities)
                             {eventToRender.cortesiaRRPP.filter((crt) => crt.estado !== 2).map(crt => {
                                  const userCortesia = session?.userFinded?.[0]?.cortesias?.find(
                                     c => c.cortesiaId === crt._id
-                                );
-                                console.log(userCortesia)
-                                // 2️⃣ Calcular si debe estar deshabilitado
+                                );               
                                 const isDisabled = userCortesia && userCortesia.qty >= crt.limit;
                             
                                 return(

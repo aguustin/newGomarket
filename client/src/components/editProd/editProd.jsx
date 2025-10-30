@@ -343,7 +343,6 @@ const EditProd = () => {
                                         <input id="imgEventoHtml" className="border-none hidden" type="file" name="imgEvento" ref={fileRef} />
                                     </div>
                                     <div>
-
                                         <button className="relation-buttons secondary-button-fucsia text-white! p-3 rounded-lg translate-x-auto!" onClick={() => setShowOthersProds(!showOthersProds)}>Relacionar eventos</button>
                                         {showOthersProds && <div className="bg-white! mt-2">
                                             {othersProds.filter((othP) => !prod.some((p) => p._id === othP._id)).map((filteredProd) => (
@@ -356,7 +355,6 @@ const EditProd = () => {
                                                                 <p>Inicio: {formatDateB(filteredProd.fechaInicio)}</p>
                                                                 <p>Cierre: {formatDateB(filteredProd.fechaFin)}</p>
                                                             </div>
-
                                                         </div>
                                                         <div className="w-[180px] h-auto">
                                                             <button className="relation-buttons ml-0! w-full bg-orange-500! rounded-lg p-1 mb-3" onClick={(e) => relateEvents(e, p._id, filteredProd._id)}>{p.eventosRelacionados.some(er => String(er.idEvento) === String(filteredProd._id)) ? 'Desvincular eventos' : 'Relacionar evento'}</button>
@@ -521,7 +519,7 @@ const EditProd = () => {
                                     </div>  }
                                     <div className="qty">
                                         <label>Cantidad:</label>
-                                        <input className="w-[120px]" type="number" min="1" placeholder="..." name="cantidad"></input>
+                                        <input className="w-[120px]" type="number" min="1" placeholder="..." name="cantidad" required></input>
                                     </div>
                                     <div className="est ml-3">
                                         <label>Estado:</label><br></br>
@@ -580,15 +578,19 @@ const EditProd = () => {
                             <button className="bg-orange-500! flex items-center pt-1 pb-1 pl-3 pr-3 cursor-pointer rounded-lg primary-p ml-3" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar nuevo ticket +</button>
                         </div>
                         <div className="tickets-edit-prod max-h-[432px]!">
-                            {prod.map((pr) => 
-                            pr.tickets.map((tick) => 
+                           {prod.map((pr) => {
+                            const allTickets = [
+                                ...(pr.tickets?.map(t => ({ ...t, type: 'ticket' })) || []),
+                                ...(pr.cortesiaRRPP?.map(c => ({ ...c, type: 'cortesia' })) || [])
+                            ];
+                            return allTickets.map((tick) => (
                                 <div key={tick._id}>
                                         <div className="flex justify-center mx-auto text-center" key={tick._id}>
                                             <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3 p-1!">
                                                 <img className="ticket-img w-[60px] h-[60px] rounded-xl ml-1" src={tick.imgTicket} alt="" loading="lazy"></img>
                                                 <div className="summary-event-info text-left w-full">
                                                     <p className="primary-p text-sm ml-3" >{tick.nombreTicket}</p>
-                                                    <p className="secondary-p text-sm ml-3 ">${tick.precio}</p>
+                                                    <p className="secondary-p text-sm ml-3 ">{tick.precio >= 0 ? `$${tick.precio}` : 'Cortesia' }</p>
                                                     <p className="secondary-p text-sm ml-3 flex items-center">Cant. :<img className="h-[16px]! w-[16px]! ml-2 mr-1" src={ticketCantPng} alt=""></img>{tick.cantidad}</p>
                                                     <p className="secondary-p text-sm ml-3 flex flex-wrap items-center">Cierre: <img className="h-[16px]! w-[16px]! ml-2 mr-1" src={calendarPng} alt=""></img>{formatDate(tick.fechaDeCierre)}</p>     
                                                 </div>
@@ -627,18 +629,26 @@ const EditProd = () => {
                                             }))
                                             }></input>
                                             </div>
+                                            {Number(ticketData[tick._id]?.estado ?? tick.estado) !== 3 && (
                                             <div>
-                                                <label>Precio:</label><br></br>
-                                                <input  type="number" min="1" name="precio" value={ticketData[tick._id]?.precio ?? tick.precio}  onChange={(e) =>
-                                                setTicketData(prev => ({
-                                                ...prev,
-                                                [tick._id]: {
-                                                ...prev[tick._id],
-                                                precio: e.target.value
+                                                <label>Precio:</label><br />
+                                                <input
+                                                type="number"
+                                                min="1"
+                                                name="precio"
+                                                value={ticketData[tick._id]?.precio ?? tick.precio}
+                                                onChange={(e) =>
+                                                    setTicketData(prev => ({
+                                                    ...prev,
+                                                    [tick._id]: {
+                                                        ...prev[tick._id],
+                                                        precio: e.target.value
+                                                    }
+                                                    }))
                                                 }
-                                            }))
-                                            }></input>
+                                                />
                                             </div>
+                                            )}
                                             <div>
                                                 <label>Cantidad:</label><br></br>
                                                 <input type="number"  min="1" name="cantidad" value={ticketData[tick._id]?.cantidad ?? tick.cantidad}  onChange={(e) =>
@@ -666,7 +676,7 @@ const EditProd = () => {
                                             <div className="mt-3 mb-3">
                                                 <label>Estado:</label><br></br>
                                                 <select className="rounded-lg" name="estado" ref={estadoRef}>
-                                                    <option value={tick.estado}>{tick.estado === 1 && 'Visible' || tick.estado === 2 && 'No visible' || tick.estado === 3 && 'cortesia'}</option>
+                                                    <option value={tick.estado} >{tick.estado === 1 && 'Activo' || tick.estado === 2 && 'No visible' || tick.estado === 3 && 'Cortesia'}</option>
                                                     <option value={1}>Activo</option>
                                                     <option value={2}>No visible</option>
                                                     <option value={3}>Cortesia</option>
@@ -710,10 +720,9 @@ const EditProd = () => {
                                         </>
                                     )}
                                     </div>
-                            )
+                            ))
                       
-                        )}
-
+                        })}
                         </div>
                     </div>
                     <div className="send-back relative flex flex-wrap justify-between items-center">

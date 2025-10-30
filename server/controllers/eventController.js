@@ -344,6 +344,7 @@ const buildUpdateFields = (imgUrl = null) => {
     cantidad,
     fechaDeCierre,
     visibilidad,
+    estado:estadoInt
   };
 
   if (imgUrl) {
@@ -352,6 +353,8 @@ const buildUpdateFields = (imgUrl = null) => {
 
   if (estadoInt !== 3) {  
     commonFields.precio = precio;
+  }else{
+    commonFields.precio = '0';
   }
 
   return commonFields;
@@ -362,7 +365,7 @@ const updateTicket = async (imgUrl = null) => {
   const updateFields = buildUpdateFields(imgUrl);
   const pathPrefix = estadoInt === 3 ? "cortesiaRRPP" : "tickets";
   const cantidadField = estadoInt === 3 ? "cantidadDeCortesias" : "cantidad";
-
+  
   const updateResult = await ticketModel.updateOne(
     { [`${pathPrefix}._id`]: ticketId },
     {
