@@ -20,6 +20,7 @@ const Register = () => {
         e.preventDefault()
         setLoading(true)
         if(captchaStatus){ 
+            
             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                 setShowMsg('Las contraseñas no coinciden')
             }else{
