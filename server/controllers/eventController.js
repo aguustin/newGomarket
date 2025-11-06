@@ -334,10 +334,10 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
     estado
   } = req.body;
   
-let estadoInt = Number(estado)     
+ let estadoInt = Number(estado)     
 
 // Construye campos comunes para actualización
-const buildUpdateFields = (imgUrl = null) => {
+ const buildUpdateFields = (imgUrl = null) => {
   const commonFields = {
     nombreTicket,
     descripcionTicket,

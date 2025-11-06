@@ -19,34 +19,36 @@ const Register = () => {
     const registerUser = async (e) => {
         e.preventDefault()
         setLoading(true)
-        if(captchaStatus){ 
-            
-            if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
-                setShowMsg('Las contraseñas no coinciden')
-            }else{
-                const userData = {
-                    nombreCompleto: e.target.elements.nombreCompleto.value,
-                    mail: e.target.elements.mail.value,
-                    dni: e.target.elements.dni.value,
-                    pais: e.target.elements.pais.value,
-                    contrasenia: e.target.elements.contrasenia.value,
-                    repetirContrasenia: e.target.elements.repetirContrasenia.value
-                }
-                const res = await registerUserRequest(userData)
-                
-                if(res.data.msj === 1){
-                    setTimeout(() => { // Set the timeout
-                        setShowMsgB('Verifica tu correo electronico confirmar tu registro!')
-                        navigate('/login')
-                    }, 3000)
-                }else{
-                    setLoading(false)
-                    setShowMsg(res.data.msj)
-                }
-            }
-        }
-            //hasta aca llega el if
-            setLoading(false)
+         if(captchaStatus){ 
+             if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
+                 setShowMsg('Las contraseñas no coinciden')
+             }else{
+                 const userData = {
+                     nombreCompleto: e.target.elements.nombreCompleto.value,
+                     mail: e.target.elements.mail.value,
+                     dni: e.target.elements.dni.value,
+                     pais: e.target.elements.pais.value,
+                     contrasenia: e.target.elements.contrasenia.value,
+                     repetirContrasenia: e.target.elements.repetirContrasenia.value
+                 }
+                 const res = await registerUserRequest(userData)
+                 
+                 if(res.data.msj === 1){
+                     setTimeout(() => { // Set the timeout
+                         setShowMsg('')
+                         setShowMsgB('Verifica tu correo electronico confirmar tu registro!')
+                         navigate('/login')
+                     }, 3000)
+                 }else{
+                     setLoading(false)
+                     setShowMsg(res.data.msj)
+                 }
+             }
+         }else{
+            setShowMsg('Por favor, marca la casilla antes de continuar')
+         }
+        //hasta aca llega el if
+        setLoading(false)
     }
 
     return(

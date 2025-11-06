@@ -18,6 +18,7 @@ import cancelPng from "../../assets/images/cancel.png"
 import cancelEventPng from '../../assets/images/cancel-event.png'
 import eraserPng from '../../assets/images/eraser.png'
 import megaphoneBPng from '../../assets/images/megaphoneB.png'
+import nextPng from '../../assets/images/next.png'
 
 const EditProd = () => {
     const {session} = useContext(UserContext)
@@ -54,7 +55,8 @@ const EditProd = () => {
     const [othersProds, setOthersProds] = useState([])
     const [showOthersProds, setShowOthersProds] = useState(false)
     const [relacionesLocales, setRelacionesLocales] = useState([]);
-    
+    const [changeButton, setChangeButton] = useState(false)
+
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
@@ -260,10 +262,12 @@ const EditProd = () => {
             setVisibilidad()
             if(res.data.estado > 0){
                 setMessage(2)
+                setChangeButton(true)
                 setLoadingCreateTicket(false)
-                setTimeout(() => {
+                e.target.reset()
+                /*setTimeout(() => {
                     window.location.reload(false)
-                },2000)
+                },2000)*/
             }
     }
 
@@ -497,7 +501,7 @@ const EditProd = () => {
                         )}
                        {showCreateTicketForm &&  <>
                         <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}></div>
-                        <form className="add-tickets-form fixed pl-4 pr-7 pb-4 rounded-xl" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
+                        <form className="add-tickets-form fixed pl-4 pr-7 pb-4 rounded-xl" onSubmit={createEventTickets} encType="multipart/form-data">
                             <div className="mt-4">
                                 <div className="flex items-center">
                                     <h3 className="text-xl">Crear nuevo ticket:</h3>
@@ -557,7 +561,7 @@ const EditProd = () => {
                                 </div>
                             </div>
                             <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-5">
-                                <button className="secondary-button-fucsia text-white! p-2 rounded-xl" onClick={() =>  setShowCreateTicketForm(!showCreateTicketForm)}>Cancelar</button>
+                                <button className="secondary-button-fucsia text-white! p-2 rounded-xl" onClick={() => changeButton ? window.location.reload(false) : setShowCreateTicketForm(!showCreateTicketForm)}>{changeButton ? 'Confirmar tickets' : 'Cancelar'} </button>
                                 <button className="w-[180px]  bg-orange-500! primary-p rounded-xl p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar ticket'}</button>
                             </div>
                                {message == 2 && 
@@ -591,7 +595,7 @@ const EditProd = () => {
                                                 <div className="summary-event-info text-left w-full">
                                                     <p className="primary-p text-sm ml-3" >{tick.nombreTicket}</p>
                                                     <p className="secondary-p text-sm ml-3 ">{tick.precio >= 0 ? `$${tick.precio}` : 'Cortesia' }</p>
-                                                    <p className="secondary-p text-sm ml-3 flex items-center">Cant. :<img className="h-[16px]! w-[16px]! ml-2 mr-1" src={ticketCantPng} alt=""></img>{tick.cantidad}</p>
+                                                    <p className="secondary-p text-sm ml-3 flex items-center">Cant. :<img className="h-[16px]! w-[16px]! ml-2 mr-1" src={ticketCantPng} alt=""></img>{tick.cantidad ?? tick.cantidadDeCortesias}</p>
                                                     <p className="secondary-p text-sm ml-3 flex flex-wrap items-center">Cierre: <img className="h-[16px]! w-[16px]! ml-2 mr-1" src={calendarPng} alt=""></img>{formatDate(tick.fechaDeCierre)}</p>     
                                                 </div>
                                             <button className="editProd-edit-ticket primary-p p-3 cursor-pointer text-md rounded-xl" onClick={(e) => showTicketFunc(e, tick._id)}>Editar</button>
@@ -726,10 +730,10 @@ const EditProd = () => {
                         </div>
                     </div>
                     <div className="send-back relative flex flex-wrap justify-between items-center">
-                        <form className="add-colab-form items-center mt-9 mb-6" onSubmit={(e) => addRRPP(e)}>
+                        <form className="add-colab-form items-center mt-10 mb-6" onSubmit={(e) => addRRPP(e)}>
                             <div className="flex flex-wrap items-center">
-                                <input className="h-[40px]" type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
-                                <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl ml-3" type="submit">Añadir Colaborador</button>
+                                <input className="h-[40px] text-sm" type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
+                                <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl ml-3 text-sm" type="submit">Añadir Colaborador</button>
                             </div>
                              {message == 1 && <p className="text-lg mt-2 text-green-700 text-center">Se añadio el colaborador al evento!</p>}
                              {message == 4 && <p className="text-lg mt-2 text-[#111827]! text-center">El colaborador ya existe!</p>}
@@ -738,7 +742,7 @@ const EditProd = () => {
                             <Link className="flex items-center mx-2 p-2 border-[1px] border-gray-300 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2!" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Enviar Invitaciónes</p></Link>
                             <Link className="flex items-center mx-2 p-2 border-[1px] border-gray-300 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2!" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Crear lista de invitaciónes</p></Link>
                             <button className="flex items-center mx-2 p-2 bg-[#EC4899] rounded-lg text-white! text-sm! min-w-[173px] mt-2!" onClick={() => setCancelAlert(true)}><img src={cancelPng} alt="" loading="lazy"></img><p className="ml-2">Cancelar evento</p></button>
-                            <Link className="flex items-center mx-2 p-2 bg-orange-500 rounded-lg text-white! text-sm! min-w-[172px] mt-2!" to="/productions"><img src={backArrowPng} alt="" loading="lazy"></img><p className="ml-2">Continuar</p></Link>
+                            <Link className="flex items-center mx-2 p-2 bg-orange-500 rounded-lg text-white! text-sm! min-w-[172px] mt-2!" to="/productions"><img src={nextPng} alt="" loading="lazy"></img><p className="ml-2">Continuar</p></Link>
                         </div>
                     </div>
                 </div>
