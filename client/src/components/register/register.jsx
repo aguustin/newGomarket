@@ -54,7 +54,7 @@ const Register = () => {
     return(
         <>
         <div className="form-background pt-1 pb-1">
-             <img className="h-[70px] mx-auto mt-2" src={goOriginalPng} alt=""></img>
+            <Link to="/"><img className="h-[70px] mx-auto mt-2" src={goOriginalPng} alt=""></img></Link>
             <form className="register-form mt-6 mb-10 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => registerUser(e)}>
                 <div className="text-center p-4">
                     <h3 className="text-4xl font-bold">Registrate</h3>

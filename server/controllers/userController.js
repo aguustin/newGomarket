@@ -157,7 +157,7 @@ export const recoverPassController = async (req, res) => {
         subject: `Recuperar contraseña para ${mail} - Go Tickets`,
         html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${process.env.URL_FRONT_DEV}/recover_password/${token}">Recuperar mi contraseña</a>`
     });  
-    res.sendStatus(200)
+    res.status(200).json({ok:true})
 
 }
 

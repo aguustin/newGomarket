@@ -184,12 +184,13 @@ console.log(quantities)
                                 {p?.aviso?.length > 0 && <p className="primary-p mt-1 text-sm bg-pink-400! p-2">{p.aviso}</p> }
                             </div>
                             <div className="flex items-center">
-                                <button className="text-[#111827] flex items-center mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
-                                <button className="text-[#111827] flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
+                                <button className="buy-buttons text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
+                                <button className="buy-buttons text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
+                               {p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" >Video promocional</a> }
                             </div>
                             {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
-                            <img className="w-[70%] mx-auto mt-3 mb-3" src={p.bannerEvento} alt=""></img>
                         </div>
+                            <img className="w-[100%] h-[300px] object-contain mx-auto mt-5" src={p.bannerEvento} alt=""></img>
                     </div>
             )}
             <form className="form-buy-inputs mt-6" onSubmit={(e) => buyTickets(e)}>
@@ -210,6 +211,10 @@ console.log(quantities)
                         <label className="text-MD">DNI:</label><br></br>
                         <input className="w-[100%]" type="number" name="dni" placeholder="..."></input>
                     </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-gray-200 rounded-2xl p-2">
+                        <label className="text-MD">Telefono:</label><br></br>
+                        <input className="w-[100%]" type="number" name="telefono" placeholder="..."></input>
+                    </div>
                 </div>
                 <div>
                     <Timer duration={720000}></Timer>
@@ -217,7 +222,6 @@ console.log(quantities)
                 
             <div> 
               {eventToRender && (
-                    
                         <>
                             <div >
                                 <img className="w-[350px] mx-auto mt-5" src={prod?.[0]?.imagenDescriptiva} alt=""></img>
@@ -335,11 +339,12 @@ console.log(quantities)
                    
                 )}
                 </div>
-                <div className="relative h-[120px]">
+                <div className="relative h-[160px]">
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
                     <p className="text-center text-xl primary-p">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
+                    <p className="text-center text-gray-400! mt-3">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo GoTicket regresará el valor de las entradas No así el cargo por servicio.</p>
                     <button className="buy-butt secondary-button-fucsia w-[auto] mx-auto flex items-center justify-center bottom-3 mt-5 p-3 rounded-3xl cursor-pointer text-md" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>

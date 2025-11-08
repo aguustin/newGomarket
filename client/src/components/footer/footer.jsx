@@ -5,7 +5,7 @@ import gmailPng from '../../assets/redes/gmail.png'
 import { Link } from 'react-router'
 import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
 
-const Footer = ({texto}) => {
+const Footer = () => {
     return(
         <footer className='pt-6 '>
             <div className='flex items-center justify-around w-[200px] text-center mx-auto mb-3'>
