@@ -166,9 +166,16 @@ console.log(quantities)
         <div className="buy-tickets-container relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
             {prod.map((p) => 
             <div className="relative flex flex-wrap justify-center" key={p._id}>
-                        <div>
-                            <h2 className="text-center text-2xl font-bold">COMPRAR TICKETS</h2>
-                            <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
+                        <div className="w-full">
+                            <div className="w-full bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-lg">
+                                <h2 className="text-white! text-center text-2xl font-bold flex items-center justify-center">
+                                    <span className="text-4xl mr-3">🎟️</span>
+                                    COMPRAR TICKETS
+                                </h2>
+                            </div>
+                            <div className="flex justify-center">
+                                <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
+                            </div>
                         </div>
                         <div className="desc-and-map text-left ml-4 mt-9">
                             <h2 className="text-xl text-[#111827] mb-2">Evento: {p.nombreEvento}</h2>
@@ -182,12 +189,12 @@ console.log(quantities)
                             </div>
                             <div className="mb-3">
                                 <p className="secondary-p mt-3 text-sm">{p.descripcionEvento}</p>
-                                {p?.aviso?.length > 0 && <p className="primary-p mt-1 text-sm bg-pink-400! p-2">{p.aviso}</p> }
+                                {p?.aviso?.length > 0 && <p className="primary-p mt-3 text-sm bg-pink-200! p-2">{p.aviso}</p> }
                             </div>
                             <div className="flex flex-wrap items-center">
-                                <button className="buy-buttons w-[auto] text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
-                                <button className="buy-buttons w-[auto] text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
-                               {p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" >Video promocional</a> }
+                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-5 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
+                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-5 py-2 ml-2 rounded-xl  transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
+                               {p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center rounded-xl bg-orange-500! p-2 ml-2  transition-all duration-300 hover:scale-105 shadow-lg" >Video promocional</a> }
                             </div>
                             {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
                         </div>
@@ -204,7 +211,7 @@ console.log(quantities)
                            }
                     </div>
             )}
-            <form className="form-buy-inputs mt-6" onSubmit={(e) => buyTickets(e)}>
+            <form className="form-buy-inputs mt-16" onSubmit={(e) => buyTickets(e)}>
                 <div className="flex flex-wrap items-center justify-center">
                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
                         <label className="text-MD">NOMBRE:</label><br></br>
@@ -227,7 +234,7 @@ console.log(quantities)
                         <input className="w-[100%]" type="number" name="telefono" placeholder="..."></input>
                     </div>
                 </div>
-                <div>
+                <div className="mt-6 p-4 rounded-xl text-center" >
                     <Timer duration={720000}></Timer>
                 </div>
                 
@@ -257,32 +264,32 @@ console.log(quantities)
                                                 <img className="ticket-img w-[60px] h-[60px] ml-1" src={tck.imgTicket} alt="" loading="lazy"></img>
                                                 <div className="buy-tickets-name-date block text-left">
                                                     <p className="primary-p text-md ml-3">{tck.nombreTicket}</p>
-                                                    <p className="secondary-p text-md ml-3">Valido hasta: {formatDate(tck.fechaDeCierre)}</p>
+                                                    <p className="secondary-p valido-hasta text-md ml-3">Valido hasta: {formatDate(tck.fechaDeCierre)}</p>
                                                     <p className="secondary-p text-[13px]! ml-3">{tck.descripcionTicket}</p>
                                                 </div>
                                             </div>
                                                 {tck.cantidad >= 1 ? 
                                             <div className="flex flex-wrap items-center justify-center mx-auto">
-                                                <div className="buy-tickets-price">
+                                                <div className="buy-tickets-price!">
                                                     <p className="ml-2 mr-2 text-sm secondary-p">${tck.precio} c/u</p>
-                                                </div>
-                                                <div className="summary-buttons-buy-tickets flex items-center justify-between w-[150px] border-[1px] border-gray-200 rounded-xl ">
+                                                </div>         
+                                                <div className="summary-buttons-buy-tickets flex items-center justify-between w-[150px] border-[1px] border-gray-200 rounded-xl overflow-hidden shadow-md">
                                                     <button
-                                                        className="bg-transparent text-xl text-[#111827] primary-p cursor-pointer rounded-l-xl w-[40px] h-[40px]  text-[#111827]!"
+                                                        className="w-[40px] h-[40px] bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold transition-colors"
                                                         onClick={(e) => restQuantity(e, tck._id, tck.limit)}
                                                     >
                                                         -
                                                     </button>
                                                     <p className="text-md w-[50px] secondary-p">{quantities[tck._id]?.amount || 0}</p>
                                                     <button
-                                                        className=" text-xl bg-orange-500 cursor-pointer rounded-r-xl w-[40px] h-[40px] text-[#111827]!"
+                                                        className="w-[40px] h-[40px] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600  text-xl transition-all text-[#111827]"
                                                         onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.cantidad)}
                                                     >
                                                         +
                                                     </button>
                                                 </div>
-                                                <div>
-                                                    <p className="buy-ticket-total-p-tck primary-p mx-3">Total: {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}</p> 
+                                                <div className="buy-ticket-total-p-tck">
+                                                    <p className="primary-p mx-3 mt-2 max-w-[540px]:mt-0">Total: {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}</p> 
                                                 </div>
                                             </div>
                                                 : 
@@ -310,7 +317,7 @@ console.log(quantities)
                                             <img className="ticket-img w-[60px] h-[60px] ml-1" src={crt.imgTicket} alt="" loading="lazy"></img>
                                             <div className="block text-left">
                                                 <p className="primary-p text-md ml-3">{crt.nombreTicket} </p>
-                                                <p className="secondary-p text-md ml-3">Valido hasta: {formatDate(crt.fechaDeCierre)}</p>
+                                                <p className="secondary-p valido-hasta text-md ml-3">Valido hasta: {formatDate(crt.fechaDeCierre)}</p>
                                                 <p className="secondary-p text-[13px]! ml-3">{crt.descripcionTicket}</p>
                                             </div>
                                         </div>
@@ -318,16 +325,16 @@ console.log(quantities)
                                                 <div className="buy-tickets-price mr-3">
                                                     <p className="ml-2 text-sm secondary-p">Disponibles: {crt.limit}</p>
                                                 </div>
-                                                <div className="summary-buttons-buy-tickets flex items-center justify-between w-[150px] border-[1px] border-gray-200 rounded-xl ">
+                                                <div className="summary-buttons-buy-tickets flex items-center justify-between w-[150px] border-[1px] border-gray-200 rounded-xl overflow-hidden shadow-md ">
                                                     <button
-                                                        className="bg-transparent text-xl text-[#111827] primary-p cursor-pointer rounded-l-xl w-[40px] h-[40px]  text-[#111827]!"
+                                                        className="w-[40px] h-[40px] bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold transition-colors"
                                                         onClick={(e) => restQuantity(e, crt._id, crt.limit)}
                                                     >
                                                         -
                                                     </button>
                                                     <p className="text-md w-[50px] secondary-p">{quantities[crt._id]?.amount || 0}</p>
                                                     <button
-                                                        className="text-xl bg-orange-500 cursor-pointer rounded-r-xl w-[40px] h-[40px] text-[#111827]!"
+                                                        className="w-[40px] h-[40px] bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-xl transition-all text-[#111827]"
                                                         onClick={(e) => addQuantity(e, crt._id, crt.limit, crt.cantidadDeCortesias, true)}
                                                     >
                                                         +
@@ -359,7 +366,7 @@ console.log(quantities)
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
                     <p className="text-center text-gray-400! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo GoTicket regresará el valor de las entradas No así el cargo por servicio.</p>
-                    <button className="buy-butt secondary-button-fucsia w-[auto] mx-auto flex items-center justify-center bottom-3 mt-5 p-3 rounded-3xl cursor-pointer text-md" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
+                    <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>
         </div>

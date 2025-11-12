@@ -161,6 +161,11 @@ const Statistics = () => {
 
     return (
         <div className="statistics w-[96vw] mx-auto mt-6 mb-6 bg-white rounded-2xl">
+            <div className="w-full bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-lg">
+                    <h2 className="text-white! text-center text-2xl font-bold flex items-center justify-center">
+                        Tus estadisticas
+                    </h2>
+                </div>
             {productions.map((prod) => (
                 <div className="statistics-event-info mx-auto relative flex items-center p-4" key={prod._id}>
                     <div className="flex flex-wrap items-center">
@@ -189,12 +194,12 @@ const Statistics = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="graphics-b bg-[#EC4899]! p-3 ml-6 flex items-center rounded-2xl cursor-pointer">
+                        <div className="graphics-b cont p-3 ml-6 flex items-center rounded-2xl cursor-pointer">
                             <img src={statisticsPng} alt="" className="cursor-pointer"></img>
-                            <select className="ml-3 bg-[#EC4899]! cursor-pointer" name="graph" onChange={(e) => setGraphic(e.target.value)}>
-                                <option value={'bar'}>Grafico de Barras</option>
-                                <option value={'line'}>Grafico Linear</option>
-                                <option value={'pie'}>Grafico Circular</option>
+                            <select className="ml-3 cont cursor-pointer text-white!" name="graph" onChange={(e) => setGraphic(e.target.value)}>
+                                <option className="text-black!" value={'bar'}>Grafico de Barras</option>
+                                <option className="text-black!" value={'line'}>Grafico Linear</option>
+                                <option className="text-black!" value={'pie'}>Grafico Circular</option>
                             </select>
                         </div>
                     </div>

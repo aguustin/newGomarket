@@ -103,27 +103,28 @@ const Staff = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="tickets-edit-prod mt-10 text-center max-h-[432px]! mb-10"> 
+                    <div className="tickets-edit-prod mt-10 text-center max-h-[432px]!"> 
                         {p.cortesiaRRPP.map((tck) => 
-                        <div className="flex justify-center mx-auto text-center" key={tck._id}>
+                        <div className="flex w-[80%] min-w-[330px] justify-center mx-auto text-center" key={tck._id}>
                             <div className="tickets-desc-container tickets-desc-container-staff relative w-full flex items-center justify-between mb-3">
-                                <img className="ticket-img w-[130px] h-[120px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
+                                <img className="ticket-img w-[60px] h-[60px] rounded-xl" src={tck.imgTicket} alt="" loading="lazy"></img>
                                 <div className="summary-event-info w-full flex items-center justify-between">
-                                    <p className="primary-p text-xl ml-3 ">{tck.nombreTicket}</p>
-                                    <p className="secondary-p text-xl ml-3">Total: {tck.cantidadDeCortesias}</p>
-                                    <p className="flex items-center secondary-p text-xl ml-3"><img className="h-[24px]! w-[24px]! mr-2" src={calendarPng} alt=""></img> {formatDate(p.fechaInicio)}</p>
+                                    <p className="primary-p text-md ml-3 ">{tck.nombreTicket}</p>
+                                    <p className="secondary-p text-md ml-3">Total: {tck.cantidadDeCortesias}</p>
+                                    <p className="flex items-center secondary-p text-md ml-3 mr-3"><img className="h-[24px]! w-[24px]! mr-2" src={calendarPng} alt=""></img> {formatDate(p.fechaInicio)}</p>
                                 </div>
-                                <div className="staff-summary-buttons flex items-center">
-                                    <button className="bg-transparent ml-3 mr-3 text-xl primary-p cursor-pointer rounded-[200px] w-[40px] h-[40px] " onClick={(e) => restQuantity(e, tck._id)}>-</button>
-                                    <p className="text-xl w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
-                                    <button className=" ml-3 mr-3 text-xl cursor-pointer rounded-3xl rounded-[200px] w-[40px] h-[40px] text-[#111827]" onClick={(e) => addQuantity(e, tck._id)}>+</button>
+                                <div className="staff-summary-buttons flex items-center flex items-center justify-between w-[150px] border-[1px] border-gray-200 rounded-xl overflow-hidden shadow-md">
+                                    <button className="w-[40px] h-[40px] bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold transition-colors" onClick={(e) => restQuantity(e, tck._id)}>-</button>
+                                    <p className="text-md w-[50px] secondary-p">{quantities[tck._id] || 0}</p>
+                                    <button className="w-[40px] h-[40px] bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-xl transition-all text-[#111827]" onClick={(e) => addQuantity(e, tck._id)}>+</button>
                                 </div>
                             </div>
                         </div>
                         )}
+                        
                     </div>
                   </div>
-                    <button className="primary-button flex  items-center mx-auto right-3 bottom-3 mt-0 p-4  rounded-3xl cursor-pointer" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>Confirmar</button>
+                    <button className="flex w-[150px]! bg-gradient-to-r from-purple-600 to-pink-600 items-center right-3 bottom-3 mt-0 p-2 mx-auto rounded-3xl cursor-pointer" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>Confirmar</button>
                     {showMsg === 0 || showMsg === 1 && <p className="text-xl text-center text-[#111827] mt-6 mb-12">Invitaciónes enviadas!</p> || showMsg === 2 && <p className="text-xl text-center text-[#111827] mt-6 mb-12 text-orange-500!">Falta agregar invitaciónes</p>}
                 </>
                 )}

@@ -58,10 +58,16 @@ const Productions = () => {
 
 return(
         <>
-        <div className=" h-full mb-24">
+        <div className="h-full mb-24">
              <div className={`productions overflow-x-scroll w-screen sm:rounded-lg ${width >= 1110 ? 'pl-2 pr-2 pb-10 pt-9' : 'pl-2 pr-2 pb-10 pt-9'}`}>
-                <table className="min-w-[832px]! w-full text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827]">
-                    <thead className="text-xs uppercase bg-gray-50 bg-orange-500 text-[#111827]">
+                <div className="mr-4 min-w-[832px]:w-[99.2%]! bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-lg">
+                    <h2 className="text-white! text-center text-2xl font-bold flex items-center justify-center">
+                        <span className="text-4xl mr-3">🎟️</span>
+                        Tus producciones
+                    </h2>
+                </div>
+                <table className="w-[99.2%]! min-w-[832px]! text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827] mt-6">
+                    <thead className="text-xs uppercase bg-gradient-to-r from-orange-500 to-red-500 text-white">
                         <tr>
                             <th scope="col" className="px-6 py-3">
                                 Evento
@@ -121,8 +127,8 @@ return(
                                 <button className="text-[#111827]" onClick={() => descargarCompradores(prod._id, prod.nombreEvento)}>Lista compradores</button><br></br>
                                 <button
                                     type="button"
-                                    onClick={() => navigator.clipboard.writeText(`http://localhost:5173/buy_tickets/${prod._id}/${prod.prodMail}`)}
-                                    className="secondary-button-fucsia text-white px-3 py-1 rounded w-[99px]!"
+                                    onClick={() => {navigator.clipboard.writeText(`${import.meta.env.VITE_URL_FRONT}/buy_tickets/${prod._id}/${prod.prodMail}`), alert('LINK COPIADO!')}}
+                                    className="cont text-white px-3 py-1 rounded w-[99px]!"
                                 >
                                     Copiar link
                                 </button>
@@ -132,7 +138,7 @@ return(
                             <tr>
                                 <td colSpan={8} className=" p-1">
                                     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                                        <thead className="text-xs text-[#111827] uppercase bg-orange-500">
+                                        <thead className="text-xs text-white uppercase bg-orange-500">
                                         <tr>
                                             <th className="px-6 py-3">Mail</th>
                                             <th className="px-6 py-3">Monto total vendido</th>
@@ -144,25 +150,25 @@ return(
                                         {prod.rrpp.map((rp) => (
                                             <tr
                                             key={rp._id}
-                                            className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200"
+                                            className="odd:bg-white even:bg-gray-200 border-b dark:border-gray-300 border-b dark:border-gray-700 border-gray-200"
                                             >
-                                            <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            <td className="px-6 py-4 font-medium text-gray-500">
                                                 {rp.mail}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-black">
                                                 {rp.montoTotalVendidoRRPP || 0}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-black!">
                                                 {rp.ventasRRPP.map((ventRP) => (
-                                                <span className="flex" key={ventRP.ticketId}>
-                                                    <p className="mr-1">{ventRP.nombreCategoria}:</p> {ventRP.vendidos || 0}
+                                                <span className="flex text-black!" key={ventRP.ticketId}>
+                                                    <p className="mr-1 text-black!">{ventRP.nombreCategoria}:</p> {ventRP.vendidos || 0}
                                                 </span>
                                                 ))}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-black!">
                                                 {rp.ventasRRPP.map((ventRP) => (
-                                                <span className="flex" key={ventRP.ticketId}>
-                                                    <p className="mr-1">{ventRP.nombreCategoria}:</p> {ventRP.total || 0}
+                                                <span className="flex text-black!" key={ventRP.ticketId}>
+                                                    <p className="mr-1 text-black!">{ventRP.nombreCategoria}:</p> {ventRP.total || 0}
                                                 </span>
                                                 ))}
                                             </td>

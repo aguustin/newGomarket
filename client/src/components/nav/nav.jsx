@@ -47,7 +47,7 @@ const Nav = () => {
                         <Link className="session-b p-4 rounded-3xl text-md primary-p" to="/">Inicio</Link>
                         <Link className="session-b p-4 rounded-3xl text-md primary-p" to="/Contact">Contacto</Link>
                         <Link className="session-b p-4 rounded-3xl  text-md primary-p" to={session?.userFinded?.length > 0 ? "/Create_event" : "/login" } onClick={closeMenu}>Crear evento</Link>
-                        {session?.userFinded?.length > 0 && <Link className="session-b p-4 rounded-3xl text-md primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/login"} onClick={closeMenu}>Mis producciones</Link>}
+                        {session?.userFinded?.length > 0 && <Link className="session-b p-4 rounded-3xl text-md primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/login"} onClick={closeMenu}>Producciones</Link>}
                         {/*session?.userFinded?.length > 0 ? <Link className="text-lg" to="/profile" onClick={closeMenu}>Mi perfil</Link> : ''*/}
                 </div>
                 {session?.userFinded?.length > 0 ? 
@@ -76,7 +76,7 @@ const Nav = () => {
                             <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/Create_event" : "/login"} onClick={() => setShowMobileNav(!showMobileNav)}>Crear evento</Link>
                         </div>
                         {session?.userFinded?.length > 0 && <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300 hover:bg-white! transition-all duration-300">
-                            <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/login"} onClick={() => setShowMobileNav(!showMobileNav)}>Mis producciones</Link> 
+                            <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/login"} onClick={() => setShowMobileNav(!showMobileNav)}>Producciones</Link> 
                         </div>}
                         {session?.userFinded?.length > 0 && <div className="text-center p-4 pl-10 pr-10 border-b-1 border-gray-300 hover:bg-white! transition-all duration-300">
                             <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} onClick={() => setShowMobileNav(!showMobileNav)} className="text-lg primary-p">Ver mi perfil</Link>

@@ -27,7 +27,12 @@ export const Timer = ({duration}) => {
         return `${minutes}:${seconds}`
     }
     
-    return <div className="text-center mt-6 text-orange-600! text-4xl flex items-center justify-center"><img src={timerPng} alt="" className="mr-2"></img>{getFormattedTime(time)}</div>
+    return <div className="text-center text-gray-800">
+      <p className="mb-3">Tiempo restante para la compra:</p>
+      <div className="flex items-center justify-center text-orange-600! text-3xl">
+        <img src={timerPng} alt="" className="mr-2"></img>{getFormattedTime(time)}
+      </div>
+    </div>
 }
 
 export default function FadeInImage({ src, alt, className }) {

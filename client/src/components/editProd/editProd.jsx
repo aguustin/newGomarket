@@ -334,10 +334,16 @@ const EditProd = () => {
     return(
         <>
             <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-white border-[1px] border-gray-100 rounded-2xl p-5">
-                    <div>
+                        <div>
+                            <div className="w-full bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-lg">
+                            <h2 className="text-white! text-center text-2xl font-bold flex items-center justify-center">
+                                
+                                Editar evento
+                            </h2>
+                        </div>
                         {prod.map((p) => 
                         <>
-                           <form className="form-edit-event" key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.aviso, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.tipoEvento, p.provincia,p.localidad, p.direccion, p.lugarEvento, p.bannerEvento, p.imagenDescriptiva) }} encType="multipart/form-data">
+                           <form className="form-edit-event mt-6" key={p._id} onSubmit={(e) => {e.preventDefault(); updateEvent(e, p._id, p.imgEvento, p.nombreEvento, p.descripcionEvento, p.aviso, p.eventoEdad, /*p.categorias,*/ p.artistas, p.montoVentas, p.fechaInicio, p.fechaFin, p.tipoEvento, p.provincia,p.localidad, p.direccion, p.lugarEvento, p.bannerEvento, p.imagenDescriptiva) }} encType="multipart/form-data">
                                  <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center">
                                     <div className="">
                                         <h2 className="text-2xl">Editar evento</h2>
@@ -352,7 +358,7 @@ const EditProd = () => {
                                         <input id="imgEventoHtml" className="border-none hidden" type="file" name="imgEvento" ref={fileRef} onChange={handleFileChange}/>
                                     </div>
                                     <div>
-                                        <button className="relation-buttons secondary-button-fucsia text-white! p-3 rounded-lg translate-x-auto!" onClick={() => setShowOthersProds(!showOthersProds)}>Relacionar eventos</button>
+                                        <button className="relation-buttons bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white! p-3 rounded-lg translate-x-auto!" onClick={() => setShowOthersProds(!showOthersProds)}>Relacionar eventos</button>
                                         {showOthersProds && <div className="bg-white! mt-2">
                                             {othersProds.filter((othP) => !prod.some((p) => p._id === othP._id)).map((filteredProd) => (
                                                 <div className="bg-[#f4f4f4] border-b-1 border-gray-300 p-2" key={filteredProd._id}>
@@ -420,12 +426,12 @@ const EditProd = () => {
                                     <div className="relative p-3">
                                         <div>
                                             <label>Fecha y hora de inicio:</label><br></br> 
-                                            <input className="bg-gradient-to-r from-purple-500 to-pink-500 text-white!" type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaInicio ??  p.fechaInicio)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
+                                            <input className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white!" type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaInicio ??  p.fechaInicio)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaInicio')}></input>
                                             {dateMessage == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
                                         </div>
                                         <div>
                                             <label>Fecha y hora de fin:</label><br></br>
-                                            <input className="bg-gradient-to-r from-purple-500 to-pink-500 text-white!" type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaFin ??  p.fechaFin)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
+                                            <input className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 to-pink-500 text-white!" type="datetime-local" value={formatearFechaParaInput(eventosEditados[p._id]?.fechaFin ??  p.fechaFin)} onChange={(e) => handleChangeEvento(e, p._id, 'fechaFin')}></input>
                                             {dateMessage == 2 && <p className="text-red-600!">La fecha de fin no puede ser menor a la fecha de inicio</p>}
                                         </div>
                                          <div className="prov-localidad flex items-center">
@@ -495,7 +501,7 @@ const EditProd = () => {
                             </div>
                         </div>}
                                         </div>
-                                         <button className="secondary-button-fucsia absolute right-3 bottom-[-60px] rounded-2xl p-3 text-md text-white!" type="submit">{loading ? <LoadingButton/> : <div className="flex items-center"><img src={updatePng} alt=""></img><p className="ml-3">Actualizar evento</p></div>}</button>
+                                         <button className="absolute bg-gradient-to-r from-purple-600 to-pink-600 right-3 bottom-[-60px] rounded-2xl p-3 text-md text-white!" type="submit">{loading ? <LoadingButton/> : <div className="flex items-center"><img src={updatePng} alt=""></img><p className="ml-3">Actualizar evento</p></div>}</button>
                                     </div>
                                 </div>
                             </form>
@@ -566,8 +572,8 @@ const EditProd = () => {
                                 </div>
                             </div>
                             <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-5">
-                                <button className="secondary-button-fucsia text-white! p-2 rounded-xl" onClick={() => changeButton ? window.location.reload(false) : setShowCreateTicketForm(!showCreateTicketForm)}>{changeButton ? 'Confirmar tickets' : 'Cancelar'} </button>
-                                <button className="w-[180px]  bg-orange-500! primary-p rounded-xl p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar ticket'}</button>
+                                <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white! p-2 rounded-xl" onClick={() => changeButton ? window.location.reload(false) : setShowCreateTicketForm(!showCreateTicketForm)}>{changeButton ? 'Confirmar tickets' : 'Cancelar'} </button>
+                                <button className="w-[180px]  bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl p-2" type="submit">{loadingCreateTicket ? <LoadingButton/> : 'Agregar ticket'}</button>
                             </div>
                                {message == 2 && 
                                 <div className="flex items-center">
@@ -584,7 +590,7 @@ const EditProd = () => {
                     <div className="edit-tickets-container mt-10">
                         <div className="add-ticket flex items-center mb-3">
                             <h2 className="text-xl underline">Tickets</h2>
-                            <button className="bg-orange-500! flex items-center pt-1 pb-1 pl-3 pr-3 cursor-pointer rounded-lg primary-p ml-3" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar nuevo ticket +</button>
+                            <button className="flex items-center pt-1 pb-1 pl-3 pr-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white cursor-pointer rounded-lg ml-3" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar nuevo ticket +</button>
                         </div>
                         <div className="tickets-edit-prod max-h-[432px]!">
                            {prod.map((pr) => {
@@ -723,7 +729,7 @@ const EditProd = () => {
                                             </div> */}
                                             <div className="flex items-center justify-between">
                                                 <button className="secondary-button-fucsia mt-5 p-3 w-[100px] rounded-lg" onClick={() =>  setOpenTicketId(null)}>Cancelar</button>
-                                                <button className="bg-orange-500! mt-5 p-3 w-[100px] rounded-lg cursor-pointer" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.cantidad, tick.limit, tick.fechaDeCierre, tick.visibilidad)}>{ticketLoading ? <LoadingButton/> : 'Editar'}</button>
+                                                <button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white mt-5 p-3 w-[100px] rounded-lg cursor-pointer" onClick={(e) => editEventTicket(e, tick._id, tick.imgTicket, tick.nombreTicket, tick.descripcionTicket, tick.precio, tick.cantidad, tick.limit, tick.fechaDeCierre, tick.visibilidad)}>{ticketLoading ? <LoadingButton/> : 'Editar'}</button>
                                             </div>
                                         </div>
                                         </>
@@ -738,7 +744,7 @@ const EditProd = () => {
                         <form className="add-colab-form items-center mt-10 mb-6" onSubmit={(e) => addRRPP(e)}>
                             <div className="flex flex-wrap items-center">
                                 <input className="h-[40px] text-sm" type="email" placeholder="añade un colaborador" minLength="8" maxLength="60" name="rrppMail" required></input>
-                                <button className="bg-orange-500! flex items-center p-2 cursor-pointer rounded-xl ml-3 text-sm" type="submit">Añadir Colaborador</button>
+                                <button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white flex items-center p-2 cursor-pointer rounded-xl ml-3 text-sm" type="submit">Añadir Colaborador</button>
                             </div>
                              {message == 1 && <p className="text-lg mt-2 text-green-700 text-center">Se añadio el colaborador al evento!</p>}
                              {message == 4 && <p className="text-lg mt-2 text-[#111827]! text-center">El colaborador ya existe!</p>}
@@ -747,7 +753,7 @@ const EditProd = () => {
                             <Link className="flex items-center mx-2 p-2 border-[1px] border-gray-300 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2!" to={`/editar_evento/staff/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Enviar Invitaciónes</p></Link>
                             <Link className="flex items-center mx-2 p-2 border-[1px] border-gray-300 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2!" to={`/cortesies/${prod[0]?._id}`}><img src={qrCodePng} alt="" loading="lazy"></img><p className="ml-2">Crear lista de invitaciónes</p></Link>
                             <button className="flex items-center mx-2 p-2 bg-[#EC4899] rounded-lg text-white! text-sm! min-w-[173px] mt-2!" onClick={() => setCancelAlert(true)}><img src={cancelPng} alt="" loading="lazy"></img><p className="ml-2">Cancelar evento</p></button>
-                            <Link className="flex items-center mx-2 p-2 bg-orange-500 rounded-lg text-white! text-sm! min-w-[172px] mt-2!" to="/productions"><img src={nextPng} alt="" loading="lazy"></img><p className="ml-2">Continuar</p></Link>
+                            <Link className="flex items-center mx-2 p-2 bg-gradient-to-r from-purple-600 to-pink-600  text-white rounded-lg text-white! text-sm! min-w-[172px] mt-2!" to="/productions"><img src={nextPng} alt="" loading="lazy"></img><p className="ml-2">Continuar</p></Link>
                         </div>
                     </div>
                 </div>
