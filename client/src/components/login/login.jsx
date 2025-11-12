@@ -29,6 +29,7 @@ const Login = () => {
         setLoading(true)
         
         if(captchaStatus){ 
+        }
             const userData = {
                 mail: e.target.elements.mail.value,
                 contrasenia: e.target.elements.contrasenia.value
@@ -52,9 +53,9 @@ const Login = () => {
                     setShowMsg('')
                 }, 3000)
             }
-        }else{
+        /*else{
             setShowMsg('Por favor, marca la casilla antes de continuar')
-        }
+        }*/
         setLoading(false)
     }
     
