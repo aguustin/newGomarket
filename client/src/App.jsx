@@ -16,7 +16,7 @@ import RRPPEvents from './components/rrppEvents/rrppEvents'
 import Statistics from './components/statistics/statistics'
 import Contact from './components/contact/contact'
 import RecoverPass from './components/recoverPass/recoverPass'
-import {BrowserRouter, Routes, Route, useLocation} from 'react-router'
+import {BrowserRouter, Routes, Route, useLocation, matchPath} from 'react-router'
 import { UserContextProvider } from './context/userContext'
 import Cortesies from './components/cortesies/cortesies'
 import NewCortesie from './components/newCortesie/newCortesie'
@@ -29,8 +29,10 @@ import ProfileCards from './components/seeProfile/seeProfile'
 
 function AppRoutes() {
   const location = useLocation();
-  const hideNavOnPaths = ['/login', '/register', '/recover_password'];
-  const shouldHideNav = hideNavOnPaths.includes(location.pathname);
+  const hideNavOnPaths = ['/login', '/register', '/recover_password', '/recover_password/:token'];
+  const shouldHideNav = hideNavOnPaths.some(path =>
+  matchPath({ path, end: true }, location.pathname)
+);
 
   return (
     <>

@@ -74,8 +74,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background-color: #e0e0e0;
   transition: background-color .5s;
 }
+
+.iniciar-session, .event-desc:hover h3{
+  background: linear-gradient(135deg, #6a5cff 0%, #b14ee3 50%, #ff3c84 100%);
+  -webkit-background-clip: text;   /* Para navegadores WebKit */
+  -webkit-text-fill-color: transparent; /* Hace el texto transparente para mostrar el fondo */
+  background-clip: text; /* Soporte adicional en algunos navegadores */
+  color: transparent; /* fallback */
+  font-weight: 700;
+}
 /*------------------------------------------------------- REGISTER FORM --------------------------------------------*/
-.form-background, .cont{
+.form-background, .cont, .buy-buttons{
   background: linear-gradient(135deg, #6a5cff 0%, #b14ee3 50%, #ff3c84 100%);
 }
 
@@ -141,13 +150,24 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   transition: all .5s;
 } 
 .categories button:hover{
-  background-color: #f97316;
+  color: #111827;
   transform: translateY(-3px);
   transition: all .5s;
 }
+
 /*---------------------------------------------------------------- BUY TICKET ------------------------------------------------------------------------------*/
 .buy-ticket input{
   width: 280px !important;
+}
+
+.buy-buttons{
+  color: inherit;        /* usa el color del texto del contenedor */
+  text-decoration: none; /* quita el subrayado */
+}
+
+.buy-buttons:hover{
+  color: inherit;        /* evita que cambie de color al pasar el mouse */
+  text-decoration: none; /* mantiene sin subrayado */
 }
 
 /* ------------------------------------------------------------ CREATE EVENT ---------------------------------------------------------------------------*/
@@ -985,6 +1005,11 @@ border: 1px solid #e0e0e0;
   .edit-prod-bottom-buttons button, a{
     width: 100%;
     margin: 0;
+  }
+
+  .buy-buttons{
+    margin: auto;
+    margin-top: 10px;
   }
 }
 

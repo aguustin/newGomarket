@@ -75,7 +75,7 @@ export const getEventToBuyRequest = (prodId) => axios.get(`${import.meta.env.VIT
 
 //export const buyTicketsRequest = (quantities, total, totalQuantity, mail, nombreEvento) => axios.post(`${import.meta.env.URL}/buy`, {quantities, total, totalQuantity, mail, nombreEvento})
 
-export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni) => { 
+export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono) => { 
   try {
     const response = await axios.post(`${import.meta.env.VITE_URL}/buy`, {
       prodId,
@@ -86,7 +86,8 @@ export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, 
       total, 
       emailHash, 
       nombreCompleto,
-      dni
+      dni,
+      telefono
     });
 
     return response.data;

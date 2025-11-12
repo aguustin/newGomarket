@@ -49,6 +49,10 @@ const CreateEventForm = () => {
 
     const createEvent = async (e) => {
             e.preventDefault()
+            if(!imageFile){
+                alert("Por favor, carga una imagen de la portada del evento antes de continuar.");
+                return;
+            }
             setLoading(true)
             const currentDateTime = new Date()
             const startDateToDate = new Date(startDate)
@@ -109,7 +113,7 @@ const CreateEventForm = () => {
                 }
                 setShowEventInfo(false)
             }
-            
+            setLoading(false)
     }
 
     const createEventTickets = async (e) => { //agregar estado a los tickets
@@ -175,7 +179,7 @@ const CreateEventForm = () => {
       setPreviewImage(imageUrl);
       setImageFile(file);
     }
-  };
+};
 
   const handleBannerChange = (e) => {
     const file = e.target.files?.[0];
@@ -220,8 +224,8 @@ const CreateEventForm = () => {
                     <img className="object-cover rounded-2xl mx-auto mt-3" src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
                     <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
                     <div className="portal-evento bg-orange-500 p-3 text-center rounded-2xl">
-                        <label htmlFor="fileUpload" className="text-[#111827]">Portada del evento</label>
-                        <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
+                        <label htmlFor="fileUpload" className="text-[#111827]!">Cargar portada</label>
+                        <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange}  required/>
                     </div>
                    {/* <button onClick={() => window.navigator.clipboard.writeText()}></button> */}
                 </div>
@@ -381,7 +385,7 @@ const CreateEventForm = () => {
                             <img className="object-cover rounded-2xl mx-auto mt-3" src={previewBanner} alt="" loading="lazy"></img>
                             <div className="portal-evento text-center rounded-2xl">
                                 <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Banner del evento</label>
-                                <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
+                                <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleBannerChange} />
                             </div>
                         </div> }
                         {previewDescriptive && 
@@ -389,7 +393,7 @@ const CreateEventForm = () => {
                             <img className="object-cover rounded-2xl mx-auto mt-3" src={previewDescriptive} alt="" loading="lazy"></img>
                             <div className="portal-evento text-center rounded-2xl">
                                 <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Imagen descriptiva</label>
-                                <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
+                                <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleDescriptiveChange} />
                             </div>
                         </div>}
                     </div>

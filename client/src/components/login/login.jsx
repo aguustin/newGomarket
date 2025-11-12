@@ -29,6 +29,12 @@ const Login = () => {
         setLoading(true)
         
         if(captchaStatus){ 
+<<<<<<< HEAD
+=======
+            setShowMsg('ok')
+        }else{
+            setShowMsg('Por favor, marca la casilla antes de continuar')
+>>>>>>> f2d3b3aa024c5a1bed8310ba68ae9c76b223bdeb
         }
             const userData = {
                 mail: e.target.elements.mail.value,
@@ -53,9 +59,14 @@ const Login = () => {
                     setShowMsg('')
                 }, 3000)
             }
+<<<<<<< HEAD
         /*else{
             setShowMsg('Por favor, marca la casilla antes de continuar')
         }*/
+=======
+
+            //hasta aca el if else
+>>>>>>> f2d3b3aa024c5a1bed8310ba68ae9c76b223bdeb
         setLoading(false)
     }
     
@@ -64,7 +75,8 @@ const Login = () => {
         setLoading(true)
         const mail = e.target.elements.mail.value
         const res = await recoverPassRequest({mail})
-        if(res.data.enviado === 1){
+
+        if(res.data.ok){
             setLoading(false)
             setShowMsg('Se envió un correo electronico a tu email para recuperar tu contraseña')
             setTimeout(() => {
@@ -76,7 +88,7 @@ const Login = () => {
     return(
         <>
         <div className="form-background pt-6 pb-29">
-            <img className="h-[70px] mx-auto mb-5" src={goOriginalPng} alt=""></img>
+            <Link to="/"><img className="h-[70px] mx-auto mb-5" src={goOriginalPng} alt=""></img></Link>
             {recoverPass ?
              <form className="register-form mb-30 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => recoverPassFunc(e)}>
                     <div className="text-center p-4">

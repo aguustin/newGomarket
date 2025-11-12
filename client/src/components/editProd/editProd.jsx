@@ -49,14 +49,13 @@ const EditProd = () => {
     const [localidad, setLocalidad] = useState(null)
     const [cancelAlert, setCancelAlert] = useState(false)
     const [previewBanner, setPreviewBanner] = useState(null)
-    const [imageBanner, setImageBanner] = useState()
     const [previewDescriptive, setPreviewDescriptive] = useState(null)
-    const [imageDescriptive, setImageDescriptive] = useState()
     const [othersProds, setOthersProds] = useState([])
     const [showOthersProds, setShowOthersProds] = useState(false)
     const [relacionesLocales, setRelacionesLocales] = useState([]);
     const [changeButton, setChangeButton] = useState(false)
-
+    const [previewPortada, setPreviewPortada] = useState(null)
+    
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
@@ -104,7 +103,7 @@ const EditProd = () => {
 ) => {
     e.preventDefault();
     setLoading(true);
-
+    console.log('adasdasdasdasdasdasd')
     // Obtenemos los datos editados si existen
     const edited = eventosEditados[eventId] || {};
 
@@ -302,16 +301,22 @@ const EditProd = () => {
             if (file) {
             const imageUrl = URL.createObjectURL(file);
             setPreviewBanner(imageUrl);
-            setImageBanner(file);
             }
         };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            setPreviewPortada(imageUrl);
+        }
+    };
 
   const handleDescriptiveChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
         const imageUrl = URL.createObjectURL(file);
         setPreviewDescriptive(imageUrl);
-        setImageDescriptive(file);
         }
   };
 
@@ -336,7 +341,7 @@ const EditProd = () => {
                                  <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center">
                                     <div className="">
                                         <h2 className="text-2xl">Editar evento</h2>
-                                        <img className="w-[250px] h-[200px] object-cover rounded-lg" src={p.imgEvento} alt="" loading="lazy"></img>
+                                        <img className="w-[250px] h-[200px] object-cover rounded-lg" src={previewPortada ?? p.imgEvento} alt="" loading="lazy"></img>
                                     </div>
                                     <div className="edit-evet-desc text-left ml-4">
                                         <h2 className="text-3xl text-[#111827]">{p.nombreEvento}</h2>
@@ -344,7 +349,7 @@ const EditProd = () => {
                                         <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
                                     <div className="edit-evet-img-upload top-15 right-10">
                                         <label htmlFor="imgEventoHtml" className="flex items-center border-[1px] border-gray-300 text-[#111827] p-3 rounded-2xl"><img className="mr-3" src={uploadPng} alt=""></img>Cargar nueva portada</label><br></br>
-                                        <input id="imgEventoHtml" className="border-none hidden" type="file" name="imgEvento" ref={fileRef} />
+                                        <input id="imgEventoHtml" className="border-none hidden" type="file" name="imgEvento" ref={fileRef} onChange={handleFileChange}/>
                                     </div>
                                     <div>
                                         <button className="relation-buttons secondary-button-fucsia text-white! p-3 rounded-lg translate-x-auto!" onClick={() => setShowOthersProds(!showOthersProds)}>Relacionar eventos</button>
@@ -472,10 +477,10 @@ const EditProd = () => {
                                             <label>Lugar del evento:</label><br></br>
                                             <input type="text" value={eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento} onChange={(e) => handleChangeEvento(e, p._id, 'lugarEvento')} name="lugarEvento"></input>
                                         </div>
-                    <div className="flex flex-wrap items-center p-0">
+                    <div className="flex flex-wrap items-center p-0 justify-center">
                                                        {previewBanner && 
                         <div className="w-[50%] min-w-[180px] bg-white rounded-2xl p-1">
-                            <img className="w-full object-cover h-[160px] rounded-2xl mx-auto mt-3" src={previewBanner} alt="" loading="lazy"></img>
+                            <img className="w-[160px] object-cover h-[160px] rounded-2xl mx-auto mt-3" src={previewBanner} alt="" loading="lazy"></img>
                             <div className="portal-evento text-center rounded-2xl">
                                 <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Banner del evento</label>
                                 <input id="fileUpload" className="hidden" type="file" name="bannerEvento" onChange={handleBannerChange} />
@@ -483,7 +488,7 @@ const EditProd = () => {
                         </div> }
                         {previewDescriptive && 
                         <div className="w-[50%] min-w-[180px] bg-white rounded-2xl p-1">
-                            <img className="w-full object-cover h-[160px] rounded-2xl mx-auto mt-3" src={previewDescriptive} alt="" loading="lazy"></img>
+                            <img className="w-[160px] object-cover h-[160px] rounded-2xl mx-auto mt-3" src={previewDescriptive} alt="" loading="lazy"></img>
                             <div className="portal-evento text-center rounded-2xl">
                                 <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Imagen descriptiva</label>
                                 <input id="fileUpload" className="hidden" type="file" name="imagenDescriptiva" onChange={handleDescriptiveChange} />

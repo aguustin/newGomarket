@@ -165,13 +165,9 @@ console.log(quantities)
         <div className="buy-tickets-container relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
             {prod.map((p) => 
             <div className="relative flex flex-wrap justify-center" key={p._id}>
-                        <div className="w-full">
-                            <div className="w-full bg-gradient-to-r from-purple-600 to-pink-600 p-6">
-                                <h2 className="text-white! text-center text-2xl font-bold">COMPRAR TICKETS</h2>
-                            </div>
-                            <div className="flex justify-center">
-                                <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
-                            </div>
+                        <div>
+                            <h2 className="text-center text-2xl font-bold">COMPRAR TICKETS</h2>
+                            <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
                         </div>
                         <div className="desc-and-map text-left ml-4 mt-9">
                             <h2 className="text-xl text-[#111827] mb-2">Evento: {p.nombreEvento}</h2>
