@@ -19,6 +19,7 @@ const BuyTicket = () => {
     const [showMap, setShowMap] = useState(false)
     const [relates, setRelates] = useState([])
     const [selectedEvent, setSelectedEvent] = useState(null)
+    const [showBanner, setShowBanner] = useState(false)
     const navigate = useNavigate()
 
  useEffect(() => {
@@ -183,14 +184,24 @@ console.log(quantities)
                                 <p className="secondary-p mt-3 text-sm">{p.descripcionEvento}</p>
                                 {p?.aviso?.length > 0 && <p className="primary-p mt-1 text-sm bg-pink-400! p-2">{p.aviso}</p> }
                             </div>
-                            <div className="flex items-center">
-                                <button className="buy-buttons text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
-                                <button className="buy-buttons text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
-                               {p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" >Video promocional</a> }
+                            <div className="flex flex-wrap items-center">
+                                <button className="buy-buttons w-[auto] text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
+                                <button className="buy-buttons w-[auto] text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
+                               {p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center mb-2 rounded-lg bg-orange-500! p-2 ml-2" >Video promocional</a> }
                             </div>
                             {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
                         </div>
-                            <img className="w-[100%] h-[300px] object-contain mx-auto mt-5" src={p.bannerEvento} alt=""></img>
+                           {p.bannerEvento && 
+                           <div className="relative w-[100%] h-[300px] hover:brightness-80 hover:cursor-pointer duration-100 ease-linear group">
+                               <img onClick={() => setShowBanner(true)} className="relative w-[100%] h-[300px] flex-start object-cover mx-auto mt-5" src={p.bannerEvento ?? ''} alt=""></img>
+                              <p onClick={() => setShowBanner(true)}  className="buy-buttons p-3 rounded-lg absolute bottom-3 right-3 cursor-pointer opacity-0 group-hover:opacity-100">Ver banner completo</p>
+                           </div> }
+                           {showBanner &&
+                           <>
+                                <div onClick={() => setShowBanner(false)} className="fixed z-[6] bg-black h-screen  top-[0%] w-screen opacity-[0.5]"></div> 
+                                <img onClick={() => setShowBanner(false)} className="top-40 fixed flex-start object-contain mx-auto mt-5 z-[7]" src={p.bannerEvento ?? ''} alt=""></img>
+                           </>
+                           }
                     </div>
             )}
             <form className="form-buy-inputs mt-6" onSubmit={(e) => buyTickets(e)}>
@@ -226,14 +237,17 @@ console.log(quantities)
                             <div >
                                 <img className="w-[350px] mx-auto mt-5" src={prod?.[0]?.imagenDescriptiva} alt=""></img>
                             </div>
-                           {relates.length > 0  && <div className="max-[750px]:text-center mt-5">
-                                <p className="secondary-p">Filtrar tickets por fecha:</p>
+                           {relates.length > 0  && 
+                           <>
+                           <p className="secondary-p max-[450px]:text-center">Filtrar tickets por fecha:</p>
+                           <div className="max-[780px]:text-center! max-[450px]:justify-center mt-1 flex flex-wrap items-center">
                                 <select className="w-auto mt-1 mb-3 bg-[#f4f4f4] p-3 border border-gray-300 rounded-lg appearance-none" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)}>
                                     <option value=''>Cambiar fecha</option>
                                     {relates.map((rel) => (<option key={rel._id} value={rel._id}>{rel.nombreEvento} - {formatDateB(rel.fechaInicio)}</option>))}
                                 </select>
-                                <Link className="ml-3! secondary-button-fucsia text-white! rounded-lg p-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
-                            </div> }
+                                <Link className="w-[101.5px]! ml-3! secondary-button-fucsia text-white! rounded-lg p-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
+                            </div> 
+                           </> }
                             <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">
                             {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
                                 <div className="flex justify-center mx-auto text-center" key={tck._id}>
@@ -339,12 +353,12 @@ console.log(quantities)
                    
                 )}
                 </div>
-                <div className="relative h-[160px]">
+                <div className="relative h-[auto]">
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
                     <p className="text-center text-xl primary-p">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
-                    <p className="text-center text-gray-400! mt-3">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo GoTicket regresará el valor de las entradas No así el cargo por servicio.</p>
+                    <p className="text-center text-gray-400! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo GoTicket regresará el valor de las entradas No así el cargo por servicio.</p>
                     <button className="buy-butt secondary-button-fucsia w-[auto] mx-auto flex items-center justify-center bottom-3 mt-5 p-3 rounded-3xl cursor-pointer text-md" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>
