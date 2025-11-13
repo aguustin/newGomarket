@@ -1143,7 +1143,9 @@ export const sendQrStaffQrController = async (req, res) => {
             <div style="padding:20px; background-color:#ffffff; color:#111827;">
               <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
               ${findRrPp ? `
-                <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}"></a>
+                <div>
+                  <a style="padding:10px; background-color: orange; color:white; text-decoration:none;" href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}">Crear mi link de pago</a>
+                </div>
                 <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px;"/>
                 <div>
                   <h2 style="font-size:30px;">${findRrPp.nombreEvento}</h2>

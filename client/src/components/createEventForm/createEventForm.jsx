@@ -223,7 +223,7 @@ const CreateEventForm = () => {
                     <b className="text-[#111827] text-xl">Portada del evento</b>
                     <img className="object-cover rounded-2xl mx-auto mt-3" src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
                     <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
-                    <div className="portal-evento bg-orange-500 p-3 text-center rounded-2xl">
+                    <div className="portal-evento bg-gradient-to-r from-orange-500 to-red-500 p-3 text-center rounded-2xl">
                         <label htmlFor="fileUpload" className="text-[#111827]!">Cargar portada</label>
                         <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange}  required/>
                     </div>
@@ -231,8 +231,11 @@ const CreateEventForm = () => {
                 </div>
                  <div className="event-form max-w-[70vw]">
                     <div className="mx-6 mb-3">
-                        <h2 className="text-2xl">Crear nuevo evento:</h2>
-                        <label className="secondary-p">Llena todos los campos para poder publicar tu evento</label>
+                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-2xl overflow-hidden p-4">
+                            <h2 className="text-3xl font-bold text-white!">Crear nuevo evento:</h2>
+                            <label className="text-white!">Llena todos los campos para poder publicar tu evento</label>
+
+                        </div>
                         <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
                     </div>
                <form className="create-event-form relative bg-white text-[#111827]! flex flex-wrap mx-9 rounded-2xl p-5" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
@@ -330,13 +333,13 @@ const CreateEventForm = () => {
                             <div>
                                 <label>Fecha y hora de inicio:</label>
                                 <div>
-                                <input className="bg-gradient-to-r from-purple-500 to-pink-500 text-white!" type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
+                                <input className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-white!" type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
                                 </div>
                             </div>
                             <div>
                                 <label>Fecha y hora de fin:</label>
                                 <div>
-                                    <input className="bg-gradient-to-r from-purple-500 to-pink-500 text-white!" type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
+                                    <input className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white!" type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
                                 </div>
                             </div>
                                 <div>
@@ -403,7 +406,7 @@ const CreateEventForm = () => {
                         <input className="mt-3 ml-2 w-[15px]! min-w-[15px]!" type="checkbox" required></input>
                     </div> 
                 </div>
-                    <button className="absolute right-4 bottom-4 primary-button p-4 rounded-lg max-[760px]:relative max-[760px]:w-full max-[760px]:mt-6 max-[760px]:right-0 max-[760px]:bottom-0" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
+                    <button className="absolute right-4 bottom-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-lg max-[760px]:relative max-[760px]:w-full max-[760px]:mt-6 max-[760px]:right-0 max-[760px]:bottom-0" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
             </form> 
                 </div>   
             </div>

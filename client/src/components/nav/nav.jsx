@@ -4,6 +4,7 @@ import userPng from "../../assets/botones/user.png"
 import editProfilePng from "../../assets/botones/edit-profile.png"
 import exitPng from "../../assets/botones/exit.png"
 import menuPng from "../../assets/images/menu.png"
+import colaborationPng from "../../assets/botones/colaboration.png"
 import { Link, useNavigate } from "react-router"
 import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
 import userImgPng from "../../assets/user.png"
@@ -56,6 +57,7 @@ const Nav = () => {
                         {/*<div className="link-profile flex items-center h-[60px] cursor-pointer"><Link to="/profile"><p className="ml-4 text-lg">Mi perfil</p></Link></div> */}
                         <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827] hover:bg-white! transition-all duration-300"><img className="ml-3" src={userPng} alt="" loading="lazy"></img><p className="ml-4">Ver mi perfil</p></Link>
                         <Link to="/user_info" className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827] hover:bg-white! transition-all duration-300"><img className="ml-3" src={editProfilePng} alt="" loading="lazy"></img><p className="ml-4">Editar perfil</p></Link>
+                        <Link to={`/get_my_rrpp_events/${session?.userFinded?.[0]?.mail}` } onClick={() => setShowMobileNav(!showMobileNav)} className="flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827] hover:bg-white! transition-all duration-300"><img className="ml-3" src={colaborationPng} alt="" loading="lazy"></img><p className="ml-4">Colaboraciones</p></Link>
                         <button onClick={() => logoutFunc()} className=" flex w-full items-center h-[60px] text-lg cursor-pointer text-[#111827] hover:bg-white! transition-all duration-300"><img className="ml-3" src={exitPng} alt="" loading="lazy"></img><p className="ml-4">Salir</p></button>
                 </div>}
             </>
@@ -78,6 +80,9 @@ const Nav = () => {
                         {session?.userFinded?.length > 0 && <div className="text-center p-4 pl-10 pr-10 border-b-2 border-gray-300 hover:bg-white! transition-all duration-300">
                             <Link className="text-lg primary-p" to={session?.userFinded?.length > 0 ? "/productions" : "/login"} onClick={() => setShowMobileNav(!showMobileNav)}>Producciones</Link> 
                         </div>}
+                        {session?.userFinded?.length > 0  && <div className="text-center p-4 pl-10 pr-10 border-b-1 border-gray-300 hover:bg-white! transition-all duration-300">
+                            <Link to={`/get_my_rrpp_events/${session?.userFinded?.[0]?.mail}` } onClick={() => setShowMobileNav(!showMobileNav)} className="text-lg primary-p">Colaboraciones</Link>
+                        </div> }
                         {session?.userFinded?.length > 0 && <div className="text-center p-4 pl-10 pr-10 border-b-1 border-gray-300 hover:bg-white! transition-all duration-300">
                             <Link to={`/see_profile/${session?.userFinded?.[0]?._id}`} onClick={() => setShowMobileNav(!showMobileNav)} className="text-lg primary-p">Ver mi perfil</Link>
                         </div> }

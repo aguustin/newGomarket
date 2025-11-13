@@ -67,7 +67,7 @@ const NewCortesie = () => {
                                 <label htmlFor="excelFileHtml" className="w-full flex items-center border-[1px] border-gray-300 p-2 primary-p rounded-2xl"><img className="mr-2" src={uploadPng} alt=""></img>Subir excel</label>
                                 <input id="excelFileHtml" className="hidden" type="file" name="excelFile" required></input>
                             </div>
-                            <button className="primary-button mt-5 pt-3 pb-3 pl-8 pr-8 rounded-3xl cursor-pointer" type="submit">Confirmar</button>
+                            <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-2xl mt-5 pt-3 pb-3 pl-8 pr-8 cursor-pointer" type="submit">Confirmar</button>
                         </form>
         </div>
         </>
