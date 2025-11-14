@@ -415,6 +415,7 @@ console.log(quantities)
               </button>
             </div>
             ):(
+             
             <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
                 <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
@@ -422,6 +423,9 @@ console.log(quantities)
                 <p className="text-red-700 font-semibold">Agotado</p>
             </div>
             )}
+            {crt.cantidadDeCortesias >= 1 && (<p className="text-green-800 font-medium text-sm mt-2">
+              Cortesia
+            </p>)}
           </div>
         </div>
       </div>
