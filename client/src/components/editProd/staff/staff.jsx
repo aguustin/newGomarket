@@ -24,7 +24,7 @@ const Staff = () => {
             setProducction(res.data)
         }
         obtainUserProd()
-    },[])
+    },[session])
   
       const restQuantity = (e, ticketId) => {
         e.preventDefault()
@@ -165,7 +165,7 @@ const Staff = () => {
                   Cortesías disponibles
                 </h3>
 
-                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                <div className="staff-tickets space-y-4 max-h-[500px] overflow-y-auto pr-2">
                   {p.cortesiaRRPP.map((tck) => (
                     <div 
                       key={tck._id} 
@@ -184,7 +184,7 @@ const Staff = () => {
                           </div>
                           <div>
                             <p className="text-gray-800 text-lg">{tck.nombreTicket}</p>
-                            <p className="text-sm text-gray-500">Tipo de entrada</p>
+                            {/*<p className="text-sm text-gray-500">Tipo de entrada</p>*/}
                           </div>
                         </div>
 
@@ -197,28 +197,37 @@ const Staff = () => {
 
                           <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
                             <img className="h-5 w-5" src={calendarPng} alt="" />
-                            <p className="text-sm text-gray-600 font-medium">{formatDate(p.fechaInicio)}</p>
+                            <p className="text-sm text-gray-600 font-medium">{formatDate(tck.fechaDeCierre)}</p>
                           </div>
                         </div>
 
                         {/* Controles de cantidad */}
-                        <div className="flex items-center space-x-3 bg-white rounded-xl p-1 border-1 border-gray-200 shadow-sm">
-                          <button 
-                            className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg  text-gray-700 transition-all active:scale-95" 
-                            onClick={(e) => restQuantity(e, tck._id)}
-                          >
-                            -
-                          </button>
-                          <div className="w-14 text-center">
-                            <p className="text-md text-gray-800">{quantities[tck._id] || 0}</p>
+                        {tck?.cantidadDeCortesias >= 1 ? (
+                          <div className="flex items-center space-x-3 bg-white rounded-xl p-1 border-1 border-gray-200 shadow-sm">
+                            <button 
+                              className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg  text-gray-700 transition-all active:scale-95" 
+                              onClick={(e) => restQuantity(e, tck._id)}
+                            >
+                              -
+                            </button>
+                            <div className="w-14 text-center">
+                              <p className="text-md text-gray-800">{quantities[tck._id] || 0}</p>
+                            </div>
+                            <button 
+                              className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg  text-white transition-all active:scale-95 shadow-md" 
+                              onClick={(e) => addQuantity(e, tck._id)}
+                            >
+                              +
+                            </button>
                           </div>
-                          <button 
-                            className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg  text-white transition-all active:scale-95 shadow-md" 
-                            onClick={(e) => addQuantity(e, tck._id)}
-                          >
-                            +
-                          </button>
-                        </div>
+                        ) : (
+                           <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
+                              <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
+                              </svg>
+                              <p className="text-red-700 font-semibold">Agotado</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

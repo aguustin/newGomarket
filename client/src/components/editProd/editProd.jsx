@@ -589,7 +589,6 @@ const EditProd = () => {
                     </div>
                     <div className="edit-tickets-container mt-10">
                         <div className="add-ticket flex items-center mb-3">
-                            <h2 className="text-xl underline">Tickets</h2>
                             <button className="flex items-center pt-1 pb-1 pl-3 pr-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white cursor-pointer rounded-lg ml-3" type="button" onClick={() => setShowCreateTicketForm(true)}>Agregar nuevo ticket +</button>
                         </div>
                         <div className="tickets-edit-prod max-h-[432px]!">

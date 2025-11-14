@@ -7,6 +7,7 @@ import mapPng from "../../assets/botones/map.png"
 import copyPng from "../../assets/botones/copy.png"
 import UserContext from "../../context/userContext"
 import { useNavigate } from "react-router"
+import calendarPng from "../../assets/images/calendar.png"
 
 const BuyTicket = () => {
     const {session, setSession} = useContext(UserContext)
@@ -257,104 +258,176 @@ console.log(quantities)
                            </> }
                             <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">
                             {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
-                                <div className="flex justify-center mx-auto text-center" key={tck._id}>
-                                    <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3 p-1!">
-                                        <div className="flex items-center w-full justify-between">
-                                            <div className="flex items-center">
-                                                <img className="ticket-img w-[60px] h-[60px] ml-1" src={tck.imgTicket} alt="" loading="lazy"></img>
-                                                <div className="buy-tickets-name-date block text-left">
-                                                    <p className="primary-p text-md ml-3">{tck.nombreTicket}</p>
-                                                    <p className="secondary-p valido-hasta text-md ml-3">Valido hasta: {formatDate(tck.fechaDeCierre)}</p>
-                                                    <p className="secondary-p text-[13px]! ml-3">{tck.descripcionTicket}</p>
-                                                </div>
-                                            </div>
-                                                {tck.cantidad >= 1 ? 
-                                            <div className="flex flex-wrap items-center justify-center mx-auto">
-                                                <div className="buy-tickets-price!">
-                                                    <p className="ml-2 mr-2 text-sm secondary-p">${tck.precio} c/u</p>
-                                                </div>         
-                                                <div className="summary-buttons-buy-tickets flex items-center justify-between w-[150px] border-[1px] border-gray-200 rounded-xl overflow-hidden shadow-md">
-                                                    <button
-                                                        className="w-[40px] h-[40px] bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold transition-colors"
-                                                        onClick={(e) => restQuantity(e, tck._id, tck.limit)}
-                                                    >
-                                                        -
-                                                    </button>
-                                                    <p className="text-md w-[50px] secondary-p">{quantities[tck._id]?.amount || 0}</p>
-                                                    <button
-                                                        className="w-[40px] h-[40px] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600  text-xl transition-all text-[#111827]"
-                                                        onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.cantidad)}
-                                                    >
-                                                        +
-                                                    </button>
-                                                </div>
-                                                <div className="buy-ticket-total-p-tck">
-                                                    <p className="primary-p mx-3 mt-2 max-w-[540px]:mt-0">Total: {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}</p> 
-                                                </div>
-                                            </div>
-                                                : 
-                                                <div className="flex flex-wrap items-center justify-center mx-auto">
-                                                    <div className="flex items-center justify-between w-[150px]">
-                                                    <p className="text-[#111827] bg-gray-300 p-2 rounded-xl">Agotado</p>
-                                                    </div>
-                                                </div>
-                                                }
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {eventToRender.cortesiaRRPP.filter((crt) => crt.estado !== 2).map(crt => {
-                                 const userCortesia = session?.userFinded?.[0]?.cortesias?.find(
-                                    c => c.cortesiaId === crt._id
-                                );               
-                                const isDisabled = userCortesia && userCortesia.qty >= crt.limit;
-                            
-                                return(
-                                <div className={`flex justify-center mx-auto text-center ${isDisabled ? "opacity-50 pointer-events-none" : ""}`} key={crt._id}>
-                                    <div className="tickets-desc-container w-full flex flex-wrap items-center mb-3 p-1!">
-                                        <div className="flex items-center w-full justify-between">
-                                           <div className="flex items-center">
-                                            <img className="ticket-img w-[60px] h-[60px] ml-1" src={crt.imgTicket} alt="" loading="lazy"></img>
-                                            <div className="block text-left">
-                                                <p className="primary-p text-md ml-3">{crt.nombreTicket} </p>
-                                                <p className="secondary-p valido-hasta text-md ml-3">Valido hasta: {formatDate(crt.fechaDeCierre)}</p>
-                                                <p className="secondary-p text-[13px]! ml-3">{crt.descripcionTicket}</p>
-                                            </div>
-                                        </div>
-                                            <div className="flex flex-wrap items-center justify-center mx-auto">
-                                                <div className="buy-tickets-price mr-3">
-                                                    <p className="ml-2 text-sm secondary-p">Disponibles: {crt.limit}</p>
-                                                </div>
-                                                <div className="summary-buttons-buy-tickets flex items-center justify-between w-[150px] border-[1px] border-gray-200 rounded-xl overflow-hidden shadow-md ">
-                                                    <button
-                                                        className="w-[40px] h-[40px] bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold transition-colors"
-                                                        onClick={(e) => restQuantity(e, crt._id, crt.limit)}
-                                                    >
-                                                        -
-                                                    </button>
-                                                    <p className="text-md w-[50px] secondary-p">{quantities[crt._id]?.amount || 0}</p>
-                                                    <button
-                                                        className="w-[40px] h-[40px] bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-xl transition-all text-[#111827]"
-                                                        onClick={(e) => addQuantity(e, crt._id, crt.limit, crt.cantidadDeCortesias, true)}
-                                                    >
-                                                        +
-                                                    </button>
-                                                    {/*isDisabled && (
-                                                    <p className="text-red-500 text-sm mt-2">
-                                                        Ya alcanzaste el límite de cortesías disponibles
-                                                    </p>
-                                                    )*/}
-                                                </div>
-                                                <div className="buy-tickets-price mr-3">
-                                                        <p className="ml-2 text-md primary-p">Cortesias</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                     
-                                    </div>
-                                </div>
-                            )
-                            })}
+    <div key={tck._id} className="flex justify-center mx-auto text-center">
+      <div className="w-full mb-3 p-4 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg transition-all duration-300">
+
+        <div className="flex items-center justify-between flex-wrap gap-4">
+
+          {/* Imagen + nombre + descripción */}
+          <div className="flex items-center space-x-4 min-w-[200px]">
+            <img 
+              className="w-16 h-16 rounded-xl object-cover shadow-md" 
+              src={tck.imgTicket} 
+              alt="Ticket"
+              loading="lazy"
+            />
+
+            <div className="text-left">
+              <p className="text-gray-800 text-md">{tck.nombreTicket}</p>
+              <p className="text-sm text-gray-500">Válido hasta: {formatDate(tck.fechaDeCierre)}</p>
+              <p className="text-xs text-gray-500 max-w-[260px]">{tck.descripcionTicket}</p>
+            </div>
+          </div>
+
+          {/* Precio + fecha */}
+          <div className="flex items-center space-x-6">
+            <div className="text-center">
+              <p className="text-xs text-gray-500 font-medium">Precio</p>
+              <p className="text-sm text-gray-800">${tck.precio} c/u</p>
+            </div>
+
+            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
+              <img className="h-5 w-5" src={calendarPng} alt="" />
+               <p className="text-sm text-gray-600 font-medium">
+                {formatDate(tck.fechaDeCierre)}
+              </p>
+            </div>
+          </div>
+
+          {/* Cantidades */}
+          {tck.cantidad >= 1 ? (
+            <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
+              <button
+                className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95" 
+                onClick={(e) => restQuantity(e, tck._id, tck.limit)}
+              >
+                -
+              </button>
+
+              <div className="w-14 text-center">
+                <p className="text-md text-gray-800">
+                  {quantities[tck._id]?.amount || 0}
+                </p>
+              </div>
+
+              <button
+                className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg text-white transition-all active:scale-95 shadow-md" 
+                onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.cantidad)}
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
+                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
+                </svg>
+                <p className="text-red-700 font-semibold">Agotado</p>
+            </div>
+          )}
+          {tck.cantidad >= 1 && (
+            <p className="text-gray-800 font-medium text-sm mt-2">
+              {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}
+            </p>
+          )}
+
+        </div>
+      </div>
+    </div>
+))}
+                           {eventToRender.cortesiaRRPP
+  .filter((crt) => crt.estado !== 2)
+  .map((crt) => {
+    const userCortesia = session?.userFinded?.[0]?.cortesias?.find(
+      c => c.cortesiaId === crt._id
+    );
+
+    const isDisabled = userCortesia && userCortesia.qty >= crt.limit;
+
+    return (
+      <div
+        key={crt._id}
+        className={`flex justify-center mx-auto text-center ${isDisabled ? "opacity-50 pointer-events-none" : ""}`}
+      >
+        <div className="w-full mb-3 p-5 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg transition-all duration-300">
+
+          <div className="flex items-center justify-between flex-wrap gap-4">
+
+            {/* Imagen + nombre + desc */}
+            <div className="flex items-center space-x-4 min-w-[200px]">
+              <img
+                className="w-16 h-16 rounded-xl object-cover shadow-md"
+                src={crt.imgTicket}
+                alt="Ticket"
+                loading="lazy"
+              />
+
+              <div className="text-left">
+                <p className="text-gray-800 text-md">{crt.nombreTicket}</p>
+                <p className="text-sm text-gray-500">
+                  Válido hasta: {formatDate(crt.fechaDeCierre)}
+                </p>
+                <p className="text-xs text-gray-500 max-w-[260px]">
+                  {crt.descripcionTicket}
+                </p>
+              </div>
+            </div>
+
+            {/* Disponibles + fecha */}
+            <div className="flex items-center space-x-6">
+
+              <div className="text-center">
+                <p className="text-xs text-gray-500 font-medium">Disponibles</p>
+                <p className="text-md text-gray-800">{crt.limit}</p>
+              </div>
+
+              <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
+                <img className="h-5 w-5" src={calendarPng} alt="" />
+                <p className="text-sm text-gray-600 font-medium">
+                  {formatDate(crt.fechaDeCierre)}
+                </p>
+              </div>
+            </div>
+
+            {/* Controles */}
+            {crt.cantidadDeCortesias >= 1 ? (
+            <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
+              <button
+                className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95"
+                onClick={(e) => restQuantity(e, crt._id, crt.limit)}
+              >
+                -
+              </button>
+
+              <div className="w-14 text-center">
+                <p className="text-md text-gray-800">
+                  {quantities[crt._id]?.amount || 0}
+                </p>
+              </div>
+
+              <button
+                className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg text-white transition-all active:scale-95 shadow-md"
+                onClick={(e) =>
+                  addQuantity(e, crt._id, crt.limit, crt.cantidadDeCortesias, true)
+                }
+              >
+                +
+              </button>
+            </div>
+            ):(
+            <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
+                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
+                </svg>
+                <p className="text-red-700 font-semibold">Agotado</p>
+            </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  })}
+
                             </div>
                         </>
                    

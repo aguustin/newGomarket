@@ -29,6 +29,7 @@ select{
 }
 
 body {
+  margin-top: 80px !important;
   font-family: 'Poppins', sans-serif;
   margin: 0;
   display: flex;

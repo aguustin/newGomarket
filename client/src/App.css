@@ -31,6 +31,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   -moz-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
 }
 
+
 .settings, .logout-b{
    box-shadow: 2px 4px 5px 0px rgba(0,0,0,0.75);
   -webkit-box-shadow: 2px 4px 5px 0px rgba(0,0,0,0.75);
@@ -253,12 +254,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 
-.add-tickets-form::-webkit-scrollbar, .tickets-edit-prod::-webkit-scrollbar, .cortesies-desc-container::-webkit-scrollbar{
+.add-tickets-form::-webkit-scrollbar, .tickets-edit-prod::-webkit-scrollbar, .cortesies-desc-container::-webkit-scrollbar, .staff-tickets::-webkit-scrollbar{
   width: 5px;
   background-color: transparent;
 }
 
-.add-tickets-form::-webkit-scrollbar-thumb, .tickets-edit-prod::-webkit-scrollbar-thumb, .cortesies-desc-container::-webkit-scrollbar-thumb{
+.add-tickets-form::-webkit-scrollbar-thumb, .tickets-edit-prod::-webkit-scrollbar-thumb, .cortesies-desc-container::-webkit-scrollbar-thumb, .staff-tickets::-webkit-scrollbar-thumb{
   background-color: #b4b4b4;
 }
 
@@ -522,6 +523,12 @@ border: 1px solid #e0e0e0;
   }
 }
 
+@media screen and (max-width: 1024px) {
+  .footer-columns{
+    margin: 0;
+  }
+}
+
 @media screen and (max-width:1000px) {
   .create-form{
     margin: 0 auto;
@@ -775,6 +782,16 @@ border: 1px solid #e0e0e0;
   text-align: center;
 }
 
+}
+
+@media screen and (max-width:767px) {
+  .footer-container{
+    padding-top: 10px;
+    padding-bottom: 20px;
+  }
+  .footer-columns{
+    display: none;
+  }
 }
 
 @media screen and (max-width:750px) { 
