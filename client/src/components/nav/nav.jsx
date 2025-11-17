@@ -109,7 +109,7 @@ const Nav = () => {
 
                 {/* Dropdown Menu */}
                 {openProfileConf && (
-                  <div className="absolute right-0 top-[70px] w-64 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-fade-in">
+                  <div className="absolute right-6 top-[70px] w-64 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-fade-in">
                     <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3">
                       <p className="text-white font-semibold text-sm truncate">
                         {session?.userFinded[0]?.nombreCompleto}
@@ -187,8 +187,8 @@ const Nav = () => {
       ) : (
         <>
           {/* Mobile Layout */}
-          <Link to="/" className="flex-shrink-0">
-            <img className="w-20 h-auto" src={goPng} alt="Logo" loading="lazy" />
+          <Link to="/" className="flex-shrink-0 w-20!">
+            <img className="w-20! h-auto" src={goPng} alt="Logo" loading="lazy" />
           </Link>
 
           {/* Mobile Menu Button */}

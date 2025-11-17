@@ -7,7 +7,7 @@ import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
 
 const Footer = () => {
  return (
-  <footer className="w-screen! bg-gradient-to-br from-gray-100 to-gray-300 text-white mt-20">
+  <footer className="w-screen! bg-gradient-to-br from-gray-100 to-gray-300 text-white ">
     {/* Main Footer Content */}
     <div className="footer-container mx-auto px-6 py-12">
       {/* Social Media Section */}
@@ -164,10 +164,7 @@ const Footer = () => {
 </Link>
         </div>
         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 sm:py-0">
-          <div className="flex items-start">
-            <svg className="w-6 h-6 text-yellow-400 flex-shrink-0 mr-3 mt-0.5 sm:mt-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+          <div className="flex items-start max-w-[">
             <p className="text-sm text-center text-gray-900 leading-relaxed sm:mt-3">
               <span className="font-semibold text-gray-900">Importante:</span> Go Ticket no se hace responsable de la calidad o satisfacción de los eventos publicados. Go Ticket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los{' '}
               <Link to="/conditions" className="text-purple-400 hover:text-purple-300 underline font-medium transition-colors">
