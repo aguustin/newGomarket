@@ -496,13 +496,13 @@ const EditProd = () => {
                     </div>
                     <div>
                       <button
-                        className="relation-buttons bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white! p-3 rounded-lg translate-x-auto! max-w-[1100px]:mt-0!"
+                        className="relation-buttons bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white! p-3 rounded-lg translate-x-auto!"
                         onClick={() => setShowOthersProds(!showOthersProds)}
                       >
                         Relacionar eventos
                       </button>
                       <button
-                        className="relation-buttons bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white! ml-3 p-3 rounded-lg translate-x-auto! max-w-[1100px]:mt-0!"
+                        className="relation-buttons bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white! ml-3 p-3 rounded-lg translate-x-auto!"
                         onClick={() => setShowSoldOutAdv(!showSoldOutAdv)}
                       >
                         Marcar como Sold out

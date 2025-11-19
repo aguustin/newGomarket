@@ -30,9 +30,6 @@ const Login = () => {
         
         if(captchaStatus){ 
             setShowMsg('ok')
-        }else{
-            setShowMsg('Por favor, marca la casilla antes de continuar')
-        }
             const userData = {
                 mail: e.target.elements.mail.value,
                 contrasenia: e.target.elements.contrasenia.value
@@ -57,6 +54,9 @@ const Login = () => {
                 }, 3000)
             }
             
+        }else{
+            setShowMsg('Por favor, marca la casilla antes de continuar')
+        }
             //hasta aca el if else
         setLoading(false)
     }
