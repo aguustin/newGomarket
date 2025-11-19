@@ -76,6 +76,9 @@ const ticketSchema = new mongoose.Schema({
     rrpp:[{
         nombre: {type: String},
         mail:{type: String},
+        cbu:{type: Number},
+        alias:{type: String},
+        telefono:{type: Number},
         mailEncriptado: {type:String},
         mailHash: {type: String},
         linkDePago: {type:String},

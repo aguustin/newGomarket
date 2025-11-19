@@ -722,6 +722,11 @@ border: 1px solid #e0e0e0;
     padding: 6px;
   }
 
+  .edit-prod-bottom-buttons{
+    margin-top: 40px;
+  }
+
+
   .edit-info-event > div {
     padding: 0px !important;
   }

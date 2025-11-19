@@ -8,12 +8,14 @@ import copyPng from "../../assets/botones/copy.png"
 import UserContext from "../../context/userContext"
 import { useNavigate } from "react-router"
 import calendarPng from "../../assets/images/calendar.png"
+import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
 
 const BuyTicket = () => {
-    const {session, setSession} = useContext(UserContext)
+    const {session} = useContext(UserContext)
     const {prodId, emailHash} = useParams()
     const [prod, setProd] = useState([])
     const [quantities, setQuantities] = useState({});
+    // eslint-disable-next-line no-unused-vars
     const [totalQuantity, setTotalQuantity] = useState(0)
     const [showMsg, setShowMsg] = useState(0)
     const [loading, setLoading] = useState(false)
@@ -102,7 +104,7 @@ console.log(quantities)
 
     const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => {
         const qty = quantities[tck._id]?.amount || 0;
-        return acc + qty * tck.precio + (qty * tck.precio) / 10/*tck?.comisionServicio*/;
+        return acc + qty * tck.precio + (qty * tck.precio) / 13/*tck?.comisionServicio*/;
     }, 0);
 
     const buyTickets = async (e) => {
@@ -258,82 +260,82 @@ console.log(quantities)
                            </> }
                             <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">
                             {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
-    <div key={tck._id} className="flex justify-center mx-auto text-center">
-      <div className="w-full mb-3 p-4 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg transition-all duration-300">
+                            <div key={tck._id} className="flex justify-center mx-auto text-center">
+                              <div className="w-full mb-3 p-4 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg transition-all duration-300">
 
-        <div className="flex items-center justify-between flex-wrap gap-4">
+                                <div className="flex items-center justify-between flex-wrap gap-4">
 
-          {/* Imagen + nombre + descripción */}
-          <div className="flex items-center space-x-4 min-w-[200px]">
-            <img 
-              className="w-16 h-16 rounded-xl object-cover shadow-md" 
-              src={tck.imgTicket} 
-              alt="Ticket"
-              loading="lazy"
-            />
+                                  {/* Imagen + nombre + descripción */}
+                                  <div className="flex items-center space-x-4 min-w-[200px]">
+                                    <img 
+                                      className="w-16 h-16 rounded-xl object-cover shadow-md" 
+                                      src={tck.imgTicket ?? goPng} 
+                                      alt="Ticket"
+                                      loading="lazy"
+                                    />
 
-            <div className="text-left">
-              <p className="text-gray-800 text-md">{tck.nombreTicket}</p>
-              <p className="text-sm text-gray-500">Válido hasta: {formatDate(tck.fechaDeCierre)}</p>
-              <p className="text-xs text-gray-500 max-w-[260px]">{tck.descripcionTicket}</p>
-            </div>
-          </div>
+                                    <div className="text-left">
+                                      <p className="text-gray-800 text-md">{tck.nombreTicket}</p>
+                                      <p className="text-sm text-gray-500">Válido hasta: {formatDate(tck.fechaDeCierre)}</p>
+                                      <p className="text-xs text-gray-500 max-w-[260px]">{tck.descripcionTicket}</p>
+                                    </div>
+                                  </div>
 
-          {/* Precio + fecha */}
-          <div className="flex items-center space-x-6">
-            <div className="text-center">
-              <p className="text-xs text-gray-500 font-medium">Precio</p>
-              <p className="text-sm text-gray-800">${tck.precio} c/u</p>
-            </div>
+                                  {/* Precio + fecha */}
+                                  <div className="flex items-center space-x-6">
+                                    <div className="text-center">
+                                      <p className="text-xs text-gray-500 font-medium">Precio</p>
+                                      <p className="text-sm text-gray-800">${tck.precio} c/u</p>
+                                    </div>
 
-            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
-              <img className="h-5 w-5" src={calendarPng} alt="" />
-               <p className="text-sm text-gray-600 font-medium">
-                {formatDate(tck.fechaDeCierre)}
-              </p>
-            </div>
-          </div>
+                                    <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
+                                      <img className="h-5 w-5" src={calendarPng} alt="" />
+                                      <p className="text-sm text-gray-600 font-medium">
+                                        {formatDate(tck.fechaDeCierre)}
+                                      </p>
+                                    </div>
+                                  </div>
 
-          {/* Cantidades */}
-          {tck.cantidad >= 1 ? (
-            <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
-              <button
-                className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95" 
-                onClick={(e) => restQuantity(e, tck._id, tck.limit)}
-              >
-                -
-              </button>
+                                  {/* Cantidades */}
+                                  {tck.cantidad >= 1 && eventToRender?.soldOut === false ? (
+                                    <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
+                                      <button
+                                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95" 
+                                        onClick={(e) => restQuantity(e, tck._id, tck.limit)}
+                                      >
+                                        -
+                                      </button>
 
-              <div className="w-14 text-center">
-                <p className="text-md text-gray-800">
-                  {quantities[tck._id]?.amount || 0}
-                </p>
-              </div>
+                                      <div className="w-14 text-center">
+                                        <p className="text-md text-gray-800">
+                                          {quantities[tck._id]?.amount || 0}
+                                        </p>
+                                      </div>
 
-              <button
-                className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg text-white transition-all active:scale-95 shadow-md" 
-                onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.cantidad)}
-              >
-                +
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
-                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
-                </svg>
-                <p className="text-red-700 font-semibold">Agotado</p>
-            </div>
-          )}
-          {tck.cantidad >= 1 && (
-            <p className="text-gray-800 font-medium text-sm mt-2">
-              {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}
-            </p>
-          )}
+                                      <button
+                                        className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg text-white transition-all active:scale-95 shadow-md" 
+                                        onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.cantidad)}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
+                                        <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
+                                        </svg>
+                                        <p className="text-red-700 font-semibold">Agotado</p>
+                                    </div>
+                                  )}
+                                  {tck.cantidad >= 1 && eventToRender?.soldOut === false && (
+                                    <p className="text-gray-800 font-medium text-sm mt-2">
+                                      {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}
+                                    </p>
+                                  )}
 
-        </div>
-      </div>
-    </div>
+                                </div>
+                              </div>
+                            </div>
 ))}
                            {eventToRender.cortesiaRRPP
   .filter((crt) => crt.estado !== 2)
@@ -357,7 +359,7 @@ console.log(quantities)
             <div className="flex items-center space-x-4 min-w-[200px]">
               <img
                 className="w-16 h-16 rounded-xl object-cover shadow-md"
-                src={crt.imgTicket}
+                src={crt.imgTicket ?? goPng}
                 alt="Ticket"
                 loading="lazy"
               />
@@ -390,7 +392,7 @@ console.log(quantities)
             </div>
 
             {/* Controles */}
-            {crt.cantidadDeCortesias >= 1 ? (
+            {crt.cantidadDeCortesias >= 1 && eventToRender?.soldOut === false ? (
             <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
               <button
                 className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95"
@@ -423,7 +425,7 @@ console.log(quantities)
                 <p className="text-red-700 font-semibold">Agotado</p>
             </div>
             )}
-            {crt.cantidadDeCortesias >= 1 && (<p className="text-green-800 font-medium text-sm mt-2">
+            {crt.cantidadDeCortesias >= 1 && eventToRender?.soldOut === false && (<p className="text-green-800 font-medium text-sm mt-2">
               Cortesia
             </p>)}
           </div>

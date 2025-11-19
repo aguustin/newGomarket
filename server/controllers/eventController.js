@@ -941,86 +941,98 @@ console.log("QRs generados y enviados.");
 }
 };
 
-export const addRRPPController = async (req, res) => {
- const {prodId, rrppMail, nombreEvento, eventImg} = req.body
-    const rrppExist = await ticketModel.findOne({_id:prodId, 'rrpp.mail': rrppMail})
 
-    if(rrppExist){
-      const inf = await resend.emails.send({
-        from: '"GoTickets" <no-reply@goticketonline.com>',
-        to: [rrppMail],
-        subject: `Ya eres colaborador en: ${nombreEvento}`,
-        html: `
-          <html>
-            <head>
-              <style>
-                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-              </style>
-            </head>
-            <body style="font-family: 'Poppins', sans-serif; padding:10px text-align:center;">
-              <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
-                <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
-              </div>
-              <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
-                  <h3 style="font-size:30px; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-                  <p>Evento: ${nombreEvento} </p>
-                  <img src="${eventImg}"  alt="${nombreEvento}" style="width:230px; height:230px;"/>
-              </div>
-              <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
-                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
-              </footer>
-            </body>
-          </html>
-        `,
-      });
-      console.log(inf)
-      return res.status(200).json({msg:'El colaborador ya existe en este evento'})
-    }else{
-
-    await ticketModel.updateOne(
-      {_id: prodId, 'rrpp.mail': {$ne: rrppMail}},
-      {
-        $addToSet:{
-          rrpp:
-            {
-              mail: rrppMail
-            }
-        }
-      }
-    )
-  
-    await resend.emails.send({
+async function sendColabMail(rrppMail, nombreEvento, eventImg) {
+  return resend.emails.send({
     from: '"GoTickets" <no-reply@goticketonline.com>',
     to: [rrppMail],
     subject: `Ya eres colaborador en: ${nombreEvento}`,
     html: `
-          <html>
-            <head>
-              <style>
-                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-              </style>
-            </head>
-            <body style="font-family: 'Poppins', sans-serif; padding:10px text-align:center;">
-                <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
-                  <h1 style="font-size:30px; color:white; text-align:center; margin:auto;">Go Ticket</h1>
-                </div>
-                <div style="text-align:center; padding-top:20px; padding-bottom:40px; padding-left:15px; padding-right:15px; background-color:#ffffff; color:#111827;">
-                  <h3 style="font-size:4vw; text-align:center; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
-                  <p style="font-size:3vw; margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link ${`${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}`} y crealo!</p>
-                  <p style="font-size:3vw">Evento:</p>
-                  <img src="${eventImg}"  alt="" style="width:230px;height:230px;"/>
-                </div>
-                <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center;">
-                <h2 style="font-size:27px; color:white; text-align:center; margin:auto;">Go Ticket</h2>
-              </footer>
-            </body>
-          </html>
-        `,
+      <html>
+        <head>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+          </style>
+        </head>
+        <body style="font-family: 'Poppins', sans-serif; padding:10px; text-align:center;">
+          <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
+            <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
+          </div>
+
+          <div style="text-align:center; padding:20px 15px; background-color:#ffffff; color:#111827;">
+            <h3 style="font-size:30px; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
+            <p style="margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link 
+              <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}">
+                aquí
+              </a> y créalo!
+            </p>
+            <p>Evento: ${nombreEvento}</p>
+
+            <img src="${eventImg}" alt="${nombreEvento}" style="width:230px; height:230px;"/>
+          </div>
+
+          <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
+            <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
+          </footer>
+        </body>
+      </html>
+    `
+  });
+}
+
+
+export const addRRPPController = async (req, res) => {
+  try {
+    const { prodId, rrppMail, nombreEvento, eventImg } = req.body;
+
+    // 1. Verificar si el RRPP ya existe dentro del evento
+    const rrppExist = await ticketModel.findOne({
+      _id: prodId,
+      'rrpp.mail': rrppMail
     });
-      return res.status(200).json({msg:1})
+
+    // 2. Si ya existe → enviar email y cortar
+    if (rrppExist) {
+      await sendColabMail(rrppMail, nombreEvento, eventImg);
+      return res.status(200).json({ msg: 'El colaborador ya existe en este evento' });
     }
+
+    // 3. Obtener datos del colaborador
+    const colabData = await userModel.findOne({ mail: rrppMail });
+    if (!colabData) {
+      return res.status(404).json({ msg: 'El usuario no existe en la base de datos' });
+    }
+
+    // 4. Agregar datos como RRPP al evento
+    await ticketModel.updateOne(
+      {
+        _id: prodId,
+        'rrpp.mail': { $ne: rrppMail }
+      },
+      {
+        $addToSet: {
+          rrpp: {
+            mail: rrppMail,
+            cbu: colabData.cbu || '',
+            alias: colabData.alias || '',
+            telefono: colabData.telefono || ''
+          }
+        }
+      }
+    );
+
+    // 5. Enviar correo
+    await sendColabMail(rrppMail, nombreEvento, eventImg);
+
+    return res.status(200).json({ msg: 1 });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ msg: 'Error en el servidor', error: err.message });
+  }
 };
+
+
+
 
 export const sendQrStaffQrController = async (req, res) => {
   const { prodId, quantities, mail } = req.body;

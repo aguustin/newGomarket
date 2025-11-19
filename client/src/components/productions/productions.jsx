@@ -267,6 +267,12 @@ return (
                                     <th className="px-6 py-3 text-left text-xs font-bold text-orange-900 uppercase">
                                       Total por Entrada
                                     </th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-orange-900 uppercase">
+                                      alias/cbu
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-orange-900 uppercase">
+                                      Contacto
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -310,6 +316,76 @@ return (
                                             </div>
                                           ))}
                                         </div>
+                                      </td>
+                                      <td className="px-6 py-4">
+                                        <span className="inline-flex items-center text-green-800 px-3 py-1 rounded-full text-sm font-bold hidden!">
+                                          {rp.alias ?? rp.cbu}
+                                        </span>
+                                         {rp.alias || rp.cbu ? 
+                                         <button
+                                            onClick={() => navigator.clipboard.writeText(rp.alias ?? rp.cbu)}
+                                            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 text-sm text-white! p-2 rounded-lg shadow-xl"
+                                          >
+                                            Copiar
+                                          </button> 
+                                          : 
+                                        <svg
+                                          width="32"
+                                          height="32"
+                                          viewBox="0 0 48 48"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="ml-3"
+                                        >
+                                          <defs>
+                                            <linearGradient id="orangeRedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                              <stop offset="0%" stopColor="#f97316" />
+                                              <stop offset="100%" stopColor="#ef4444" />
+                                            </linearGradient>
+                                          </defs>
+                                          <circle cx="24" cy="24" r="20" stroke="url(#orangeRedGradient)" strokeWidth="2" opacity="0.3" />
+                                          <path
+                                            d="M24 16V24M24 28H24.01"
+                                            stroke="url(#orangeRedGradient)"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
+                                      
+                                        </svg>
+                                          }
+                                      </td>
+                                      <td className="px-6 py-4">
+                                        {rp.telefono ? <span className="inline-flex items-center text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                                          {rp.telefono}
+                                        </span>
+                                        : 
+                                        <svg
+                                          width="32"
+                                          height="32"
+                                          viewBox="0 0 48 48"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="ml-3"
+                                        >
+                                          <defs>
+                                            <linearGradient id="orangeRedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                              <stop offset="0%" stopColor="#f97316" />
+                                              <stop offset="100%" stopColor="#ef4444" />
+                                            </linearGradient>
+                                          </defs>
+                                          <circle cx="24" cy="24" r="20" stroke="url(#orangeRedGradient)" strokeWidth="2" opacity="0.3" />
+                                          <path
+                                            d="M24 16V24M24 28H24.01"
+                                            stroke="url(#orangeRedGradient)"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
+                                      
+                                        </svg>
+                                          
+                                        }
                                       </td>
                                     </tr>
                                   ))}
