@@ -35,7 +35,7 @@ export const createEventController = async (req, res) => {
     userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento,
     eventoEdad, nombreEvento, descripcionEvento, aviso, categoriasEventos,
     artistas, montoVentas, porcentajeRRPP, fechaInicio, fechaFin, provincia, localidad,
-    tipoMoneda, direccion, lugarEvento, linkVideo
+    tipoMoneda, direccion, lugarEvento, linkVideo, comisionServicio
   } = req.body;
 
   const eventoEdadPush = (eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' &&
@@ -100,6 +100,7 @@ export const createEventController = async (req, res) => {
       tipoMoneda,
       lugarEvento,
       linkVideo,
+      comisionServicio,
       imgEvento: imgEventoUrl,
       bannerEvento: bannerEventoUrl,
       imagenDescriptiva: imagenDescriptivaUrl,
@@ -1604,4 +1605,20 @@ export const cancelarEventoController = async (req, res) => {
     message: 'Fallo el reembolso',
     fallidos: fallidos.length,
   });
+}
+
+export const soldOutEventController = async (req, res) => {
+  const {prodId, isSoldOut} = req.body
+
+  await ticketModel.updateOne(
+    {_id: prodId},
+    {
+        $set:{
+          soldOut: isSoldOut
+        }
+    }
+  )
+
+  return res.status(200).json({ok: 1})
+
 }

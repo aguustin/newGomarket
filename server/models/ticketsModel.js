@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const ticketSchema = new mongoose.Schema({
+    soldOut: {type: Boolean, default: false},
     identificadorEventos: {type: String},
     userId: {type: String},
     prodMail: {type: String}, 
@@ -42,6 +44,7 @@ const ticketSchema = new mongoose.Schema({
     bannerEvento: {type: String},
     imagenDescriptiva: {type: String},
     linkVideo:{type:String},
+    comisionServicio:{type:Number},
     eventosRelacionados:[{
         idEvento: {type: String},
     }],
@@ -94,7 +97,7 @@ const ticketSchema = new mongoose.Schema({
     totalCortesias: {type: Number},
     totalMontoVendido: {type: Number},
     totalMontoDescuento: {type: Number},
-    montoTotal: {type: Number}
+    montoTotal: {type: Number},
 })
 
 const ticketModel =  mongoose.model('ticketsModel', ticketSchema)

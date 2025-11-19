@@ -120,7 +120,8 @@ export const verifyAccountController = async (req, res) => {
             mail: mail,
             dni: dni,
             pais: pais,
-            contrasenia: encriptContrasenia
+            contrasenia: encriptContrasenia,
+            comisionServicio: 15
     })
 
     return res.redirect('https://www.goticketonline.com/login');

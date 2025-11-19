@@ -102,7 +102,8 @@ const CreateEventForm = () => {
                 formData.append('imgEvento', imageFile)
                 formData.append('bannerEvento', imageBanner)
                 formData.append('imagenDescriptiva', imageDescriptive)
-
+                formData.append('comisionServicio', session?.userFinded?.[0]?.comisionServicio)
+                
                 const res = await createEventRequest(formData)
     
                 if(res.data.estado === 1){

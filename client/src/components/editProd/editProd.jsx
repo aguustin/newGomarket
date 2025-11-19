@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { addRRPPRequest, cancelarEventoRequest, createEventTicketsRequest, getOneProdRequest, getProdsRequest, relateEventsRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
+import { addRRPPRequest, cancelarEventoRequest, createEventTicketsRequest, getOneProdRequest, getProdsRequest, relateEventsRequest, soldOutEventRequest, updateEventRequest, updateTicketsRequest } from "../../api/eventRequests"
 import { useRef } from "react"
 import {Country, State, City} from "country-state-city"
 import { convertirInputADateTimeLocal, formatDate, formatDateB, formatearFechaParaInput, LoadingButton } from "../../globalscomp/globalscomp"
@@ -19,6 +19,7 @@ import cancelEventPng from '../../assets/images/cancel-event.png'
 import eraserPng from '../../assets/images/eraser.png'
 import megaphoneBPng from '../../assets/images/megaphoneB.png'
 import nextPng from '../../assets/images/next.png'
+import warningBPng from '../../assets/warningB.png'
 
 const EditProd = () => {
     const {session} = useContext(UserContext)
@@ -55,7 +56,9 @@ const EditProd = () => {
     const [relacionesLocales, setRelacionesLocales] = useState([]);
     const [changeButton, setChangeButton] = useState(false)
     const [previewPortada, setPreviewPortada] = useState(null)
-    
+    const [showSoldOutAdv, setShowSoldOutAdv] = useState(false)
+    const [isSoldOut, setIsSoldOut] = useState(null)
+
     useEffect(() => {
         const userId = session?.userFinded?.[0]?._id
         const getOneProd = async () => {
@@ -331,6 +334,22 @@ const EditProd = () => {
      return setMessage(7)
   }
 
+  const soldOutFunc = (e) => {
+    setIsSoldOut(e.target.checked)
+  }
+
+  const soldOutEvent = async () => {
+    if(isSoldOut !== null){
+        const res = await soldOutEventRequest({prodId, isSoldOut})
+
+        if(res.data.ok === 1){
+            console.log('Cambiado')
+        }
+    }
+    console.log('no entro')
+  }
+
+
     return(
         <>
             <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-white border-[1px] border-gray-100 rounded-2xl p-5">
@@ -359,6 +378,7 @@ const EditProd = () => {
                                     </div>
                                     <div>
                                         <button className="relation-buttons bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white! p-3 rounded-lg translate-x-auto!" onClick={() => setShowOthersProds(!showOthersProds)}>Relacionar eventos</button>
+                                        <button className="relation-buttons bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white! ml-3 p-3 rounded-lg translate-x-auto!" onClick={() => setShowSoldOutAdv(!showSoldOutAdv)}>Marcar como Sold out</button>
                                         {showOthersProds && <div className="bg-white! mt-2">
                                             {othersProds.filter((othP) => !prod.some((p) => p._id === othP._id)).map((filteredProd) => (
                                                 <div className="bg-[#f4f4f4] border-b-1 border-gray-300 p-2" key={filteredProd._id}>
@@ -381,6 +401,81 @@ const EditProd = () => {
                                             )}    
                                             {message === 6 && <p className="bg-white! text-green-700! mt-2">La operacion se realizo con exito!</p>}
                                         </div>}
+                                        {showSoldOutAdv && 
+                                        <>
+                                         <div className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500" onClick={() => setShowSoldOutAdv(!showSoldOutAdv)}></div>
+                                       <div className="add-tickets-form fixed bg-white rounded-3xl shadow-2xl border-2 border-gray-200 p-8 max-w-md">
+  {/* Header con ícono de warning */}
+  <div className="flex flex-col items-center mb-6">
+    <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+      <img className="w-12 h-12" src={warningBPng} alt="Warning" />
+    </div>
+    <h3 className="text-2xl font-bold text-gray-800 mb-2">Sold Out</h3>
+  </div>
+
+  {/* Mensaje de aviso */}
+  <div className="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-500 rounded-xl p-4 mb-6">
+    <div className="flex items-start">
+      <svg className="w-6 h-6 text-orange-600 flex-shrink-0 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <p className="text-sm text-gray-700 leading-relaxed">
+        <span className="font-semibold text-orange-700">Aviso:</span> Si marcas el evento como Sold Out, la compra de tickets será bloqueada hasta desmarcarlo nuevamente.
+      </p>
+    </div>
+  </div>
+
+  {/* Toggle Switch Mejorado */}
+  <div className="bg-gray-50 rounded-2xl p-6 mb-6">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-3">
+        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <label htmlFor="soldOutHtml" className="text-lg font-bold text-gray-800 cursor-pointer block">
+            Marcar como Sold Out
+          </label>
+          <p className="text-xs text-gray-500">Bloquear venta de entradas</p>
+        </div>
+      </div>
+
+      {/* Custom Toggle Switch */}
+      <label htmlFor="soldOutHtml" className="relative inline-block w-16 h-8 cursor-pointer">
+        <input
+          id="soldOutHtml"
+          type="checkbox"
+          name="soldOut"
+          onChange={soldOutFunc}
+          className="sr-only peer"
+        />
+        <div className="w-16 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-orange-500 peer-checked:to-red-500 transition-all duration-300 shadow-inner"></div>
+        <div className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 peer-checked:translate-x-8"></div>
+      </label>
+    </div>
+  </div>
+
+  {/* Botón de guardar - Sin position: relative con transform */}
+  <button 
+    type="button"
+    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 flex items-center justify-center group"
+    onClick={() => soldOutEvent()}
+  >
+    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    </svg>
+    Guardar cambios
+  </button>
+
+  {/* Información adicional */}
+  <p className="text-center text-xs text-gray-500 mt-9">
+    Los cambios se aplicarán inmediatamente
+  </p>
+</div>
+                                        </>
+                                        }
                                     </div>
                                     </div>
                                  </div>

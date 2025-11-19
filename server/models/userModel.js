@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema({
     codigoInternacional:{type: String},
     rol: {type: Number},
     descuento:{type: Number},
+    comisionServicio:{type:Number},
     cortesias:[{
         cortesiaId:{type:String},
         qty:{type:Number}

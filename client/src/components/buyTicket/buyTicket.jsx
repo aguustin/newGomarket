@@ -102,7 +102,7 @@ console.log(quantities)
 
     const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => {
         const qty = quantities[tck._id]?.amount || 0;
-        return acc + qty * tck.precio + (qty * tck.precio) / 10;
+        return acc + qty * tck.precio + (qty * tck.precio) / 10/*tck?.comisionServicio*/;
     }, 0);
 
     const buyTickets = async (e) => {

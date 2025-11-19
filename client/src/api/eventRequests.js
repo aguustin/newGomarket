@@ -139,3 +139,5 @@ export const relateEventsRequest = async ({prodId, otherId}) => axios.post(`${im
 export const getRelateEventsRequest = async (prodId) => axios.get(`${import.meta.env.VITE_URL}/obtener_eventos_relacionados/${prodId}`, console.log(prodId))
 
 export const cancelarEventoRequest = async ({prodId}) => axios.post(`${import.meta.env.VITE_URL}/cancelar_evento`, {prodId})
+
+export const soldOutEventRequest = async ({prodId, isSoldOut}) => axios.post(`${import.meta.env.VITE_URL}/sold_out`, {prodId, isSoldOut})
