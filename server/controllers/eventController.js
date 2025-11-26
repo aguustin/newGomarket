@@ -704,7 +704,7 @@ export const buyEventTicketsController = async (req, res) => {
               emailHash,
               nombreCompleto,
               dni,
-              telefono
+              telefono:telefono.toString()
         },
     };
 
@@ -806,7 +806,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
           nombreCompleto: nombre_completo,
           email: mail,
           dni:dni,
-          telefono: telefono
+          telefono: parseInt(telefono)
         })
       }
 
