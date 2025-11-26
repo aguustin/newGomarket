@@ -18,6 +18,7 @@ import axios from "axios";
 import { paymentQueue, refundQueue } from "../queues/paymentQueue.js";
 //import { redisClient } from "../lib/redisClient.js"; //DESCOMENTAR PARA PRODUCCION
 import { resend } from "../lib/resendDomain.js";
+import purchaseModel from "../models/purchaseModel.js";
 
 dotenv.config();
 
@@ -655,7 +656,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     // Marcar como procesado en cache
     //await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
 
-    console.log(`Pago ${paymentId} procesado y cacheado.`);
+    return 1
   } catch (error) {
     console.error("Error en handleSuccessfulPayment:", error);
     throw error;
@@ -663,7 +664,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 };
 
 export const buyEventTicketsController = async (req, res) => {
-  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
+  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
   
   if(total <= 0){
     qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
@@ -702,7 +703,8 @@ export const buyEventTicketsController = async (req, res) => {
               total,
               emailHash,
               nombreCompleto,
-              dni
+              dni,
+              telefono
         },
     };
 
@@ -743,8 +745,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       console.error("No payment ID or topic !== 'payment'");
       return res.sendStatus(200);
     }
-    //Todo lo que sigue se procesa en segundo plano
-    //Importante: los errores se capturan, ya que ya respondimos
+    
     try {
       const payment = await mercadopago.payment.findById(paymentId);
       const status = payment.body?.status;
@@ -771,7 +772,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
         total,
         email_hash,
         nombre_completo,
-        dni
+        dni,
+        telefono
       } = payment.body.metadata;
 
       console.log("Metadata del pago:", payment.body.metadata);
@@ -780,10 +782,10 @@ export const mercadoPagoWebhookController = async (req, res) => {
         console.error("Metadata incompleta:", payment.body.metadata);
         return;
       }
-
+      console.log("quantities: " , quantities)
       // Procesamos el pago exitoso
 
-      await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
+      const resHandle = await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -796,6 +798,19 @@ export const mercadoPagoWebhookController = async (req, res) => {
         paymentId
       });
 
+      if(resHandle === 1){
+        console.log('entro en purchase: ')
+
+        await purchaseModel.create({
+          eventId: prod_id,
+          nombreCompleto: nombre_completo,
+          email: mail,
+          dni:dni,
+          telefono: telefono,
+          cantidadEntradas:{type: Number},
+          fechaCompra: {type: Date, default: Date.now()}
+        })
+      }
 
 
       //PAYMENTQUEUE HACE EL PAGO BIEN SIN DUPLICAR EL PAYMENTID PERO SOLO LO VOY A USAR EN PRODUCCION CUANDO ESTE TODO ANDANDO BIEN
