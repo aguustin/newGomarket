@@ -6,7 +6,6 @@ const purchaseSchema = new mongoose.Schema({
     email: {type: String},
     dni:{type: Number},
     telefono: {type: Number},
-    cantidadEntradas:{type: Number},
     fechaCompra: {type: Date, default: Date.now()}
 })
 

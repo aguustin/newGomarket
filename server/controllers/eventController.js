@@ -799,16 +799,14 @@ export const mercadoPagoWebhookController = async (req, res) => {
       });
 
       if(resHandle === 1){
-        console.log('entro en purchase: ')
+        console.log('entro en purchase TELEFONOOOO: ', telefono)
 
         await purchaseModel.create({
           eventId: prod_id,
           nombreCompleto: nombre_completo,
           email: mail,
           dni:dni,
-          telefono: telefono,
-          cantidadEntradas:{type: Number},
-          fechaCompra: {type: Date, default: Date.now()}
+          telefono: telefono
         })
       }
 
