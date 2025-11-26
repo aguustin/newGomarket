@@ -100,7 +100,6 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
 });
 };
 
-console.log(quantities)
 
     const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => {
         const qty = quantities[tck._id]?.amount || 0;
@@ -113,14 +112,15 @@ console.log(quantities)
         const repetirMail = e.target.elements.repetirMail.value
         const nombreCompleto = e.target.elements.nombreCompleto.value
         const dni = e.target.elements.dni.value
+        const telefono = e.target.elements.telefono.value
 
         const hasTickets = Object.values(quantities).some(value => parseInt(value?.amount) > 0);
-        
+        console.log(quantities)
         if (!hasTickets) {
             setShowMsg(1)
-            return; // Detiene la ejecución si todos son <= 0
+            return;
         }
-        if(mail.length <= 0 || repetirMail.length <= 0 || nombreCompleto.length <= 0 || dni.length <= 0){
+        if(mail.length <= 0 || repetirMail.length <= 0 || nombreCompleto.length <= 0 || dni.length <= 0 || telefono.length <= 0){
             setShowMsg(2)
             return;
         }
@@ -132,7 +132,7 @@ console.log(quantities)
         
         try {
             setLoading(true)
-            const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni);
+            const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono);
             
             if (!data?.init_point) {
                 console.log('entro aca en sin init_point')
@@ -217,7 +217,7 @@ console.log(quantities)
             <form className="form-buy-inputs mt-16" onSubmit={(e) => buyTickets(e)}>
                 <div className="flex flex-wrap items-center justify-center">
                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">NOMBRE:</label><br></br>
+                        <label className="text-MD">NOMBRE COMPLETO:</label><br></br>
                         <input className="w-[100%]" type="text" name="nombreCompleto" placeholder="..."></input>
                     </div>
                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
@@ -233,7 +233,7 @@ console.log(quantities)
                         <input className="w-[100%]" type="number" name="dni" placeholder="..."></input>
                     </div>
                     <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">Telefono:</label><br></br>
+                        <label className="text-MD">CONTACTO:</label><br></br>
                         <input className="w-[100%]" type="number" name="telefono" placeholder="..."></input>
                     </div>
                 </div>
@@ -259,7 +259,7 @@ console.log(quantities)
                             </div> 
                            </> }
                             <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">
-                            {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck, i) => (
+                            {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck) => (
                             <div key={tck._id} className="flex justify-center mx-auto text-center">
                               <div className="w-full mb-3 p-4 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg transition-all duration-300">
 
