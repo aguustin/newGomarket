@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import UserContext from "../../context/userContext";
 import { getAllExcelsRequest, sendCortesiesRequest } from "../../api/cortesieRequest";
-import { formatDateB } from "../../globalscomp/globalscomp";
 
 const Cortesies = () => {
     const {session} = useContext(UserContext)
@@ -10,12 +9,13 @@ const Cortesies = () => {
     const [cortesies, setCortesies] = useState([])
 
     useEffect(() => {
-        console.log(prodId, ' ', session?.userFinded?.[0]?._id)
+        
         const getProdCortesiesFunc = async () => {
             const res = await getAllExcelsRequest(session?.userFinded?.[0]?._id, prodId)
             setCortesies(res.data)
         }
         getProdCortesiesFunc()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session])
 
     const handleSendCortesies = async (cortesieId) => {
@@ -65,7 +65,7 @@ const Cortesies = () => {
                                 {cort.excelName}
                             </td>
                             <td className="px-6 py-4">
-                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-xs font-semibold transition-colors mb-2" onClick={(e) => handleSendCortesies(cort._id)}>
+                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-xs font-semibold transition-colors mb-2" onClick={() => handleSendCortesies(cort._id)}>
                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M22 4H2V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V4Z" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                         <path d="M22 4L12 13L2 4" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

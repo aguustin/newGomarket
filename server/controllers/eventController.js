@@ -1424,7 +1424,6 @@ export const paymentSuccessController = async (req, res) => {
     const payment = await mercadopago.payment.findById(paymentId);
 
     if (payment.body.status === 'approved') {
-      // ✅ Confirmar pedido, mostrar gracias, etc.
       res.send('Pago aprobado con éxito');
     } else {
       res.send('Pago no aprobado');
@@ -1646,4 +1645,12 @@ export const soldOutEventController = async (req, res) => {
 
   return res.status(200).json({ok: 1})
 
+}
+
+export const getBuyersController = async (req, res) => {
+  const {prodId} = req.params
+
+  const findEvent = await purchaseModel.find({prodId: prodId})
+
+  res.status(200).json(findEvent)
 }

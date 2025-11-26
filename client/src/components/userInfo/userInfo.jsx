@@ -71,7 +71,6 @@ const UserInfo = () => {
     }
 
 }, [session]);
-console.log(imgProductora)
 
     const handleImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -85,7 +84,6 @@ console.log(imgProductora)
   const createSellerProfile = async (e, tipo) => {
       e.preventDefault()
       if(tipo === 1){
-        console.log(tipo)
         const cbuToNumber = Number(e.target.elements.cbu.value)
         const formData = new FormData()
         formData.append('userId', session?.userFinded?.[0]?._id)

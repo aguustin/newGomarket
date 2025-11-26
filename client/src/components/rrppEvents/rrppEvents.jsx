@@ -1,17 +1,15 @@
 import { useContext, useEffect } from "react"
 import { generateMyRRPPLinkRequest, getRRPPInfoRequest } from "../../api/eventRequests"
 import { useState } from "react"
-import { redirect, useNavigate } from "react-router"
+import { Link} from "react-router"
 import CryptoJS from 'crypto-js';
 import { formatDate } from "../../globalscomp/globalscomp";
 import UserContext from "../../context/userContext";
 import spacePng from "../../assets/space.png"
-import calendarPng from "../../assets/images/calendar.png"
 
 const RRPPEvents = () => {
     const {session} = useContext(UserContext)
     const [rrppEvents, setEvents] = useState([])
-    const nav = useNavigate()
     
     useEffect(() => {
         const getRRPPInfo = async () => {
@@ -20,7 +18,6 @@ const RRPPEvents = () => {
         }
         getRRPPInfo()
     }, [session])
-    console.log(rrppEvents)
     /*const buildUrl = (prodId, mail, imgEvento) => {
         const secretKey = "skulldiver"
         const imgUrl = imgEvento
@@ -36,6 +33,7 @@ const RRPPEvents = () => {
        }
       // getRRPPInfo()
     }
+
     return (
   <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-pink-50 py-12 px-4">
     <div className="max-w-7xl mx-auto">
@@ -49,7 +47,7 @@ const RRPPEvents = () => {
 
       {/* Grid de eventos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {rrppEvents?.map((rpe, i) => {
+        {rrppEvents?.map((rpe) => {
           const rrppCoincidente = rpe.rrpp.find(linkP => linkP.mail === session?.userFinded?.[0]?.mail);
           
           if (rrppCoincidente) {
@@ -146,6 +144,13 @@ const RRPPEvents = () => {
                   >
                     Generar mi link de pago
                   </button>
+
+                  <Link
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:to-pink-500 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center group text-white! hover:text-white!"
+                    to={`${import.meta.env.VITE_URL_FRONT}/get_buyers/${rpe._id}`}
+                  >
+                    Lista de compradores
+                  </Link>
                 </div>
               </div>
             );

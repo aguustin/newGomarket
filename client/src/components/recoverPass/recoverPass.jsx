@@ -16,7 +16,6 @@ const RecoverPass = () => {
         const repetirNuevaContrasenia = e.target.elements.repetirNuevaContrasenia.value
 
         if(nuevaContrasenia === repetirNuevaContrasenia){
-            console.log(token, ' ', nuevaContrasenia)
             setError(false)
             const res = await confirmNewPassRequest({token, nuevaContrasenia})
             if(res === 1){

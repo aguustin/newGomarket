@@ -28,7 +28,7 @@ function UploadExcel() {
           'Content-Type': 'multipart/form-data'
         }
       });
-      console.log('Respuesta del servidor:', res.data);
+
     } catch (error) {
       console.error('Error al subir:', error);
     }

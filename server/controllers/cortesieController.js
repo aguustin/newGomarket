@@ -32,7 +32,7 @@ export const editCortesiesController = async (req, res) => {
 
 export const chargeExcelController = async (req, res) => {
   const {userId, prodId, eventName, excelName, fechaCreacion} = req.body
-  console.log(Date.now())
+
   if (!req.file) {
     return res.status(400).json({ error: 'No se subió ningún archivo' });
   }
@@ -47,7 +47,7 @@ export const chargeExcelController = async (req, res) => {
       header: ['clientName', 'email'],
       range: 1
     });
-    console.log(formatedDate)
+
     const courtesyCount = rawPeople.length;
 
     // Agregamos el campo courtesy a cada persona
@@ -91,7 +91,6 @@ export const sendCortesiesController = async (req, res) => {
 
     for (const usuario of usuarios) {
       if (usuario.status === 'sent') {
-        console.log(`Correo ya enviado a ${usuario.email}, se omite.`);
         continue;
       }
       try {
@@ -159,7 +158,6 @@ export const sendCortesiesController = async (req, res) => {
             </body>
           </html>
         `;
-        console.log(usuario.email)
         // 4. Enviar email
         await transporter.sendMail({
           from: `"GoTickets para ${usuario.clientName}" - <no-reply@gotickets.com>`,

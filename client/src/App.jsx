@@ -25,6 +25,7 @@ import LegalConditions from './components/conditions/legalConditions'
 import MyFavoritesEvents from './components/myFavoritesEvents/myFavoritesEvents'
 import UserInfo from './components/userInfo/userInfo'
 import ProfileCards from './components/seeProfile/seeProfile'
+import BuyersList from './components/buyersList/buyersList'
 
 
 function AppRoutes() {
@@ -53,6 +54,7 @@ function AppRoutes() {
         <Route path="/buy_tickets/:prodId/:emailHash?" element={<BuyTicket />} />
         <Route path="/editar_evento/staff/:prodId" element={<Staff />} />
         <Route path="/get_my_rrpp_events/:mail" element={<RRPPEvents />} />
+        <Route path="/get_buyers/:prodId" element={<BuyersList/>} />
         <Route path="/rrpp_get_event_free/:prodId/:mail" element={<SendFree />} />
         <Route path="/ticket/validate/:token" element={<TicketQr />} />
         <Route path="/statistics/:prodId/:userId" element={<Statistics />} />
