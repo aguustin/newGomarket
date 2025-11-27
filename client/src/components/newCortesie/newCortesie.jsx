@@ -11,7 +11,6 @@ const NewCortesie = () => {
     const {prodId} = useParams()
     const {session} = useContext(UserContext)
     const [productions, setProductions] = useState([])
-    console.log(prodId)
     const navigate = useNavigate()
     useEffect(() => {
         if(prodId.length > 0){
@@ -26,7 +25,6 @@ const NewCortesie = () => {
     const handleExcelUpload = async (e) => {
         e.preventDefault()
         const date = Date.now()
-        console.log(date)
         const formData = new FormData()
         formData.append('userId', session?.userFinded?.[0]?._id)
         formData.append('prodId', prodId)

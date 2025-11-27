@@ -115,7 +115,7 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
         const telefono = e.target.elements.telefono.value
 
         const hasTickets = Object.values(quantities).some(value => parseInt(value?.amount) > 0);
-        console.log(quantities)
+        
         if (!hasTickets) {
             setShowMsg(1)
             return;
@@ -135,7 +135,6 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
             const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono);
             
             if (!data?.init_point) {
-                console.log('entro aca en sin init_point')
                 return;
             }
           /*  const updateSessionInfo = await getUserProfileRequest(session?.userFinded[0]?._id)

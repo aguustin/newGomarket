@@ -186,11 +186,11 @@ const EditProd = () => {
 
     formData.append("artistas", edited.artistas ?? artistas);
     formData.append("montoVentas", edited.montoVentas ?? montoVentas);
-    console.log(edited.montoVentas, " ", montoVentas);
+
     formData.append("fechaInicio", fechaInicioFinal); //.toISOString
     formData.append("fechaFin", fechaFinFinal); //.toISOString
     formData.append("provincia", edited.provincia ?? provincia);
-    console.log("tipo evento: ", eventVisibility, " ", tipoEvento);
+   
     formData.append("tipoEvento", eventVisibility ?? tipoEvento);
 
     formData.append("localidad", edited.localidad ?? localidad);
@@ -215,7 +215,7 @@ const EditProd = () => {
     // Enviar al backend
     try {
       const res = await updateEventRequest(formData);
-      console.log("dasdasdasdas", res);
+    
       if (res.data.state > 0) {
         setLoading(false);
         setMessage(5);
@@ -343,7 +343,7 @@ const EditProd = () => {
       nombreEvento,
       eventImg,
     });
-    console.log(res.data.msg);
+    
     if (res.data.msg === 1) {
       setMessage(1);
       setTimeout(() => setMessage(0), 3000);
@@ -406,12 +406,10 @@ const EditProd = () => {
   const soldOutEvent = async () => {
     if (isSoldOut !== null) {
       const res = await soldOutEventRequest({ prodId, isSoldOut });
-
       if (res.data.ok === 1) {
         console.log("Cambiado");
       }
     }
-    console.log("no entro");
   };
 
   return (

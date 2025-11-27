@@ -802,7 +802,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
         console.log('entro en purchase TELEFONOOOO: ', telefono)
 
         await purchaseModel.create({
-          eventId: prod_id,
+          prodId: prod_id,
           nombreCompleto: nombre_completo,
           email: mail,
           dni:dni,
@@ -1649,7 +1649,7 @@ export const soldOutEventController = async (req, res) => {
 
 export const getBuyersController = async (req, res) => {
   const {prodId} = req.params
-
+  console.log(prodId)
   const findEvent = await purchaseModel.find({prodId: prodId})
 
   res.status(200).json(findEvent)

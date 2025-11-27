@@ -20,7 +20,7 @@ const Contact = () => {
             mensaje: e.target.elements.mensaje.value,
         }
         const res = await contactarRequest(mailData)
-        console.log(res)
+     
         if(res.data.state === 1){
             setLoading(false)
             setShowMsg(true)

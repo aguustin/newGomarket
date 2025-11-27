@@ -257,13 +257,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 
-.add-tickets-form::-webkit-scrollbar, .tickets-edit-prod::-webkit-scrollbar, .cortesies-desc-container::-webkit-scrollbar, .staff-tickets::-webkit-scrollbar{
+.add-tickets-form::-webkit-scrollbar, .tickets-edit-prod::-webkit-scrollbar, .cortesies-desc-container::-webkit-scrollbar, .staff-tickets::-webkit-scrollbar, .ab::-webkit-scrollbar{
   width: 5px;
   background-color: transparent;
 }
 
-.add-tickets-form::-webkit-scrollbar-thumb, .tickets-edit-prod::-webkit-scrollbar-thumb, .cortesies-desc-container::-webkit-scrollbar-thumb, .staff-tickets::-webkit-scrollbar-thumb{
+.add-tickets-form::-webkit-scrollbar-thumb, .tickets-edit-prod::-webkit-scrollbar-thumb, .cortesies-desc-container::-webkit-scrollbar-thumb, .staff-tickets::-webkit-scrollbar-thumb, .ab::-webkit-scrollbar-thumb{
   background-color: #b4b4b4;
+}
+
+.ab::-webkit-scrollbar{
+ height: 6px;
 }
 
 .add-tickets-form input{
@@ -275,10 +279,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -webkit-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 2px 1px 5px 0px rgba(0,0,0,0.75);
-}
-
-.productions table{ 
-  min-width: 790px;
 }
 
 .productions::-webkit-scrollbar{
@@ -507,6 +507,10 @@ border: 1px solid #e0e0e0;
     margin: auto;
     margin-top: 10px;
   }
+
+  .table-prods-buyers{
+    overflow-x: scroll !important;
+  }
 }
 
 
@@ -552,11 +556,14 @@ border: 1px solid #e0e0e0;
       min-width: 90%;
   }
   
-
   .continuar-button{
     position: relative !important;
     margin-top:10px;
     transform: translateX(137%);
+  }
+
+  .ab{
+    max-width: 96vw;
   }
 }
 

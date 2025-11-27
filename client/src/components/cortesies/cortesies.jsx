@@ -19,7 +19,7 @@ const Cortesies = () => {
     }, [session])
 
     const handleSendCortesies = async (cortesieId) => {
-        console.log('cortesieId', cortesieId)
+ 
         await sendCortesiesRequest({prodId, cortesieId})
     }
 

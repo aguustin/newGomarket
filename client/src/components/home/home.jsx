@@ -146,7 +146,7 @@ const Home = () => {
     }
 
     const eventsToRender = favoritesFilter || allEvents
-    console.log("favoritos: " ,favoritesFilter)
+
     return (
         <>
             <div className="home mb-16">
@@ -204,7 +204,7 @@ const Home = () => {
                             </select>
                             <input
                                 type="date"
-                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 bg-gradient-to-r from-purple-500 to-pink-500 text-white! focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 text-white bg-transparent focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={fechaInicioFiltro}
                                 onChange={(e) => setFechaInicioFiltro(e.target.value)}
                             />

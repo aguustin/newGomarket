@@ -73,7 +73,7 @@ return (
           </div>
 
           {/* Tabla con scroll horizontal para pantallas pequeñas */}
-          <div className="overflow-x-auto">
+          <div className="ab overflow-x-auto!">
             <table className="w-full min-w-[1000px]">
               {/* Header de la tabla */}
               <thead>

@@ -61,7 +61,6 @@ const CreateEventForm = () => {
             if(startDateToDate > endDateToDate){
                 setLoading(false)
                 setDateMsg(2)
-                console.log(message)
                 message = 'La fecha de inicio no puede ser mayor a la fecha de fin'
             }else if(startDateToDate < currentDateTime){
                 setDateMsg(1)
@@ -81,7 +80,6 @@ const CreateEventForm = () => {
                 formData.append('paisDestino', selectedCountry.name)
                 formData.append('tipoEvento', tipoEvento)
                 if (rawEdad && !isNaN(Number(rawEdad))) {
-                    console.log(rawEdad)
                     formData.append('eventoEdad', rawEdad);
                 }
                 formData.append('nombreEvento', e.target.elements.nombreEvento.value)
