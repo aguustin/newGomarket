@@ -159,7 +159,7 @@ const Home = () => {
                     <div className="absolute top-0 left-0 w-full h-full bg-black opacity-[50%]"></div>
                     <div className="relative z-3 flex flex-col items-center justify-center h-full text-white text-center">
                         <div className="filtrar-eventos w-full max-w-3xl px-4">
-                            <img className="w-[600px] h-[150px] mx-auto mt-[-40px] max-[620px]:h-auto" src={goOriginalPng} alt=""></img>
+                            <img className="w-[600px] h-[150px] mx-auto mt-[-40px] max-[620px]:h-auto  max-[575px]:mt-[0px]" src={goOriginalPng} alt=""></img>
                             {/*<h1 className="text-3xl font-bold mb-4 text-white!">Encuentra tu evento:</h1>*/}
                             <form className="search-form justify-center flex items-center w-full">
                                 <p className="text-lg w-[170px] text-white">Buscar evento:</p>
@@ -202,19 +202,23 @@ const Home = () => {
                                     </option>
                                 ))}
                             </select>
+                            <div className="flex flex-wrap gap-4 justify-center items-center">
+
+                            <label className="text-white! text-center max-[575px]:w-[100%]!">Fecha Inicio - Fin</label>
                             <input
                                 type="date"
-                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 text-white bg-transparent focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 bg-gradient-to-r from-purple-500 to-pink-500 text-white! focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={fechaInicioFiltro}
                                 onChange={(e) => setFechaInicioFiltro(e.target.value)}
                             />
-                            
+                           
                             <input
                                 type="date"
                                 className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 bg-gradient-to-r from-purple-500 to-pink-500 text-white! focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={fechaFinFiltro}
                                 onChange={(e) => setFechaFinFiltro(e.target.value)}
                             />
+                            </div>
                         </div>
                     </div>
                 </div>
