@@ -42,13 +42,13 @@ const Home = () => {
     const [fechaInicioFiltro, setFechaInicioFiltro] = useState("");
     const [fechaFinFiltro, setFechaFinFiltro] = useState("");
 
-    const toggleCategoria = (categoria) => {
-    setCategoriaSeleccionada((prev) => (prev === categoria ? '' : categoria));
+    /*const toggleCategoria = (categoria) => {
+        setCategoriaSeleccionada((prev) => (prev === categoria ? '' : categoria));
     };
 
     const toggleEdad = (edad) => {
         setEdad((prev) => (prev === edad ? null : edad));
-    };
+    };*/
 
     useEffect(() => {
         const provinciasArg = State.getStatesOfCountry("AR");

@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { createEventRequest, createEventTicketsRequest } from "../../api/eventRequests"
 import eventoJpg from '../../assets/imgpruebaEventos.jpg'
-import continueArrowPng from '../../assets/botones/continue_arrow.png'
 import { useContext } from "react"
 import UserContext from "../../context/userContext"
 import {Country, State, City} from "country-state-city"

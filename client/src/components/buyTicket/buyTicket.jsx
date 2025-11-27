@@ -100,11 +100,21 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
 });
 };
 
-
-    const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => {
+const total = prod.reduce((accProd, p) => {
+    const comision = p?.comisionServicio ?? 13; // 13% si no existe
+    const totalTickets = p.tickets.reduce((accTck, tck) => {
         const qty = quantities[tck._id]?.amount || 0;
-        return acc + qty * tck.precio + (qty * tck.precio) / 13/*tck?.comisionServicio*/;
+        const subtotal = qty * tck.precio;
+        return accTck + subtotal + subtotal * (comision / 100);
     }, 0);
+    return accProd + totalTickets;
+}, 0);
+
+
+    /*const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => { //version estable pero sin comision
+        const qty = quantities[tck._id]?.amount || 0;
+        return acc + qty * tck.precio + (qty * tck.precio) / 13/*tck?.comisionServicio;
+    }, 0);*/
 
     const buyTickets = async (e) => {
         e.preventDefault();
