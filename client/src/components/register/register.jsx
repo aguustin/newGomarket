@@ -51,44 +51,203 @@ const Register = () => {
         setLoading(false)
     }
 
-    return(
-        <>
-        <div className="form-background pt-1 pb-1">
-            <Link to="/"><img className="h-[70px] mx-auto mt-2" src={goOriginalPng} alt=""></img></Link>
-            <form className="register-form mt-6 mb-10 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => registerUser(e)}>
-                <div className="text-center p-4">
-                    <h3 className="text-4xl font-bold">Registrate</h3>
-                    <p className="mt-3 secondary-p">Registra tu cuenta de Goticket y disfruta de tus eventos favoritos</p>
-                </div>
-                    <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="text" placeholder="Nombre completo" name="nombreCompleto" required></input>
-                    <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="mail" placeholder="Tu email" name="mail" required></input>
-                    <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="number" placeholder="DNI" name="dni" required></input>
-                    <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="text" placeholder="Tu pais" name="pais" required></input>
-                    <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="password" placeholder="Ingresa una contraseña" name="contrasenia" required></input>
-                    <input className="p-3 mt-3 w-full" minLength="5" maxLength="30" type="password" placeholder="Repite la contraseña" name="repetirContrasenia" required></input>
-                <div className="text-center">
-                <div className="flex items-center justify-center mt-6">
-                    <div>
-                        {showMsg?.length > 0 && <p className="text-red-600! mb-3 text-center text-xl!">{showMsg}</p>}
-                        {showMsgB?.length > 0 && <p className="text-green-600! mb-3 text-center text-xl!">{showMsgB}</p>}
-                        <div className="flex justify-center mt-4 mb-5">
-                            {
-                            <ReCAPTCHA
-                                sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
-                                onChange={onSuccess}
-                            />
-                            } 
-                        </div>
-                        
-                        <div className="flex items-center max-[650px]:block"><p>O ingresa haciendo click aqui: </p><Link className="text-blue-400! ml-2 underline!" to="/login">Ingresar</Link></div>
-                    </div>
-                </div>
-                    {loading ? <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer"><LoadingButton/></button> : <button className="primary-button w-full p-4 rounded-lg mt-6 cursor-pointer" type="submit">Registrarme</button>}
-                </div>
-            </form>
+    return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50 py-12 px-4">
+      {/* Logo */}
+      <div className="absolute top-2">
+        <Link to="/">
+          <img 
+            className="h-16 transition-transform hover:scale-110" 
+            src={goOriginalPng} 
+            alt="GoTicket Logo"
+          />
+        </Link>
+      </div>
+
+      {/* Formulario de Registro */}
+      <form 
+        className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 animate-slideIn"
+        onSubmit={registerUser}
+      >
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-4">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <h3 className="text-4xl font-bold text-gray-900">Regístrate</h3>
+          <p className="mt-3 text-gray-600">
+            Crea tu cuenta de GoTicket y disfruta de tus eventos favoritos
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {/* Nombre completo */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <input 
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+              minLength="5" 
+              maxLength="50" 
+              type="text" 
+              placeholder="Nombre completo" 
+              name="nombreCompleto" 
+              required 
+            />
+          </div>
+
+          {/* Email */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <input 
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+              minLength="5" 
+              maxLength="50" 
+              type="email" 
+              placeholder="tu@email.com" 
+              name="mail" 
+              required 
+            />
+          </div>
+
+          {/* DNI */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+            </svg>
+            <input 
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+              minLength="5" 
+              maxLength="15" 
+              type="text" 
+              placeholder="Número de DNI" 
+              name="dni" 
+              required 
+            />
+          </div>
+
+          {/* País */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <input 
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+              minLength="3" 
+              maxLength="30" 
+              type="text" 
+              placeholder="Tu país" 
+              name="pais" 
+              required 
+            />
+          </div>
+
+          {/* Contraseña */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <input 
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+              minLength="8" 
+              maxLength="30" 
+              type="password" 
+              placeholder="Ingresa una contraseña" 
+              name="contrasenia" 
+              required 
+            />
+          </div>
+
+          {/* Repetir contraseña */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <input 
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+              minLength="8" 
+              maxLength="30" 
+              type="password" 
+              placeholder="Repite la contraseña" 
+              name="repetirContrasenia" 
+              required 
+            />
+          </div>
+
+          {/* Mensajes de error/éxito */}
+          {showMsg?.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+              <p className="text-red-600 text-sm text-center font-medium">{showMsg}</p>
             </div>
-        </>
-    )
+          )}
+
+          {showMsgB?.length > 0 && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+              <p className="text-green-600 text-sm text-center font-medium">{showMsgB}</p>
+            </div>
+          )}
+
+          {/* Link a login */}
+          <div className="text-center text-sm text-gray-600">
+            <span>¿Ya tienes cuenta? </span>
+            <Link 
+              className="text-orange-600 hover:text-red-600 font-semibold underline transition-colors" 
+              to="/login"
+            >
+              Inicia sesión aquí
+            </Link>
+          </div>
+        </div>
+
+        {/* ReCAPTCHA */}
+        <div className="flex justify-center my-6">
+          <ReCAPTCHA
+            sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
+            onChange={onSuccess}
+          />
+        </div>
+
+        {/* Botón de submit */}
+        <div className="mt-6">
+          {loading ? (
+            <button 
+              className="w-full h-14 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold flex items-center justify-center"
+              disabled
+            >
+              <LoadingButton />
+            </button>
+          ) : (
+            <button 
+              className="w-full h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl font-semibold transition-all transform hover:scale-[1.02] hover:shadow-xl"
+              type="submit"
+            >
+              Registrarme
+            </button>
+          )}
+        </div>
+      </form>
+
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideIn {
+          animation: slideIn 0.4s ease-out;
+        }
+      `}</style>
+    </div>
+  );
 }
 
 export default Register

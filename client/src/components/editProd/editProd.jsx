@@ -6,6 +6,7 @@ import {
   createEventTicketsRequest,
   getOneProdRequest,
   getProdsRequest,
+  reactivarEventoRequest,
   relateEventsRequest,
   soldOutEventRequest,
   updateEventRequest,
@@ -21,7 +22,6 @@ import {
   LoadingButton,
 } from "../../globalscomp/globalscomp";
 import qrCodePng from "../../assets/images/qr-code.png";
-import backArrowPng from "../../assets/images/back-arrow.png";
 import ticketPng from "../../assets/images/ticket.png";
 import UserContext from "../../context/userContext";
 import addedTicket from "../../assets/images/added-ticket.png";
@@ -103,6 +103,7 @@ const EditProd = () => {
     mediaQuery.addEventListener("change", handleResize);
 
     return () => mediaQuery.removeEventListener("change", handleResize);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   useEffect(() => {
@@ -362,14 +363,7 @@ const EditProd = () => {
 
   const cancelarEvento = async (prodId) => {
     await cancelarEventoRequest({ prodId });
-  };
-
-  const handleBannerChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewBanner(imageUrl);
-    }
+     alert('Tu evento fue dado de baja!')
   };
 
   const handleFileChange = (e) => {
@@ -377,6 +371,14 @@ const EditProd = () => {
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setPreviewPortada(imageUrl);
+    }
+  };
+
+  const handleBannerChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewBanner(imageUrl);
     }
   };
 
@@ -411,6 +413,11 @@ const EditProd = () => {
       }
     }
   };
+
+  const reactivarEvento = async (prodId) => {
+    await reactivarEventoRequest({ prodId });
+    alert('Tu evento fue resubido!')
+  }
 
   return (
     <>
@@ -1025,11 +1032,7 @@ const EditProd = () => {
                 </div>
               </form>
               {message === 5 && (
-                <div className="mb-10 mt-[-20px]">
-                  <p className="text-green-700 text-2xl text-center">
-                    El evento se actualizo exitosamente!
-                  </p>
-                </div>
+                  alert('El evento se actualizo exitosamente!')
               )}
             </>
           ))}
@@ -1516,7 +1519,11 @@ const EditProd = () => {
               onClick={() => setCancelAlert(true)}
             >
               <img src={cancelPng} alt="" loading="lazy"></img>
-              <p className="ml-2">Cancelar evento</p>
+              {prod[0]?.active ?
+                <p className="ml-2">Bajar evento</p>
+                :
+                <p className="ml-2">Subir evento</p>
+              }
             </button>
             <Link
               className="flex items-center mx-2 p-2 bg-gradient-to-r from-purple-600 to-pink-600  text-white rounded-lg text-white! text-sm! min-w-[172px] mt-2!"
@@ -1554,12 +1561,21 @@ const EditProd = () => {
               >
                 Atras
               </button>
-              <button
-                className="w-[100px] rounded-lg text-[#111827] p-2 bg-red-400"
-                onClick={() => cancelarEvento(prod[0]._id)}
-              >
-                Eliminar
-              </button>
+              {prod[0]?.active ? 
+                <button
+                  className="w-[100px] rounded-lg text-[#111827] p-2 bg-red-400"
+                  onClick={() => cancelarEvento(prod[0]._id)}
+                >
+                  Bajar
+                </button>
+              :
+                <button
+                  className="w-[100px] rounded-lg text-[#111827] p-2 bg-red-400"
+                  onClick={() => reactivarEvento(prod[0]._id)}
+                >
+                  Subir
+                </button>
+              }
             </div>
           </div>
         </>

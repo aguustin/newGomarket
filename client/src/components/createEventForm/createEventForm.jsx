@@ -99,7 +99,7 @@ const CreateEventForm = () => {
                 formData.append('imgEvento', imageFile)
                 formData.append('bannerEvento', imageBanner)
                 formData.append('imagenDescriptiva', imageDescriptive)
-                formData.append('comisionServicio', session?.userFinded?.[0]?.comisionServicio)
+                formData.append('comisionServicio', session?.userFinded?.[0]?.comisionServicio ?? 15)
                 
                 const res = await createEventRequest(formData)
     
@@ -489,7 +489,7 @@ const CreateEventForm = () => {
                                     <button className="bg-orange-500! p-3 rounded-xl mb-6 text-lg primary-p" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
                                     {disabledButton && <><p className="text-xl! primary-p">Tu ticket fue creado con exito!</p><br></br></>}
                                     <p className="secondary-p text-lg mb-6">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
-                                    {/*disabledButton && */<Link className="w-[300px] primary-button mx-auto mb-10 p-4 rounded-2xl flex items-center justify-center text-xl" to="/Home">Continuar</Link>}
+                                    {/*disabledButton && */<Link className="w-[300px] primary-button mx-auto mb-10 p-4 rounded-2xl flex items-center justify-center text-xl" to="/">Continuar</Link>}
                                 </div>
                             </div>
 

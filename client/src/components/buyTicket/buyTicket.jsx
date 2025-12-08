@@ -31,13 +31,15 @@ const BuyTicket = () => {
     try {
       const resEvent = await getEventToBuyRequest(prodId);
       setProd(resEvent.data);
+      if(!resEvent.data[0]?.active){
+        navigate('/')
+      }
       const resRelated = await getRelateEventsRequest(prodId);
       setRelates(resRelated.data.relacionados);
     } catch (error) {
       console.error('Error al obtener eventos:', error);
     }
   };
-
   fetchData();
 }, [session, prodId, navigate]);
 

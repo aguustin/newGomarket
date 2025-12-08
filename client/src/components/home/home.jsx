@@ -73,6 +73,7 @@ const Home = () => {
         mediaQuery.addEventListener("change", handleResize);
 
         return () => mediaQuery.removeEventListener("change", handleResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {

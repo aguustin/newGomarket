@@ -101,6 +101,7 @@ const ticketSchema = new mongoose.Schema({
     totalMontoVendido: {type: Number},
     totalMontoDescuento: {type: Number},
     montoTotal: {type: Number},
+    active: {type: Boolean, default: true}
 })
 
 const ticketModel =  mongoose.model('ticketsModel', ticketSchema)

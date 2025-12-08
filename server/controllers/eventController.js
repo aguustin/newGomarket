@@ -27,7 +27,7 @@ const SECRET_MAIL_KEY = process.env.SECRET_MAIL_KEY || 'mjac32nk12n3123ja7das2'
 const IV_LENGTH = 16
 
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
-    const getEvents = await ticketModel.find({})
+    const getEvents = await ticketModel.find({active: true})
     res.send(getEvents)
 }
 
@@ -1483,23 +1483,32 @@ export const descargarCompradoresController = async (req, res) => {
 export const refundsFunc = async ({prodId}) => {
   
 try{
-const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
-
- const refundPromises = getPaymentsIds.compradores.map((pays) => {
-    const idempotencyKey = `refund-${uuidv4()}`;
-    return axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
-      {"amount": pays.montoPagado},
-      {
-        headers:{
-          Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`,
-          'Content-Type': 'application/json',
-          'X-Idempotency-Key': idempotencyKey
-        }
+  await ticketModel.updateOne(
+    {_id: prodId},
+    {
+      $set:{
+        active: false
       }
-    )
-  }
+    }
   )
-  
+  const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
+  if (!getPaymentsIds) {
+    return { success: true, fallidos: [] }; 
+  }
+  const refundPromises = getPaymentsIds.compradores?.map((pays) => {
+      const idempotencyKey = `refund-${uuidv4()}`;
+      return axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
+        {"amount": pays.montoPagado},
+        {
+          headers:{
+            Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`,
+            'Content-Type': 'application/json',
+            'X-Idempotency-Key': idempotencyKey
+          }
+        }
+      )
+    }
+  )
   const results = await Promise.allSettled(refundPromises);
 
   results.forEach((r, i) => {
@@ -1513,7 +1522,7 @@ const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
   if (fallidos.length > 0) {
     console.warn('Algunos reembolsos fallaron:', fallidos);
   }
- // await transactionModel.deleteOne({prodId: prodId})
+  //await transactionModel.deleteOne({prodId: prodId})
   return { success: true, fallidos };
 }catch(err){
   console.log(err)
@@ -1629,6 +1638,20 @@ export const cancelarEventoController = async (req, res) => {
     message: 'Fallo el reembolso',
     fallidos: fallidos.length,
   });
+}
+
+export const reactivarEventoController = async (req, res) => {
+  const {prodId} = req.body;
+  await ticketModel.updateOne(
+    {_id: prodId},
+    {
+      $set:{
+        active: true
+      }
+    }
+  )
+
+  return res.status(200).json({message: 'Evento reactivado'})
 }
 
 export const soldOutEventController = async (req, res) => {

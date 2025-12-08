@@ -3,39 +3,34 @@ import ticketModel from '../models/ticketsModel.js';
 
 cron.schedule('0 0 * * 0', async () => {
     const now = new Date();
+    console.log("CRON ejecutado:", now.toISOString());
 
     try {
-        const events = await ticketModel.find({});
+        // 🔥 Desactivar eventos caducados
+        const eventosCaducados = await ticketModel.updateMany(
+            { fechaFin: { $lt: now }, active: true },
+            { $set: { active: false } }
+        );
 
-        for (const event of events) {
-            let updated = false;
+        console.log(`Eventos desactivados: ${eventosCaducados.modifiedCount}`);
 
-            // Log para depuración: fechas del evento
-            console.log(`\n---\nRevisando evento ${event._id}`);
-            console.log(`Now (UTC):       ${now.toISOString()}`);
-            console.log(`Fecha de cierre: ${new Date(event.fechaFin).toISOString()}`);
-
-            // Verifica si el evento ya caducó
-            if (now > new Date(event.fechaFin)) {
-                console.log(`Evento ${event._id} eliminado por caducidad`);
-                await ticketModel.findByIdAndDelete(event._id);
-                continue;
-            }
-
-            // Desactivar tickets caducados
-            event.tickets.forEach(ticket => {
-                if (ticket.isActive && now > new Date(ticket.fechaDeCierre)) {
-                    ticket.isActive = false;
-                    updated = true;
+        // 🔥 Desactivar tickets caducados dentro de eventos
+        const ticketsCaducados = await ticketModel.updateMany(
+            { "tickets.fechaDeCierre": { $lt: now } },
+            {
+                $set: {
+                    "tickets.$[t].isActive": false
                 }
-            });
-
-            if (updated) {
-                await event.save();
-                console.log(`Evento ${event._id}: tickets caducados desactivados`);
+            },
+            {
+                arrayFilters: [{ "t.fechaDeCierre": { $lt: now } }]
             }
-        }
+        );
+
+        console.log(`Tickets desactivados: ${ticketsCaducados.modifiedCount}`);
+
     } catch (err) {
-        console.error('Error en cron de tickets:', err);
+        console.error("Error en cron:", err);
     }
 });
+
