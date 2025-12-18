@@ -14,17 +14,17 @@ const Footer = () => {
      
 
       {/* Links Grid */}
-      <div className="grid sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-3">
+      <div className="grid sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8">
         {/* GO TICKET Column */}
         <div className='footer-columns mx-auto w-full'>
-          <h4 className="text-lg text-gray-900 font-bold mb-4 flex items-center mx-auto!">
+          <h4 className="text-lg text-white! font-bold mb-4 flex items-center mx-auto!">
             <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full mr-3"></div>
             GO TICKET
           </h4>
           <div className="space-y-3">
             <Link 
               to="/" 
-              className="block text-gray-900 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
+              className="block text-white! hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
             >
               <div className="flex items-center">
                 <svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,7 +35,7 @@ const Footer = () => {
             </Link>
             <Link 
               to="/" 
-              className="block text-gray-900 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
+              className="block text-white! hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
             >
               <div className="flex items-center">
                 <svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,14 +49,14 @@ const Footer = () => {
 
         {/* TU EVENTO Column */}
         <div className='footer-columns mx-auto'>
-          <h4 className="text-lg text-gray-900 font-bold mb-4 flex items-center">
+          <h4 className="text-lg text-white! font-bold mb-4 flex items-center">
             <div className="w-1 h-6 bg-gradient-to-b from-pink-500 to-orange-500 rounded-full mr-3"></div>
             TU EVENTO
           </h4>
           <div className="space-y-3">
             <Link 
               to="/" 
-              className="block text-gray-900 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
+              className="block text-white! hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
             >
               <div className="flex items-center">
                 <svg className="w-4 h-4 mr-2 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +67,7 @@ const Footer = () => {
             </Link>
             <Link 
               to="/" 
-              className="block text-gray-900 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
+              className="block text-white! hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
             >
               <div className="flex items-center">
                 <svg className="w-4 h-4 mr-2 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,14 +81,14 @@ const Footer = () => {
 
         {/* LEGAL Column */}
         <div className='footer-columns mx-auto'>
-          <h4 className="text-lg text-gray-900 font-bold mb-4 flex items-center">
+          <h4 className="text-lg text-white! font-bold mb-4 flex items-center">
             <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full mr-3"></div>
             LEGAL
           </h4>
           <div className="space-y-3">
             <Link 
               to="/conditions" 
-              className="block text-gray-900 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
+              className="block text-white! hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
             >
               <div className="flex items-center">
                 <svg className="w-4 h-4 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +99,7 @@ const Footer = () => {
             </Link>
             <Link 
               to="/" 
-              className="block text-gray-900 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
+              className="block text-white! hover:text-white hover:translate-x-2 transition-all duration-300 text-sm"
             >
               <div className="flex items-center">
                 <svg className="w-4 h-4 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,24 +113,24 @@ const Footer = () => {
 
         {/* CONTACTO Column */}
         <div className='footer-columns mx-auto'>
-          <h4 className="text-lg text-gray-900 font-bold mb-4 flex items-center">
+          <h4 className="text-lg text-white! font-bold mb-4 flex items-center">
             <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full mr-3"></div>
             CONTACTO
           </h4>
           <div className="space-y-3">
-            <div className="flex items-start text-sm text-gray-900">
+            <div className="flex items-start text-sm text-white!">
               <svg className="w-5 h-5 mr-2 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
               <span>222-222-222</span>
             </div>
-            <div className="flex items-start text-sm text-gray-900">
+            <div className="flex items-start text-sm text-white!">
               <svg className="w-5 h-5 mr-2 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <span>goticketarg@gmail.com</span>
             </div>
-            <div className="flex items-start text-sm text-gray-900">
+            <div className="flex items-start text-sm text-white!">
               <svg className="w-5 h-5 mr-2 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -142,7 +142,7 @@ const Footer = () => {
 
       {/* Disclaimer */}
       
-      <div className="border-t border-white/10  mb-2">
+      <div className="mb-5">
         <div className='flex items-center justify-around w-[200px] text-center mx-auto mb-3'>
                 <Link href="/"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <rect x="2" y="2" width="20" height="20" rx="5"></rect>
@@ -163,10 +163,10 @@ const Footer = () => {
 </svg>
 </Link>
         </div>
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 sm:py-0">
-          <div className="flex items-start max-w-[">
-            <p className="text-sm text-center text-gray-900 leading-relaxed sm:mt-3">
-              <span className="font-semibold text-gray-900">Importante:</span> Go Ticket no se hace responsable de la calidad o satisfacción de los eventos publicados. Go Ticket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los{' '}
+        <div className="rounded-2xl p-6 sm:py-0">
+          <div className="flex items-start">
+            <p className="text-sm text-center text-white! leading-relaxed sm:mt-3">
+              <span className="font-semibold text-white!">Importante:</span> Go Ticket no se hace responsable de la calidad o satisfacción de los eventos publicados. Go Ticket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los{' '}
               <Link to="/conditions" className="text-purple-400 hover:text-purple-300 underline font-medium transition-colors">
                 términos y condiciones
               </Link>{' '}

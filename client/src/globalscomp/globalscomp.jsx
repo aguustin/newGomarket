@@ -27,9 +27,9 @@ export const Timer = ({duration}) => {
         return `${minutes}:${seconds}`
     }
     
-    return <div className="text-center text-gray-800">
+    return <div className="text-center text-gray-300!">
       <p className="mb-3">Tiempo restante para la compra:</p>
-      <div className="flex items-center justify-center text-orange-600! text-3xl">
+      <div className="flex items-center justify-center text-yellow-500! text-2xl">
         <img src={timerPng} alt="" className="mr-2"></img>{getFormattedTime(time)}
       </div>
     </div>

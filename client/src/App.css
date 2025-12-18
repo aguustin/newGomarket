@@ -20,12 +20,25 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 1;
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /*------------------------------------------------------------------------------------- NAV -------------------------------------------------------------*/
 
 .nav, footer, .nav-mobile-options, .conditions-container{
   z-index: 4;
-  background-color: #f4f4f4;
+  background:#111827 !important;
+  /* linear-gradient(
+  135deg,
+  #111827 0%,   /* gray-900 */
+ /* #000000 50%, /* black */
+ /* #1f2937 100% /* gray-800 */
+/*);*/
   box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
   -webkit-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
   -moz-box-shadow: 2px 2px 5px 0px rgba(92, 92, 92, 0.75);
@@ -134,6 +147,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   transition: all 0.25s;
 }
+
+
 
 
 /*------------------------------------------------------------------ HOME -------------------------------------------------------------------------------*/

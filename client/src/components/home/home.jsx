@@ -174,7 +174,7 @@ const Home = () => {
                         </div>
                         <div className="max-[575px]:w-[96%] mt-6 flex flex-wrap gap-4 justify-center items-center">
                              <p
-                                className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
+                                className="px-6 py-2 rounded-lg bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827] font-semibold hover:to-red-500 hover:to-pink-600 transition-all"
                             >
                                 Filtrado
                             </p>
@@ -208,14 +208,14 @@ const Home = () => {
                             <label className="text-white! text-center max-[575px]:w-[100%]!">Fecha Inicio - Fin</label>
                             <input
                                 type="date"
-                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 bg-gradient-to-r from-purple-500 to-pink-500 text-white! focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827]! focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={fechaInicioFiltro}
                                 onChange={(e) => setFechaInicioFiltro(e.target.value)}
                             />
                            
                             <input
                                 type="date"
-                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 bg-gradient-to-r from-purple-500 to-pink-500 text-white! focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="max-[440px]:w-[50%] max-[440px]:mx-auto px-4 py-2 rounded-lg border border-gray-300 bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827]! focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={fechaFinFiltro}
                                 onChange={(e) => setFechaFinFiltro(e.target.value)}
                             />
@@ -225,32 +225,113 @@ const Home = () => {
                 </div>
                 <div className="events w-[100%] pr-10 pl-10 relative">
                     {width < 1376 &&
-                        <div className="categories flex justify-center relative mx-6">
-                            <div className="flex flex-wrap justify-around">
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === '' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() =>{ setCategoriaSeleccionada(''); setFavoritesFilter(null)}}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() => {setCategoriaSeleccionada('baile'); setFavoritesFilter(null)}} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() => {setCategoriaSeleccionada('musica'); setFavoritesFilter(null)}} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() => {setCategoriaSeleccionada('arte'); setFavoritesFilter(null)}} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() => {setCategoriaSeleccionada('teatro'); setFavoritesFilter(null)}} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() => {setCategoriaSeleccionada('deporte'); setFavoritesFilter(null)}} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${favoritesFilter?.length > 0 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() => {setCategoriaSeleccionada(''); getFavoritesEventsFunc()}} name="favoritos"><img src={starBipng} alt="" loading="lazy"></img><p className="ml-4">Favoritos</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${edad === 1 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() => {setEdad(edad === 1 ? 0 : 1); setFavoritesFilter(null)}} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
-                                <button className={`flex items-center border-[1px] border-gray-200 text-left rounded-lg mt-6 p-3 text-[#111827] ${edad === 2 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : ''}`} onClick={() => {setEdad(edad === 2 ? 0 : 2); setFavoritesFilter(null)}} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
-                            </div>
-                        </div>
+                    <div className="categories relative w-screen max-w-full overflow-hidden">
+  <div className="
+     flex
+      gap-4
+      overflow-x-auto
+      flex-nowrap
+      py-4
+      px-6
+      scrollbar-hide
+  ">
+   <button
+  className={`flex items-center min-w-[160px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${categoriaSeleccionada === '' ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setCategoriaSeleccionada(''); setFavoritesFilter(null) }}
+>
+  <img src={eventsPng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Todos</p>
+</button>
+
+<button
+  className={`flex items-center min-w-[160px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${categoriaSeleccionada === 'baile' ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setCategoriaSeleccionada('baile'); setFavoritesFilter(null) }}
+>
+  <img src={discoPng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Baile</p>
+</button>
+
+<button
+  className={`flex items-center min-w-[160px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${categoriaSeleccionada === 'musica' ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setCategoriaSeleccionada('musica'); setFavoritesFilter(null) }}
+>
+  <img src={musicPng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Música</p>
+</button>
+
+<button
+  className={`flex items-center min-w-[160px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${categoriaSeleccionada === 'arte' ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setCategoriaSeleccionada('arte'); setFavoritesFilter(null) }}
+>
+  <img src={artPng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Arte</p>
+</button>
+
+<button
+  className={`flex items-center min-w-[160px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${categoriaSeleccionada === 'teatro' ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setCategoriaSeleccionada('teatro'); setFavoritesFilter(null) }}
+>
+  <img src={theatrePng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Teatro</p>
+</button>
+
+<button
+  className={`flex items-center min-w-[160px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${categoriaSeleccionada === 'deporte' ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setCategoriaSeleccionada('deporte'); setFavoritesFilter(null) }}
+>
+  <img src={footballPng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Deporte</p>
+</button>
+
+<button
+  className={`flex items-center min-w-[180px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${favoritesFilter?.length > 0 ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setCategoriaSeleccionada(''); getFavoritesEventsFunc() }}
+>
+  <img src={starBipng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Favoritos</p>
+</button>
+
+<button
+  className={`flex items-center min-w-[180px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${edad === 1 ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setEdad(edad === 1 ? 0 : 1); setFavoritesFilter(null) }}
+>
+  <img src={footprintsPng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Eventos -18</p>
+</button>
+
+<button
+  className={`flex items-center min-w-[180px] border border-gray-700 rounded-lg p-3 bg-gradient-to-br from-amber-500 to-yellow-500
+  ${edad === 2 ? 'bg-gradient-to-r from-red-700 to-red-500 text-white' : 'text-[#111827]'}`}
+  onClick={() => { setEdad(edad === 2 ? 0 : 2); setFavoritesFilter(null) }}
+>
+  <img src={plusPng} alt="" loading="lazy" />
+  <p className="ml-4 whitespace-nowrap">Eventos +18</p>
+</button>
+
+  </div>
+</div>
+
                     } 
                         {width > 1375 &&
                             <div className="categories w-full mt-3">
-                                <div className="w-full pb-1 flex bg-gradient-to-r from-purple-600 to-pink-500 transition-all">
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === '' ? 'bg-gradient-to-r from-purple-600' : ''}`} onClick={() => {setCategoriaSeleccionada("") ; setFavoritesFilter(null)}}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-gradient-to-r from-purple-600' : ''}`} onClick={() => {setCategoriaSeleccionada("baile") ; setFavoritesFilter(null)}} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-gradient-to-r from-purple-600' : ''}`} onClick={() => {setCategoriaSeleccionada("musica") ; setFavoritesFilter(null)}} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-gradient-to-r from-purple-600' : ''}`} onClick={() => {setCategoriaSeleccionada("arte") ; setFavoritesFilter(null)}} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-gradient-to-r from-purple-600' : ''}`} onClick={() => {setCategoriaSeleccionada("teatro") ; setFavoritesFilter(null)}} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-gradient-to-r from-purple-600' : ''}`} onClick={() => {setCategoriaSeleccionada("deporte") ; setFavoritesFilter(null)}} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${favoritesFilter?.length > 0 ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada(''); getFavoritesEventsFunc()}}  name="favoritos"><img src={starBipng} alt="" loading="lazy"></img><p className="ml-4">Favoritos</p></button>
-                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 1 ? 'bg-gradient-to-r from-purple-600' : ''}`} onClick={() => {setEdad(edad === 1 ? 0 : 1); setFavoritesFilter(null)}} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
-                                    <button className={`flex justify-center  items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 2 ? 'bg-gradient-to-r from-purple-600' : ''}`} onClick={() => {setEdad(edad === 2 ? 0 : 2); setFavoritesFilter(null)}} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
+                                <div className="w-full pb-1 flex bg-gradient-to-br from-amber-500 to-yellow-500 transition-all rounded-xl">
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === '' ? 'bg-gradient-to-r to-red-500' : ''}`} onClick={() => {setCategoriaSeleccionada("") ; setFavoritesFilter(null)}}><img src={eventsPng} alt="" loading="lazy"></img><p className="ml-4">Todos</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'baile' ? 'bg-gradient-to-r to-red-500' : ''}`} onClick={() => {setCategoriaSeleccionada("baile") ; setFavoritesFilter(null)}} name="baile"><img src={discoPng} alt="" loading="lazy"></img><p className="ml-4">Baile</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'musica' ? 'bg-gradient-to-r to-red-500' : ''}`} onClick={() => {setCategoriaSeleccionada("musica") ; setFavoritesFilter(null)}} name="musica"><img src={musicPng} alt="" loading="lazy"></img><p className="ml-4">Musica</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'arte' ? 'bg-gradient-to-r to-red-500' : ''}`} onClick={() => {setCategoriaSeleccionada("arte") ; setFavoritesFilter(null)}} name="arte"><img src={artPng} alt="" loading="lazy"></img><p className="ml-4">Arte</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'teatro' ? 'bg-gradient-to-r to-red-500' : ''}`} onClick={() => {setCategoriaSeleccionada("teatro") ; setFavoritesFilter(null)}} name="teatro"><img src={theatrePng} alt="" loading="lazy"></img><p className="ml-4">Teatro</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${categoriaSeleccionada === 'deporte' ? 'bg-gradient-to-r to-red-500' : ''}`} onClick={() => {setCategoriaSeleccionada("deporte") ; setFavoritesFilter(null)}} name="deporte"><img src={footballPng} alt="" loading="lazy"></img><p className="ml-4">Deporte</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${favoritesFilter?.length > 0 ? 'bg-[#f97316]' : ''}`} onClick={() => {setCategoriaSeleccionada(''); getFavoritesEventsFunc()}}  name="favoritos"><img src={starBipng} alt="" loading="lazy"></img><p className="ml-4">Favoritos</p></button>
+                                    <button className={`flex justify-center border-r-[2px] items-center border-y-white-500! font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 1 ? 'bg-gradient-to-r to-red-500' : ''}`} onClick={() => {setEdad(edad === 1 ? 0 : 1); setFavoritesFilter(null)}} name="menores"><img src={footprintsPng} alt="" loading="lazy"></img><p className="ml-4">Eventos -18</p></button>
+                                    <button className={`flex justify-center  items-center border-y-white-500! text-white font-semibold text-center mt-2 p-3 w-[100%] text-[#111827] ${edad === 2 ? 'bg-gradient-to-r to-red-500' : ''}`} onClick={() => {setEdad(edad === 2 ? 0 : 2); setFavoritesFilter(null)}} name="mayores"><img src={plusPng} alt="" loading="lazy"></img><p className="ml-4">Eventos +18</p></button>
                                 </div>
                             </div>
                         }
@@ -312,7 +393,7 @@ const Home = () => {
   })
                                 .map((allEv) => (
 
-                                    <div key={allEv?._id} className="primary-div w-[300px] relative mt-8 mx-3 rounded-xl border-[1px] border-gray-200">
+                                    <div key={allEv?._id} className="primary-div bg-gradient-to-br from-gray-700 to-gray-800 w-[300px] relative mt-8 mx-3 rounded-xl border-[1px] border-gray-700">
                                         <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
                                             <FadeInImage
                                                 src={allEv.imgEvento}
@@ -336,11 +417,11 @@ const Home = () => {
                                                     <img src={starPng} alt=""></img>
                                                 </button>
                                             )}
-                                            <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}><h3 className="text-xl font-semibold w-[225px]">{allEv.nombreEvento}</h3></Link>
-                                            <p className="secondary-p event-desc-text mt-3 mb-2">
+                                            <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}><h3 className="text-xl font-semibold w-[225px] text-white!">{allEv.nombreEvento}</h3></Link>
+                                            <p className="text-yellow-500! event-desc-text mt-3 mb-2">
                                                 {`${allEv.provincia} - ${truncarConElipsis(allEv.direccion, 45)}`}
                                             </p>
-                                            <label className="text-xl text-[#111827]!">{formatDateB(allEv.fechaInicio)}</label>
+                                            <label className="text-xl text-gray-300!">{formatDateB(allEv.fechaInicio)}</label>
                                         </div>
                                     </div>
                                 ))}

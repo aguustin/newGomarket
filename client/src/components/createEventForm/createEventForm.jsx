@@ -214,14 +214,14 @@ const CreateEventForm = () => {
  
     return(
         <>
-        <div className="create-event-and-ticket-container mx-auto mt-[20px] mb-[20px] pl-12 pr-12">
+        <div className="create-event-and-ticket-container mx-auto mt-[20px] mb-[20px] pl-12 pr-12 ">
             {showEventInfo &&
-            <div className="create-event-container w-[100%] flex items-start mx-auto justify-center">
-                <div className="w-[375px] bg-white rounded-2xl p-3">
-                    <b className="text-[#111827] text-xl">Portada del evento</b>
+            <div className="create-event-container w-[100%] flex items-start mx-auto justify-center ">
+                <div className="w-[375px] bg-white rounded-2xl p-3 bg-gradient-to-br from-gray-800 to-gray-900">
+                    <b className="text-white text-xl">Portada del evento</b>
                     <img className="object-cover rounded-2xl mx-auto mt-3" src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
-                    <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
-                    <div className="portal-evento bg-gradient-to-r from-orange-500 to-red-500 p-3 text-center rounded-2xl">
+                    <p className="flex items-center p-3 bg-gradient-to-r from-orange-200 to-orange-300 mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
+                    <div className="portal-evento bg-gradient-to-r from-amber-500 to-yellow-500 p-3 text-center rounded-2xl">
                         <label htmlFor="fileUpload" className="text-[#111827]!">Cargar portada</label>
                         <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange}  required/>
                     </div>
@@ -229,70 +229,70 @@ const CreateEventForm = () => {
                 </div>
                  <div className="event-form max-w-[70vw]">
                     <div className="mx-6 mb-3">
-                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-2xl overflow-hidden p-4">
-                            <h2 className="text-3xl font-bold text-white!">Crear nuevo evento:</h2>
-                            <label className="text-white!">Llena todos los campos para poder publicar tu evento</label>
+                        <div className="bg-gradient-to-r from-amber-600 to-yellow-500 rounded-2xl overflow-hidden p-4">
+                            <h2 className="text-3xl font-bold text-[#111827]!">Crear nuevo evento:</h2>
+                            <label className="text-[#111827]!">Llena todos los campos para poder publicar tu evento</label>
 
                         </div>
-                        <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
+                        <p className="w-[auto] flex items-center p-3 bg-gradient-to-r from-orange-200 to-orange-300 mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
                     </div>
-               <form className="create-event-form relative bg-white text-[#111827]! flex flex-wrap mx-9 rounded-2xl p-5" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
+               <form className="create-event-form relative bg-gradient-to-r from-gray-800 to-gray-900 text-[#111827]! flex flex-wrap mx-9 rounded-2xl p-5" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
                     <div className="create-event-form-div-child w-[50%]">
                         <div>
-                            <label>Pais del evento</label><br></br>
-                            <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
-                                <option value=''>Elegir país</option>
-                                {countries.map((cts) => (<option key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
+                            <label className="text-amber-500!">Pais del evento</label><br></br>
+                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
+                                <option className="text-white!" value=''>Elegir país</option>
+                                {countries.map((cts) => (<option className="text-[#111827]" key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
                             </select>
                         </div>
                         <div>
-                            <label>Privacidad del evento:</label><br></br>
-                            <select name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
+                            <label className="text-white!">Privacidad del evento:</label><br></br>
+                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
                                 <option value={1}>Publico</option>
                                 <option value={2}>Privado</option>
                             </select>
                         {pubOrPriv == 2 && <p className="w-[90%] p-2 bg-[#ffdeca] mt-1 mb-2 rounded-xl text-[#111827]">El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
                         </div>
                         <div>
-                            <label>Evento para mayores de edad:</label><br></br>
-                            <select onChange={(e) => setEstadoEdad(e.target.value)}>
+                            <label className="text-white!">Evento para mayores de edad:</label><br></br>
+                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" onChange={(e) => setEstadoEdad(e.target.value)}>
                                 <option value={1}>NO</option>
                                 <option value={2}>SI</option>
                             </select>
-                            {estadoEdad && <input type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
+                            {estadoEdad && <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
                         </div>
                         <div>
-                            <label>Nombre del evento:</label>
+                            <label className="text-white!">Nombre del evento:</label>
                             <div>
-                                <input type="text"  placeholder="..." name="nombreEvento" required></input>
+                                <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="nombreEvento" required></input>
                             </div>
                         </div>
                         <div>
                             <label>Descripcion del evento (opcional):</label>
                             <div>
-                                <textarea className="h-[199px]" type="text"  placeholder="..." name="descripcionEvento"></textarea>
+                                <textarea className="h-[199px] bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="descripcionEvento"></textarea>
                             </div>
                         </div>
                          <div>
                             <label>Aviso importante (opcional):</label>
                             <div>
-                                <textarea className="h-[165px]" type="text"  placeholder="..." name="aviso"></textarea>
+                                <textarea className="h-[165px] bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="aviso"></textarea>
                             </div>
                         </div>
                         <div>
                             <label htmlFor="fileUpload" className="text-[#111827]">Banner del evento (opcional)</label>
-                            <input id="fileUpload" className="" type="file" name="bannerEvento" onChange={handleBannerChange} />
+                            <input id="fileUpload" className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="file" name="bannerEvento" onChange={handleBannerChange} />
                         </div>
                         <div>
                             <label htmlFor="fileUpload" className="text-[#111827]">Imagen descriptiva (opcional)</label>
-                            <input id="fileUpload" className="" type="file" name="imagenDescriptiva" onChange={handleDescriptiveChange} />
+                            <input id="fileUpload" className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="file" name="imagenDescriptiva" onChange={handleDescriptiveChange} />
                         </div>
                     </div>
                     <div className="create-event-form-div-child w-[50%]">
                         <div>
                             <label>Categorias del evento:</label>
                             <div>
-                                <select onChange={handleChange} defaultValue="" required>
+                                <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" onChange={handleChange} defaultValue="" required>
                                     <option value="" disabled>Selecciona una categoría</option>
                                     <option value="baile">Baile</option>
                                     <option value="musica">Música</option>
@@ -306,55 +306,55 @@ const CreateEventForm = () => {
                             {categorias.map((cat, i) => ( 
                             <div key={i} className="flex ml-1 pt-2 pb-2 pl-3 pr-3 rounded-lg bg-orange-500">
                                 <label className="rounded-xl text-white!">{cat}</label>
-                                <button className="remove-cat ml-2 cursor-pointer" type="button" onClick={(e) => removeCategory(e, cat)}><img src={closePng} alt=""></img></button>
+                                <button className="remove-cat ml-2 cursor-pointer " type="button" onClick={(e) => removeCategory(e, cat)}><img src={closePng} alt=""></img></button>
                             </div>))}
                             </div>
                         </div>
                         <div>
                             <label>Artistas que participan (opcional):</label>
                             <div>
-                                <input type="text"  placeholder="..." name="artistas"></input>
+                                <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="artistas"></input>
                             </div>
                         </div>
                             <div>
                                 <label>Monto de ventas estimado:</label>
                                 <div>
-                                    <input type="number" min="1" placeholder="0" name="montoVentas" required></input>
+                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" min="1" placeholder="0" name="montoVentas" required></input>
                                 </div>
                             </div>
                             <div>
                                 <label>Comision para colaboradores por venta:</label>
                                 <div>
-                                    <input type="number" min="0" max="100" placeholder="0%" name="porcentajeRRPP" defaultValue={0} required></input>
+                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" min="0" max="100" placeholder="0%" name="porcentajeRRPP" defaultValue={0} required></input>
                                 </div>
                             </div>   
                             <div>
                                 <label>Fecha y hora de inicio:</label>
                                 <div>
-                                <input className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-white!" type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
+                                <input className="bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827]! border-[#111827]!" type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
                                 </div>
                             </div>
                             <div>
                                 <label>Fecha y hora de fin:</label>
                                 <div>
-                                    <input className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white!" type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
+                                    <input className="bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827]! border-[#111827]!" type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
                                 </div>
                             </div>
                                 <div>
                                     <label>Provincia:</label>
-                                    <select name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))} required>
-                                        <option value=''>Elegir</option>
+                                    <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))} required>
+                                        <option className="text-[#111827]" value=''>Elegir</option>
                                         {states.map((st) => (
-                                            <option key={st.isoCode} value={st.isoCode}>{st.name}</option>
+                                            <option className="text-[#111827]" key={st.isoCode} value={st.isoCode}>{st.name}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div>
                                     <label>Localidad:</label>
-                                    <select name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))} required>
-                                    <option value=''>Elegir</option>
+                                    <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))} required>
+                                    <option className="text-[#111827]" value=''>Elegir</option>
                                     {cities.map((city) => (
-                                        <option key={city.name} value={city.name}>{city.name}</option>
+                                        <option className="text-[#111827]" key={city.name} value={city.name}>{city.name}</option>
                                     ))}
                                     </select>
                                 </div>
@@ -362,19 +362,19 @@ const CreateEventForm = () => {
                             <div>
                                 <label>Direccion:</label>
                                 <div>
-                                    <input name="direccion" placeholder="..." required></input>
+                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="direccion" placeholder="..." required></input>
                                 </div>
                             </div>
                             <div>
                                 <label>Lugar del evento:</label>
                                 <div>
-                                    <input name="lugarEvento" placeholder="..." required></input>
+                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="lugarEvento" placeholder="..." required></input>
                                 </div>
                             </div>
                             <div>
                                 <label>Video del evento (opcional):</label>
                                 <div>
-                                    <input name="linkVideo" placeholder="..."></input>
+                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="linkVideo" placeholder="..."></input>
                                 </div>
                             </div>
                             
@@ -400,11 +400,11 @@ const CreateEventForm = () => {
                     </div>
                     <div className="relative mt-10 max-[760px]:mt-2 items-center flex flex-wrap">
                         <Link className='text-blue-500! underline!' to={"/conditions"}>Terminos y condiciones.</Link>
-                        <label className="text-md text-[#EC4899] ml-1">Acepto términos y condiciones</label>
+                        <label className="text-md text-white! ml-1">Acepto términos y condiciones</label>
                         <input className="mt-3 ml-2 w-[15px]! min-w-[15px]!" type="checkbox" required></input>
                     </div> 
                 </div>
-                    <button className="absolute right-4 bottom-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-lg max-[760px]:relative max-[760px]:w-full max-[760px]:mt-6 max-[760px]:right-0 max-[760px]:bottom-0" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
+                    <button className="absolute right-4 bottom-4 bg-yellow-600 p-4 rounded-lg max-[760px]:relative max-[760px]:w-full max-[760px]:mt-6 max-[760px]:right-0 max-[760px]:bottom-0 text-[#111827]! font-bold hover:bg-amber-300 transition-all duration-300" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
             </form> 
                 </div>   
             </div>
