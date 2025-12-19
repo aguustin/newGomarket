@@ -274,6 +274,7 @@ const EditProd = () => {
     const res = await updateTicketsRequest(formData);
 
     if (res.data.estado > 0) {
+      
       setTimeout(() => {
         setMessage(3);
         setTicketLoading(false);
@@ -421,10 +422,10 @@ const EditProd = () => {
 
   return (
     <>
-      <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-white border-[1px] border-gray-100 rounded-2xl p-5">
+      <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-gray-800 border-[1px] border-gray-700 rounded-2xl p-5">
         <div>
-          <div className="w-full bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-lg">
-            <h2 className="text-white! text-center text-2xl font-bold flex items-center justify-center">
+          <div className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 p-6 rounded-t-lg">
+            <h2 className="text-[#111827]! text-center text-2xl font-bold flex items-center justify-center">
               Editar evento
             </h2>
           </div>
@@ -460,7 +461,6 @@ const EditProd = () => {
               >
                 <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center">
                   <div className="">
-                    <h2 className="text-2xl">Editar evento</h2>
                     <img
                       className="w-[250px] h-[200px] object-cover rounded-lg"
                       src={previewPortada ?? p.imgEvento}
@@ -469,10 +469,10 @@ const EditProd = () => {
                     ></img>
                   </div>
                   <div className="edit-evet-desc text-left ml-4">
-                    <h2 className="text-3xl text-[#111827]">
+                    <h2 className="text-3xl text-gray-300!">
                       {p.nombreEvento}
                     </h2>
-                    <p className="mt-3 secondary-p">
+                    <p className="mt-3 text-gray-400!">
                       Puedes subir otra imagen para tu evento y cambiar su
                       información
                     </p>
@@ -484,7 +484,7 @@ const EditProd = () => {
                     <div className="edit-evet-img-upload top-15 right-10">
                       <label
                         htmlFor="imgEventoHtml"
-                        className="flex items-center border-[1px] border-gray-300 text-[#111827] p-3 rounded-2xl"
+                        className="flex items-center border-[1px] border-gray-300 text-gray-300! p-3 rounded-2xl"
                       >
                         <img className="mr-3" src={uploadPng} alt=""></img>
                         Cargar nueva portada
@@ -501,26 +501,26 @@ const EditProd = () => {
                     </div>
                     <div>
                       <button
-                        className="relation-buttons bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white! p-3 rounded-lg translate-x-auto!"
+                        className="relation-buttons bg-yellow-500 text-[#111827]! p-3 rounded-lg translate-x-auto!"
                         onClick={() => setShowOthersProds(!showOthersProds)}
                       >
                         Relacionar eventos
                       </button>
                       <button
-                        className="relation-buttons bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white! ml-3 p-3 rounded-lg translate-x-auto!"
+                        className="relation-buttons bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-[#111827] ml-3 p-3 rounded-lg translate-x-auto!"
                         onClick={() => setShowSoldOutAdv(!showSoldOutAdv)}
                       >
                         Marcar como Sold out
                       </button>
                       {showOthersProds && (
-                        <div className="bg-white! mt-2">
+                        <div className="mt-2 border-1 border-gray-500 rounded-xl">
                           {othersProds
                             .filter(
                               (othP) => !prod.some((p) => p._id === othP._id)
                             )
                             .map((filteredProd) => (
                               <div
-                                className="bg-[#f4f4f4] border-b-1 border-gray-300 p-2"
+                                className="bg-gray-900 border-b-1 border-gray-300 p-2 rounded-xl"
                                 key={filteredProd._id}
                               >
                                 <div className="flex flex-wrap text-[#111827] text-left mb-3 justify-between">
@@ -531,12 +531,12 @@ const EditProd = () => {
                                       alt=""
                                     ></img>
                                     <div className="ml-2">
-                                      <p>{filteredProd.nombreEvento}</p>
-                                      <p>
+                                      <p className="text-gray-300!">{filteredProd.nombreEvento}</p>
+                                      <p className="text-gray-400">
                                         Inicio:{" "}
                                         {formatDateB(filteredProd.fechaInicio)}
                                       </p>
-                                      <p>
+                                      <p className="text-gray-400">
                                         Cierre:{" "}
                                         {formatDateB(filteredProd.fechaFin)}
                                       </p>
@@ -558,7 +558,7 @@ const EditProd = () => {
                                         : "Relacionar evento"}
                                     </button>
                                     <a
-                                      className="bg-transparent border-1 border-gray-300! rounded-lg p-1"
+                                      className="bg-transparent border-1 border-gray-300! rounded-lg p-1 text-yellow-500"
                                       href={`/editar_evento/${filteredProd._id}`}
                                     >
                                       Ver evento
@@ -708,10 +708,11 @@ const EditProd = () => {
                 <div className="edit-info-event flex justify-center">
                   <div className="p-3">
                     <div>
-                      <label>Nombre del evento:</label>
+                      <label className="text-gray-300!">Nombre del evento:</label>
                       <br></br>
                       <input
                         type="text"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         value={
                           eventosEditados[p._id]?.nombreEvento ?? p.nombreEvento
                         }
@@ -721,10 +722,11 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div>
-                      <label>Descripcion:</label>
+                      <label className="text-gray-300!">Descripcion:</label>
                       <br></br>
                       <input
                         type="textarea"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         value={
                           eventosEditados[p._id]?.descripcionEvento ??
                           p.descripcionEvento
@@ -735,19 +737,21 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div>
-                      <label>Aviso importante:</label>
+                      <label className="text-gray-300!">Aviso importante:</label>
                       <br></br>
                       <input
                         type="textarea"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         value={eventosEditados[p._id]?.aviso ?? p.aviso}
                         onChange={(e) => handleChangeEvento(e, p._id, "aviso")}
                       ></input>
                     </div>
                     <div>
-                      <label>Edad minima:</label>
+                      <label className="text-gray-300!">Edad minima:</label>
                       <br></br>
                       <input
                         type="number"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         value={
                           eventosEditados[p._id]?.eventoEdad ?? p.eventoEdad
                         }
@@ -761,10 +765,11 @@ const EditProd = () => {
                                             <input type="text"  placeholder="..." value={eventosEditados[p._id]?.categorias ??  p.categorias} onChange={(e) => handleChangeEvento(e, p._id, 'categorias')} name="categorias"></input>
                                         </div>*/}
                     <div>
-                      <label>Artistas que participan:</label>
+                      <label className="text-gray-300!">Artistas que participan:</label>
                       <br></br>
                       <input
                         type="text"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         placeholder="..."
                         value={eventosEditados[p._id]?.artistas ?? p.artistas}
                         onChange={(e) =>
@@ -774,12 +779,13 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div>
-                      <label>Monto de ventas estimado:</label>
+                      <label className="text-gray-300!">Monto de ventas estimado:</label>
                       <br></br>
                       <input
                         type="number"
                         min="0"
                         placeholder="0"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         value={
                           eventosEditados[p._id]?.montoVentas ?? p.montoVentas
                         }
@@ -792,13 +798,13 @@ const EditProd = () => {
                     <div>
                       <label
                         htmlFor="fileUploadBanner"
-                        className="text-[#111827]"
+                        className="text-gray-300! "
                       >
                         Banner del evento (opcional)
                       </label>
                       <input
                         id="fileUploadBanner"
-                        className=""
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         type="file"
                         name="bannerEvento"
                         onChange={handleBannerChange}
@@ -808,13 +814,13 @@ const EditProd = () => {
                     <div>
                       <label
                         htmlFor="fileUploadDescriptive"
-                        className="text-[#111827]"
+                        className="text-gray-300!"
                       >
                         Imagen descriptiva (opcional)
                       </label>
                       <input
                         id="fileUploadDescriptive"
-                        className=""
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         type="file"
                         name="imagenDescriptiva"
                         onChange={handleDescriptiveChange}
@@ -824,10 +830,10 @@ const EditProd = () => {
                   </div>
                   <div className="relative p-3">
                     <div>
-                      <label>Fecha y hora de inicio:</label>
+                      <label className="text-gray-300!">Fecha y hora de inicio:</label>
                       <br></br>
                       <input
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white!"
+                        className="bg-amber-600! hover:from-blue-600 hover:to-purple-600 text-[#111827]!"
                         type="datetime-local"
                         value={formatearFechaParaInput(
                           eventosEditados[p._id]?.fechaInicio ?? p.fechaInicio
@@ -844,10 +850,10 @@ const EditProd = () => {
                       )}
                     </div>
                     <div>
-                      <label>Fecha y hora de fin:</label>
+                      <label className="text-gray-300!">Fecha y hora de fin:</label>
                       <br></br>
                       <input
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 to-pink-500 text-white!"
+                        className="bg-amber-600! hover:from-blue-600 hover:to-purple-600 to-pink-500 text-[#111827]!"
                         type="datetime-local"
                         value={formatearFechaParaInput(
                           eventosEditados[p._id]?.fechaFin ?? p.fechaFin
@@ -865,13 +871,13 @@ const EditProd = () => {
                     </div>
                     <div className="prov-localidad flex items-center p-0! text-left!">
                       <div className="w-[100%]!">
-                        <label>
+                        <label className="text-gray-300!">
                           Visibilidad del evento:{" "}
                           {p.tipoEvento === 1 ? "Publico" : "Privado"}
                         </label>
                         <br></br>
                         <select
-                          className="pr-2 pl-2 rounded-lg py-4!"
+                          className="pr-2 pl-2 rounded-lg py-4! bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                           name="tipoEvento"
                           value={
                             eventosEditados[p._id]?.tipoEvento ??
@@ -882,10 +888,10 @@ const EditProd = () => {
                         >
                           {p.tipoEvento === 1 ? (
                             <>
-                              <option value={1} selected>
+                              <option className="text-[#111827]" value={1} selected>
                                 Publico
                               </option>
-                              <option value={2}>Privado</option>
+                              <option className="text-[#111827]" value={2}>Privado</option>
                             </>
                           ) : (
                             <>
@@ -906,10 +912,10 @@ const EditProd = () => {
                                                 </select>
                                             </div>*/}
                       <div className="w-[100%]! ">
-                        <label>Localidad: {p.localidad}</label>
+                        <label className="text-gray-300!">Localidad: {p.localidad}</label>
                         <br></br>
                         <select
-                          className="pr-2 pl-2 rounded-lg py-4!"
+                          className="pr-2 pl-2 rounded-lg py-4! bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                           name="localidad"
                           onChange={(e) =>
                             setLocalidad(
@@ -917,7 +923,7 @@ const EditProd = () => {
                             )
                           }
                         >
-                          <option
+                          <option className="text-[#111827]!"
                             value={
                               eventosEditados[p._id]?.localidad ?? p.localidad
                             }
@@ -925,7 +931,7 @@ const EditProd = () => {
                             Cambiar localidad
                           </option>
                           {cities.map((city) => (
-                            <option key={city.name} value={city.name}>
+                            <option className="text-[#111827]!" key={city.name} value={city.name}>
                               {city.name}
                             </option>
                           ))}
@@ -939,10 +945,11 @@ const EditProd = () => {
                       </div>
                     </div>
                     <div>
-                      <label>Direccion:</label>
+                      <label className="text-gray-300!">Direccion:</label>
                       <br></br>
                       <input
                         name="direccion"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         value={eventosEditados[p._id]?.direccion ?? p.direccion}
                         onChange={(e) =>
                           handleChangeEvento(e, p._id, "direccion")
@@ -954,6 +961,7 @@ const EditProd = () => {
                       <br></br>
                       <input
                         type="text"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
                         value={
                           eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento
                         }
@@ -1043,13 +1051,13 @@ const EditProd = () => {
                 onClick={() => setShowCreateTicketForm(!showCreateTicketForm)}
               ></div>
               <form
-                className="add-tickets-form fixed pl-4 pr-7 pb-4 rounded-xl"
+                className="add-tickets-form fixed pl-4 pr-7 pb-4 rounded-xl bg-gray-800!"
                 onSubmit={createEventTickets}
                 encType="multipart/form-data"
               >
                 <div className="mt-4">
                   <div className="flex items-center">
-                    <h3 className="text-xl">Crear nuevo ticket:</h3>
+                    <h3 className="text-xl text-yellow-600!">Crear nuevo ticket:</h3>
                     <img
                       className="ml-5"
                       src={ticketPng}
@@ -1058,8 +1066,9 @@ const EditProd = () => {
                     ></img>
                   </div>
                   <div className="mt-4">
-                    <label>Nombre del ticket:</label>
+                    <label className="text-gray-200!">Nombre del ticket:</label>
                     <input
+                      className="text-gray-300! border-amber-500!"
                       type="text"
                       placeholder="..."
                       name="nombreTicket"
@@ -1067,8 +1076,9 @@ const EditProd = () => {
                     ></input>
                   </div>
                   <div className="mt-2">
-                    <label>Descripcion del ticket:</label>
+                    <label className="text-gray-300!">Descripcion del ticket:</label>
                     <input
+                      className="text-gray-300! border-amber-500!"
                       type="text"
                       placeholder="..."
                       name="descripcionTicket"
@@ -1078,9 +1088,9 @@ const EditProd = () => {
                   <div className="price-qty-state flex items-center mt-3">
                     {estado !== "3" && (
                       <div>
-                        <label>Precio del ticket:</label>
+                        <label className="text-gray-300!">Precio del ticket:</label>
                         <input
-                          className="w-[120px]"
+                          className="w-[120px] text-gray-300! border-amber-500!"
                           type="number"
                           min="1"
                           placeholder="..."
@@ -1090,9 +1100,9 @@ const EditProd = () => {
                       </div>
                     )}
                     <div className="qty">
-                      <label>Cantidad:</label>
+                      <label className="text-gray-300!">Cantidad:</label>
                       <input
-                        className="w-[120px]"
+                        className="w-[120px] text-gray-300! border-amber-500!"
                         type="number"
                         min="1"
                         placeholder="..."
@@ -1101,45 +1111,47 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div className="est ml-3">
-                      <label>Estado:</label>
+                      <label className="text-gray-300!">Estado:</label>
                       <br></br>
                       <select
-                        className="pr-2 pl-2  rounded-lg"
+                        className="pr-2 pl-2 rounded-lg text-gray-300! border-amber-500!"
                         name="estado"
                         onChange={(e) => setEstado(e.target.value)}
                         ref={estadoRef}
                       >
-                        <option value={1}>Activo</option>
-                        <option value={2}>No visible</option>
-                        <option value={3}>Cortesia</option>
+                        <option className="text-[#111827]" value={1}>Activo</option>
+                        <option className="text-[#111827]" value={2}>No visible</option>
+                        <option className="text-[#111827]" value={3}>Cortesia</option>
                       </select>
                     </div>
                   </div>
                   {estado === "3" && (
                     <div className="est mt-3">
-                      <label>Para:</label>
+                      <label className="text-gray-300!">Para:</label>
                       <br></br>
                       <select
-                        className="ml-1"
+                        className="ml-1 text-gray-300! border-amber-500!"
                         name="distribution"
                         onChange={(e) => setDistribution(e.target.value)}
                       >
-                        <option value={1}>RRPP</option>
-                        <option value={2}>Clientes</option>
+                        <option className="text-[#111827]" value={1}>RRPP</option>
+                        <option className="text-[#111827]" value={2}>Clientes</option>
                       </select>
                     </div>
                   )}
                   <div className=" mt-2">
-                    <label>Limite a sacar por persona:</label>
+                    <label className="text-gray-300!">Limite a sacar por persona:</label>
                     <input
                       type="number"
                       name="limit"
                       placeholder="Ej: 3"
+                      className="text-gray-300! border-amber-500!"
                     ></input>
                   </div>
                   <div className="edit-form-date mt-3">
-                    <label>Fecha y hora de fin:</label>
+                    <label className="text-gray-300!">Fecha y hora de fin:</label>
                     <input
+                      className="text-gray-300! border-amber-500!"
                       type="datetime-local"
                       value={closeDate}
                       onChange={(e) => setCloseDate(e.target.value)}
@@ -1151,13 +1163,13 @@ const EditProd = () => {
                                         <input type="checkbox" name="visibilidad" onChange={(e) => setVisibilidad(e.target.value)}/>
                                 </div>*/}
                   <div className="mt-2">
-                    <label>Imagen del ticket</label>
-                    <input type="file" name="imgTicket"></input>
+                    <label className="text-gray-300!">Imagen del ticket</label>
+                    <input className="text-gray-300! border-amber-500!" type="file" name="imgTicket"></input>
                   </div>
                 </div>
                 <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-5">
                   <button
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white! p-2 rounded-xl"
+                    className="bg-amber-600 p-2 rounded-xl"
                     onClick={() =>
                       changeButton
                         ? window.location.reload(false)
@@ -1167,7 +1179,7 @@ const EditProd = () => {
                     {changeButton ? "Confirmar tickets" : "Cancelar"}{" "}
                   </button>
                   <button
-                    className="w-[180px]  bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl p-2"
+                    className="w-[180px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] rounded-xl p-2"
                     type="submit"
                   >
                     {loadingCreateTicket ? <LoadingButton /> : "Agregar ticket"}
@@ -1191,7 +1203,7 @@ const EditProd = () => {
         <div className="edit-tickets-container mt-10">
           <div className="add-ticket flex items-center mb-3">
             <button
-              className="flex items-center pt-1 pb-1 pl-3 pr-3 mt-[75px]! bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white cursor-pointer rounded-lg ml-3"
+              className="flex items-center pt-1 pb-1 pl-3 pr-3 mt-[75px]! bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] cursor-pointer rounded-lg "
               type="button"
               onClick={() => setShowCreateTicketForm(true)}
             >
@@ -1211,7 +1223,7 @@ const EditProd = () => {
                     className="flex justify-center mx-auto text-center"
                     key={tick._id}
                   >
-                    <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3 p-1!">
+                    <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3 p-1! pt-2! pb-2!">
                       <img
                         className="ticket-img w-[60px] h-[60px] rounded-xl ml-1"
                         src={tick.imgTicket ?? goPng}
@@ -1219,13 +1231,13 @@ const EditProd = () => {
                         loading="lazy"
                       ></img>
                       <div className="summary-event-info text-left w-full">
-                        <p className="primary-p text-sm ml-3">
+                        <p className="text-sm text-gray-200 ml-3">
                           {tick.nombreTicket}
                         </p>
-                        <p className="secondary-p text-sm ml-3 ">
+                        <p className="text-sm text-gray-400 ml-3 ">
                           {tick.precio >= 0 ? `$${tick.precio}` : "Cortesia"}
                         </p>
-                        <p className="secondary-p text-sm ml-3 flex items-center">
+                        <p className="text-sm text-gray-400 ml-3 flex items-center">
                           Cant. :
                           <img
                             className="h-[16px]! w-[16px]! ml-2 mr-1"
@@ -1234,7 +1246,7 @@ const EditProd = () => {
                           ></img>
                           {tick.cantidad ?? tick.cantidadDeCortesias}
                         </p>
-                        <p className="secondary-p text-sm ml-3 flex flex-wrap items-center">
+                        <p className="text-sm text-amber-500 ml-3 flex flex-wrap items-center">
                           Cierre:{" "}
                           <img
                             className="h-[16px]! w-[16px]! ml-2 mr-1"
@@ -1245,7 +1257,7 @@ const EditProd = () => {
                         </p>
                       </div>
                       <button
-                        className="editProd-edit-ticket primary-p p-3 cursor-pointer text-md rounded-xl"
+                        className="editProd-edit-ticket text-yellow-500 p-3 cursor-pointer text-md rounded-xl"
                         onClick={(e) => showTicketFunc(e, tick._id)}
                       >
                         Editar
@@ -1258,22 +1270,24 @@ const EditProd = () => {
                         className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
                         onClick={() => setOpenTicketId(null)}
                       ></div>
-                      <div className="add-tickets-form fixed p-6 rounded-lg">
+                      <div className="add-tickets-form fixed p-6 rounded-lg bg-gray-800!">
                         <div className="mt-3 mb-3">
-                          <label>Cambiar imagen del ticket:</label>
+                          <label className="text-gray-200!">Cambiar imagen del ticket:</label>
                           <br></br>
                           <input
                             type="file"
                             name="imgTicket"
+                            className="border-amber-500! text-gray-400!"
                             ref={(el) => (fileRefsB.current[tick._id] = el)}
                           />
                         </div>
                         <div>
-                          <label>Nombre del ticket:</label>
+                          <label className="text-gray-200!">Nombre del ticket:</label>
                           <br></br>
                           <input
                             type="text"
                             name="nombreTicket"
+                            className="border-amber-500! text-gray-400!"
                             value={
                               ticketData[tick._id]?.nombreTicket ??
                               tick.nombreTicket
@@ -1290,11 +1304,12 @@ const EditProd = () => {
                           ></input>
                         </div>
                         <div>
-                          <label>Descripcion del ticket</label>
+                          <label className="text-gray-200!">Descripcion del ticket</label>
                           <br></br>
                           <input
                             type="text"
                             name="descripcionTicket"
+                            className="border-amber-500! text-gray-400!"
                             value={
                               ticketData[tick._id]?.descripcionTicket ??
                               tick.descripcionTicket
@@ -1313,12 +1328,13 @@ const EditProd = () => {
                         {Number(ticketData[tick._id]?.estado ?? tick.estado) !==
                           3 && (
                           <div>
-                            <label>Precio:</label>
+                            <label className="text-gray-200!">Precio:</label>
                             <br />
                             <input
                               type="number"
                               min="1"
                               name="precio"
+                              className="border-amber-500! text-gray-400!"
                               value={
                                 ticketData[tick._id]?.precio ?? tick.precio
                               }
@@ -1335,12 +1351,13 @@ const EditProd = () => {
                           </div>
                         )}
                         <div>
-                          <label>Cantidad:</label>
+                          <label className="text-gray-200!">Cantidad:</label>
                           <br></br>
                           <input
                             type="number"
                             min="1"
                             name="cantidad"
+                            className="border-amber-500! text-gray-400!"
                             value={
                               ticketData[tick._id]?.cantidad ?? tick.cantidad
                             }
@@ -1356,12 +1373,13 @@ const EditProd = () => {
                           ></input>
                         </div>
                         <div>
-                          <label>Limite:</label>
+                          <label className="text-gray-200!">Limite:</label>
                           <br></br>
                           <input
                             type="number"
                             min="1"
                             name="limit"
+                            className="border-amber-500! text-gray-400!"
                             value={ticketData[tick._id]?.limit ?? tick.limit}
                             onChange={(e) =>
                               setTicketData((prev) => ({
@@ -1375,21 +1393,21 @@ const EditProd = () => {
                           ></input>
                         </div>
                         <div className="mt-3 mb-3">
-                          <label>Estado:</label>
+                          <label className="text-gray-200!">Estado:</label>
                           <br></br>
                           <select
-                            className="rounded-lg"
+                            className="rounded-lg border-amber-500! text-gray-400!"
                             name="estado"
                             ref={estadoRef}
                           >
-                            <option value={tick.estado}>
+                            <option className="text-gray-900!" value={tick.estado}>
                               {(tick.estado === 1 && "Activo") ||
                                 (tick.estado === 2 && "No visible") ||
                                 (tick.estado === 3 && "Cortesia")}
                             </option>
-                            <option value={1}>Activo</option>
-                            <option value={2}>No visible</option>
-                            <option value={3}>Cortesia</option>
+                            <option className="text-gray-900!" value={1}>Activo</option>
+                            <option className="text-gray-900!" value={2}>No visible</option>
+                            <option className="text-gray-900!" value={3}>Cortesia</option>
                           </select>
                         </div>
                         <div className="mt-3">
@@ -1402,6 +1420,7 @@ const EditProd = () => {
                               <br></br>
                               <input
                                 type="datetime-local"
+                                className="border-amber-500! text-gray-400!"
                                 value={
                                   ticketData[tick._id]?.fechaDeCierre ??
                                   tick.fechaDeCierre
@@ -1433,13 +1452,13 @@ const EditProd = () => {
                                             </div> */}
                         <div className="flex items-center justify-between">
                           <button
-                            className="secondary-button-fucsia mt-5 p-3 w-[100px] rounded-lg"
+                            className="bg-amber-600 mt-5 p-3 w-[100px] rounded-lg"
                             onClick={() => setOpenTicketId(null)}
                           >
                             Cancelar
                           </button>
                           <button
-                            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white mt-5 p-3 w-[100px] rounded-lg cursor-pointer"
+                            className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] mt-5 p-3 w-[100px] rounded-lg cursor-pointer"
                             onClick={(e) =>
                               editEventTicket(
                                 e,
@@ -1473,16 +1492,16 @@ const EditProd = () => {
           >
             <div className="flex flex-wrap items-center">
               <input
-                className="h-[40px] text-sm"
+                className="h-[40px] text-sm text-gray-200!"
                 type="email"
-                placeholder="añade un colaborador"
+                placeholder="..."
                 minLength="8"
                 maxLength="60"
                 name="rrppMail"
                 required
               ></input>
               <button
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white flex items-center p-2 cursor-pointer rounded-xl ml-3 text-sm"
+                className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-white flex items-center p-2 cursor-pointer rounded-xl ml-3 text-sm text-[#111827]!"
                 type="submit"
               >
                 Añadir Colaborador
@@ -1501,14 +1520,14 @@ const EditProd = () => {
           </form>
           <div className="edit-prod-bottom-buttons flex flex-wrap justify-center items-center">
             <Link
-              className="flex items-center mx-2 p-2 border-[1px] border-gray-300 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2!"
+              className="flex items-center mx-2 p-2 border-[1px] border-gray-600 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2! bg-gradient-to-r from-amber-500 to-yellow-500"
               to={`/editar_evento/staff/${prod[0]?._id}`}
             >
               <img src={qrCodePng} alt="" loading="lazy"></img>
               <p className="ml-2">Enviar Invitaciónes</p>
             </Link>
             <Link
-              className="flex items-center mx-2 p-2 border-[1px] border-gray-300 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2!"
+              className="flex items-center mx-2 p-2 border-[1px] border-gray-600 rounded-lg text-[#111827] text-sm! min-w-[240px] mt-2! bg-gradient-to-r from-amber-500 to-yellow-500"
               to={`/cortesies/${prod[0]?._id}`}
             >
               <img src={qrCodePng} alt="" loading="lazy"></img>

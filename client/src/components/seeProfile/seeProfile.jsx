@@ -25,14 +25,14 @@ const ProfileCards = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
+    <div className="min-h-screen py-12 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white! mb-4">
             Perfiles
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-300">
             {userId === session?.userFinded?.[0]?._id ? 'Gestiona tu información personal o de tu productora' : `Perfil - ${profile?.[0]?.nombreCompleto ?? profile?.[0]?.nombreTitularProductora}`}
           </p>
         </div>
@@ -43,7 +43,7 @@ const ProfileCards = () => {
                 <img 
                   src={session?.userFinded?.[0]?.imagenProductora ?? userPng} 
                   alt="Perfil"
-                  className="w-42 h-42 rounded-full object-cover border-4 border-gray-300"
+                  className="w-42 h-42 rounded-full object-cover border-4 border-gray-600"
                 />
               </div>
             </div>)}
@@ -51,14 +51,14 @@ const ProfileCards = () => {
         {/* Profile Cards Grid */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-start">
           {/* Perfil Particular */}
-          <div className="relative bg-white rounded-3xl p-8 pb-8 border-2 border-gray-200 hover:border-indigo-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+          <div className="relative bg-gray-800 rounded-3xl p-8 pb-8 border-2 border-gray-800 hover:border-indigo-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="bg-indigo-100 p-3 rounded-xl">
+                <div className="bg-yellow-500 p-3 rounded-xl">
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Particular</h2>
+                <h2 className="text-2xl font-bold text-yellow-500!">Particular</h2>
               </div>
-              <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="bg-gray-900 text-yellow-500 px-3 py-1 rounded-full text-sm font-semibold">
                 Personal
               </span>
             </div>
@@ -69,52 +69,52 @@ const ProfileCards = () => {
             <div className="space-y-4">
               {profile.map((pr) =>  
                 <>
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                   <div className="flex items-start gap-3">
                   
                     <div className="flex-1">
-                      <p className="text-xs text-gray-600 mb-1">Nombre</p>
-                      <p className="text-gray-900 font-semibold">{pr.nombreCompleto}</p>
+                      <p className="text-xs text-amber-500! mb-1">Nombre</p>
+                      <p className="text-gray-300 font-semibold">{pr.nombreCompleto}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                   <div className="flex items-start gap-3">
                   
                     <div className="flex-1">
-                      <p className="text-xs text-gray-600 mb-1">Email</p>
-                      <p className="text-gray-900 font-semibold break-all">{pr.mail}</p>
+                      <p className="text-xs text-amber-500! mb-1">Email</p>
+                      <p className="text-gray-300 font-semibold break-all">{pr.mail}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                   <div className="flex items-start gap-3">
                     
                     <div className="flex-1">
-                      <p className="text-xs text-gray-600 mb-1">Teléfono</p>
-                      <p className="text-gray-900 font-semibold">{pr.telefono}</p>
+                      <p className="text-xs text-amber-500! mb-1">Teléfono</p>
+                      <p className="text-gray-300 font-semibold">{pr.telefono}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                   <div className="flex items-start gap-3">
                   
                     <div className="flex-1">
-                      <p className="text-xs text-gray-600 mb-1">País</p>
-                      <p className="text-gray-900 font-semibold">{pr.pais}</p>
+                      <p className="text-xs text-amber-500! mb-1">País</p>
+                      <p className="text-gray-300 font-semibold">{pr.pais}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                   <div className="flex items-start gap-3">
                   
                     <div className="flex-1">
-                      <p className="text-xs text-gray-600 mb-1">Titular</p>
-                      <p className="text-gray-900 font-semibold">{pr.nombreTitular}</p>
+                      <p className="text-xs text-amber-500! mb-1">Titular</p>
+                      <p className="text-gray-300 font-semibold">{pr.nombreTitular}</p>
                     </div>
                   </div>
                 </div>
@@ -123,21 +123,21 @@ const ProfileCards = () => {
             </div>
 
             {/* Action Button */}
-            {userId === session?.userFinded?.[0]?._id && <button className="w-[100%] text-center mt-6 bg-[#EC4899] bg-orange-500! hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link to={'/user_info'} className="text-white! font-semibold">
+            {userId === session?.userFinded?.[0]?._id && <button className="w-[100%] text-center mt-6 bg-[#EC4899] bg-yellow-500! hover:bg-indigo-800 text-[#111827]! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link to={'/user_info'} className="text-[#111827]! font-semibold">
               Editar Perfil
             </Link></button>}
           </div>
 
           {/* Perfil Productora */}
-          <div className="relative bg-white rounded-3xl p-8 pb-8 border-2 border-gray-200 hover:border-indigo-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+          <div className="relative bg-gray-800 rounded-3xl p-8 pb-8 border-2 border-gray-200 hover:border-indigo-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="bg-pink-100 p-3 rounded-xl">
+                <div className="bg-amber-600 p-3 rounded-xl">
                  
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Productora</h2>
+                <h2 className="text-2xl font-bold text-amber-600!">Productora</h2>
               </div>
-              <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="bg-gray-900 text-amber-600 px-3 py-1 rounded-full text-sm font-semibold">
                 Empresa
               </span>
             </div>
@@ -148,62 +148,62 @@ const ProfileCards = () => {
             <div className="space-y-4">
               {profile.map((pr) => 
                 <>
-                  <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                     <div className="flex items-start gap-3">
                       
                       <div className="flex-1">
-                        <p className="text-xs text-gray-600 mb-1">Nombre</p>
-                        <p className="text-gray-900 font-semibold">{pr.nombreProductora}</p>
+                        <p className="text-xs text-amber-500! mb-1">Nombre</p>
+                        <p className="text-gray-300 font-semibold">{pr.nombreProductora}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                     <div className="flex items-start gap-3">
                       
                       <div className="flex-1">
-                        <p className="text-xs text-gray-600 mb-1">Email</p>
-                        <p className="text-gray-900 font-semibold break-all">{pr.mailProductora}</p>
+                        <p className="text-xs text-amber-500! mb-1">Email</p>
+                        <p className="text-gray-300 font-semibold break-all">{pr.mailProductora}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                     <div className="flex items-start gap-3">
                       
                       <div className="flex-1">
-                        <p className="text-xs text-gray-600 mb-1">Teléfono</p>
-                        <p className="text-gray-900 font-semibold">{pr.telefonoProductora}</p>
+                        <p className="text-xs text-amber-500! mb-1">Teléfono</p>
+                        <p className="text-gray-300 font-semibold">{pr.telefonoProductora}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                     <div className="flex items-start gap-3">
                     
                       <div className="flex-1">
-                        <p className="text-xs text-gray-600 mb-1">Domicilio</p>
-                        <p className="text-gray-900 font-semibold">{pr.domicilioProductora}</p>
+                        <p className="text-xs text-amber-500! mb-1">Domicilio</p>
+                        <p className="text-gray-300 font-semibold">{pr.domicilioProductora}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                     <div className="flex items-start gap-3">
                     
                       <div className="flex-1">
-                        <p className="text-xs text-gray-600 mb-1">País</p>
-                        <p className="text-gray-900 font-semibold">{pr.paisProductora}</p>
+                        <p className="text-xs text-amber-500! mb-1">País</p>
+                        <p className="text-gray-300 font-semibold">{pr.paisProductora}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                     <div className="flex items-start gap-3">
                     
                       <div className="flex-1">
-                        <p className="text-xs text-gray-600 mb-1">Titular</p>
-                        <p className="text-gray-900 font-semibold">{pr.nombreTitularProductora}</p>
+                        <p className="text-xs text-amber-500! mb-1">Titular</p>
+                        <p className="text-gray-300 font-semibold">{pr.nombreTitularProductora}</p>
                       </div>
                     </div>
                   </div>
@@ -212,7 +212,7 @@ const ProfileCards = () => {
             </div>
 
             {/* Action Button */}
-            {userId === session?.userFinded?.[0]?._id && <button className="w-[100%] text-center mt-6 bg-[#EC4899] bg-orange-500! hover:bg-indigo-800 text-white! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link to={'/user_info'} className="text-white! font-semibold">
+            {userId === session?.userFinded?.[0]?._id && <button className="w-[100%] text-center mt-6 bg-[#EC4899] bg-orange-500! hover:bg-indigo-800 text-[#111827]! font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link to={'/user_info'} className="text-[#111827]! font-semibold">
               Editar perfil
             </Link></button>}
           </div>

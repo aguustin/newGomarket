@@ -333,7 +333,8 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
     cantidad,
     fechaDeCierre,
     visibilidad,
-    estado
+    estado,
+    limit
   } = req.body;
   
  let estadoInt = Number(estado)     
@@ -343,10 +344,11 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
   const commonFields = {
     nombreTicket,
     descripcionTicket,
-    cantidad,
+    //cantidad,
     fechaDeCierre,
     visibilidad,
-    estado:estadoInt
+    estado:estadoInt,
+    limit
   };
 
   if (imgUrl) {
@@ -366,18 +368,24 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
 const updateTicket = async (imgUrl = null) => {
   const updateFields = buildUpdateFields(imgUrl);
   const pathPrefix = estadoInt === 3 ? "cortesiaRRPP" : "tickets";
-  const cantidadField = estadoInt === 3 ? "cantidadDeCortesias" : "cantidad";
+  //const cantidadField = estadoInt === 3 ? "cantidadDeCortesias" : "cantidad";
   
+  const updateSet = Object.fromEntries(
+    Object.entries(updateFields).map(([key, value]) => [
+      `${pathPrefix}.$.${key}`,
+      value
+    ])
+  );
+
+  if (estadoInt === 3) {
+    updateSet[`${pathPrefix}.$.cantidadDeCortesias`] = cantidad;
+  } else {
+    updateSet[`${pathPrefix}.$.cantidad`] = cantidad;
+  }
+
   const updateResult = await ticketModel.updateOne(
     { [`${pathPrefix}._id`]: ticketId },
-    {
-      $set: Object.fromEntries(
-        Object.entries(updateFields).map(([key, value]) => [
-          `${pathPrefix}.$.${key}`,
-          value
-        ])
-      )
-    }
+    { $set: updateSet }
   );
 
   return updateResult;
@@ -397,7 +405,7 @@ const updateTicket = async (imgUrl = null) => {
         return res.status(200).json({
           url: result.secure_url,
           updated: updateResult.modifiedCount > 0,
-          state: 1
+          estado: 1
         });
       }
     ).end(req.file.buffer);
