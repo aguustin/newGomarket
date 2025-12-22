@@ -32,7 +32,7 @@ const Contact = () => {
         <>
         <div className="pt-1 pb-1">
             <img className="h-[70px] mx-auto mt-9 " src={goOriginalPng} alt=""></img>
-            <form className="bg-gray-800 h-full mt-4 mb-9 mx-auto w-[450px] rounded-lg" onSubmit={(e) => contactarFunc(e)}>
+            <form className="bg-gray-800 h-full mt-4 mb-9 mx-auto w-[450px] max-[500px]:w-[90%] rounded-lg" onSubmit={(e) => contactarFunc(e)}>
                 <div className="text-center p-4">
                     <h2 className="text-3xl text-gray-200!">Comunicate con nosotros</h2>
                 </div>

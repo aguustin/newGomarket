@@ -165,7 +165,7 @@ const Home = () => {
                             <form className="search-form justify-center flex items-center w-full">
                                 <p className="text-lg w-[170px] text-white">Buscar evento:</p>
                                 <input
-                                    className="max-[575px]:w-[90%] w-full bg-white text-black ml-3 p-3 border-[1px] border-gray-200 rounded-3xl"
+                                    className="max-[575px]:w-[90%] w-full bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! ml-3 p-3 border-[1px] border-gray-200 rounded-3xl"
                                     placeholder="Go Busqueda"
                                     name="searchEvent"
                                     onChange={(e) => setSearch(e.target.value)}
@@ -179,26 +179,26 @@ const Home = () => {
                                 Filtrado
                             </p>
                             <select
-                                className="px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="px-4 py-2 rounded-lg border bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={provinciaSeleccionada}
                                 onChange={(e) => setProvinciaSeleccionada(e.target.value)}
                             >
                                 <option value="">Provincia</option>
                                 {provincias.map((prov) => (
-                                    <option key={prov.isoCode} value={prov.isoCode}>
+                                    <option className="text-black" key={prov.isoCode} value={prov.isoCode}>
                                         {prov.name}
                                     </option>
                                 ))}
                             </select>
                             <select
-                                className="max-[575px]:w-[70%]! px-4 py-2 rounded-lg border border-gray-300 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="max-[575px]:w-[70%]! px-4 py-2 rounded-lg border bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 value={localidadSeleccionada}
                                 onChange={(e) => setLocalidadSeleccionada(e.target.value)}
                                 disabled={!provinciaSeleccionada}
                             >
                                 <option value="">Localidad</option>
                                 {localidades.map((loc) => (
-                                    <option key={loc.name} value={loc.name}>
+                                    <option className="text-black" key={loc.name} value={loc.name}>
                                         {loc.name}
                                     </option>
                                 ))}

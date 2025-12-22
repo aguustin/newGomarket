@@ -37,7 +37,6 @@ export const Timer = ({duration}) => {
 
 export default function FadeInImage({ src, alt, className }) {
     const [loaded, setLoaded] = useState(false);
-    //const defaultImage = "../assets/LogoPrueba.jpg";
     
     return (
         <div className="relative">
@@ -117,8 +116,6 @@ export const MapComponent = ({ provincia, direccion }) => {
           const lat = location.lat();
           const lng = location.lng();
           setCenter({ lat, lng });
-
-          // Crear URL para compartir
           const url = `https://www.google.com/maps?q=${lat},${lng}`;
           setShareUrl(url);
         } else {

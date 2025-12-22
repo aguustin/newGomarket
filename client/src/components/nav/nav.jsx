@@ -160,7 +160,7 @@ const Nav = () => {
                       <div className="border-t border-gray-700 mt-2 pt-2">
                         <button 
                           onClick={() => logoutFunc()}
-                          className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 transition-all duration-300 group"
+                          className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 group"
                         >
                           <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-200 transition-colors">
                             <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

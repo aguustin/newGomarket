@@ -40,7 +40,7 @@ export const registerController = async (req, res) => {
     const token = jwt.sign({nombreCompleto, mail, dni, pais, encriptContrasenia}, secret, {expiresIn: '20m'});
 
     await resend.emails.send({
-         from: 'GoTickets <no-reply@goticketonline.com>',
+        from: 'GoTickets <no-reply@goticketonline.com>',
         to: [mail],
         subject: 'Verifica tu correo para completar tu registro en Go Tickets',
         html: `
@@ -98,16 +98,16 @@ export const registerController = async (req, res) => {
     });
 
     
-    return res.sendStatus(200)
+    //return res.sendStatus(200)
     /*await userModel.create({
             nombreCompleto: nombreCompleto,
             mail: mail,
             dni: dni,
             pais: pais,
             contrasenia: encriptContrasenia,
-    })
+    })*/
 
-    return res.status(200).json({msj:1});*/
+    return res.status(200).json({msj:1});
 }
 
 export const verifyAccountController = async (req, res) => {

@@ -35,18 +35,18 @@ const RRPPEvents = () => {
     }
 
     return (
-  <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-pink-50 py-12 px-4">
-    <div className="max-w-7xl mx-auto">
+  <div className="min-h-screen py-12 px-4">
+    <div className="max-w-7xl bg-gray-800 mx-auto rounded-xl">
       {/* Header */}
-      <div className="text-left mb-12 bg-gradient-to-r from-purple-600 to-pink-600 p-6 overflow-hidden rounded-t-xl">
-        <h1 className="text-3xl font-bold text-white!">
+      <div className="text-left mb-12 bg-gradient-to-r from-amber-600 to-yellow-500 p-6 overflow-hidden rounded-t-xl">
+        <h1 className="text-3xl font-bold text-[#111827]!">
           Mis Colaboraciones
         </h1>
-        <p className="text-white">Gestiona tus eventos y links de pago</p>
+        <p className="text-[#111827]">Gestiona tus eventos y links de pago</p>
       </div>
 
       {/* Grid de eventos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
         {rrppEvents?.map((rpe) => {
           const rrppCoincidente = rpe.rrpp.find(linkP => linkP.mail === session?.userFinded?.[0]?.mail);
           
@@ -54,7 +54,7 @@ const RRPPEvents = () => {
             return (
               <div 
                 key={rpe._id} 
-                className="group bg-white rounded-3xl shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:cursor"
+                className="group bg-gray-900  rounded-3xl shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:cursor"
               >
                 {/* Imagen del evento */}
                 <div className="relative overflow-hidden h-[280px]">
@@ -84,42 +84,42 @@ const RRPPEvents = () => {
                 <div className="p-6 space-y-4">
                   {/* Fechas */}
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-3 bg-gradient-to-r from-purple-50 to-pink-50 p-3 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center space-x-3 bg-gray-800 p-3 rounded-xl">
+                      <div className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500 font-medium">Inicio</p>
-                        <p className="text-gray-800 font-semibold">{formatDate(rpe.fechaInicio)}</p>
+                        <p className="text-xs text-gray-300 font-medium">Inicio</p>
+                        <p className="text-gray-400 font-semibold">{formatDate(rpe.fechaInicio)}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-3 bg-gradient-to-r from-pink-50 to-purple-50 p-3 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center space-x-3 bg-gray-800 p-3 rounded-xl">
+                      <div className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500 font-medium">Cierre</p>
-                        <p className="text-gray-800 font-semibold">{formatDate(rpe.fechaFin)}</p>
+                        <p className="text-xs text-gray-300 font-medium">Cierre</p>
+                        <p className="text-gray-400 font-semibold">{formatDate(rpe.fechaFin)}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Link de pago */}
                   {rrppCoincidente && (
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-100">
+                    <div className="bg-gray-800 rounded-xl p-4 border-2 border-gray-600">
                       <div className="flex items-center justify-between mb-3">
-                        <p className="text-sm font-semibold text-gray-700 flex items-center">
+                        <p className="text-sm font-semibold text-gray-300 flex items-center">
                           Tu link de pago
                         </p>
                       </div>
                       
-                      <div className="bg-white rounded-lg p-3 mb-3 border border-gray-200">
-                        <p className="text-sm text-gray-600 break-all font-mono">
+                      <div className="bg-gray-900 rounded-lg p-3 mb-3 border border-gray-600">
+                        <p className="text-sm text-gray-400 break-all font-mono">
                           {rrppCoincidente.linkDePago}
                         </p>
                       </div>
@@ -127,7 +127,7 @@ const RRPPEvents = () => {
                       <button
                         type="button"
                         onClick={() => navigator.clipboard.writeText(rrppCoincidente.linkDePago)}
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center"
+                        className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] px-4 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center"
                       >
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />

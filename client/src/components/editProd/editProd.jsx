@@ -1024,7 +1024,7 @@ const EditProd = () => {
                       )}
                     </div>
                     <button
-                      className="absolute bg-gradient-to-r from-purple-600 to-pink-600 right-3 bottom-[-60px] rounded-2xl p-3 text-md text-white!"
+                      className="absolute bg-yellow-400 right-3 bottom-[-60px] rounded-2xl p-3 text-md text-[#111827]"
                       type="submit"
                     >
                       {loading ? (
@@ -1534,12 +1534,12 @@ const EditProd = () => {
               <p className="ml-2">Crear lista de invitaciónes</p>
             </Link>
             <button
-              className="flex items-center justify-center mx-2 p-2 bg-[#EC4899] rounded-lg text-white! text-sm! min-w-[173px] mt-2!"
+              className="flex items-center justify-center mx-2 p-2 bg-red-500 text-[#111827] rounded-lg text-sm! min-w-[173px] mt-2!"
               onClick={() => setCancelAlert(true)}
             >
               <img src={cancelPng} alt="" loading="lazy"></img>
               {prod[0]?.active ?
-                <p className="ml-2">Bajar evento</p>
+                <p className="ml-2 ">Bajar evento</p>
                 :
                 <p className="ml-2">Subir evento</p>
               }
@@ -1557,15 +1557,15 @@ const EditProd = () => {
       {cancelAlert && (
         <>
           <div className="fixed z-[3] bg-black h-screen  top-[0%] w-screen opacity-[0.5]"></div>
-          <div className="cancel-alert fixed z-[4] top-[50%] w-[450px] text-center bg-white">
-            <div className="flex items-center justify-center bg-orange-500 p-2">
+          <div className="cancel-alert fixed z-[4] top-[50%] w-[450px] text-center bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl">
+            <div className="flex items-center justify-center bg-gradient-to-r from-amber-600 to-yellow-500 p-2 rounded-t-xl">
               <img className="megaphone" src={megaphoneBPng} alt=""></img>
-              <h2 className="text-3xl text-white! ml-2">Aviso!</h2>
+              <h2 className="text-3xl text-[#111827]! ml-2">Aviso!</h2>
             </div>
             <div className="p-4">
-              <p className="text-md text-[#111827]">
-                ¿Estas seguro de cancelar el evento? Si eliminas el evento se
-                reembolsaran el dinero de los tickets comprados y se eliminara
+              <p className="text-md text-gray-300">
+                ¿Estas seguro de cancelar el evento? Si das de baja el evento se
+                reembolsara el dinero de los tickets comprados y no se mostrara
                 el evento.
               </p>
             </div>
@@ -1575,14 +1575,14 @@ const EditProd = () => {
             </div>
             <div className="flex items-center justify-around pb-2">
               <button
-                className="w-[100px] rounded-lg text-[#111827] p-2 bg-[#EC4899]"
+                className="w-[100px] rounded-lg text-[#111827] p-2 bg-yellow-500 "
                 onClick={() => setCancelAlert(false)}
               >
                 Atras
               </button>
               {prod[0]?.active ? 
                 <button
-                  className="w-[100px] rounded-lg text-[#111827] p-2 bg-red-400"
+                  className="w-[100px] rounded-lg text-[#111827] p-2 bg-red-500"
                   onClick={() => cancelarEvento(prod[0]._id)}
                 >
                   Bajar
