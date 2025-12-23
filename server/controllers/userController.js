@@ -98,16 +98,16 @@ export const registerController = async (req, res) => {
     });
 
     
-    return res.sendStatus(200)
-    /*await userModel.create({
+   /* return res.sendStatus(200)
+    await userModel.create({
             nombreCompleto: nombreCompleto,
             mail: mail,
             dni: dni,
             pais: pais,
             contrasenia: encriptContrasenia,
-    })
+    })*/
 
-    return res.status(200).json({msj:1});*/
+    return res.status(200).json({msj:1});
 }
 
 export const verifyAccountController = async (req, res) => {

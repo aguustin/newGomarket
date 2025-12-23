@@ -97,8 +97,8 @@ const CreateEventForm = () => {
                 formData.append('lugarEvento', e.target.elements.lugarEvento.value)
                 formData.append('linkVideo', e.target.elements.linkVideo.value)
                 formData.append('imgEvento', imageFile)
-                formData.append('bannerEvento', imageBanner)
-                formData.append('imagenDescriptiva', imageDescriptive)
+                formData.append('bannerEvento', imageBanner ?? '')
+                formData.append('imagenDescriptiva', imageDescriptive ?? '')
                 formData.append('comisionServicio', session?.userFinded?.[0]?.comisionServicio ?? 15)
                 
                 const res = await createEventRequest(formData)

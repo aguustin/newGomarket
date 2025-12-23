@@ -255,7 +255,7 @@ const Login = () => {
 
           <div className="flex justify-center my-6">
             <ReCAPTCHA
-              sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
+              sitekey="6LcN0jQsAAAAALpmUEILUg_4XE4D7eOU2yUaGU9y"/*{import.meta.env.VITE_RECAPTCHA_KEY}*/
               onChange={onSuccess}
             />
           </div>
