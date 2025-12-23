@@ -241,36 +241,36 @@ const CreateEventForm = () => {
                         <div>
                             <label className="text-amber-500!">Pais del evento</label><br></br>
                             <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
-                                <option className="text-white!" value=''>Elegir país</option>
+                                <option className="text-[#111827]!" value=''>Elegir país</option>
                                 {countries.map((cts) => (<option className="text-[#111827]" key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
                             </select>
                         </div>
                         <div>
                             <label className="text-white!">Privacidad del evento:</label><br></br>
                             <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
-                                <option value={1}>Publico</option>
-                                <option value={2}>Privado</option>
+                                <option className="text-[#111827]!" value={1}>Publico</option>
+                                <option className="text-[#111827]!" value={2}>Privado</option>
                             </select>
                         {pubOrPriv == 2 && <p className="w-[90%] p-2 bg-[#ffdeca] mt-1 mb-2 rounded-xl text-[#111827]">El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
                         </div>
                         <div>
                             <label className="text-white!">Evento para mayores de edad:</label><br></br>
                             <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" onChange={(e) => setEstadoEdad(e.target.value)}>
-                                <option value={1}>NO</option>
-                                <option value={2}>SI</option>
+                                <option className="text-[#111827]!" value={1}>NO</option>
+                                <option className="text-[#111827]!" value={2}>SI</option>
                             </select>
-                            {estadoEdad && <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
+                            {estadoEdad && <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! border-gray-600!" type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
                         </div>
                         <div>
                             <label className="text-white!">Nombre del evento:</label>
                             <div>
-                                <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="nombreEvento" required></input>
+                                <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! border-gray-600!" type="text"  placeholder="..." name="nombreEvento" required></input>
                             </div>
                         </div>
                         <div>
                             <label>Descripcion del evento (opcional):</label>
                             <div>
-                                <textarea className="h-[199px] bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="descripcionEvento"></textarea>
+                                <textarea className="h-[199px] bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! border-gray-600!" type="text"  placeholder="..." name="descripcionEvento"></textarea>
                             </div>
                         </div>
                          <div>
@@ -293,12 +293,12 @@ const CreateEventForm = () => {
                             <label>Categorias del evento:</label>
                             <div>
                                 <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" onChange={handleChange} defaultValue="" required>
-                                    <option value="" disabled>Selecciona una categoría</option>
-                                    <option value="baile">Baile</option>
-                                    <option value="musica">Música</option>
-                                    <option value="arte">Arte</option>
-                                    <option value="teatro">Teatro</option>
-                                    <option value="deporte">Deporte</option>
+                                    <option className="text-[#111827]!" value="" disabled>Selecciona una categoría</option>
+                                    <option className="text-[#111827]!" value="baile">Baile</option>
+                                    <option className="text-[#111827]!" value="musica">Música</option>
+                                    <option className="text-[#111827]!" value="arte">Arte</option>
+                                    <option className="text-[#111827]!" value="teatro">Teatro</option>
+                                    <option className="text-[#111827]!" value="deporte">Deporte</option>
                                 </select>
                                 {/*<input type="text"  placeholder="..." name="categorias" required></input>*/ }
                             </div>
@@ -410,86 +410,86 @@ const CreateEventForm = () => {
             </div>
                } 
             <div className="create-ticket-container-father mx-auto pt-3 pb-3 pl-6 pr-6">
-                <div className="create-ticket-container max-w-[1000px] mx-auto rounded-2xl relative bg-white">
+                <div className="create-ticket-container max-w-[1000px] mx-auto rounded-2xl relative bg-gray-800">
                 {showTickets >= 1 && 
                     <form className="create-ticket-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
                         <div className="mt-9">
                             <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Crea al menos un ticket para continuar:</p>
                             <div className="flex items-center pl-3 mb-6 mt-6">
                                 <img id="img-create-ticket" className="mr-3" src={ticketPng} alt="" loading="lazy"></img>
-                                <h3 className="text-xl">Crear nuevo ticket:</h3>
+                                <h3 className="text-xl text-gray-200!">Crear nuevo ticket:</h3>
                             </div>
                             <div className="create-new-ticket rounded-2xl">
                                 <div className="mt-3 p-3">
-                                    <label>Fecha y hora de fin:</label><br></br>
-                                    <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
-                                    {dateMsg == 3 && <p className="text-orange-500!">La fecha de cierre del ticket no puede ser menor a la de inicio del evento</p>}
-                                    {dateMsg == 4 && <p className="text-orange-500!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
+                                    <label className="text-gray-300!">Fecha y hora de fin:</label><br></br>
+                                    <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-gray-300!" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
+                                    {dateMsg == 3 && <p className="text-yellow-500!">La fecha de cierre del ticket no puede ser menor a la de inicio del evento</p>}
+                                    {dateMsg == 4 && <p className="text-yellow-500!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
                                 </div>
                                 <div className="flex flex-wrap items-center">
                                     <div className="div-inputs-tickets  w-[50%] min-w-[270px] p-3">
                                         <div>
-                                            <label>Nombre del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="text" placeholder="..." name="nombreTicket" required></input>
+                                            <label className="text-gray-300!">Nombre del ticket</label>
+                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="text" placeholder="..." name="nombreTicket" required></input>
                                         </div>
                                         <div>
-                                            <label>Descripcion del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="text" placeholder="..." name="descripcionTicket" required></input>
+                                            <label className="text-gray-300!">Descripcion del ticket</label>
+                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="text" placeholder="..." name="descripcionTicket" required></input>
                                         </div>
                                     </div>
                                     <div className="div-inputs-tickets w-[50%] min-w-[270px] p-3">
                                         <div>
-                                            <label>Precio del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" min="1" placeholder="..." name="precio" required></input>
+                                            <label className="text-gray-300!">Precio del ticket</label>
+                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="number" min="1" placeholder="..." name="precio" required></input>
                                         </div>
                                         <div>
-                                            <label>Cantidad</label>
-                                            <input className="reset-inp border-[2px]! border-gray-200! rounded-lg!" type="number" min="1" placeholder="..." name="cantidad" required></input>
+                                            <label className="text-gray-300!">Cantidad</label>
+                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="number" min="1" placeholder="..." name="cantidad" required></input>
                                         </div> 
                                     </div>
                                 </div>
                                 <div>
                                     <div className="flex flex-wrap items-center ml-3">
                                         <div>
-                                            <label>Estado:</label>
-                                            <select className="reset-inp border-[2px]! border-gray-200! rounded-lg!" name="estado" onChange={(e) => setEstado(e.target.value)}>
-                                                <option value={1}>Activo</option>
-                                                <option value={2}>No visible</option>
-                                                <option value={3}>Cortesia</option>
+                                            <label className="text-gray-300!">Estado:</label>
+                                            <select className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" name="estado" onChange={(e) => setEstado(e.target.value)}>
+                                                <option className="text-[#111827]!" value={1}>Activo</option>
+                                                <option className="text-[#111827]!" value={2}>No visible</option>
+                                                <option className="text-[#111827]!" value={3}>Cortesia</option>
                                             </select>
                                         </div>
                                     {estado === '3' &&
                                         <>
                                                 <div>
-                                                    <label>Para:</label>
-                                                    <select className="ml-1" name="distribution" onChange={(e) => setDistribution(e.target.value)}>
-                                                        <option value={1}>RRPP</option>
-                                                        <option value={2}>Clientes</option>
+                                                    <label className="text-gray-300!">Para:</label>
+                                                    <select className="ml-1 text-white!" name="distribution" onChange={(e) => setDistribution(e.target.value)}>
+                                                        <option className="text-[#111827]!" value={1}>RRPP</option>
+                                                        <option className="text-[#111827]!" value={2}>Clientes</option>
                                                     </select>
                                                 </div>
                                             
                                             {distribution === '2' &&
                                                     <div>
-                                                        <label>Limite a sacar por persona:</label>
-                                                        <input className="reset-inp" type="number" name="limit" placeholder="Ej: 3" required></input>
+                                                        <label className="text-gray-300!">Limite a sacar por persona:</label>
+                                                        <input className="reset-inp text-white!" type="number" name="limit" placeholder="Ej: 3" required></input>
                                                     </div>
                                             } 
                                         </>
                                     } 
                                     </div>
                                 </div>
-                                <div className="charge-ticket-img flex items-center mt-6 ml-3">
-                                    <p className="secondary-p">Opcional: </p>
-                                    <div className="secondary-button-fucsia flex items-center p-3 rounded-xl ml-3"><img src={uploadPng} alt=""></img><label className="ml-3 text-white!" htmlFor="imgTicketHtml">Cargar Imagen del ticket</label></div>
+                                <div className="charge-ticket-img flex items-center mt-6 ml-3 max-[450px]:ml-0 max-[450px]:justify-center">
+                                    <p className="text-gray-300!">Opcional: </p>
+                                    <div className="bg-gradient-to-r from-amber-600 to-yellow-500 flex items-center p-3 rounded-xl ml-3 max-[450px]:ml-0 max-[450px]:w-[300px] max-[450px]:mx-auto! cursor-pointer hover:from-yellow-400 hover:to-yellow-400 "><img src={uploadPng} alt=""></img><label className="ml-3 text-[#111827]! cursor-pointer" htmlFor="imgTicketHtml">Cargar Imagen del ticket</label></div>
                                     <input id="imgTicketHtml" className="hidden" type="file" name="imgTicket"></input>
                                 </div>
                             </div>
                             <div className="relative text-center w-full">
                                 <div className="relative mt-6 h-[250px]">
-                                    <button className="bg-orange-500! p-3 rounded-xl mb-6 text-lg primary-p" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
-                                    {disabledButton && <><p className="text-xl! primary-p">Tu ticket fue creado con exito!</p><br></br></>}
-                                    <p className="secondary-p text-lg mb-6">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
-                                    {/*disabledButton && */<Link className="w-[300px] primary-button mx-auto mb-10 p-4 rounded-2xl flex items-center justify-center text-xl" to="/">Continuar</Link>}
+                                    <button className="bg-orange-500! p-3 rounded-xl mb-6 text-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
+                                    {disabledButton && <><p className="text-xl! text-yellow-400!">Tu ticket fue creado con exito!</p><br></br></>}
+                                    <p className="text-gray-300! text-lg mb-6 max-[530px]:text-sm!">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
+                                    {/*disabledButton && */<Link className="w-[200px]! mx-auto! primary-button mx-auto mb-10 p-2 rounded-2xl flex items-center justify-center text-xl" to="/">Continuar</Link>}
                                 </div>
                             </div>
 

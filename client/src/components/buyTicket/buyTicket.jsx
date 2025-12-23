@@ -201,7 +201,7 @@ const total = prod.reduce((accProd, p) => {
                                 <p className="text-gray-400 mt-3 text-sm">{p.descripcionEvento}</p>
                                 {p?.aviso?.length > 0 && <p className="text-[#111827] mt-3 text-sm bg-gray-400! p-2 rounded-lg">{p.aviso}</p> }
                             </div>
-                            <div className="flex flex-wrap items-center">
+                            <div className="flex flex-wrap items-center mb-2">
                                 <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-[#111827]! px-5 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
                                 <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 text-[#111827]! px-5 py-2 ml-2 rounded-xl  transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
                                {/*p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center rounded-xl bg-orange-500! p-2 ml-2  transition-all duration-300 hover:scale-105 shadow-lg" >Video promocional</a> */}
@@ -283,7 +283,7 @@ const total = prod.reduce((accProd, p) => {
 
                                   {/* Cantidades */}
                                   {tck.cantidad >= 1 && eventToRender?.soldOut === false ? (
-                                    <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
+                                    <div className="flex items-center space-x-2 bg-gray-700 rounded-xl p-1 border border-gray-200 shadow-sm">
                                       <button
                                         className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95" 
                                         onClick={(e) => restQuantity(e, tck._id, tck.limit)}
@@ -292,7 +292,7 @@ const total = prod.reduce((accProd, p) => {
                                       </button>
 
                                       <div className="w-14 text-center">
-                                        <p className="text-md text-gray-800">
+                                        <p className="text-md text-white!">
                                           {quantities[tck._id]?.amount || 0}
                                         </p>
                                       </div>

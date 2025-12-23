@@ -160,7 +160,7 @@ const Home = () => {
                     <div className="absolute top-0 left-0 w-full h-full bg-black opacity-[50%]"></div>
                     <div className="relative z-3 flex flex-col items-center justify-center h-full text-white text-center">
                         <div className="filtrar-eventos w-full max-w-3xl px-4">
-                            <img className="w-[600px] h-[150px] mx-auto mt-[-40px] max-[620px]:h-auto  max-[575px]:mt-[0px]" src={goOriginalPng} alt=""></img>
+                            <img className="w-[100px] h-[150px] mx-auto mt-[-40px] max-[620px]:h-auto  max-[575px]:mt-[0px]" src={goOriginalPng} alt=""></img>
                             {/*<h1 className="text-3xl font-bold mb-4 text-white!">Encuentra tu evento:</h1>*/}
                             <form className="search-form justify-center flex items-center w-full">
                                 <p className="text-lg w-[170px] text-white">Buscar evento:</p>

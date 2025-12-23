@@ -1402,12 +1402,12 @@ const EditProd = () => {
                           >
                             <option className="text-gray-900!" value={tick.estado}>
                               {(tick.estado === 1 && "Activo") ||
-                                (tick.estado === 2 && "No visible") ||
-                                (tick.estado === 3 && "Cortesia")}
+                                (tick.estado === 2 && "No visible") /*||
+                                (tick.estado === 3 && "Cortesia")*/}
                             </option>
                             <option className="text-gray-900!" value={1}>Activo</option>
                             <option className="text-gray-900!" value={2}>No visible</option>
-                            <option className="text-gray-900!" value={3}>Cortesia</option>
+                            {/*<option className="text-gray-900!" value={3}>Cortesia</option>*/ }
                           </select>
                         </div>
                         <div className="mt-3">
