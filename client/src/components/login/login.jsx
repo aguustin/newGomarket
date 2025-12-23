@@ -54,6 +54,9 @@ const Login = () => {
                     setShowMsg('')
                 }, 3000)
             }
+          }else{
+              setShowMsg('Por favor, marca la casilla antes de continuar')
+          }
             
         }else{
             setShowMsg('Por favor, marca la casilla antes de continuar')

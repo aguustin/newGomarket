@@ -1387,9 +1387,15 @@ const EditProd = () => {
                                 (tick.estado === 2 && "No visible") ||
                                 (tick.estado === 3 && "Cortesia")}
                             </option>
+<<<<<<< HEAD
                             <option value={1}>Activo</option>
                             <option value={2}>No visible</option>
                             <option value={3}>Cortesia</option>
+=======
+                            <option className="text-gray-900!" value={1}>Activo</option>
+                            <option className="text-gray-900!" value={2}>No visible</option>
+                            <option className="text-gray-900!" value={3}>Cortesia</option>
+>>>>>>> parent of f153f42 (.)
                           </select>
                         </div>
                         <div className="mt-3">

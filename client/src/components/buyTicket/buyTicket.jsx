@@ -187,7 +187,32 @@ const total = prod.reduce((accProd, p) => {
                                     COMPRAR TICKETS
                                 </h2>
                             </div>
+<<<<<<< HEAD
                             <div className="flex justify-center">
+=======
+                        <div className="desc-and-map text-left ml-4 mt-9">
+                            <h2 className="text-xl text-gray-200! mb-2">Evento: {p.nombreEvento}</h2>
+                            <p className="mb-2 text-gray-400!">Dirección: {p.direccion}</p>
+                            <div className="flex items-center mt-2">
+                                <p className="text-yellow-500">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
+                                <p className="ml-3 text-yellow-500">Fecha de cierre: {formatDate(p.fechaFin) }</p>
+                            </div>
+                            <div className="flex items-center mt-2">
+                                <p className="text-gray-400">Artistas: {p.artistas}</p>
+                            </div>
+                            <div className="mb-3">
+                                <p className="text-gray-400 mt-3 text-sm">{p.descripcionEvento}</p>
+                                {p?.aviso?.length > 0 && <p className="text-[#111827] mt-3 text-sm bg-gray-400! p-2 rounded-lg">{p.aviso}</p> }
+                            </div>
+                            <div className="flex flex-wrap items-center">
+                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-[#111827]! px-5 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
+                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 text-[#111827]! px-5 py-2 ml-2 rounded-xl  transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
+                               {/*p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center rounded-xl bg-orange-500! p-2 ml-2  transition-all duration-300 hover:scale-105 shadow-lg" >Video promocional</a> */}
+                            </div>
+                            {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
+                        </div>
+                            <div className="flex justify-center mt-3">
+>>>>>>> parent of f153f42 (.)
                                 <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
                             </div>
                         </div>

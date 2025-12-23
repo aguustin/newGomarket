@@ -239,6 +239,7 @@ const CreateEventForm = () => {
                <form className="create-event-form relative bg-white text-[#111827]! flex flex-wrap mx-9 rounded-2xl p-5" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
                     <div className="create-event-form-div-child w-[50%]">
                         <div>
+<<<<<<< HEAD
                             <label>Pais del evento</label><br></br>
                             <select name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
                                 <option value=''>Elegir país</option>
@@ -248,29 +249,57 @@ const CreateEventForm = () => {
                         <div>
                             <label>Privacidad del evento:</label><br></br>
                             <select name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
+=======
+                            <label className="text-amber-500!">Pais del evento</label><br></br>
+                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
+                                <option className="text-white!" value=''>Elegir país</option>
+                                {countries.map((cts) => (<option className="text-[#111827]" key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-white!">Privacidad del evento:</label><br></br>
+                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
+>>>>>>> parent of f153f42 (.)
                                 <option value={1}>Publico</option>
                                 <option value={2}>Privado</option>
                             </select>
                         {pubOrPriv == 2 && <p className="w-[90%] p-2 bg-[#ffdeca] mt-1 mb-2 rounded-xl text-[#111827]">El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
                         </div>
                         <div>
+<<<<<<< HEAD
                             <label>Evento para mayores de edad:</label><br></br>
                             <select onChange={(e) => setEstadoEdad(e.target.value)}>
                                 <option value={1}>NO</option>
                                 <option value={2}>SI</option>
                             </select>
                             {estadoEdad && <input type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
+=======
+                            <label className="text-white!">Evento para mayores de edad:</label><br></br>
+                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" onChange={(e) => setEstadoEdad(e.target.value)}>
+                                <option value={1}>NO</option>
+                                <option value={2}>SI</option>
+                            </select>
+                            {estadoEdad && <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
+>>>>>>> parent of f153f42 (.)
                         </div>
                         <div>
                             <label>Nombre del evento:</label>
                             <div>
+<<<<<<< HEAD
                                 <input type="text"  placeholder="..." name="nombreEvento" required></input>
+=======
+                                <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="nombreEvento" required></input>
+>>>>>>> parent of f153f42 (.)
                             </div>
                         </div>
                         <div>
                             <label>Descripcion del evento (opcional):</label>
                             <div>
+<<<<<<< HEAD
                                 <textarea className="h-[199px]" type="text"  placeholder="..." name="descripcionEvento"></textarea>
+=======
+                                <textarea className="h-[199px] bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="descripcionEvento"></textarea>
+>>>>>>> parent of f153f42 (.)
                             </div>
                         </div>
                          <div>
@@ -292,7 +321,11 @@ const CreateEventForm = () => {
                         <div>
                             <label>Categorias del evento:</label>
                             <div>
+<<<<<<< HEAD
                                 <select onChange={handleChange} defaultValue="" required>
+=======
+                                <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" onChange={handleChange} defaultValue="" required>
+>>>>>>> parent of f153f42 (.)
                                     <option value="" disabled>Selecciona una categoría</option>
                                     <option value="baile">Baile</option>
                                     <option value="musica">Música</option>
