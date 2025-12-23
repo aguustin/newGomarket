@@ -1,12 +1,13 @@
 import { useContext, useEffect, useState } from "react"
 import UserContext from "../../context/userContext"
-import userPng from "../../assets/botones/user.png"
+/*import userPng from "../../assets/botones/user.png"
 import editProfilePng from "../../assets/botones/edit-profile.png"
 import exitPng from "../../assets/botones/exit.png"
 import menuPng from "../../assets/images/menu.png"
-import colaborationPng from "../../assets/botones/colaboration.png"
+import colaborationPng from "../../assets/botones/colaboration.png"*/
 import { Link, useNavigate } from "react-router"
 import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
+import bannerRPng from "../../assets/bannerR.png"
 import userImgPng from "../../assets/user.png"
 
 const Nav = () => {

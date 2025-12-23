@@ -124,7 +124,7 @@ export const verifyAccountController = async (req, res) => {
             comisionServicio: 15
     })
 
-    return res.redirect('https://www.goticketonline.com/login');
+    return res.redirect('https://newgomarket-g2ib.onrender.com/login');
 }
 
 export const loginController = async (req, res) => {

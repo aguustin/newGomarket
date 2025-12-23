@@ -158,7 +158,6 @@ const Register = () => {
               type="password" 
               placeholder="Ingresa una contraseña" 
               name="contrasenia"
-              
               required 
             />
           </div>
