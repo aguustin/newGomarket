@@ -47,7 +47,7 @@ export const createEventController = async (req, res) => {
   const parsedCategorias = JSON.parse(categoriasEventos);
   const encryptedMail = encrypt(prodMail);
 
- // const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
+  const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
 
   const files = req.files || {};
 
@@ -73,9 +73,9 @@ export const createEventController = async (req, res) => {
     const imagenDescriptivaFile = files?.imagenDescriptiva?.[0];
 
     const [imgEventoUrl, bannerEventoUrl, imagenDescriptivaUrl] = await Promise.all([
-      imgEventoFile ? uploadToCloudinary(imgEventoFile) : '',
-      bannerEventoFile ? uploadToCloudinary(bannerEventoFile) : '',
-      imagenDescriptivaFile ? uploadToCloudinary(imagenDescriptivaFile) : '',
+      imgEventoFile ? uploadToCloudinary(imgEventoFile) : defaultImage,
+      bannerEventoFile ? uploadToCloudinary(bannerEventoFile) : defaultImage,
+      imagenDescriptivaFile ? uploadToCloudinary(imagenDescriptivaFile) : defaultImage,
     ]);
 
     const createdEvent = await ticketModel.create({

@@ -187,6 +187,10 @@ const total = prod.reduce((accProd, p) => {
                                     COMPRAR TICKETS
                                 </h2>
                             </div>
+                            <div className="flex justify-center">
+                                <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
+                            </div>
+                        </div>
                         <div className="desc-and-map text-left ml-4 mt-9">
                             <h2 className="text-xl text-[#111827] mb-2">Evento: {p.nombreEvento}</h2>
                             <p className="mb-2 secondary-p">Dirección: {p.direccion}</p>
@@ -201,16 +205,12 @@ const total = prod.reduce((accProd, p) => {
                                 <p className="secondary-p mt-3 text-sm">{p.descripcionEvento}</p>
                                 {p?.aviso?.length > 0 && <p className="primary-p mt-3 text-sm bg-pink-200! p-2">{p.aviso}</p> }
                             </div>
-                            <div className="flex flex-wrap items-center justify-center mb-3">
+                            <div className="flex flex-wrap items-center">
                                 <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-5 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
                                 <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-5 py-2 ml-2 rounded-xl  transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
-                               {/*p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center rounded-xl bg-orange-500! p-2 ml-2  transition-all duration-300 hover:scale-105 shadow-lg" >Video promocional</a> */}
+                               {p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center rounded-xl bg-orange-500! p-2 ml-2  transition-all duration-300 hover:scale-105 shadow-lg" >Video promocional</a> }
                             </div>
                             {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
-                        </div>
-                            <div className="flex justify-center">
-                                <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
-                            </div>
                         </div>
                            {p.bannerEvento && 
                            <div className="relative w-[100%] h-[300px] hover:brightness-80 hover:cursor-pointer duration-100 ease-linear group">
@@ -225,7 +225,33 @@ const total = prod.reduce((accProd, p) => {
                            }
                     </div>
             )}
-            <form className="form-buy-inputs mt-3" onSubmit={(e) => buyTickets(e)}>
+            <form className="form-buy-inputs mt-16" onSubmit={(e) => buyTickets(e)}>
+                <div className="flex flex-wrap items-center justify-center">
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
+                        <label className="text-MD">NOMBRE COMPLETO:</label><br></br>
+                        <input className="w-[100%]" type="text" name="nombreCompleto" placeholder="..."></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
+                        <label className="text-MD">EMAIL:</label><br></br>
+                        <input className="w-[100%]" type="email" name="mail" placeholder="example@gmail.com"></input>
+                    </div>
+                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
+                        <label className="text-MD">REPETIR EMAIL:</label><br></br>
+                        <input className="w-[100%]" type="email" name="repetirMail" placeholder="example@gmail.com"></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-gray-200 rounded-2xl p-2">
+                        <label className="text-MD">DNI:</label><br></br>
+                        <input className="w-[100%]" type="number" name="dni" placeholder="..."></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-gray-200 rounded-2xl p-2">
+                        <label className="text-MD">CONTACTO:</label><br></br>
+                        <input className="w-[100%]" type="number" name="telefono" placeholder="..."></input>
+                    </div>
+                </div>
+                <div className="mt-6 p-4 rounded-xl text-center" >
+                    <Timer duration={720000}></Timer>
+                </div>
+                
             <div> 
               {eventToRender && (
                         <>
@@ -243,7 +269,7 @@ const total = prod.reduce((accProd, p) => {
                                 <Link className="w-[101.5px]! ml-3! secondary-button-fucsia text-white! rounded-lg p-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
                             </div> 
                            </> }
-                            <div className="cortesies-desc-container  text-center max-h-[432px]! mb-6 pt-3!">
+                            <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">
                             {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck) => (
                             <div key={tck._id} className="flex justify-center mx-auto text-center">
                               <div className="w-full mb-3 p-4 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg transition-all duration-300">
@@ -424,32 +450,6 @@ const total = prod.reduce((accProd, p) => {
                    
                 )}
                 </div>
-                <div className="flex flex-wrap items-center justify-center">
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">NOMBRE COMPLETO:</label><br></br>
-                        <input className="w-[100%]" type="text" name="nombreCompleto" placeholder="..."></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">EMAIL:</label><br></br>
-                        <input className="w-[100%]" type="email" name="mail" placeholder="example@gmail.com"></input>
-                    </div>
-                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">REPETIR EMAIL:</label><br></br>
-                        <input className="w-[100%]" type="email" name="repetirMail" placeholder="example@gmail.com"></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">DNI:</label><br></br>
-                        <input className="w-[100%]" type="number" name="dni" placeholder="..."></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">CONTACTO:</label><br></br>
-                        <input className="w-[100%]" type="number" name="telefono" placeholder="..."></input>
-                    </div>
-                </div>
-                <div className="mt-6 p-4 rounded-xl text-center" >
-                    <Timer duration={720000}></Timer>
-                </div>
-                
                 <div className="relative h-[auto]">
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
                     <p className="text-center text-xl primary-p">Total:{currencyFormatter.format(total)}</p>
