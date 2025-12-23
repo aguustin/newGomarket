@@ -31,32 +31,32 @@ const Login = () => {
         
         if(captchaStatus){ 
             setShowMsg('ok')
-          }else{
-              setShowMsg('Por favor, marca la casilla antes de continuar')
-          }
             const userData = {
-                mail: e.target.elements.mail.value,
-                contrasenia: e.target.elements.contrasenia.value
+              mail: e.target.elements.mail.value,
+              contrasenia: e.target.elements.contrasenia.value
             }   
             const res = await loginContext(userData)
             
             if(res.data?.estado === 1){
-                navigate('/')
+              navigate('/')
             }
             if(res.estado === 2){
-                setLoading(false)
-                setShowMsg('La contraseña es incorrecta')
-                setTimeout(() => {
-                    setShowMsg('')
-                }, 3000)
+              setLoading(false)
+              setShowMsg('La contraseña es incorrecta')
+              setTimeout(() => {
+                setShowMsg('')
+              }, 3000)
             }
             if(res.estado === 3){
-                setLoading(false)
-                setShowMsg('El email es incorrecto')
-                setTimeout(() => {
-                    setShowMsg('')
-                }, 3000)
+              setLoading(false)
+              setShowMsg('El email es incorrecto')
+              setTimeout(() => {
+                setShowMsg('')
+              }, 3000)
             }
+          }else{
+              setShowMsg('Por favor, marca la casilla antes de continuar')
+          }
             
             //hasta aca el if else
         setLoading(false)
