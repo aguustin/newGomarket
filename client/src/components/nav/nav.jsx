@@ -6,8 +6,7 @@ import exitPng from "../../assets/botones/exit.png"
 import menuPng from "../../assets/images/menu.png"
 import colaborationPng from "../../assets/botones/colaboration.png"*/
 import { Link, useNavigate } from "react-router"
-import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
-import bannerRPng from "../../assets/bannerR.png"
+import goPng from "../../assets/bannerR.png"
 import userImgPng from "../../assets/user.png"
 
 const Nav = () => {

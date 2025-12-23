@@ -3,7 +3,7 @@ import { registerUserRequest } from "../../api/userRequests"
 import {Link, useNavigate} from 'react-router';
 import ReCAPTCHA from "react-google-recaptcha";
 import { LoadingButton } from "../../globalscomp/globalscomp";
-import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
+import goOriginalPng from '../../assets/banner.png'
 
 const Register = () => {
     const navigate = useNavigate() 
@@ -77,7 +77,7 @@ const Register = () => {
           </div>
           <h3 className="text-4xl font-bold text-gray-300!">Regístrate</h3>
           <p className="mt-3 text-gray-400">
-            Crea tu cuenta de GoTicket y disfruta de tus eventos favoritos
+            Crea tu cuenta de Ipass y disfruta de tus eventos favoritos
           </p>
         </div>
 

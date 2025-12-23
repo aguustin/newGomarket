@@ -69,7 +69,7 @@ expreso. Si es menor de edad, deberá contar con autorización de su representan
                      <div className="border-b-[2px] border-gray-200!">
                         <h3 className="text-gray-300! text-2xl underline mt-4">SÉPTIMO. Atención al Cliente</h3>
                         <p className="text-gray-300! mt-2 text-sm mb-4">Para consultas, reclamos o devoluciones, el Usuario podrá comunicarse con Go Ticket a
-                        través del correo electrónico: goticketarg@gmail.com.</p>
+                        través del correo electrónico: Ipass@gmail.com.</p>
                     </div>
                     <div className="border-b-[2px] border-gray-200!">
                         <h3 className="text-gray-300! text-2xl underline mt-4">OCTAVO. Datos Personales</h3>
@@ -91,7 +91,7 @@ Usuario o exigencia legal.</p>
                     <div className="border-b-[2px] border-gray-200!">
                         <h3 className="text-gray-300! text-2xl underline mt-4">DÉCIMO. Eliminación o Modificación de Datos</h3>
                         <p className="text-gray-300! mt-2 text-sm mb-4">El Usuario podrá solicitar en cualquier momento la modificación o eliminación de sus
-datos enviando un correo a goticketarg@gmail.com, o bien eliminar directamente su
+datos enviando un correo a Ipass@gmail.com, o bien eliminar directamente su
 cuenta desde la plataforma.</p>
                     </div>
                        <div className="border-b-[2px] border-gray-200!">

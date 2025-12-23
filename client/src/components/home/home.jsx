@@ -20,7 +20,7 @@ import { getFavoritesEventsRequest, saveEventRequest } from "../../api/userReque
 import { useContext } from "react"
 import { Country, State, City } from "country-state-city"
 import djPartyPng from '../../assets/dj-party-meaning.png'
-import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
+import goOriginalPng from '../../assets/banner.png'
 
 const Home = () => {
     const { session } = useContext(UserContext)

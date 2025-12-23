@@ -4,7 +4,7 @@ import {Link, useNavigate} from 'react-router'
 import { LoadingButton } from "../../globalscomp/globalscomp"
 import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
-import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
+import goOriginalPng from '../../assets/banner.png'
 
 const Login = () => {
     const { setSession, message, loginContext} = useContext(UserContext)

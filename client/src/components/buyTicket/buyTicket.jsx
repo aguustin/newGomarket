@@ -8,7 +8,7 @@ import copyPng from "../../assets/botones/copy.png"
 import UserContext from "../../context/userContext"
 import { useNavigate } from "react-router"
 import calendarPng from "../../assets/images/calendar.png"
-import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
+import goPng from "../../assets/bannerR.png"
 
 const BuyTicket = () => {
     const {session} = useContext(UserContext)
@@ -456,7 +456,7 @@ const total = prod.reduce((accProd, p) => {
                     <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
-                    <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo GoTicket regresará el valor de las entradas No así el cargo por servicio.</p>
+                    <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo Ipass regresará el valor de las entradas No así el cargo por servicio.</p>
                     <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>
