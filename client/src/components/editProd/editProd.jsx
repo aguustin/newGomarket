@@ -112,7 +112,15 @@ const EditProd = () => {
     }
   }, [prod]);
 
+  useEffect(() => {
+  if (message === 5) {
+    alert("El evento se actualizó exitosamente!");
+    setMessage(null); // reiniciamos para que no se vuelva a disparar
+  }
+}, [message]);
+
   if (width === null) return null;
+
 
   const updateEvent = async (
     e,
@@ -183,7 +191,7 @@ const EditProd = () => {
       edited.descripcionEvento ?? descripcionEvento
     );
     formData.append("aviso", aviso ?? edited.aviso);
-    formData.append("eventoEdad", eventoEdad ?? edited.eventoEdad);
+    formData.append("eventoEdad", eventoEdad ?? edited.eventoEdad ?? '');
 
     formData.append("artistas", edited.artistas ?? artistas);
     formData.append("montoVentas", edited.montoVentas ?? montoVentas);
@@ -262,7 +270,7 @@ const EditProd = () => {
       "descripcionTicket",
       dataToUpdate?.descripcionTicket ?? descripcionTicket
     );
-    formData.append("precio", dataToUpdate?.precio ?? precio);
+    formData.append("precio", dataToUpdate?.precio ?? precio ?? '');
     formData.append("cantidad", dataToUpdate?.cantidad ?? cantidad);
     formData.append("limit", dataToUpdate?.limit ?? limit);
     formData.append(
@@ -568,8 +576,8 @@ const EditProd = () => {
                               </div>
                             ))}
                           {message === 6 && (
-                            <p className="bg-white! text-green-700! mt-2">
-                              La operacion se realizo con exito!
+                            <p className="bg-gray-900! text-yellow-500! mt-2">
+                              Evento relacionado con exito!
                             </p>
                           )}
                         </div>
@@ -957,7 +965,7 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div>
-                      <label>Lugar del evento:</label>
+                      <label className="text-gray-200!">Lugar del evento:</label>
                       <br></br>
                       <input
                         type="text"
@@ -1039,9 +1047,6 @@ const EditProd = () => {
                   </div>
                 </div>
               </form>
-              {message === 5 && (
-                  alert('El evento se actualizo exitosamente!')
-              )}
             </>
           ))}
           {showCreateTicketForm && (
