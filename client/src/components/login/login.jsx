@@ -31,23 +31,19 @@ const Login = () => {
         setLoading(true)
         
         if(captchaStatus){ 
-          setShowMsg('ok')
-        }else{
-            setShowMsg('Por favor, marca la casilla antes de continuar')
-        }
-            const userData = {
-              mail: e.target.elements.mail.value,
-              contrasenia: e.target.elements.contrasenia.value
-            }   
-            const res = await loginContext(userData)
-            
-            if(res.data?.estado === 1){
-              navigate('/')
-            }
-            if(res.estado === 2){
-              setLoading(false)
-              setShowMsg('La contraseña es incorrecta')
-              setTimeout(() => {
+          const userData = {
+            mail: e.target.elements.mail.value,
+            contrasenia: e.target.elements.contrasenia.value
+          }   
+          const res = await loginContext(userData)
+          
+          if(res.data?.estado === 1){
+            navigate('/')
+          }
+          if(res.estado === 2){
+            setLoading(false)
+            setShowMsg('La contraseña es incorrecta')
+            setTimeout(() => {
                 setShowMsg('')
               }, 3000)
             }
@@ -58,6 +54,9 @@ const Login = () => {
                 setShowMsg('')
               }, 3000)
             }
+          }else{
+              setShowMsg('Por favor, marca la casilla antes de continuar')
+          }
             
             //hasta aca el if else
         setLoading(false)
