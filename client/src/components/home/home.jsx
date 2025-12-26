@@ -71,11 +71,12 @@ const Home = () => {
 
         handleResize(); // valor inicial
         mediaQuery.addEventListener("change", handleResize);
-
+        
         return () => mediaQuery.removeEventListener("change", handleResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-
+    
+    
     useEffect(() => {
         if (provinciaSeleccionada) {
             const ciudades = City.getCitiesOfState("AR", provinciaSeleccionada);
@@ -313,7 +314,7 @@ const Home = () => {
   onClick={() => { setEdad(edad === 2 ? 0 : 2); setFavoritesFilter(null) }}
 >
   <img src={plusPng} alt="" loading="lazy" />
-  <p className="ml-4 whitespace-nowrap">Eventos +18</p>
+  <p className="ml-4 whitespace-nowrap text-[#111827]!">Eventos +18</p>
 </button>
 
   </div>

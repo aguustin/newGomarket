@@ -580,7 +580,7 @@ const EditProd = () => {
                             className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
                             onClick={() => setShowSoldOutAdv(!showSoldOutAdv)}
                           ></div>
-                          <div className="add-tickets-form top-[55%]! fixed bg-white rounded-3xl shadow-2xl border-2 border-gray-200 p-8 max-w-md">
+                          <div className="add-tickets-form top-[50%]! fixed bg-gray-800! rounded-3xl shadow-2xl border-2 border-gray-600 p-8 max-w-md">
                             {/* Header con ícono de warning */}
                             <div className="flex flex-col items-center mb-6">
                               <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
@@ -590,16 +590,16 @@ const EditProd = () => {
                                   alt="Warning"
                                 />
                               </div>
-                              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                              <h3 className="text-2xl font-bold text-gray-300!">
                                 Sold Out
                               </h3>
                             </div>
 
                             {/* Mensaje de aviso */}
-                            <div className="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-500 rounded-xl p-4 mb-6">
+                            <div className="bg-gray-900 border-l-4 border-yellow-500 rounded-xl p-4 mb-6">
                               <div className="flex items-start">
                                 <svg
-                                  className="w-6 h-6 text-orange-600 flex-shrink-0 mr-3 mt-0.5"
+                                  className="w-6 h-6 text-yellow-500 flex-shrink-0 mr-3 mt-0.5"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -611,8 +611,8 @@ const EditProd = () => {
                                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                                   />
                                 </svg>
-                                <p className="text-sm text-gray-700 leading-relaxed">
-                                  <span className="font-semibold text-orange-700">
+                                <p className="text-sm text-gray-300 leading-relaxed">
+                                  <span className="font-semibold text-yellow-500">
                                     Aviso:
                                   </span>{" "}
                                   Si marcas el evento como Sold Out, la compra
@@ -623,12 +623,12 @@ const EditProd = () => {
                             </div>
 
                             {/* Toggle Switch Mejorado */}
-                            <div className="bg-gray-50 rounded-2xl p-6 mb-6">
+                            <div className="bg-gray-900 rounded-2xl p-6 mb-6">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
-                                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                                  <div className="w-12 h-12 bg-gradient-to-br from-amber-600 to-yellow-500 rounded-xl flex items-center justify-center">
                                     <svg
-                                      className="w-6 h-6 text-white"
+                                      className="w-6 h-6 text-[#111827]"
                                       fill="none"
                                       stroke="currentColor"
                                       viewBox="0 0 24 24"
@@ -644,11 +644,11 @@ const EditProd = () => {
                                   <div>
                                     <label
                                       htmlFor="soldOutHtml"
-                                      className="text-lg font-bold text-gray-800 cursor-pointer block"
+                                      className="text-md font-bold text-gray-300 cursor-pointer block"
                                     >
                                       Marcar como Sold Out
                                     </label>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-gray-300">
                                       Bloquear venta de entradas
                                     </p>
                                   </div>
@@ -676,7 +676,7 @@ const EditProd = () => {
                             {/* Botón de guardar - Sin position: relative con transform */}
                             <button
                               type="button"
-                              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 flex items-center justify-center group"
+                              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-[#111827] font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 flex items-center justify-center group"
                               onClick={() => soldOutEvent()}
                             >
                               <svg
@@ -696,7 +696,7 @@ const EditProd = () => {
                             </button>
 
                             {/* Información adicional */}
-                            <p className="text-center text-xs text-gray-500 mt-9">
+                            <p className="text-center text-xs text-gray-300 mt-6">
                               Los cambios se aplicarán inmediatamente
                             </p>
                           </div>

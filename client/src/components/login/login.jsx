@@ -17,7 +17,8 @@ const Login = () => {
         setSession('')
         localStorage.clear()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    
+  }, [])
 
     const onSuccess = () => {
         setCaptchaStatus(true)
@@ -77,6 +78,8 @@ const Login = () => {
             }, 3000)
         }
     }
+
+    console.log(import.meta.env.VITE_RECAPTCHA_KEY)
 
     return (
     <div className="min-h-screen flex items-center justify-center  py-12 px-4 ">
