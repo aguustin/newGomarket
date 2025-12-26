@@ -225,7 +225,7 @@ const total = prod.reduce((accProd, p) => {
                            }
                     </div>
             )}
-            <form className="form-buy-inputs mt-16" onSubmit={(e) => buyTickets(e)}>
+            <form className="form-buy-inputs " onSubmit={(e) => buyTickets(e)}>
                  <div> 
               {eventToRender && (
                         <>
@@ -437,7 +437,7 @@ const total = prod.reduce((accProd, p) => {
                         <label className="text-MD text-gray-300!">REPETIR EMAIL:</label><br></br>
                         <input className="w-[100%] text-gray-200!" type="email" name="repetirMail" placeholder="example@gmail.com"></input>
                     </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-yellow-500 rounded-2xl p-2">
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
                         <label className="text-MD text-gray-300!">DNI:</label><br></br>
                         <input className="w-[100%] text-gray-200!" type="number" name="dni" placeholder="..."></input>
                     </div>
@@ -449,8 +449,6 @@ const total = prod.reduce((accProd, p) => {
                 <div className="mt-6 p-4 rounded-xl text-center" >
                     <Timer duration={720000}></Timer>
                 </div>
-                
-      
                 <div className="relative h-[auto] mt-4">
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
                     <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total)}</p>
