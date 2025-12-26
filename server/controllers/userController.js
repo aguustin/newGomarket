@@ -42,7 +42,7 @@ export const registerController = async (req, res) => {
     await resend.emails.send({
         from: 'Ipass <no-reply@ipass.com>',
         to: [mail],
-        subject: 'Verifica tu correo para completar tu registro en Go Tickets',
+        subject: 'Verifica tu correo para completar tu registro en Ipasss',
         html: `
             <!DOCTYPE html>
             <html lang="es">
@@ -53,20 +53,20 @@ export const registerController = async (req, res) => {
                     body {
                         margin: 0;
                         padding: 0;
-                        background-color: #f4f4f4;
+                        background-color: oklch(21% 0.034 264.665);
                         font-family: Arial, sans-serif;
                     }
                     .container {
                         max-width: 600px;
                         margin: 0 auto;
-                        background-color: #ffffff;
+                        background-color: oklch(21% 0.034 264.665);
                         padding: 20px;
                     }
                     .button {
                         display: inline-block;
                         padding: 12px 25px;
-                        background-color: #ff6b01;
-                        color: #ffffff;
+                        background-color: oklch(79.5% 0.184 86.047);
+                        color: #111827;
                         text-decoration: none;
                         border-radius: 5px;
                         margin-top: 20px;
@@ -85,12 +85,12 @@ export const registerController = async (req, res) => {
             </head>
             <body>
                 <div class="container">
-                    <p>Gracias por registrarte en <strong>Go Tickets</strong>. Para completar tu registro y empezar a disfrutar de todos nuestros servicios, necesitamos que verifiques tu dirección de correo electrónico.</p>
+                    <p>Gracias por registrarte en <strong>Ipasss</strong>. Para completar tu registro y empezar a disfrutar de todos nuestros servicios, necesitamos que verifiques tu dirección de correo electrónico.</p>
                     <p>
                         <a href="https://gomarket-1-backend.onrender.com/verify_account/${token}" class="button">Verificar mi correo</a>
                     </p>
-                    <p>Si no creaste una cuenta en Go Tickets, puedes ignorar este correo.</p>
-                    <p>¡Bienvenido a <strong>Go Tickets</strong>!<br>El equipo de Go Tickets</p>
+                    <p>Si no creaste una cuenta en Ipasss, puedes ignorar este correo.</p>
+                    <p>¡Bienvenido a <strong>Ipasss</strong>!<br>El equipo de Ipasss</p>
                 </div>
             </body>
             </html>
@@ -155,7 +155,7 @@ export const recoverPassController = async (req, res) => {
     await resend.emails.send({
         from: '"Ipass" <no-reply@ipass.com>',
         to: [mail],
-        subject: `Recuperar contraseña para ${mail} - Go Tickets`,
+        subject: `Recuperar contraseña para ${mail} - Ipasss`,
         html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${process.env.URL_FRONT}/recover_password/${token}">Recuperar mi contraseña</a>`
     });  
     res.status(200).json({ok:true})

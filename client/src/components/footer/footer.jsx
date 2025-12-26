@@ -15,11 +15,11 @@ const Footer = () => {
 
       {/* Links Grid */}
       <div className="grid sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8">
-        {/* GO TICKET Column */}
+       
         <div className='footer-columns mx-auto w-full'>
           <h4 className="text-lg text-white! font-bold mb-4 flex items-center mx-auto!">
             <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full mr-3"></div>
-            GO TICKET
+            Ipass
           </h4>
           <div className="space-y-3">
             <Link 
@@ -30,7 +30,7 @@ const Footer = () => {
                 <svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-                Sobre Go Ticket
+                Sobre Ipass
               </div>
             </Link>
             <Link 
@@ -166,7 +166,7 @@ const Footer = () => {
         <div className="rounded-2xl p-6 sm:py-0">
           <div className="flex items-start">
             <p className="text-sm text-center text-white! leading-relaxed sm:mt-3">
-              <span className="font-semibold text-white!">Importante:</span> Go Ticket no se hace responsable de la calidad o satisfacción de los eventos publicados. Go Ticket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los{' '}
+              <span className="font-semibold text-white!">Importante:</span> Ipass no se hace responsable de la calidad o satisfacción de los eventos publicados. Ipass es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los{' '}
               <Link to="/conditions" className="text-purple-400 hover:text-purple-300 underline font-medium transition-colors">
                 términos y condiciones
               </Link>{' '}
@@ -182,12 +182,12 @@ const Footer = () => {
           <img 
             className="w-32 h-auto opacity-90 hover:opacity-100 transition-opacity" 
             src={goPng} 
-            alt="Go Ticket Logo" 
+            alt="Ipass Logo" 
             loading="lazy"
           />
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             
-            <span>Copyright © 2025 Go Ticket. Todos los derechos reservados.</span>
+            <span>Copyright © 2025 Ipass. Todos los derechos reservados.</span>
           </div>
           <div className="flex items-center space-x-4 text-xs text-gray-500">
             <span className="flex items-center">

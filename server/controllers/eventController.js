@@ -976,11 +976,11 @@ async function sendColabMail(rrppMail, nombreEvento, eventImg) {
           </style>
         </head>
         <body style="font-family: 'Poppins', sans-serif; padding:10px; text-align:center;">
-          <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-            <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
+          <div style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+            <h1 style="font-size:30px; color:#111827; margin:auto;">Ipass</h1>
           </div>
 
-          <div style="text-align:center; padding:20px 15px; background-color:#ffffff; color:#111827;">
+          <div style="text-align:center; padding:20px 15px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
             <h3 style="font-size:30px; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
             <p style="margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link 
               <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}">
@@ -992,8 +992,8 @@ async function sendColabMail(rrppMail, nombreEvento, eventImg) {
             <img src="${eventImg}" alt="${nombreEvento}" style="width:230px; height:230px;"/>
           </div>
 
-          <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-            <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
+          <footer style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+            <h2 style="font-size:27px; color:#111827; margin:auto;">Ipass</h2>
           </footer>
         </body>
       </html>
@@ -1171,14 +1171,14 @@ export const sendQrStaffQrController = async (req, res) => {
             </style>
           </head>
           <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-            <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-              <h1 style="font-size:30px; color:white;">Go Ticket</h1>
+            <div style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+              <h1 style="font-size:30px; color:#111827">Ipass</h1>
             </div>
-            <div style="padding:20px; background-color:#ffffff; color:#111827;">
+            <div style="padding:20px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
               <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
               ${findRrPp ? `
-                <div>
-                  <a style="padding:10px; background-color: orange; color:white; text-decoration:none;" href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}">Crear mi link de pago</a>
+                <div style="height:60px;">
+                  <a style="padding:10px; background-color: orange; color:#111827; text-decoration:none;" href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}">Crear mi link de pago</a>
                 </div>
                 <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px;"/>
                 <div>
@@ -1189,8 +1189,8 @@ export const sendQrStaffQrController = async (req, res) => {
                 </div>
               ` : ''}
             </div>
-            <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-              <h2 style="font-size:27px; color:white;">Go Ticket</h2>
+            <footer style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+              <h2 style="font-size:27px; color:#111827;">Ipass</h2>
             </footer>
           </body>
         </html>
@@ -1252,7 +1252,6 @@ const sendQrEmail = async (
         </div>
       `;
     }).join("");
-
     const html = `
       <html>
         <head>
@@ -1261,24 +1260,24 @@ const sendQrEmail = async (
           </style>
         </head>
         <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-          <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
-            <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
+          <div style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center; text-align:center">
+            <h1 style="font-size:30px; color:#111827; margin:auto;">Ipass</h1>
           </div>
-          <div style="background-color:#f7f7f7">
-            <div style="text-align:center; padding:40px; background-color:#ffffff; color:#111827;">
+          <div style="background-color:oklch(21% 0.034 264.665)">
+            <div style="text-align:center; padding:40px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
               <h3 style="font-size:20px; margin-top:30px; margin-bottom:20px;">${nombreCompleto}, aquí tienes tus tickets!</h3>
               <img src="${imagenEvento}" alt="Imagen del evento" style="width:100%; max-width:500px; margin-bottom:20px;" />
               ${ticketsHTML}
             </div>
           </div>
-          <div style="background-color:#ffffff; color:#111827; padding:20px; text-align:center">
+          <div style="background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338); padding:20px; text-align:center">
             <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
             <p style="font-size:16px">- Presenta tu eTicket en el acceso del evento con tu teléfono.</p>
             <p style="font-size:16px">- También puedes acceder a tus compras desde nuestra web.</p>
             <p style="font-size:16px">- Lleva tus eTickets abiertos en tu celular.</p>
           </div>
-          <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-            <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
+          <footer style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+            <h2 style="font-size:27px; color:#111827; margin:auto;">Ipass</h2>
           </footer>
         </body>
       </html>
