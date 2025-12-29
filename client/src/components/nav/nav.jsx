@@ -90,7 +90,7 @@ const Nav = () => {
                   onClick={() => setOpenProfileCong(!openProfileConf)}
                 >
                   <img 
-                    className="w-12 h-12 rounded-full object-cover ring-2 ring-purple-300 group-hover:ring-purple-500 transition-all" 
+                    className="w-12 h-12 rounded-full object-cover ring-2 ring-purple-300 group-hover:ring-yellow-500 transition-all" 
                     src={session?.userFinded[0]?.imagenProductora ?? userImgPng} 
                     alt="Profile"
                   />
@@ -110,11 +110,11 @@ const Nav = () => {
                 {/* Dropdown Menu */}
                 {openProfileConf && (
                   <div className="absolute right-6 top-[70px] w-64 bg-white rounded-2xl shadow-2xl border border-gray-700 overflow-hidden animate-fade-in">
-                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3">
-                      <p className="text-white font-semibold text-sm truncate">
+                    <div className="bg-gradient-to-r from-amber-600 to-yellow-500 px-4 py-3">
+                      <p className="text-[#111827] font-semibold text-sm truncate">
                         {session?.userFinded[0]?.nombreCompleto}
                       </p>
-                      <p className="text-purple-100 text-xs truncate">
+                      <p className="text-[#111827] text-xs truncate">
                         {session?.userFinded[0]?.mail}
                       </p>
                     </div>
