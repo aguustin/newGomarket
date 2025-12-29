@@ -793,7 +793,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       console.log("quantities: " , quantities)
       // Procesamos el pago exitoso
 
-      const resHandle = await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
+      /*const resHandle = await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
         prodId: prod_id,
         nombreEvento: nombre_evento,
         quantities,
@@ -804,10 +804,31 @@ export const mercadoPagoWebhookController = async (req, res) => {
         nombreCompleto: nombre_completo,
         dni,
         paymentId
-      });
+      }); //comentado el 29/12/2025*/ 
+
+      await guardarTransaccionExitosa( //agregado el 29/12/2025
+        prod_id,
+        nombre_completo,
+        mail,
+        total,
+        paymentId
+      );
+
+       //PAYMENTQUEUE HACE EL PAGO BIEN SIN DUPLICAR EL PAYMENTID PERO SOLO LO VOY A USAR EN PRODUCCION CUANDO ESTE TODO ANDANDO BIEN
+      await paymentQueue.add('generar-qr-y-mail', { prodId: prod_id, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId}, //agregado el 29/12/2025
+        {
+          jobId: paymentId.toString(),
+          attempts: 3, // Reintentar 3 veces si falla
+          backoff: {
+            type: 'exponential', // o 'fixed'
+            delay: 5000 // 5 segundos de espera antes de reintentar
+          },
+          removeOnComplete: true, // limpia el job si se completó
+          removeOnFail: false // puedes dejarlo en false para revisar errores
+      })
 
       if(resHandle === 1){
-        console.log('entro en purchase TELEFONOOOO: ', telefono)
+       
 
         await purchaseModel.create({
           prodId: prod_id,
@@ -817,19 +838,6 @@ export const mercadoPagoWebhookController = async (req, res) => {
           telefono: parseInt(telefono)
         })
       }
-
-
-      //PAYMENTQUEUE HACE EL PAGO BIEN SIN DUPLICAR EL PAYMENTID PERO SOLO LO VOY A USAR EN PRODUCCION CUANDO ESTE TODO ANDANDO BIEN
-      /*await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
-        {
-          attempts: 3, // Reintentar 3 veces si falla
-          backoff: {
-            type: 'exponential', // o 'fixed'
-            delay: 5000 // 5 segundos de espera antes de reintentar
-          },
-          removeOnComplete: true, // limpia el job si se completó
-          removeOnFail: false // puedes dejarlo en false para revisar errores
-      })*/
       return res.sendStatus(200)
     } catch (err) {
       console.error("Error procesando pago en background:", err);

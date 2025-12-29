@@ -9,7 +9,7 @@ await connecDb();
 
 paymentQueue.process('generar-qr-y-mail', async (job) => {
   const {
-    prodIdVal,
+    prodId,
     mail,
     total,
     paymentId,
@@ -29,16 +29,16 @@ paymentQueue.process('generar-qr-y-mail', async (job) => {
   }
 
   try {
-    const event = await ticketModel.findOne({ _id: prodIdVal }).lean();
+    const event = await ticketModel.findOne({ _id: prodId }).lean();
     if (!event) {
-      console.error("Evento no encontrado:", prodIdVal);
+      console.error("Evento no encontrado:", prodId);
       return;
     }
 
     const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
 
     // 👉 Generamos QRs y enviamos mail
-    await qrGeneratorController(prodIdVal, quantities, mail, state, nombreCompleto, dni);
+    await qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni);
     // 👉 Procesar venta general
     await procesarVentaGeneral(event, quantities, total);
     
