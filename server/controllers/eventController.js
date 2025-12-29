@@ -826,10 +826,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
           removeOnComplete: true, // limpia el job si se completó
           removeOnFail: false // puedes dejarlo en false para revisar errores
       })
-
-      if(resHandle === 1){
-       
-
+        
         await purchaseModel.create({
           prodId: prod_id,
           nombreCompleto: nombre_completo,
@@ -837,7 +834,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
           dni:dni,
           telefono: parseInt(telefono)
         })
-      }
+      
       return res.sendStatus(200)
     } catch (err) {
       console.error("Error procesando pago en background:", err);
