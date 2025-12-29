@@ -854,7 +854,8 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
           },
           update: {
             $inc: {
-              "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount
+              "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount,
+              "rrpp.$[rrppElem].freeEntregados": quantityObj.amount
             }
           },
           arrayFilters: [

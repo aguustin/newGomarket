@@ -259,6 +259,9 @@ return (
                                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-200 uppercase">
                                       Entradas Vendidas
                                     </th>
+                                     <th className="px-6 py-4 text-center text-xs font-bold text-gray-300 uppercase tracking-wider">
+                                      C.Frees /Free entregados
+                                    </th>
                                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-200 uppercase">
                                       Total por Entrada
                                     </th>
@@ -293,11 +296,20 @@ return (
                                           {rp.ventasRRPP.map((ventRP) => (
                                             <div key={ventRP.ticketId} className="flex items-center text-sm">
                                               <span className="font-semibold text-yellow-500 mr-2">{ventRP.nombreCategoria}:</span>
-                                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-bold">
-                                                {ventRP.vendidos || 0}
+                                              <span className="text-yellow-500! px-2 py-1 rounded-full text-xs font-bold">
+                                               ${ventRP.vendidos || 0}
                                               </span>
                                             </div>
                                           ))}
+                                        </div>
+                                      </td>
+                                        <td className="px-6 py-4">
+                                        <div className="space-y-1">
+                                            <div key={rp._id} className="flex items-center text-sm">
+                                              <span className="inline-flex items-center text-yellow-500 px-3 py-1 rounded-full text-sm font-bold">
+                                                {rp.freeEntregados || 0}
+                                              </span>
+                                            </div>
                                         </div>
                                       </td>
                                       <td className="px-6 py-4">

@@ -18,6 +18,7 @@ const RRPPEvents = () => {
         }
         getRRPPInfo()
     }, [session])
+
     /*const buildUrl = (prodId, mail, imgEvento) => {
         const secretKey = "skulldiver"
         const imgUrl = imgEvento
@@ -49,7 +50,10 @@ const RRPPEvents = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
         {rrppEvents?.map((rpe) => {
           const rrppCoincidente = rpe.rrpp.find(linkP => linkP.mail === session?.userFinded?.[0]?.mail);
-          
+          const totalVendidos = rrppCoincidente?.ventasRRPP?.reduce(
+            (acc, venta) => acc + (venta.vendidos || 0),
+              0
+          );
           if (rrppCoincidente) {
             return (
               <div 
@@ -83,7 +87,13 @@ const RRPPEvents = () => {
                 {/* Contenido */}
                 <div className="p-6 space-y-4">
                   {/* Fechas */}
-                  <div className="space-y-3">
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <p className="text-yellow-500! flex justify-center items-center">
+                        Cantidad de ventas: 
+                        <svg width="18px" height="18px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-1 mr-1"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M22 10.75C22.41 10.75 22.75 10.41 22.75 10V9C22.75 4.59 21.41 3.25 17 3.25H10.75V5.5C10.75 5.91 10.41 6.25 10 6.25C9.59 6.25 9.25 5.91 9.25 5.5V3.25H7C2.59 3.25 1.25 4.59 1.25 9V9.5C1.25 9.91 1.59 10.25 2 10.25C2.96 10.25 3.75 11.04 3.75 12C3.75 12.96 2.96 13.75 2 13.75C1.59 13.75 1.25 14.09 1.25 14.5V15C1.25 19.41 2.59 20.75 7 20.75H9.25V18.5C9.25 18.09 9.59 17.75 10 17.75C10.41 17.75 10.75 18.09 10.75 18.5V20.75H17C21.41 20.75 22.75 19.41 22.75 15C22.75 14.59 22.41 14.25 22 14.25C21.04 14.25 20.25 13.46 20.25 12.5C20.25 11.54 21.04 10.75 22 10.75ZM10.75 14.17C10.75 14.58 10.41 14.92 10 14.92C9.59 14.92 9.25 14.58 9.25 14.17V9.83C9.25 9.42 9.59 9.08 10 9.08C10.41 9.08 10.75 9.42 10.75 9.83V14.17Z" fill="#eab308"></path> </g></svg>
+                        {totalVendidos}</p>
+                    </div>
                     <div className="flex items-center space-x-3 bg-gray-800 p-3 rounded-xl">
                       <div className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg className="w-5 h-5 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
