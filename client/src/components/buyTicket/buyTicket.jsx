@@ -8,7 +8,7 @@ import copyPng from "../../assets/botones/copy.png"
 import UserContext from "../../context/userContext"
 import { useNavigate } from "react-router"
 import calendarPng from "../../assets/images/calendar.png"
-import goPng from "../../assets/goticketImgs/GOT SIN FONDO.png"
+import goPng from "../../assets/bannerR.png"
 
 const BuyTicket = () => {
     const {session} = useContext(UserContext)
@@ -177,16 +177,17 @@ const total = prod.reduce((accProd, p) => {
     
     return(
          
-        <div className="buy-tickets-container relative mx-12 mt-[30px] bg-white border-[1px] border-gray-100 rounded-2xl p-5 mb-8">
+        <div className="buy-tickets-container relative mx-12 mt-[30px] border-[1px] border-gray-700 rounded-2xl p-5 mb-8 bg-gradient-to-br from-gray-800 to-gray-900">
             {prod.map((p) => 
-            <div className="relative flex flex-wrap justify-center" key={p._id}>
+            <div className="relative flex flex-wrap justify-center " key={p._id}>
                         <div className="w-full">
-                            <div className="w-full bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-lg">
-                                <h2 className="text-white! text-center text-2xl font-bold flex items-center justify-center">
+                            <div className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 p-6 rounded-t-lg">
+                                <h2 className="text-[#111827] text-center text-2xl font-bold flex items-center justify-center">
                                     <span className="text-4xl mr-3">🎟️</span>
                                     COMPRAR TICKETS
                                 </h2>
                             </div>
+<<<<<<< HEAD
 <<<<<<< HEAD
                             <div className="flex justify-center">
 =======
@@ -216,26 +217,32 @@ const total = prod.reduce((accProd, p) => {
                                 <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
                             </div>
                         </div>
+=======
+>>>>>>> 00d4bddb8862ea5aad95e9b00ec1ddae2e77a218
                         <div className="desc-and-map text-left ml-4 mt-9">
-                            <h2 className="text-xl text-[#111827] mb-2">Evento: {p.nombreEvento}</h2>
-                            <p className="mb-2 secondary-p">Dirección: {p.direccion}</p>
+                            <h2 className="text-xl text-gray-200! mb-2">Evento: {p.nombreEvento}</h2>
+                            <p className="mb-2 text-gray-400!">Dirección: {p.direccion}</p>
                             <div className="flex items-center mt-2">
-                                <p className="secondary-p">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
-                                <p className="ml-3 secondary-p">Fecha de cierre: {formatDate(p.fechaFin) }</p>
+                                <p className="text-yellow-500">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
+                                <p className="ml-3 text-yellow-500">Fecha de cierre: {formatDate(p.fechaFin) }</p>
                             </div>
                             <div className="flex items-center mt-2">
-                                <p className="secondary-p">Artistas: {p.artistas}</p>
+                                <p className="text-gray-400">Artistas: {p.artistas}</p>
                             </div>
                             <div className="mb-3">
-                                <p className="secondary-p mt-3 text-sm">{p.descripcionEvento}</p>
-                                {p?.aviso?.length > 0 && <p className="primary-p mt-3 text-sm bg-pink-200! p-2">{p.aviso}</p> }
+                                <p className="text-gray-400 mt-3 text-sm">{p.descripcionEvento}</p>
+                                {p?.aviso?.length > 0 && <p className="text-[#111827] mt-3 text-sm bg-gray-400! p-2 rounded-lg">{p.aviso}</p> }
                             </div>
-                            <div className="flex flex-wrap items-center">
-                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-5 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
-                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-5 py-2 ml-2 rounded-xl  transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
-                               {p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center rounded-xl bg-orange-500! p-2 ml-2  transition-all duration-300 hover:scale-105 shadow-lg" >Video promocional</a> }
+                            <div className="flex flex-wrap items-center mb-2">
+                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-[#111827]! px-5 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
+                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 text-[#111827]! px-5 py-2 ml-2 rounded-xl  transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
+                               {/*p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center rounded-xl bg-orange-500! p-2 ml-2  transition-all duration-300 hover:scale-105 shadow-lg" >Video promocional</a> */}
                             </div>
                             {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
+                        </div>
+                            <div className="flex justify-center mt-3">
+                                <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
+                            </div>
                         </div>
                            {p.bannerEvento && 
                            <div className="relative w-[100%] h-[300px] hover:brightness-80 hover:cursor-pointer duration-100 ease-linear group">
@@ -244,40 +251,14 @@ const total = prod.reduce((accProd, p) => {
                            </div> }
                            {showBanner &&
                            <>
-                                <div onClick={() => setShowBanner(false)} className="fixed z-[6] bg-black h-screen  top-[0%] w-screen opacity-[0.5]"></div> 
+                                <div onClick={() => setShowBanner(false)} className="fixed z-[6] bg-black h-screen top-[0%] w-screen opacity-[0.5]"></div> 
                                 <img onClick={() => setShowBanner(false)} className="top-40 fixed flex-start object-contain mx-auto mt-5 z-[7]" src={p.bannerEvento ?? ''} alt=""></img>
                            </>
                            }
                     </div>
             )}
-            <form className="form-buy-inputs mt-16" onSubmit={(e) => buyTickets(e)}>
-                <div className="flex flex-wrap items-center justify-center">
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">NOMBRE COMPLETO:</label><br></br>
-                        <input className="w-[100%]" type="text" name="nombreCompleto" placeholder="..."></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">EMAIL:</label><br></br>
-                        <input className="w-[100%]" type="email" name="mail" placeholder="example@gmail.com"></input>
-                    </div>
-                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">REPETIR EMAIL:</label><br></br>
-                        <input className="w-[100%]" type="email" name="repetirMail" placeholder="example@gmail.com"></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">DNI:</label><br></br>
-                        <input className="w-[100%]" type="number" name="dni" placeholder="..."></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-gray-200 rounded-2xl p-2">
-                        <label className="text-MD">CONTACTO:</label><br></br>
-                        <input className="w-[100%]" type="number" name="telefono" placeholder="..."></input>
-                    </div>
-                </div>
-                <div className="mt-6 p-4 rounded-xl text-center" >
-                    <Timer duration={720000}></Timer>
-                </div>
-                
-            <div> 
+            <form className="form-buy-inputs " onSubmit={(e) => buyTickets(e)}>
+                 <div> 
               {eventToRender && (
                         <>
                             <div >
@@ -285,19 +266,19 @@ const total = prod.reduce((accProd, p) => {
                             </div>
                            {relates.length > 0  && 
                            <>
-                           <p className="secondary-p max-[450px]:text-center">Filtrar tickets por fecha:</p>
+                           <p className="text-gray-300! max-[450px]:text-center">Filtrar tickets por fecha:</p>
                            <div className="max-[780px]:text-center! max-[450px]:justify-center mt-1 flex flex-wrap items-center">
-                                <select className="w-auto mt-1 mb-3 bg-[#f4f4f4] p-3 border border-gray-300 rounded-lg appearance-none" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)}>
-                                    <option value=''>Cambiar fecha</option>
+                                <select className="w-auto mt-1 mb-3 bg-gray-700 p-3 border border-gray-300 rounded-lg appearance-none" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)}>
+                                    <option className="text-white!" value=''>Cambiar fecha</option>
                                     {relates.map((rel) => (<option key={rel._id} value={rel._id}>{rel.nombreEvento} - {formatDateB(rel.fechaInicio)}</option>))}
                                 </select>
-                                <Link className="w-[101.5px]! ml-3! secondary-button-fucsia text-white! rounded-lg p-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
+                                <Link className="w-[101.5px]! ml-3! text-[#111827]! bg-yellow-500 rounded-lg p-2 mb-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
                             </div> 
                            </> }
                             <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">
                             {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck) => (
                             <div key={tck._id} className="flex justify-center mx-auto text-center">
-                              <div className="w-full mb-3 p-4 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg transition-all duration-300">
+                              <div className="w-full mb-3 p-4 bg-gray-800  border-2 border-gray-600 rounded-2xl hover:shadow-lg transition-all duration-300">
 
                                 <div className="flex items-center justify-between flex-wrap gap-4">
 
@@ -311,22 +292,22 @@ const total = prod.reduce((accProd, p) => {
                                     />
 
                                     <div className="text-left">
-                                      <p className="text-gray-800 text-md">{tck.nombreTicket}</p>
-                                      <p className="text-sm text-gray-500">Válido hasta: {formatDate(tck.fechaDeCierre)}</p>
-                                      <p className="text-xs text-gray-500 max-w-[260px]">{tck.descripcionTicket}</p>
+                                      <p className="text-gray-200 text-md">{tck.nombreTicket}</p>
+                                      <p className="text-sm text-yellow-500">Válido hasta: {formatDate(tck.fechaDeCierre)}</p>
+                                      <p className="text-xs text-gray-400 max-w-[260px] mt-1">{tck.descripcionTicket}</p>
                                     </div>
                                   </div>
 
                                   {/* Precio + fecha */}
                                   <div className="flex items-center space-x-6">
                                     <div className="text-center">
-                                      <p className="text-xs text-gray-500 font-medium">Precio</p>
-                                      <p className="text-sm text-gray-800">${tck.precio} c/u</p>
+                                      <p className="text-xs text-gray-300 font-medium">Precio</p>
+                                      <p className="text-sm text-gray-200">${tck.precio} c/u</p>
                                     </div>
 
-                                    <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
+                                    <div className="flex items-center space-x-2 bg-gray-700 px-4 py-2 rounded-lg border border-gray-600">
                                       <img className="h-5 w-5" src={calendarPng} alt="" />
-                                      <p className="text-sm text-gray-600 font-medium">
+                                      <p className="text-sm text-gray-200 font-medium">
                                         {formatDate(tck.fechaDeCierre)}
                                       </p>
                                     </div>
@@ -334,7 +315,7 @@ const total = prod.reduce((accProd, p) => {
 
                                   {/* Cantidades */}
                                   {tck.cantidad >= 1 && eventToRender?.soldOut === false ? (
-                                    <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
+                                    <div className="flex items-center space-x-2 bg-gray-700 rounded-xl p-1 border border-gray-200 shadow-sm">
                                       <button
                                         className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95" 
                                         onClick={(e) => restQuantity(e, tck._id, tck.limit)}
@@ -343,7 +324,7 @@ const total = prod.reduce((accProd, p) => {
                                       </button>
 
                                       <div className="w-14 text-center">
-                                        <p className="text-md text-gray-800">
+                                        <p className="text-md text-white!">
                                           {quantities[tck._id]?.amount || 0}
                                         </p>
                                       </div>
@@ -387,7 +368,7 @@ const total = prod.reduce((accProd, p) => {
         key={crt._id}
         className={`flex justify-center mx-auto text-center ${isDisabled ? "opacity-50 pointer-events-none" : ""}`}
       >
-        <div className="w-full mb-3 p-5 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg transition-all duration-300">
+        <div className="w-full mb-3 p-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:shadow-lg transition-all duration-300">
 
           <div className="flex items-center justify-between flex-wrap gap-4">
 
@@ -401,11 +382,11 @@ const total = prod.reduce((accProd, p) => {
               />
 
               <div className="text-left">
-                <p className="text-gray-800 text-md">{crt.nombreTicket}</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-gray-200 text-md">{crt.nombreTicket}</p>
+                <p className="text-sm text-yellow-500">
                   Válido hasta: {formatDate(crt.fechaDeCierre)}
                 </p>
-                <p className="text-xs text-gray-500 max-w-[260px]">
+                <p className="text-xs text-gray-400 max-w-[260px] mt-1">
                   {crt.descripcionTicket}
                 </p>
               </div>
@@ -415,13 +396,13 @@ const total = prod.reduce((accProd, p) => {
             <div className="flex items-center space-x-6">
 
               <div className="text-center">
-                <p className="text-xs text-gray-500 font-medium">Disponibles</p>
-                <p className="text-md text-gray-800">{crt.limit}</p>
+                <p className="text-xs text-gray-300 font-medium">Disponibles</p>
+                <p className="text-md text-gray-200">{crt.limit}</p>
               </div>
 
-              <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
+              <div className="flex items-center space-x-2 bg-gray-700 px-4 py-2 rounded-lg border border-gray-600">
                 <img className="h-5 w-5" src={calendarPng} alt="" />
-                <p className="text-sm text-gray-600 font-medium">
+                <p className="text-sm text-gray-200 font-medium">
                   {formatDate(crt.fechaDeCierre)}
                 </p>
               </div>
@@ -475,13 +456,38 @@ const total = prod.reduce((accProd, p) => {
                    
                 )}
                 </div>
-                <div className="relative h-[auto]">
+                <div className="flex flex-wrap items-center justify-center">
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">NOMBRE COMPLETO:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="text" name="nombreCompleto" placeholder="..."></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">EMAIL:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="email" name="mail" placeholder="example@gmail.com"></input>
+                    </div>
+                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">REPETIR EMAIL:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="email" name="repetirMail" placeholder="example@gmail.com"></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">DNI:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="number" name="dni" placeholder="..."></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">CONTACTO:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="number" name="telefono" placeholder="..."></input>
+                    </div>
+                </div>
+                <div className="mt-6 p-4 rounded-xl text-center" >
+                    <Timer duration={720000}></Timer>
+                </div>
+                <div className="relative h-[auto] mt-4">
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
-                    <p className="text-center text-xl primary-p">Total:{currencyFormatter.format(total)}</p>
+                    <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
-                    <p className="text-center text-gray-400! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo GoTicket regresará el valor de las entradas No así el cargo por servicio.</p>
-                    <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
+                    <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo Ipass regresará el valor de las entradas No así el cargo por servicio.</p>
+                    <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
             </form>
         </div>

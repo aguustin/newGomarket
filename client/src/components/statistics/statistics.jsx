@@ -114,19 +114,19 @@ const Statistics = () => {
         }
 
         chartInstanceRef.current = new Chart(chartRef.current, {
-            type: graphic.toString(), /*'bar'*/
+            type: graphic.toString(), 
             data: {
                 labels: chartLabels,
                 datasets: chartData.map((item) => ({
                     label: item.label,
                     data: item.data,
                      backgroundColor:  [
-                        'rgba(240, 3, 54, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(255, 14, 14, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
+                        'rgba(240, 3, 54, 0.3)',
+                        'rgba(54, 162, 235, 0.3)',
+                        'rgba(255, 206, 86, 0.3)',
+                        'rgba(75, 192, 192, 0.3)',
+                        'rgba(255, 14, 14, 0.3)',
+                        'rgba(255, 159, 64, 0.3)'
                     ],
                     borderColor: [
                         'rgba(255, 99, 132, 1)',
@@ -136,8 +136,7 @@ const Statistics = () => {
                         'rgba(153, 102, 255, 1)',
                         'rgba(255, 159, 64, 1)'
                     ],
-                    borderWidth: 1
-                    
+                    borderWidth: 1            
                 }))
             },
             options: {
@@ -146,12 +145,27 @@ const Statistics = () => {
                 plugins: {
                     title: {
                         display: true,
-                        text: `Estadísticas: ${currentView.toUpperCase()}`
+                        text: `Estadísticas: ${currentView.toUpperCase()}`,
+                        color: 'rgba(233, 233, 233, 0.8)'
                     }
                 },
                 scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(138, 138, 138, 0.7)' // líneas verticales
+                        },
+                         ticks: {
+                            color: 'rgba(233, 233, 233, 0.8)' // color de los números
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(138, 138, 138, 0.7)' // líneas horizontales
+                        },
+                        ticks: {
+                            color: 'rgba(233, 233, 233, 0.8)' // color de los números
+                        }
                     }
                 }
             }
@@ -160,9 +174,9 @@ const Statistics = () => {
     }, [currentView, productions, graphic]);
 
     return (
-        <div className="statistics w-[96vw] mx-auto mt-6 mb-6 bg-white rounded-2xl">
-            <div className="w-full bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-lg">
-                    <h2 className="text-white! text-center text-2xl font-bold flex items-center justify-center">
+        <div className="statistics w-[96vw] mx-auto mt-6 mb-6 bg-white rounded-2xl bg-gray-800! border-gray-600!">
+            <div className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 p-6 rounded-t-lg">
+                    <h2 className="text-[#111827]! text-center text-2xl font-bold flex items-center justify-center">
                         Tus estadisticas
                     </h2>
                 </div>
@@ -170,36 +184,35 @@ const Statistics = () => {
                 <div className="statistics-event-info mx-auto relative flex items-center p-4" key={prod._id}>
                     <div className="flex flex-wrap items-center">
                         <img className="w-[250px] h-[200px] object-cover rounded-lg" src={prod.imgEvento} alt="" loading="lazy"/>
-                        <div className="ml-4">
-                            <h2 className="statistic-even-name text-3xl text-[#111827]">{prod.nombreEvento}</h2>
+                        <div className="ml-4 max-[595px]:ml-0 max-[595px]:mt-2">
+                            <h2 className="statistic-even-name text-3xl text-gray-200! max-[840px]:text-sm!">{prod.nombreEvento}</h2>
                             <div className="statistic-event-desc">
-                                <p className="mt-3 secondary-p">{prod.paisDestino}, {prod.provincia}</p>
+                                <p className="mt-3 text-gray-300">{prod.paisDestino}, {prod.provincia}</p>
                                 <div className="flex flex-wrap items-center">
-                                    <p className="mt-3 secondary-p flex items-center"><img className="mr-2" src={calendaryPng} alt=""></img>{formatDate(prod.fechaInicio)}</p>
-                                    <p className="mt-3 ml-6 secondary-p flex items-center"><img className="mr-2" src={calendaryPng} alt=""></img>{formatDate(prod.fechaFin)}</p>
+                                    <p className="mt-3 text-gray-400 flex items-center max-[595px]:text-sm!"><img className="mr-1" src={calendaryPng} alt=""></img>{formatDate(prod.fechaInicio)}</p>
+                                    <p className="mt-3 ml-6 text-gray-400 flex items-center max-[595px]:text-sm!"><img className="mr-1 max-[595px]:ml-3" src={calendaryPng} alt=""></img>{formatDate(prod.fechaFin)}</p>
                                 </div>
                             </div>
-                            
                             <div className="info-container flex items-center mt-4">
-                                <div className="info p-3 pr-12 border-[1px] rounded-2xl">
-                                    <p className="secondary-p">Monto esperado</p>
-                                    <p className="text-[#111827] text-2xl">${prod.montoVentas}</p>
-                                    <p className="secondary-p">Total vendido</p>
-                                    <p className="text-[#111827] text-2xl">${currencyFormatter.format(prod.totalMontoVendido)}</p>
+                                <div className="info p-3 pr-12 border-[1px] rounded-2xl border-gray-600!">
+                                    <p className="text-gray-400 max-[595px]:text-sm!">Monto esperado</p>
+                                    <p className="text-amber-500 text-xl max-[595px]:text-sm!">${prod.montoVentas}</p>
+                                    <p className="text-gray-400 max-[595px]:text-sm!">Total vendido</p>
+                                    <p className="text-amber-500 text-xl max-[595px]:text-sm!">{currencyFormatter.format(prod.totalMontoVendido)}</p>
                                 </div>
-                                <div className="info ml-3 p-3 pr-12 rounded-2xl">
-                                    <p className="secondary-p">Tickets vendidos</p>
-                                    <p className="text-[#111827] text-2xl">{prod.totalVentas}</p>
-                                     <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-2" src={checkPng} alt=""></img> Compras confirmadas</p>
+                                <div className="info ml-3 p-3 pr-12 rounded-2xl border-gray-600! max-[595px]:mb-3!">
+                                    <p className="text-gray-400 max-[595px]:text-sm!">Tickets vendidos</p>
+                                    <p className="text-amber-500 text-xl max-[595px]:text-sm!">{prod.totalVentas}</p>
+                                     <p className="flex items-center p-3 bg-gray-900 mt-3 mb-3 max-[595px]:mb-0 rounded-xl text-gray-400 max-[595px]:text-sm! max-[595px]:p-2"><img className="mr-2" src={checkPng} alt=""></img> Compras confirmadas</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="graphics-b cont p-3 ml-6 flex items-center rounded-2xl cursor-pointer">
+                        <div className="p-3 ml-6 flex items-center rounded-xl cursor-pointer bg-gray-900!">
                             <img src={statisticsPng} alt="" className="cursor-pointer"></img>
-                            <select className="ml-3 cont cursor-pointer text-white!" name="graph" onChange={(e) => setGraphic(e.target.value)}>
-                                <option className="text-black!" value={'bar'}>Grafico de Barras</option>
-                                <option className="text-black!" value={'line'}>Grafico Linear</option>
-                                <option className="text-black!" value={'pie'}>Grafico Circular</option>
+                            <select className="ml-3 cursor-pointer text-[#111827]! bg-gray-900! text-gray-300!" name="graph" onChange={(e) => setGraphic(e.target.value)}>
+                                <option className="text-gray-300!" value={'bar'}>Grafico de Barras</option>
+                                <option className="text-gray-300!" value={'line'}>Grafico Linear</option>
+                                <option className="text-gray-300!" value={'pie'}>Grafico Circular</option>
                             </select>
                         </div>
                     </div>
@@ -208,10 +221,10 @@ const Statistics = () => {
             <div className="statistics-categories mb-60 p-6 h-[550px]">
                 <p className="text-3xl">Estadísticas:</p>
                 <div className="filter-statics-button flex justify-start mt-5">
-                    <button onClick={() => setCurrentView('general')} className="flex items-center p-3 text-[#111827] rounded-xl"><img className="mr-2" src={folderPng} alt=""></img> Datos generales</button>   
-                    <button onClick={() => setCurrentView('tickets')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl"><img className="mr-2" src={ticketSelledPng} alt=""></img> Tickets vendidos</button>   
-                    <button onClick={() => setCurrentView('courtesys')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl"><img className="mr-2" src={invitationPng} alt=""></img> Cortesías entregadas</button>
-                    <button onClick={() => setCurrentView('rrpp')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl"><img className="mr-2" src={coinPng} alt=""></img> Ventas RRPP</button>
+                    <button onClick={() => setCurrentView('general')} className="flex items-center p-3 text-[#111827] rounded-xl bg-gradient-to-t from-amber-600 to-yellow-500 border-gray-600! hover:from-yellow-500 to-yellow-500 hover:scale-105 transition-all max-[840px]:p-1 max-[840px]:text-sm!"><img className="mr-2" src={folderPng} alt=""></img> Datos generales</button>   
+                    <button onClick={() => setCurrentView('tickets')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl bg-gradient-to-t from-amber-600 to-yellow-500 border-gray-600! hover:from-yellow-500 to-yellow-500 hover:scale-105 transition-all max-[840px]:p-1 max-[840px]:text-sm!"><img className="mr-2" src={ticketSelledPng} alt=""></img> Tickets vendidos</button>   
+                    <button onClick={() => setCurrentView('courtesys')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl bg-gradient-to-t from-amber-600 to-yellow-500 border-gray-600! hover:from-yellow-500 to-yellow-500 hover:scale-105 transition-all max-[840px]:p-1 max-[840px]:text-sm!"><img className="mr-2" src={invitationPng} alt=""></img> Cortesías entregadas</button>
+                    <button onClick={() => setCurrentView('rrpp')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl bg-gradient-to-t from-amber-600 to-yellow-500 border-gray-600! hover:from-yellow-500 to-yellow-500 hover:scale-105 transition-all max-[840px]:p-1 max-[840px]:text-sm!"><img className="mr-2" src={coinPng} alt=""></img> Ventas RRPP</button>
                 </div>
                 <canvas className="canvas mt-6" ref={chartRef}></canvas>
             </div>

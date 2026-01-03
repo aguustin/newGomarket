@@ -47,7 +47,7 @@ export const createEventController = async (req, res) => {
   const parsedCategorias = JSON.parse(categoriasEventos);
   const encryptedMail = encrypt(prodMail);
 
-  const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
+ // const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
 
   const files = req.files || {};
 
@@ -73,9 +73,9 @@ export const createEventController = async (req, res) => {
     const imagenDescriptivaFile = files?.imagenDescriptiva?.[0];
 
     const [imgEventoUrl, bannerEventoUrl, imagenDescriptivaUrl] = await Promise.all([
-      imgEventoFile ? uploadToCloudinary(imgEventoFile) : defaultImage,
-      bannerEventoFile ? uploadToCloudinary(bannerEventoFile) : defaultImage,
-      imagenDescriptivaFile ? uploadToCloudinary(imagenDescriptivaFile) : defaultImage,
+      imgEventoFile ? uploadToCloudinary(imgEventoFile) : '',
+      bannerEventoFile ? uploadToCloudinary(bannerEventoFile) : '',
+      imagenDescriptivaFile ? uploadToCloudinary(imagenDescriptivaFile) : '',
     ]);
 
     const createdEvent = await ticketModel.create({
@@ -333,7 +333,8 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
     cantidad,
     fechaDeCierre,
     visibilidad,
-    estado
+    estado,
+    limit
   } = req.body;
   
  let estadoInt = Number(estado)     
@@ -343,10 +344,11 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
   const commonFields = {
     nombreTicket,
     descripcionTicket,
-    cantidad,
+    //cantidad,
     fechaDeCierre,
     visibilidad,
-    estado:estadoInt
+    estado:estadoInt,
+    limit
   };
 
   if (imgUrl) {
@@ -366,18 +368,24 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
 const updateTicket = async (imgUrl = null) => {
   const updateFields = buildUpdateFields(imgUrl);
   const pathPrefix = estadoInt === 3 ? "cortesiaRRPP" : "tickets";
-  const cantidadField = estadoInt === 3 ? "cantidadDeCortesias" : "cantidad";
+  //const cantidadField = estadoInt === 3 ? "cantidadDeCortesias" : "cantidad";
   
+  const updateSet = Object.fromEntries(
+    Object.entries(updateFields).map(([key, value]) => [
+      `${pathPrefix}.$.${key}`,
+      value
+    ])
+  );
+
+  if (estadoInt === 3) {
+    updateSet[`${pathPrefix}.$.cantidadDeCortesias`] = cantidad;
+  } else {
+    updateSet[`${pathPrefix}.$.cantidad`] = cantidad;
+  }
+
   const updateResult = await ticketModel.updateOne(
     { [`${pathPrefix}._id`]: ticketId },
-    {
-      $set: Object.fromEntries(
-        Object.entries(updateFields).map(([key, value]) => [
-          `${pathPrefix}.$.${key}`,
-          value
-        ])
-      )
-    }
+    { $set: updateSet }
   );
 
   return updateResult;
@@ -397,7 +405,7 @@ const updateTicket = async (imgUrl = null) => {
         return res.status(200).json({
           url: result.secure_url,
           updated: updateResult.modifiedCount > 0,
-          state: 1
+          estado: 1
         });
       }
     ).end(req.file.buffer);
@@ -796,10 +804,31 @@ export const mercadoPagoWebhookController = async (req, res) => {
         nombreCompleto: nombre_completo,
         dni,
         paymentId
-      });
+      }); //comentado el 29/12/2025
+
+      /*await guardarTransaccionExitosa( //agregado el 29/12/2025
+        prod_id,
+        nombre_completo,
+        mail,
+        total,
+        paymentId
+      );
+
+       //PAYMENTQUEUE HACE EL PAGO BIEN SIN DUPLICAR EL PAYMENTID PERO SOLO LO VOY A USAR EN PRODUCCION CUANDO ESTE TODO ANDANDO BIEN
+      await paymentQueue.add('generar-qr-y-mail', { prodId: prod_id, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId}, //agregado el 29/12/2025
+        {
+          jobId: paymentId.toString(),
+          attempts: 3, // Reintentar 3 veces si falla
+          backoff: {
+            type: 'exponential', // o 'fixed'
+            delay: 5000 // 5 segundos de espera antes de reintentar
+          },
+          removeOnComplete: true, // limpia el job si se completó
+          removeOnFail: false // puedes dejarlo en false para revisar errores
+      })*/
 
       if(resHandle === 1){
-        console.log('entro en purchase TELEFONOOOO: ', telefono)
+       
 
         await purchaseModel.create({
           prodId: prod_id,
@@ -809,19 +838,6 @@ export const mercadoPagoWebhookController = async (req, res) => {
           telefono: parseInt(telefono)
         })
       }
-
-
-      //PAYMENTQUEUE HACE EL PAGO BIEN SIN DUPLICAR EL PAYMENTID PERO SOLO LO VOY A USAR EN PRODUCCION CUANDO ESTE TODO ANDANDO BIEN
-      /*await paymentQueue.add('ejecutar-pago', { prodId: prod_id, nombreEvento: nombre_evento, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId},
-        {
-          attempts: 3, // Reintentar 3 veces si falla
-          backoff: {
-            type: 'exponential', // o 'fixed'
-            delay: 5000 // 5 segundos de espera antes de reintentar
-          },
-          removeOnComplete: true, // limpia el job si se completó
-          removeOnFail: false // puedes dejarlo en false para revisar errores
-      })*/
       return res.sendStatus(200)
     } catch (err) {
       console.error("Error procesando pago en background:", err);
@@ -846,7 +862,8 @@ export const qrGeneratorController = async (prodId, quantities, mail, state, nom
           },
           update: {
             $inc: {
-              "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount
+              "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount,
+              "rrpp.$[rrppElem].freeEntregados": quantityObj.amount
             }
           },
           arrayFilters: [
@@ -957,7 +974,7 @@ console.log("QRs generados y enviados.");
 
 async function sendColabMail(rrppMail, nombreEvento, eventImg) {
   return resend.emails.send({
-    from: '"GoTickets" <no-reply@goticketonline.com>',
+    from: '"Ipass" <no-reply@ipass.com>',
     to: [rrppMail],
     subject: `Ya eres colaborador en: ${nombreEvento}`,
     html: `
@@ -968,11 +985,11 @@ async function sendColabMail(rrppMail, nombreEvento, eventImg) {
           </style>
         </head>
         <body style="font-family: 'Poppins', sans-serif; padding:10px; text-align:center;">
-          <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-            <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
+          <div style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+            <h1 style="font-size:30px; color:#111827; margin:auto;">Ipass</h1>
           </div>
 
-          <div style="text-align:center; padding:20px 15px; background-color:#ffffff; color:#111827;">
+          <div style="text-align:center; padding:20px 15px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
             <h3 style="font-size:30px; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
             <p style="margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link 
               <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}">
@@ -984,8 +1001,8 @@ async function sendColabMail(rrppMail, nombreEvento, eventImg) {
             <img src="${eventImg}" alt="${nombreEvento}" style="width:230px; height:230px;"/>
           </div>
 
-          <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-            <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
+          <footer style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+            <h2 style="font-size:27px; color:#111827; margin:auto;">Ipass</h2>
           </footer>
         </body>
       </html>
@@ -1152,7 +1169,7 @@ export const sendQrStaffQrController = async (req, res) => {
   try {
     
     const inf = await resend.emails.send({
-      from: '"GoTickets" <no-reply@goticketonline.com>',
+      from: '"Ipass" <no-reply@ipass.com>',
       to: [mail],
       subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
       html: `
@@ -1163,14 +1180,14 @@ export const sendQrStaffQrController = async (req, res) => {
             </style>
           </head>
           <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-            <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-              <h1 style="font-size:30px; color:white;">Go Ticket</h1>
+            <div style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+              <h1 style="font-size:30px; color:#111827">Ipass</h1>
             </div>
-            <div style="padding:20px; background-color:#ffffff; color:#111827;">
+            <div style="padding:20px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
               <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
               ${findRrPp ? `
-                <div>
-                  <a style="padding:10px; background-color: orange; color:white; text-decoration:none;" href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}">Crear mi link de pago</a>
+                <div style="height:60px;">
+                  <a style="padding:10px; background-color: orange; color:#111827; text-decoration:none;" href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}">Crear mi link de pago</a>
                 </div>
                 <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px;"/>
                 <div>
@@ -1181,8 +1198,8 @@ export const sendQrStaffQrController = async (req, res) => {
                 </div>
               ` : ''}
             </div>
-            <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-              <h2 style="font-size:27px; color:white;">Go Ticket</h2>
+            <footer style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+              <h2 style="font-size:27px; color:#111827;">Ipass</h2>
             </footer>
           </body>
         </html>
@@ -1244,7 +1261,6 @@ const sendQrEmail = async (
         </div>
       `;
     }).join("");
-
     const html = `
       <html>
         <head>
@@ -1253,24 +1269,24 @@ const sendQrEmail = async (
           </style>
         </head>
         <body style="font-family: 'Poppins', sans-serif; padding:50px; text-align:center;">
-          <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center; text-align:center">
-            <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
+          <div style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center; text-align:center">
+            <h1 style="font-size:30px; color:#111827; margin:auto;">Ipass</h1>
           </div>
-          <div style="background-color:#f7f7f7">
-            <div style="text-align:center; padding:40px; background-color:#ffffff; color:#111827;">
+          <div style="background-color:oklch(21% 0.034 264.665)">
+            <div style="text-align:center; padding:40px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
               <h3 style="font-size:20px; margin-top:30px; margin-bottom:20px;">${nombreCompleto}, aquí tienes tus tickets!</h3>
               <img src="${imagenEvento}" alt="Imagen del evento" style="width:100%; max-width:500px; margin-bottom:20px;" />
               ${ticketsHTML}
             </div>
           </div>
-          <div style="background-color:#ffffff; color:#111827; padding:20px; text-align:center">
+          <div style="background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338); padding:20px; text-align:center">
             <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
             <p style="font-size:16px">- Presenta tu eTicket en el acceso del evento con tu teléfono.</p>
             <p style="font-size:16px">- También puedes acceder a tus compras desde nuestra web.</p>
             <p style="font-size:16px">- Lleva tus eTickets abiertos en tu celular.</p>
           </div>
-          <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-            <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
+          <footer style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+            <h2 style="font-size:27px; color:#111827; margin:auto;">Ipass</h2>
           </footer>
         </body>
       </html>
@@ -1285,7 +1301,7 @@ const sendQrEmail = async (
         disposition: "inline"   // Indica que se debe mostrar inline
     }))
     const info = await resend.emails.send({
-      from: '"GoTickets" <no-reply@goticketonline.com>',
+      from: '"Ipass" <no-reply@ipass.com>',
       to: [email],
       subject: `Tus entradas para ${nombreEvento}`,
       html,

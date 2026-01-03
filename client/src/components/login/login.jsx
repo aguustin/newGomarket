@@ -4,7 +4,7 @@ import {Link, useNavigate} from 'react-router'
 import { LoadingButton } from "../../globalscomp/globalscomp"
 import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
-import goOriginalPng from '../../assets/goticketImgs/GO ORIGINAL SIN FONDO.png'
+import goOriginalPng from '../../assets/banner.png'
 
 const Login = () => {
     const { setSession, message, loginContext} = useContext(UserContext)
@@ -17,7 +17,8 @@ const Login = () => {
         setSession('')
         localStorage.clear()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    
+  }, [])
 
     const onSuccess = () => {
         setCaptchaStatus(true)
@@ -30,37 +31,33 @@ const Login = () => {
         setLoading(true)
         
         if(captchaStatus){ 
-            setShowMsg('ok')
-            const userData = {
-                mail: e.target.elements.mail.value,
-                contrasenia: e.target.elements.contrasenia.value
-            }   
-            const res = await loginContext(userData)
-            
-            if(res.data?.estado === 1){
-                navigate('/')
-            }
-            if(res.estado === 2){
-                setLoading(false)
-                setShowMsg('La contraseña es incorrecta')
-                setTimeout(() => {
-                    setShowMsg('')
-                }, 3000)
+          const userData = {
+            mail: e.target.elements.mail.value,
+            contrasenia: e.target.elements.contrasenia.value
+          }   
+          const res = await loginContext(userData)
+          
+          if(res.data?.estado === 1){
+            navigate('/')
+          }
+          if(res.estado === 2){
+            setLoading(false)
+            setShowMsg('La contraseña es incorrecta')
+            setTimeout(() => {
+                setShowMsg('')
+              }, 3000)
             }
             if(res.estado === 3){
-                setLoading(false)
-                setShowMsg('El email es incorrecto')
-                setTimeout(() => {
-                    setShowMsg('')
-                }, 3000)
+              setLoading(false)
+              setShowMsg('El email es incorrecto')
+              setTimeout(() => {
+                setShowMsg('')
+              }, 3000)
             }
           }else{
               setShowMsg('Por favor, marca la casilla antes de continuar')
           }
             
-        }else{
-            setShowMsg('Por favor, marca la casilla antes de continuar')
-        }
             //hasta aca el if else
         setLoading(false)
     }
@@ -81,10 +78,12 @@ const Login = () => {
         }
     }
 
+    console.log(import.meta.env.VITE_RECAPTCHA_KEY)
+
     return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50 py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center  py-12 px-4 ">
       {/* Logo */}
-      <div className="absolute top-2">
+      <div className="absolute top-5">
         <Link to="/">
           <img 
             className="h-16 transition-transform hover:scale-110" 
@@ -97,17 +96,17 @@ const Login = () => {
       {/* Formulario de Recuperación */}
       {recoverPass ? (
         <form 
-          className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 animate-slideIn"
+          className="w-full max-w-md rounded-2xl shadow-2xl p-8 animate-slideIn bg-gray-900"
           onSubmit={recoverPassFunc}
         >
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 bg-gradient-to-r from-amber-600 to-yellow-500">
+              <svg className="w-8 h-8 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900">Recuperar contraseña</h3>
-            <p className="mt-3 text-gray-600">
+            <h3 className="text-3xl font-bold text-gray-200!">Recuperar contraseña</h3>
+            <p className="mt-3 text-gray-400">
               Ingresa tu email y te enviaremos un correo para que recuperes tu contraseña
             </p>
           </div>
@@ -118,7 +117,7 @@ const Login = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <input 
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-600 rounded-xl focus:border-gray-300 transition-all outline-none text-white!"
                 type="email" 
                 minLength="5" 
                 maxLength="50" 
@@ -161,7 +160,7 @@ const Login = () => {
               </button>
             ) : (
               <button 
-                className="w-full h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl font-semibold transition-all transform hover:scale-[1.02] hover:shadow-xl"
+                className="w-full h-14 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] rounded-xl font-semibold transition-all transform hover:scale-[1.02] hover:shadow-xl"
                 type="submit"
               >
                 Recuperar contraseña
@@ -171,7 +170,7 @@ const Login = () => {
             <button 
               type="button"
               onClick={() => setRecoverPass(false)}
-              className="w-full h-12 border-2 border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 rounded-xl font-semibold transition-all"
+              className="w-full h-12 border-2 border-gray-300 text-gray-200! hover:border-orange-500 hover:text-orange-600 rounded-xl font-semibold transition-all"
             >
               Volver
             </button>
@@ -180,12 +179,12 @@ const Login = () => {
       ) : (
         /* Formulario de Login */
         <form 
-          className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 animate-slideIn"
+          className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl p-8 animate-slideIn"
           onSubmit={loginUser}
         >
           <div className="text-center mb-8">
-            <h3 className="text-4xl font-bold text-gray-900">Bienvenido</h3>
-            <p className="mt-3 text-gray-600">
+            <h3 className="text-4xl font-bold text-gray-200!">Bienvenido</h3>
+            <p className="mt-3 text-gray-400">
               Ingresa a tu cuenta y disfruta de tus eventos favoritos
             </p>
           </div>
@@ -196,7 +195,7 @@ const Login = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <input 
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-600 focus:border-gray-300 rounded-xl text-white! transition-all outline-none"
                 type="email" 
                 minLength="5" 
                 maxLength="50" 
@@ -211,7 +210,7 @@ const Login = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               <input 
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-600 focus:border-gray-300 rounded-xl transition-all outline-none text-white!"
                 type="password" 
                 minLength="5" 
                 maxLength="30" 
@@ -273,7 +272,7 @@ const Login = () => {
               </button>
             ) : (
               <button 
-                className="w-full h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl font-semibold transition-all transform hover:scale-[1.02] hover:shadow-xl"
+                className="w-full h-14 bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827] hover:from-yellow-400 to-yellow-400  rounded-xl font-semibold transition-all transform hover:scale-[1.02] hover:shadow-xl"
                 type="submit"
               >
                 Ingresar

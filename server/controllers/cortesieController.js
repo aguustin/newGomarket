@@ -110,7 +110,7 @@ export const sendCortesiesController = async (req, res) => {
         const qrBase64 = await generateQr(qrData);
         const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64');
 
-        const messageId = `<${uuidv4()}@gotickets.com>`
+        const messageId = `<${uuidv4()}@ipass.com>`
 
         const randomTips = [
           'Presentá este QR sin necesidad de imprimir.',
@@ -128,10 +128,10 @@ export const sendCortesiesController = async (req, res) => {
               </style>
             </head>
             <body style="font-family: 'Poppins', sans-serif; padding:3px; text-align:center; margin:0; -webkit-text-size-adjust: 100%;">
-              <div style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-                <h1 style="font-size:30px; color:white; margin:auto;">Go Ticket</h1>
+              <div style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+                <h1 style="font-size:30px; color:#111827; margin:auto;">Ipass</h1>
               </div>
-              <div style="text-align:center; padding:20px 15px 40px 15px; background-color:#f7f7f7; color:#111827;">
+              <div style="text-align:center; padding:20px 15px 40px 15px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
                 <h3 style="font-size:20px">${usuario.clientName}, ¡Tienes una invitación!</h3>
                 <p style="font-size:18px">Invitación: <strong>ticket número A</strong></p>
                 <p style="font-size:18px">Escaneá este QR para acceder:</p>
@@ -145,22 +145,22 @@ export const sendCortesiesController = async (req, res) => {
                 </div>
                   <p style="display:none">ID único: ${uuidv4()}</p>
               </div>
-              <div style="background-color:#ffffff; color:#111827; padding:20px; text-align:center">
+              <div style="background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338); padding:20px; text-align:center">
                 <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
                 <p style="font-size:16px">- Recuerda presentar tu eTicket en el acceso del evento con tu teléfono.</p>
                 <p style="font-size:16px">- Siempre podrás acceder a tus compras o eTickets desde nuestra web.</p>
                 <p style="font-size:16px">- Recuerda llevar tus eTickets abiertos en tu celular.</p>
                 <p style="font-size:16px"> -${randomTip}</p>
               </div>
-              <footer style="display:flex; height:90px; background-color:#f97316; justify-content:center; align-items:center;">
-                <h2 style="font-size:27px; color:white; margin:auto;">Go Ticket</h2>
+              <footer style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
+                <h2 style="font-size:27px; color:#111827; margin:auto;">Ipass</h2>
               </footer>
             </body>
           </html>
         `;
         // 4. Enviar email
         await transporter.sendMail({
-          from: `"GoTickets para ${usuario.clientName}" - <no-reply@gotickets.com>`,
+          from: `"Ipass para ${usuario.clientName}" - <no-reply@ipass.com>`,
           to: usuario.email,
           subject: `Tu invitación a ${evento.nombreEvento} - Cortesía para ${usuario.clientName} - Ref ${uuidv4().split('-')[0]}`,
           html: emailHtml,

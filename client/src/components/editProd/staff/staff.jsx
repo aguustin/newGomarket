@@ -79,13 +79,13 @@ const Staff = () => {
 
    return (
   <>
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
-      <form onSubmit={(e) => addStaff(e)} className="max-w-6xl mx-auto">
+    <div className="min-h-screen py-8 px-4">
+      <form onSubmit={(e) => addStaff(e)} className="max-w-6xl mx-auto bg-gray-800 rounded-3xl">
         {producction.map((p) => (
-          <div key={p._id} className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          <div key={p._id} className="rounded-3xl shadow-xl overflow-hidden">
             {/* Header con degradado */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
-              <h2 className="text-3xl font-bold text-white!">Confirmar detalles del evento</h2>
+            <div className="bg-gradient-to-r from-amber-600 to-yellow-500 p-6">
+              <h2 className="text-3xl font-bold text-[#111827]!">Confirmar detalles del evento</h2>
             </div>
 
             {/* Contenido principal */}
@@ -97,7 +97,7 @@ const Staff = () => {
                   <div className="overflow-hidden rounded-2xl shadow-lg">
                     <img 
                       className="w-full h-[280px] object-cover transition-transform" 
-                      src={p.imgEvento} 
+                      src={p?.imgEvento} 
                       alt="Evento" 
                       loading="lazy"
                     />
@@ -107,39 +107,39 @@ const Staff = () => {
                 {/* Información del evento */}
                 <div className="flex flex-col justify-center space-y-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">{p.nombreEvento}</h3>
+                    <h3 className="text-2xl font-bold text-gray-300! mb-2">{p.nombreEvento}</h3>
                     <div className="h-1 w-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full"></div>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-3 bg-gray-50 p-4 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center space-x-3 bg-gray-900 p-4 rounded-xl">
+                      <div className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="black" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 font-medium">Fecha de inicio</p>
-                        <p className="text-gray-800 font-semibold">{formatDate(p.fechaInicio)}</p>
+                        <p className="text-gray-400 font-semibold">{formatDate(p.fechaInicio)}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-3 bg-gray-50 p-4 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center space-x-3 bg-gray-900 p-4 rounded-xl">
+                      <div className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="black" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 font-medium">Fecha de cierre</p>
-                        <p className="text-gray-800 font-semibold">{formatDate(p.fechaFin)}</p>
+                        <p className="text-gray-400 font-semibold">{formatDate(p.fechaFin)}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Campo de email mejorado */}
                   <div className="mt-4">
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    <label className="block text-sm font-semibold text-gray-300! mb-3">
                       Enviar invitaciones a:
                     </label>
                     <div className="relative">
@@ -149,7 +149,7 @@ const Staff = () => {
                         </svg>
                       </div>
                       <input 
-                        className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none" 
+                        className="w-full pl-12 pr-4 py-4 border-2 border-amber-200 rounded-xl focus:border-amber-500  focus:border-amber-500 transition-all outline-none text-gray-400!" 
                         type="email" 
                         name="emailStaff" 
                         placeholder="Ej: JohnDoe@gmail.com"
@@ -161,7 +161,7 @@ const Staff = () => {
 
               {/* Sección de tickets */}
               <div className="border-t-2 border-gray-100 pt-8">
-                <h3 className="text-xl text-gray-800 mb-6 flex items-center">
+                <h3 className="text-xl text-gray-300! mb-6 flex items-center">
                   Cortesías disponibles
                 </h3>
 
@@ -169,7 +169,7 @@ const Staff = () => {
                   {p.cortesiaRRPP.map((tck) => (
                     <div 
                       key={tck._id} 
-                      className="bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl p-5 hover:shadow-lg transition-all duration-300"
+                      className="bg-gray-900 border-2 border-gray-500 rounded-2xl p-5 hover:shadow-lg transition-all duration-300"
                     >
                       <div className="flex items-center justify-between flex-wrap gap-4">
                         {/* Imagen y nombre del ticket */}
@@ -183,7 +183,7 @@ const Staff = () => {
                             />
                           </div>
                           <div>
-                            <p className="text-gray-800 text-lg">{tck.nombreTicket}</p>
+                            <p className="text-gray-400 text-lg">{tck.nombreTicket}</p>
                             {/*<p className="text-sm text-gray-500">Tipo de entrada</p>*/}
                           </div>
                         </div>
@@ -191,30 +191,30 @@ const Staff = () => {
                         {/* Información adicional */}
                         <div className="flex items-center space-x-6">
                           <div className="text-center">
-                            <p className="text-xs text-gray-500 font-medium">Total disponible</p>
-                            <p className="text-lg text-gray-800">{tck.cantidadDeCortesias}</p>
+                            <p className="text-xs text-gray-300 font-medium">Total disponible</p>
+                            <p className="text-lg text-gray-400">{tck.cantidadDeCortesias}</p>
                           </div>
 
-                          <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
+                          <div className="flex items-center space-x-2 bg-gray-800 px-4 py-2 rounded-lg border border-gray-600">
                             <img className="h-5 w-5" src={calendarPng} alt="" />
-                            <p className="text-sm text-gray-600 font-medium">{formatDate(tck.fechaDeCierre)}</p>
+                            <p className="text-sm text-gray-400 font-medium">{formatDate(tck.fechaDeCierre)}</p>
                           </div>
                         </div>
 
                         {/* Controles de cantidad */}
                         {tck?.cantidadDeCortesias >= 1 ? (
-                          <div className="flex items-center space-x-3 bg-white rounded-xl p-1 border-1 border-gray-200 shadow-sm">
+                          <div className="flex items-center space-x-3 bg-gray-800 rounded-xl p-1 border-1 border-gray-600 shadow-sm">
                             <button 
-                              className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg  text-gray-700 transition-all active:scale-95" 
+                              className="w-10 h-10 bg-gray-600 hover:bg-gray-200 rounded-lg text-[#111827]! transition-all active:scale-95" 
                               onClick={(e) => restQuantity(e, tck._id)}
                             >
                               -
                             </button>
                             <div className="w-14 text-center">
-                              <p className="text-md text-gray-800">{quantities[tck._id] || 0}</p>
+                              <p className="text-md text-gray-300">{quantities[tck._id] || 0}</p>
                             </div>
                             <button 
-                              className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg  text-white transition-all active:scale-95 shadow-md" 
+                              className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 rounded-lg  text-[#111827] transition-all active:scale-95 shadow-md" 
                               onClick={(e) => addQuantity(e, tck._id)}
                             >
                               +
@@ -237,11 +237,11 @@ const Staff = () => {
               {/* Botón de confirmación y mensajes */}
               <div className="mt-8 text-center space-y-4">
                 <button 
-                  className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-2xl cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95" 
+                  className="group relative inline-flex items-center justify-center px-8 py-4 bg-yellow-500 hover:from-purple-700 hover:bg-yellow-300 rounded-2xl cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95" 
                   type="submit"
                 >
                 
-                  <span className="text-white font-bold text-lg">Confirmar invitaciones</span>
+                  <span className="text-[#111827] font-bold text-lg">Confirmar invitaciones</span>
                 </button>
 
                 {/* Mensajes de estado */}
