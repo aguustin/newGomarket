@@ -282,7 +282,7 @@ const total = prod.reduce((accProd, p) => {
                                   </div>
 
                                   {/* Cantidades */}
-                                  {tck.cantidad >= 1 && eventToRender?.soldOut === false ? (
+                                  {/*tck.cantidad >= 1 && */ tck.estado !== 4 && !eventToRender?.soldOut ? (
                                     <div className="flex items-center space-x-2 bg-gray-700 rounded-xl p-1 border border-gray-200 shadow-sm">
                                       <button
                                         className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95" 

@@ -21,6 +21,7 @@ import { useContext } from "react"
 import { Country, State, City } from "country-state-city"
 import djPartyPng from '../../assets/dj-party-meaning.png'
 import goOriginalPng from '../../assets/banner.png'
+import ipassBanckground from '../../assets/images/fondo.jpeg'
 
 const Home = () => {
     const { session } = useContext(UserContext)
@@ -154,8 +155,8 @@ const Home = () => {
             <div className="home mb-16">
                 <div className="relative w-full h-[500px] max-[440px]:h-[540px]">
                     <img
-                        className="absolute top-0 left-0 w-full h-full object-cover"
-                        src={djPartyPng}
+                        className="absolute top-0 left-0 w-full h-full"
+                        src={ipassBanckground}
                         alt="Imagen fondo"
                     />
                     <div className="absolute top-0 left-0 w-full h-full bg-black opacity-[50%]"></div>

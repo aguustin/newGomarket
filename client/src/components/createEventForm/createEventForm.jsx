@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { createEventRequest, createEventTicketsRequest } from "../../api/eventRequests"
-import eventoJpg from '../../assets/imgpruebaEventos.jpg'
+import eventoJpg from '../../assets/images/fondoB.jpeg'
 import { useContext } from "react"
 import UserContext from "../../context/userContext"
 import {Country, State, City} from "country-state-city"
@@ -48,10 +48,10 @@ const CreateEventForm = () => {
 
     const createEvent = async (e) => {
             e.preventDefault()
-            if(!imageFile){
+           /* if(!imageFile){
                 alert("Por favor, carga una imagen de la portada del evento antes de continuar.");
                 return;
-            }
+            }*/
             setLoading(true)
             const currentDateTime = new Date()
             const startDateToDate = new Date(startDate)
@@ -65,6 +65,7 @@ const CreateEventForm = () => {
                 setDateMsg(1)
                 message = 'La fecha de inicio no puede ser menor a la fecha actual'
             }else{
+                
                 currency
                 selectedState?.name
                 selectedCity?.name
@@ -87,7 +88,7 @@ const CreateEventForm = () => {
                 formData.append('categoriasEventos', JSON.stringify(categorias))
                 formData.append('artistas', e.target.elements.artistas.value)
                 formData.append('montoVentas', e.target.elements.montoVentas.value)
-                formData.append('porcentajeRRPP', e.target.elements.porcentajeRRPP.value)
+                formData.append('porcentajeRRPP', e.target.elements.porcentajeRRPP.value ?? 0)
                 formData.append('fechaInicio',  new Date(startDate).toISOString())
                 formData.append('fechaFin', new Date(endDate).toISOString())
                 formData.append('provincia', selectedState?.name)
@@ -134,7 +135,7 @@ const CreateEventForm = () => {
             const formData = new FormData()
             formData.append('prodId', saveEventId)
             formData.append('nombreTicket', e.target.elements.nombreTicket.value)
-            formData.append('descripcionTicket', e.target.elements.descripcionTicket.value)
+            formData.append('descripcionTicket', e.target.elements.descripcionTicket.value ?? '')
             formData.append('precio', e.target.elements.precio.value)
             formData.append('cantidad', e.target.elements.cantidad.value)
             formData.append('fechaDeCierre', new Date(closeDate).toISOString())
@@ -219,7 +220,7 @@ const CreateEventForm = () => {
             <div className="create-event-container w-[100%] flex items-start mx-auto justify-center ">
                 <div className="w-[375px] bg-white rounded-2xl p-3 bg-gradient-to-br from-gray-800 to-gray-900">
                     <b className="text-white text-xl">Portada del evento</b>
-                    <img className="object-cover rounded-2xl mx-auto mt-3" src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
+                    <img className="object-cover rounded-2xl mx-auto mt-3 " src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
                     <p className="flex items-center p-3 bg-gradient-to-r from-orange-200 to-orange-300 mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
                     <div className="portal-evento bg-gradient-to-r from-amber-500 to-yellow-500 p-3 text-center rounded-2xl">
                         <label htmlFor="fileUpload" className="text-[#111827]!">Cargar portada</label>
@@ -325,7 +326,7 @@ const CreateEventForm = () => {
                             <div>
                                 <label>Comision para colaboradores por venta:</label>
                                 <div>
-                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" min="0" max="100" placeholder="0%" name="porcentajeRRPP" defaultValue={0} required></input>
+                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" min="0" max="100" placeholder="0%" name="porcentajeRRPP" defaultValue={0}></input>
                                 </div>
                             </div>   
                             <div>
@@ -434,7 +435,7 @@ const CreateEventForm = () => {
                                         </div>
                                         <div>
                                             <label className="text-gray-300!">Descripcion del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="text" placeholder="..." name="descripcionTicket" required></input>
+                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="text" placeholder="..." name="descripcionTicket"></input>
                                         </div>
                                     </div>
                                     <div className="div-inputs-tickets w-[50%] min-w-[270px] p-3">
@@ -486,7 +487,7 @@ const CreateEventForm = () => {
                             </div>
                             <div className="relative text-center w-full">
                                 <div className="relative mt-6 h-[250px]">
-                                    <button className="bg-orange-500! p-3 rounded-xl mb-6 text-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
+                                    <button className="bg-orange-500! p-3 rounded-xl mb-6 text-lg text-white bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-500" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
                                     {disabledButton && <><p className="text-xl! text-yellow-400!">Tu ticket fue creado con exito!</p><br></br></>}
                                     <p className="text-gray-300! text-lg mb-6 max-[530px]:text-sm!">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
                                     {/*disabledButton && */<Link className="w-[200px]! mx-auto! primary-button mx-auto mb-10 p-2 rounded-2xl flex items-center justify-center text-xl" to="/">Continuar</Link>}

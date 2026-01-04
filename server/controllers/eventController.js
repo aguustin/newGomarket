@@ -47,7 +47,7 @@ export const createEventController = async (req, res) => {
   const parsedCategorias = JSON.parse(categoriasEventos);
   const encryptedMail = encrypt(prodMail);
 
- // const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
+  const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1767393484/eventsGoTicket/tdbkxf15dsmhwrxxyigl.png';
 
   const files = req.files || {};
 
@@ -73,9 +73,9 @@ export const createEventController = async (req, res) => {
     const imagenDescriptivaFile = files?.imagenDescriptiva?.[0];
 
     const [imgEventoUrl, bannerEventoUrl, imagenDescriptivaUrl] = await Promise.all([
-      imgEventoFile ? uploadToCloudinary(imgEventoFile) : '',
-      bannerEventoFile ? uploadToCloudinary(bannerEventoFile) : '',
-      imagenDescriptivaFile ? uploadToCloudinary(imagenDescriptivaFile) : '',
+      imgEventoFile && uploadToCloudinary(imgEventoFile),
+      bannerEventoFile && uploadToCloudinary(bannerEventoFile),
+      imagenDescriptivaFile && uploadToCloudinary(imagenDescriptivaFile),
     ]);
 
     const createdEvent = await ticketModel.create({
@@ -102,7 +102,7 @@ export const createEventController = async (req, res) => {
       lugarEvento,
       linkVideo,
       comisionServicio,
-      imgEvento: imgEventoUrl,
+      imgEvento: imgEventoUrl ?? defaultImage,
       bannerEvento: bannerEventoUrl,
       imagenDescriptiva: imagenDescriptivaUrl,
       totalVentas: 0,
@@ -132,7 +132,7 @@ export const createEventController = async (req, res) => {
 
 export const createEventTicketsController = async (req, res) => {  //CREA TICKETS DEL EVENTO
   const {prodId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado, distribution, limit} = req.body
-  const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1747162121/eventsGoTicket/test_cf2nd9.jpg';
+  const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1767393484/eventsGoTicket/tdbkxf15dsmhwrxxyigl.png';
   let estadoToInt = Number(estado)
   let distributionToInt = Number(distribution)
   let limitToInt = Number(limit)
@@ -338,7 +338,7 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
   } = req.body;
   
  let estadoInt = Number(estado)     
-
+  console.log('estadoint: ', estadoInt)
 // Construye campos comunes para actualización
  const buildUpdateFields = (imgUrl = null) => {
   const commonFields = {

@@ -282,11 +282,11 @@ const EditProd = () => {
     const res = await updateTicketsRequest(formData);
 
     if (res.data.estado > 0) {
-      
+      setMessage(3);
+      setTicketLoading(false);
       setTimeout(() => {
-        setMessage(3);
-        setTicketLoading(false);
-      }, 2000);
+        setMessage(0);
+      }, 4000);
     }
   };
 
@@ -1127,6 +1127,7 @@ const EditProd = () => {
                         <option className="text-[#111827]" value={1}>Activo</option>
                         <option className="text-[#111827]" value={2}>No visible</option>
                         <option className="text-[#111827]" value={3}>Cortesia</option>
+                        <option className="text-[#111827]" value={4}>Agotado</option>
                       </select>
                     </div>
                   </div>
@@ -1407,11 +1408,13 @@ const EditProd = () => {
                           >
                             <option className="text-gray-900!" value={tick.estado}>
                               {(tick.estado === 1 && "Activo") ||
-                                (tick.estado === 2 && "No visible") /*||
-                                (tick.estado === 3 && "Cortesia")*/}
+                                (tick.estado === 2 && "No visible") ||
+                                (tick.estado === 3 && "Cortesia") ||
+                                (tick.estado === 4 && "Agotado")}
                             </option>
-                            <option className="text-gray-900!" value={1}>Activo</option>
-                            <option className="text-gray-900!" value={2}>No visible</option>
+                            {tick.estado !== 1 && <option className="text-gray-900!" value={1}>Activo</option>}
+                            {tick.estado !== 2 && <option className="text-gray-900!" value={2}>No visible</option>}
+                            {tick.estado !== 4 && <option className="text-gray-900!" value={4}>Agotado</option>}
                             {/*<option className="text-gray-900!" value={3}>Cortesia</option>*/ }
                           </select>
                         </div>
@@ -1443,6 +1446,11 @@ const EditProd = () => {
                             </div>
                           </div>
                         </div>
+                         {message === 3 && (
+                            <p className="text-center bg-gray-800! text-yellow-500! mt-3">
+                              Ticket actualizado!
+                            </p>
+                          )}
                         {/*  <div className="flex justify-center items-center mt-3">
                                                 <label>Visibilidad</label>
                                                 <input className="ml-2" type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>

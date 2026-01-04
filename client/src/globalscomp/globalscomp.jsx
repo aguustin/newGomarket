@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import defaultImage from "../assets/LogoPrueba.jpg"
+import ipassBanckground from "../assets/images/fondoB.jpeg"
 import { useNavigate } from "react-router";
 import timerPng from "../assets/images/timer.png"
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
@@ -43,7 +43,7 @@ export default function FadeInImage({ src, alt, className }) {
         <div className="relative">
             {/* Imagen de fondo por defecto */}
             <img
-                src={defaultImage}
+                src={ipassBanckground}
                 alt="placeholder"
                 className={`absolute top-0 left-0 w-full h-[240px]! object-cover object-top ${loaded ? "opacity-0" : "opacity-100"} transition-opacity duration-800`}
                 loading="lazy"/>
