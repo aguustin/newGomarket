@@ -316,7 +316,7 @@ const EditProd = () => {
     formData.append("nombreTicket", e.target.elements.nombreTicket.value);
     formData.append(
       "descripcionTicket",
-      e.target.elements.descripcionTicket.value
+      e.target.elements.descripcionTicket.value ?? ''
     );
     formData.append(
       "precio",
@@ -1087,7 +1087,7 @@ const EditProd = () => {
                       type="text"
                       placeholder="..."
                       name="descripcionTicket"
-                      required
+            
                     ></input>
                   </div>
                   <div className="price-qty-state flex items-center mt-3">
@@ -1097,7 +1097,6 @@ const EditProd = () => {
                         <input
                           className="w-[120px] text-gray-300! border-amber-500!"
                           type="number"
-                          min="1"
                           placeholder="..."
                           name="precio"
                           required

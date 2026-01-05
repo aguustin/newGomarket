@@ -322,7 +322,7 @@ const total = prod.reduce((accProd, p) => {
                               </div>
                             </div>
 ))}
-                           {eventToRender.cortesiaRRPP
+                           {/*eventToRender.cortesiaRRPP
   .filter((crt) => crt.estado !== 2)
   .map((crt) => {
     const userCortesia = session?.userFinded?.[0]?.cortesias?.find(
@@ -340,7 +340,7 @@ const total = prod.reduce((accProd, p) => {
 
           <div className="flex items-center justify-between flex-wrap gap-4">
 
-            {/* Imagen + nombre + desc */}
+            {/* Imagen + nombre + desc }
             <div className="flex items-center space-x-4 min-w-[200px]">
               <img
                 className="w-16 h-16 rounded-xl object-cover shadow-md"
@@ -360,7 +360,7 @@ const total = prod.reduce((accProd, p) => {
               </div>
             </div>
 
-            {/* Disponibles + fecha */}
+            {/* Disponibles + fecha }
             <div className="flex items-center space-x-6">
 
               <div className="text-center">
@@ -376,7 +376,7 @@ const total = prod.reduce((accProd, p) => {
               </div>
             </div>
 
-            {/* Controles */}
+            {/* Controles }
             {crt.cantidadDeCortesias >= 1 && eventToRender?.soldOut === false ? (
             <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
               <button
@@ -417,7 +417,7 @@ const total = prod.reduce((accProd, p) => {
         </div>
       </div>
     );
-  })}
+  })*/}
 
                             </div>
                         </>
