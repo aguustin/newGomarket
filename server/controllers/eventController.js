@@ -974,7 +974,7 @@ console.log("QRs generados y enviados.");
 
 async function sendColabMail(rrppMail, nombreEvento, eventImg) {
   return resend.emails.send({
-    from: '"Ipass" <no-reply@ipass.com>',
+    from: '"Ipass" <no-reply@ipassi.com>',
     to: [rrppMail],
     subject: `Ya eres colaborador en: ${nombreEvento}`,
     html: `
@@ -1169,7 +1169,7 @@ export const sendQrStaffQrController = async (req, res) => {
   try {
     
     const inf = await resend.emails.send({
-      from: '"Ipass" <no-reply@ipass.com>',
+      from: '"Ipass" <no-reply@ipassi.com>',
       to: [mail],
       subject: `Se te enviaron invitaciones de ${findRrPp?.nombreEvento || ''}`,
       html: `
@@ -1301,7 +1301,7 @@ const sendQrEmail = async (
         disposition: "inline"   // Indica que se debe mostrar inline
     }))
     const info = await resend.emails.send({
-      from: '"Ipass" <no-reply@ipass.com>',
+      from: '"Ipass" <no-reply@ipassi.com>',
       to: [email],
       subject: `Tus entradas para ${nombreEvento}`,
       html,

@@ -20,7 +20,7 @@ const Staff = () => {
     useEffect(() => {
         const obtainUserProd = async () => {
             const userId = session?.userFinded?.[0]?._id
-            const res = await getOneProdRequest(prodId, userId)  //despues reemplazar el valor por userId de la session
+            const res = await getOneProdRequest(prodId, userId)
             setProducction(res.data)
         }
         obtainUserProd()

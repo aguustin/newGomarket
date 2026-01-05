@@ -40,7 +40,7 @@ export const registerController = async (req, res) => {
     const token = jwt.sign({nombreCompleto, mail, dni, pais, encriptContrasenia}, secret, {expiresIn: '20m'});
 
     await resend.emails.send({
-        from: 'Ipass <no-reply@ipass.com>',
+        from: 'Ipass <no-reply@ipassi.com>',
         to: [mail],
         subject: 'Verifica tu correo para completar tu registro en Ipasss',
         html: `
@@ -153,7 +153,7 @@ export const recoverPassController = async (req, res) => {
     console.log("token generated", token)
 
     await resend.emails.send({
-        from: '"Ipass" <no-reply@ipass.com>',
+        from: '"Ipass" <no-reply@ipassi.com>',
         to: [mail],
         subject: `Recuperar contraseña para ${mail} - Ipasss`,
         html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${process.env.URL_FRONT}/recover_password/${token}">Recuperar mi contraseña</a>`

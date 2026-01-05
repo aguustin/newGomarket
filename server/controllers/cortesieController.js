@@ -110,7 +110,7 @@ export const sendCortesiesController = async (req, res) => {
         const qrBase64 = await generateQr(qrData);
         const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64');
 
-        const messageId = `<${uuidv4()}@ipass.com>`
+        const messageId = `<${uuidv4()}@ipassi.com>`
 
         const randomTips = [
           'Presentá este QR sin necesidad de imprimir.',
@@ -160,7 +160,7 @@ export const sendCortesiesController = async (req, res) => {
         `;
         // 4. Enviar email
         await transporter.sendMail({
-          from: `"Ipass para ${usuario.clientName}" - <no-reply@ipass.com>`,
+          from: `"Ipass para ${usuario.clientName}" - <no-reply@ipassi.com>`,
           to: usuario.email,
           subject: `Tu invitación a ${evento.nombreEvento} - Cortesía para ${usuario.clientName} - Ref ${uuidv4().split('-')[0]}`,
           html: emailHtml,

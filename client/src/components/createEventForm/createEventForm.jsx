@@ -441,7 +441,7 @@ const CreateEventForm = () => {
                                     <div className="div-inputs-tickets w-[50%] min-w-[270px] p-3">
                                         <div>
                                             <label className="text-gray-300!">Precio del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="number" min="1" placeholder="..." name="precio" required></input>
+                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="number" min="0" placeholder="..." name="precio" required></input>
                                         </div>
                                         <div>
                                             <label className="text-gray-300!">Cantidad</label>

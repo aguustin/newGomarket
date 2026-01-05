@@ -75,6 +75,7 @@ const EditProd = () => {
   const [previewPortada, setPreviewPortada] = useState(null);
   const [showSoldOutAdv, setShowSoldOutAdv] = useState(false);
   const [isSoldOut, setIsSoldOut] = useState(null);
+  const [showDesc, setShowDesc] = useState(false);
 
   useEffect(() => {
     const userId = session?.userFinded?.[0]?._id;
@@ -113,10 +114,10 @@ const EditProd = () => {
   }, [prod]);
 
   useEffect(() => {
-  if (message === 5) {
+  /*if (message === 5) {
     alert("El evento se actualizó exitosamente!");
     setMessage(null); // reiniciamos para que no se vuelva a disparar
-  }
+  }*/
 }, [message]);
 
   if (width === null) return null;
@@ -520,6 +521,7 @@ const EditProd = () => {
                       >
                         Marcar como Sold out
                       </button>
+                       {showDesc ? <button className="text-white!" onClick={() => setShowDesc(false)}>Cerrar desc evento</button> : <button onClick={() => setShowDesc(true)}>Mostrar desc evento</button>}
                       {showOthersProds && (
                         <div className="mt-2 border-1 border-gray-500 rounded-xl">
                           {othersProds
@@ -713,7 +715,7 @@ const EditProd = () => {
                     </div>
                   </div>
                 </div>
-                <div className="edit-info-event flex justify-center">
+                {showDesc && <div className="edit-info-event flex justify-center">
                   <div className="p-3">
                     <div>
                       <label className="text-gray-300!">Nombre del evento:</label>
@@ -1045,7 +1047,7 @@ const EditProd = () => {
                       )}
                     </button>
                   </div>
-                </div>
+                </div>}
               </form>
             </>
           ))}
