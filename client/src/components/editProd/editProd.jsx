@@ -515,13 +515,13 @@ const EditProd = () => {
                       >
                         Relacionar eventos
                       </button>
+                      {showDesc ? <button className="bg-gradient-to-r from-orange-600 to-amber-500 text-[#111827] ml-3 p-3 rounded-lg translate-x-auto!" onClick={() => setShowDesc(false)}>Cerrar inf. evento</button> : <button className="relation-buttons bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827] ml-3 p-3 rounded-lg translate-x-auto!" onClick={() => setShowDesc(true)}>Editar inf. evento</button>}
                       <button
                         className="relation-buttons bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-[#111827] ml-3 p-3 rounded-lg translate-x-auto!"
                         onClick={() => setShowSoldOutAdv(!showSoldOutAdv)}
                       >
                         Marcar como Sold out
                       </button>
-                       {showDesc ? <button className="text-white!" onClick={() => setShowDesc(false)}>Cerrar desc evento</button> : <button onClick={() => setShowDesc(true)}>Mostrar desc evento</button>}
                       {showOthersProds && (
                         <div className="mt-2 border-1 border-gray-500 rounded-xl">
                           {othersProds
