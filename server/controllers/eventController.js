@@ -573,29 +573,31 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 
 
 
-const guardarTransaccionExitosa = async (prodId, nombreCompleto, mail, total, paymentId) => {
-  const totalPagoEntradas = Math.round(total / 1.10); // Descontar recargo
+const guardarTransaccionExitosa = async ( prodId, nombreCompleto, mail, total, paymentId) => {
+  const totalPagoEntradas = Math.round(total / 1.10);
 
-  // 1. Intentar incrementar el montoPagado si el email ya existe y paymentId no está
-  await transactionModel.updateOne(
+  const result = await transactionModel.updateOne(
     {
       prodId,
-      'compradores.transaccionId': {$ne: paymentId}
+      'compradores.transaccionId': { $ne: paymentId }
     },
     {
-      $push:{
-        compradores:{
+      $push: {
+        compradores: {
           transaccionId: paymentId,
           nombre: nombreCompleto,
           email: mail,
           montoPagado: totalPagoEntradas,
+          fecha: new Date(),
         }
       }
-    },
-    { upsert: true }
+    }
   );
 
-  console.log(`✅ Transacción guardada para paymentId: ${paymentId}`);
+  if (result.modifiedCount === 0) {
+    return false;
+  }
+
   return true;
 };
 
@@ -761,13 +763,17 @@ export const mercadoPagoWebhookController = async (req, res) => {
       if (status !== 'approved') return;
 
       // Chequeo de idempotencia
-      const existing = await transactionModel.findOne({
-        'compradores.transaccionId': paymentId
-      });
+      const processed = await guardarTransaccionExitosa(
+        prod_id,
+        nombre_completo,
+        mail,
+        total,
+        paymentId
+      );
 
-      if (existing) {
+      if (!processed) {
         console.log(`Pago ${paymentId} ya procesado — omitido`);
-        return;
+        return res.sendStatus(200);
       }
 
       // Extraer metadata
@@ -973,6 +979,7 @@ console.log("QRs generados y enviados.");
 
 
 async function sendColabMail(rrppMail, nombreEvento, eventImg) {
+  
   return resend.emails.send({
     from: '"Ipass" <no-reply@ipassi.com>',
     to: [rrppMail],
