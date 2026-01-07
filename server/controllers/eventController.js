@@ -674,8 +674,8 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 export const buyEventTicketsController = async (req, res) => {
   const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
   
-  qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
   if(total <= 0){
+    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
     return res.status(200).json(3)
   }
  
@@ -1307,8 +1307,6 @@ const sendQrEmail = async (
       html,
       attachments,
     });
-    console.log(ticket.qrImage.length)
-    console.log('RESEND RESPONSE:', info);
   } catch (err) {
     console.error('❌ Error al enviar el email:', err);
     throw err;
