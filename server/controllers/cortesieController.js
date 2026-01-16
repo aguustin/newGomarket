@@ -7,6 +7,7 @@ import ticketModel from "../models/ticketsModel.js";
 import cortesieModel from "../models/cortesiesModel.js"
 import jwt from 'jsonwebtoken';
 import tokenModel from "../models/tokenModel.js";
+import rrppExcelModel from "../models/rrppExcelModel.js";
 
 export const getAllExcelsInfoController = async (req, res) => {
     const {userId, prodId} = req.params
@@ -73,7 +74,7 @@ export const chargeExcelController = async (req, res) => {
 }
 
 async function generateQr(data) {
-  return await QRCode.toDataURL(data);  // Devuelve el QR en base64
+  return await QRCode.toDataURL(data); 
 }
 
 export const sendCortesiesController = async (req, res) => {
@@ -90,9 +91,6 @@ export const sendCortesiesController = async (req, res) => {
     });
 
     for (const usuario of usuarios) {
-      if (usuario.status === 'sent') {
-        continue;
-      }
       try {
         // 1. Generar token único
         const payload = {
@@ -175,8 +173,6 @@ export const sendCortesiesController = async (req, res) => {
         });
         // 5. Actualizar estado en la base
         usuario.qrCode = qrBase64;
-        usuario.status = 'sent';
-
         await new Promise(resolve => setTimeout(resolve, 300));
 
       } catch (error) {
@@ -187,6 +183,114 @@ export const sendCortesiesController = async (req, res) => {
 
     // Guardar cambios en cortesieModel
     await cortesiaDoc.save();
+
+    res.json({ success: true, message: "Correos enviados" });
+  } catch (error) {
+    console.error('Error en el envío de cortesías:', error);
+    res.status(500).json({ error: 'Error al enviar correos' });
+  }
+};
+
+
+export const chargeRRPPExcelController = async (req, res) => {
+  const {userId, excelName} = req.body
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se subió ningún archivo' });
+  }
+
+  try {
+    const formatedDate = formatDateB(Date.now())
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    const rawPeople = XLSX.utils.sheet_to_json(worksheet, {
+      header: ['nombreRRPP', 'email'],
+      range: 1
+    });
+
+    const rrppCount = rawPeople.length;
+
+    // Agregamos el campo courtesy a cada persona
+    const rrppPeople = rawPeople.map(person => ({
+      ...person
+    }));
+
+   const newRRPPDoc = await rrppExcelModel.create({
+      userId,
+      excelName,
+      fechaCreacion: formatedDate,
+      rrppList: rrppPeople,
+      RRPPCount: rrppCount
+    });
+
+
+    res.json({ success: true, data: newRRPPDoc });
+  } catch (error) { 
+    console.error('Error al procesar el Excel:', error);
+    res.status(500).json({ error: 'Error al leer el archivo Excel' });
+  }
+}
+
+export const sendRRPPColabsListController = async (req, res) => {
+  const { prodId, rrppListId } = req.body;
+ 
+  try {
+    const evento = await ticketModel.findById(prodId);
+    if (!evento) {
+      return res.status(404).json({ error: 'Evento no encontrado' });
+    }
+
+    const rrppListDoc = await rrppExcelModel.findById(rrppListId);
+    if (!rrppListDoc) {
+      return res.status(404).json({ error: 'Lista RRPP no encontrada' });
+    }
+
+    const rrpps = rrppListDoc.rrppList;
+
+    await Promise.all(
+      rrpps.map(colaborator =>
+        resend.emails.send({
+          from: '"Ipass" <no-reply@ipassi.com>',
+          to: [colaborator.email],
+          subject: `Ya eres colaborador en: ${evento.nombreEvento}`,
+          html: `
+            <html>
+              <body style="font-family:Poppins, sans-serif; text-align:center;">
+                <h2>Ya eres parte del staff del evento ${evento.nombreEvento}</h2>
+                <p>
+                  Genera tu link de cobranza
+                  <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${colaborator.email}">
+                    aquí
+                  </a>
+                </p>
+                <img src="${evento.imgEvento}" width="230"/>
+              </body>
+            </html>
+          `
+        })
+      )
+    );
+
+    const rrppToInsert = rrpps.map(r => ({
+      nombre: r.nombreRRPP,
+      mail: r.email,
+      freeEntregados: 0,
+      montoCorrespondienteRRPP: 0,
+      montoTotalVendidoRRPP: 0,
+      ventasRRPP: [],
+      ticketsCortesias: []
+    }));
+
+    await ticketModel.findByIdAndUpdate(
+      prodId,
+      {
+        $addToSet: {
+          rrpp: { $each: rrppToInsert }
+        }
+      }
+    );
 
     res.json({ success: true, message: "Correos enviados" });
   } catch (error) {
