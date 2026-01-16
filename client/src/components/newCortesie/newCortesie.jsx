@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router"
-import { chargeExcelRequest, getCortesieRequest } from "../../api/cortesieRequest"
+import { chargeExcelRequest, chargeRRPPExcelRequest, getCortesieRequest } from "../../api/cortesieRequest"
 import UserContext from "../../context/userContext"
 import excelEjPng from "../../assets/images/excelEj.png"
 import { getOneProdRequest } from "../../api/eventRequests"
@@ -11,7 +11,9 @@ const NewCortesie = () => {
     const {prodId} = useParams()
     const {session} = useContext(UserContext)
     const [productions, setProductions] = useState([])
+    const [listType, setListType] = useState('1')
     const navigate = useNavigate()
+
     useEffect(() => {
         if(prodId.length > 0){
             const getProdFunc = async () => {
@@ -32,10 +34,22 @@ const NewCortesie = () => {
         formData.append('excelName', e.target.elements.excelName.value)
         formData.append('fechaCreacion', date)
         formData.append('excelFile', e.target.elements.excelFile.files[0])
-        const res = await chargeExcelRequest(formData)
-        if(res.data.success){
-            navigate(`/cortesies/${prodId}`)
+        //formData.append('excelType', Number(listType))
+        
+       if(listType === '1'){
+            const res = await chargeRRPPExcelRequest(formData)
+            if(res.data.success){
+                alert('Las colaboraciones fueron enviadas con exito!')
+            }
+        }else{
+            const res = await chargeExcelRequest(formData)
+            if(res.data.success){
+                alert('Las invitaciones fueron enviadas con exito!')
+            }
         }
+        
+        navigate(`/cortesies/${prodId}`)
+        
     }
 
     return(
@@ -58,13 +72,17 @@ const NewCortesie = () => {
                         <form className="upload-excel-form relative flex items-center" onSubmit={(e) => handleExcelUpload(e)} encType="multipart/form-data">
                             <div className="w-[50%] mx-2">
                                 <label className="text-lg text-gray-300!">Nombre de tu lista: </label><br></br>
-                                <input className="h-[40px] w-full" name="excelName" type="text" required></input>
+                                <input className="h-[40px] w-full text-gray-300!" name="excelName" type="text" required></input>
                             </div>
                             <div className="w-[50%] mx-2">
                                 <label className="text-lg text-gray-300!">Cargar lista: </label><br></br>
                                 <label htmlFor="excelFileHtml" className="w-full flex items-center border-[1px] border-gray-300 p-2 text-gray-200! rounded-2xl"><img className="mr-2" src={uploadPng} alt=""></img>Subir excel</label>
                                 <input id="excelFileHtml" className="hidden " type="file" name="excelFile" required></input>
                             </div>
+                            <select defaultValue={1} onChange={(e) => setListType(e.target.value)} className="bg-gray-900 text-gray-200!">
+                                <option className="text-" value={1}>RRPP</option>
+                                <option className="text-" value={2}>Invitaciones</option>
+                            </select>
                             <button className="bg-gradient-to-r from-amber-600! to-yellow-500 hover:from-yellow-300! to-yellow-300! rounded-2xl mt-5 pt-3 pb-3 pl-8 pr-8 cursor-pointer text-[#111827]" type="submit">Confirmar</button>
                         </form>
         </div>

@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 
 const rrppExcelSchema = mongoose.Schema({
+    prodId:{type:String},
     userId:{type:String},
+    eventName:{type:String},
     excelName:{type:String},
     fechaCreacion:{type:String},
     rrppList:[{

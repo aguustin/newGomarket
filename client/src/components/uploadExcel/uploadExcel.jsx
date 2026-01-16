@@ -17,13 +17,12 @@ function UploadExcel() {
 
     const formData = new FormData();
     formData.append('excel', file);
-    formData.append('excel', file);
     formData.append('eventId', eventId);
     formData.append('excelName', file.name);
     formData.append('dateT', new Date().toISOString());
 
     try {
-      const res = await axios.post('http://localhost:4000/upload_excel', formData, {
+      await axios.post('http://localhost:4000/upload_excel', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

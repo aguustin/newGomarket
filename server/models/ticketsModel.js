@@ -92,6 +92,7 @@ const ticketSchema = new mongoose.Schema({
             ticketIdCortesia: {type: String},
             cantidadDeCortesias: {type:Number}
         }],
+        onList:{type: Boolean, default: false},
         freeEntregados:{type:Number},
         montoCorrespondienteRRPP: {type: Number},
         montoTotalVendidoRRPP: {type: Number}

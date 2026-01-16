@@ -8,10 +8,17 @@ import cortesieModel from "../models/cortesiesModel.js"
 import jwt from 'jsonwebtoken';
 import tokenModel from "../models/tokenModel.js";
 import rrppExcelModel from "../models/rrppExcelModel.js";
+import { resend } from "../lib/resendDomain.js";
 
 export const getAllExcelsInfoController = async (req, res) => {
     const {userId, prodId} = req.params
     const findExcels = await cortesieModel.find({prodId: prodId, userId: userId})
+    res.send(findExcels)
+}
+
+export const getAllRRPPExcelsController = async (req, res) => {
+    const {userId, prodId} = req.params
+    const findExcels = await rrppExcelModel.find({prodId: prodId, userId: userId})
     res.send(findExcels)
 }
 
@@ -87,7 +94,7 @@ export const sendCortesiesController = async (req, res) => {
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: { user: process.env.USER_MAIL, pass: process.env.PASS }
+      auth: { user: process.env.USER_MAIL, pass: process.env.PASS } /*process.env.USER_MAIL*/
     });
 
     for (const usuario of usuarios) {
@@ -159,6 +166,10 @@ export const sendCortesiesController = async (req, res) => {
         // 4. Enviar email
         await transporter.sendMail({
           from: `"Ipass para ${usuario.clientName}" - <no-reply@ipassi.com>`,
+          envelope:{
+             from: 'bounce@ipassi.com', // inexistente o no monitoreado
+             to: usuario.email
+          },
           to: usuario.email,
           subject: `Tu invitación a ${evento.nombreEvento} - Cortesía para ${usuario.clientName} - Ref ${uuidv4().split('-')[0]}`,
           html: emailHtml,
@@ -193,7 +204,7 @@ export const sendCortesiesController = async (req, res) => {
 
 
 export const chargeRRPPExcelController = async (req, res) => {
-  const {userId, excelName} = req.body
+  const {userId, prodId, eventName, excelName} = req.body
 
   if (!req.file) {
     return res.status(400).json({ error: 'No se subió ningún archivo' });
@@ -218,7 +229,9 @@ export const chargeRRPPExcelController = async (req, res) => {
     }));
 
    const newRRPPDoc = await rrppExcelModel.create({
+      prodId,
       userId,
+      eventName,
       excelName,
       fechaCreacion: formatedDate,
       rrppList: rrppPeople,
@@ -235,7 +248,7 @@ export const chargeRRPPExcelController = async (req, res) => {
 
 export const sendRRPPColabsListController = async (req, res) => {
   const { prodId, rrppListId } = req.body;
- 
+  
   try {
     const evento = await ticketModel.findById(prodId);
     if (!evento) {
@@ -280,7 +293,8 @@ export const sendRRPPColabsListController = async (req, res) => {
       montoCorrespondienteRRPP: 0,
       montoTotalVendidoRRPP: 0,
       ventasRRPP: [],
-      ticketsCortesias: []
+      ticketsCortesias: [],
+      onList: true
     }));
 
     await ticketModel.findByIdAndUpdate(
