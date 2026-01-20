@@ -6,7 +6,7 @@ import exitPng from "../../assets/botones/exit.png"
 import menuPng from "../../assets/images/menu.png"
 import colaborationPng from "../../assets/botones/colaboration.png"*/
 import { Link, useNavigate } from "react-router"
-import goPng from "../../assets/bannerR.png"
+import goPng from "../../assets/goticketImgs/IPS.svg"
 import userImgPng from "../../assets/user.png"
 
 const Nav = () => {
@@ -46,7 +46,7 @@ const Nav = () => {
         <>
           {/* Logo */}
           <Link to="/" className="flex-shrink-0 hover:opacity-80 transition-opacity">
-            <img className="w-24 h-auto" src={goPng} alt="Logo" loading="lazy" />
+            <img className="w-34 h-auto" src={goPng} alt="Logo" loading="lazy" />
           </Link>
 
           {/* Navigation Links - Desktop */}

@@ -145,3 +145,7 @@ export const reactivarEventoRequest = async ({prodId}) => axios.post(`${import.m
 export const soldOutEventRequest = async ({prodId, isSoldOut}) => axios.post(`${import.meta.env.VITE_URL}/sold_out`, {prodId, isSoldOut})
 
 export const getBuyersRequest = async (prodId) => axios.get(`${import.meta.env.VITE_URL}/get_buyers/${prodId}`)
+
+export const createDiscountCodeRequest = async ({prodId, idDiscount, cantidadDescuentos, numeroDescuento }) => axios.post(`${import.meta.env.VITE_URL}/create_discount`, {prodId, idDiscount, cantidadDescuentos, numeroDescuento})
+
+export const activeDiscountCodeRequest = async ({prodId, discountCode}) => axios.post(`${import.meta.env.VITE_URL}/active_discount`, {prodId, discountCode})

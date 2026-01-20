@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { buyTicketsRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
+import { activeDiscountCodeRequest, buyTicketsRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
 import { formatDate, formatDateB, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 import mapPng from "../../assets/botones/map.png"
@@ -17,6 +17,8 @@ const BuyTicket = () => {
     const [quantities, setQuantities] = useState({});
     // eslint-disable-next-line no-unused-vars
     const [totalQuantity, setTotalQuantity] = useState(0)
+    const [discountCode, setDiscountValueCode] = useState(0)
+    const [discountValue, setDiscountValue] = useState(0)
     const [showMsg, setShowMsg] = useState(0)
     const [loading, setLoading] = useState(false)
     const [showMap, setShowMap] = useState(false)
@@ -101,6 +103,19 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
     return prev;
 });
 };
+
+const activeDiscountCode = (e) => {
+  e.preventDefault()
+  if(discountCode > 0){
+    const res = activeDiscountCodeRequest({prodId, discountCode})
+    if(res.data.discount){
+      setDiscountValue(res.data.discount.numeroDescuento)
+      return console.log('bien, salio')
+    }
+
+    return console.log('no se encuentra el descuento')
+  }
+}
 
 const total = prod.reduce((accProd, p) => {
     const comision = p?.comisionServicio ?? 13; // 13% si no existe
@@ -322,7 +337,59 @@ const total = prod.reduce((accProd, p) => {
                               </div>
                             </div>
 ))}
-                           {/*eventToRender.cortesiaRRPP
+
+{/**eventToRender.cortesiaRRPP iba aca */}
+                            </div>
+                        </>
+                   
+                )}
+                </div>
+                <div className="flex flex-wrap items-center justify-center">
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">NOMBRE COMPLETO:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="text" name="nombreCompleto" placeholder="..."></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">EMAIL:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="email" name="mail" placeholder="example@gmail.com"></input>
+                    </div>
+                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">REPETIR EMAIL:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="email" name="repetirMail" placeholder="example@gmail.com"></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">DNI:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="number" name="dni" placeholder="..."></input>
+                    </div>
+                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-yellow-500 rounded-2xl p-2">
+                        <label className="text-MD text-gray-300!">CONTACTO:</label><br></br>
+                        <input className="w-[100%] text-gray-200!" type="number" name="telefono" placeholder="..."></input>
+                    </div>
+                </div>
+                <div>
+                  <p>Codigo de descuento:</p>
+                  <input type="number" onChange={(e) => setDiscountValueCode(e.target.value)}></input>
+                  <button type="button" onClick={() => activeDiscountCode()}></button>
+                </div>
+                <div className="mt-6 p-4 rounded-xl text-center" >
+                    <Timer duration={720000}></Timer>
+                </div>
+                <div className="relative h-[auto] mt-4">
+                    {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
+                    <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total)}</p>
+                    {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
+                    {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
+                    <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo Ipass regresará el valor de las entradas No así el cargo por servicio.</p>
+                    <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
+                </div>
+            </form>
+        </div>
+    )
+}
+
+export default BuyTicket
+
+   {/*eventToRender.cortesiaRRPP
   .filter((crt) => crt.estado !== 2)
   .map((crt) => {
     const userCortesia = session?.userFinded?.[0]?.cortesias?.find(
@@ -418,48 +485,3 @@ const total = prod.reduce((accProd, p) => {
       </div>
     );
   })*/}
-
-                            </div>
-                        </>
-                   
-                )}
-                </div>
-                <div className="flex flex-wrap items-center justify-center">
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">NOMBRE COMPLETO:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="text" name="nombreCompleto" placeholder="..."></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">EMAIL:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="email" name="mail" placeholder="example@gmail.com"></input>
-                    </div>
-                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">REPETIR EMAIL:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="email" name="repetirMail" placeholder="example@gmail.com"></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">DNI:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="number" name="dni" placeholder="..."></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">CONTACTO:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="number" name="telefono" placeholder="..."></input>
-                    </div>
-                </div>
-                <div className="mt-6 p-4 rounded-xl text-center" >
-                    <Timer duration={720000}></Timer>
-                </div>
-                <div className="relative h-[auto] mt-4">
-                    {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
-                    <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total)}</p>
-                    {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
-                    {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
-                    <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo Ipass regresará el valor de las entradas No así el cargo por servicio.</p>
-                    <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
-                </div>
-            </form>
-        </div>
-    )
-}
-
-export default BuyTicket

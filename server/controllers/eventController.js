@@ -19,6 +19,7 @@ import { paymentQueue, refundQueue } from "../queues/paymentQueue.js";
 //import { redisClient } from "../lib/redisClient.js"; //DESCOMENTAR PARA PRODUCCION
 import { resend } from "../lib/resendDomain.js";
 import purchaseModel from "../models/purchaseModel.js";
+import discountModel from "../models/discountModel.js";
 
 dotenv.config();
 
@@ -1697,4 +1698,44 @@ export const getBuyersController = async (req, res) => {
   const findEvent = await purchaseModel.find({prodId: prodId})
 
   res.status(200).json(findEvent)
+}
+
+export const createDiscountController = async (req, res) => {
+  const {prodId, idDiscount, cantidadDescuentos, numeroDescuento} = req.body
+
+  await discountModel.create({
+    prodId:prodId,
+    idDescuento:idDiscount,
+    cantidadDescuentos:cantidadDescuentos,
+    numeroDescuento:numeroDescuento
+  })
+ 
+  return res.status(200).json({message: 'El descuento fue creado con exito' })
+}
+
+export const activeDiscountController = async (req, res) => {
+  const {prodId, discountCode} = req.body
+ 
+    const discount = await discountModel.findOneAndUpdate(
+      {
+        discountCode,
+        cantidadDescuentos: { $gt: 0 }
+      },
+      {
+        $inc: { cantidadDescuentos: -1 }
+      },
+      {
+        new: true
+      }
+    );
+
+    if(!discount){
+      return res.status(200).json({message: 'No hay mas descuentos disponibles' })
+    }
+
+    if(discount.cantidadDescuentos <= 0){
+      await discountModel.deleteOne({discountCode: discount.discountCode})
+    }
+
+    return res.status(200).json({message:'Se aplico el descuento correctamente', discount})
 }

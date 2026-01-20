@@ -4,7 +4,7 @@ import {Link, useNavigate} from 'react-router'
 import { LoadingButton } from "../../globalscomp/globalscomp"
 import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
-import goOriginalPng from '../../assets/banner.png'
+import goOriginalPng from '../../assets/goticketImgs/IPS.svg'
 
 const Login = () => {
     const { setSession, message, loginContext} = useContext(UserContext)
@@ -31,6 +31,10 @@ const Login = () => {
         setLoading(true)
         
         if(captchaStatus){ 
+          console.log('e')
+        }else{
+            setShowMsg('Por favor, marca la casilla antes de continuar')
+        }
           const userData = {
             mail: e.target.elements.mail.value,
             contrasenia: e.target.elements.contrasenia.value
@@ -44,18 +48,15 @@ const Login = () => {
             setLoading(false)
             setShowMsg('La contraseña es incorrecta')
             setTimeout(() => {
-                setShowMsg('')
-              }, 3000)
-            }
-            if(res.estado === 3){
-              setLoading(false)
-              setShowMsg('El email es incorrecto')
-              setTimeout(() => {
-                setShowMsg('')
-              }, 3000)
-            }
-          }else{
-              setShowMsg('Por favor, marca la casilla antes de continuar')
+              setShowMsg('')
+            }, 3000)
+          }
+          if(res.estado === 3){
+            setLoading(false)
+            setShowMsg('El email es incorrecto')
+            setTimeout(() => {
+              setShowMsg('')
+            }, 3000)
           }
             
             //hasta aca el if else

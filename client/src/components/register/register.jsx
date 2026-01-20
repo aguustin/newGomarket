@@ -3,7 +3,7 @@ import { registerUserRequest } from "../../api/userRequests"
 import {Link, useNavigate} from 'react-router';
 import ReCAPTCHA from "react-google-recaptcha";
 import { LoadingButton } from "../../globalscomp/globalscomp";
-import goOriginalPng from '../../assets/banner.png'
+import goOriginalPng from '../../assets/goticketImgs/IPS.svg'
 
 const Register = () => {
     const navigate = useNavigate() 

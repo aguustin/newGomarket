@@ -2,7 +2,7 @@ import { useState } from "react";
 import { confirmNewPassRequest } from "../../api/userRequests";
 import { Message } from "../../globalscomp/globalscomp"
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import goOriginalPng from '../../assets/banner.png'
+import goOriginalPng from '../../assets/goticketImgs/IPS.svg'
 
 const RecoverPass = () => {
     const navigate = useNavigate()

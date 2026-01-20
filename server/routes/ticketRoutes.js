@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addRRPPController, buyEventTicketsController, cancelarEventoController, createEventController, createEventTicketsController, descargarCompradoresController, generateMyRRPPLinkController, getAllEventsController, getBuyersController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRelateEventsController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, qrGeneratorController, reactivarEventoController, relateEventsController, sendQrStaffQrController, soldOutEventController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
+import { activeDiscountController, addRRPPController, buyEventTicketsController, cancelarEventoController, createDiscountController, createEventController, createEventTicketsController, descargarCompradoresController, generateMyRRPPLinkController, getAllEventsController, getBuyersController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRelateEventsController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, qrGeneratorController, reactivarEventoController, relateEventsController, sendQrStaffQrController, soldOutEventController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -55,5 +55,9 @@ router.post('/reactivar_evento', reactivarEventoController)
 router.post('/sold_out', soldOutEventController)
 
 router.get('/get_buyers/:prodId', getBuyersController)
+
+router.post('/create_discount', createDiscountController)
+
+router.post('/active_discount', activeDiscountController)
 
 export default router

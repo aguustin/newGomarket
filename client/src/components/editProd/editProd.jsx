@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router";
 import {
   addRRPPRequest,
   cancelarEventoRequest,
+  createDiscountCodeRequest,
   createEventTicketsRequest,
   getOneProdRequest,
   getProdsRequest,
@@ -14,6 +15,7 @@ import {
 } from "../../api/eventRequests";
 import { useRef } from "react";
 import { Country, State, City } from "country-state-city";
+import { nanoid } from 'nanoid';
 import {
   convertirInputADateTimeLocal,
   formatDate,
@@ -62,6 +64,8 @@ const EditProd = () => {
   const [ticketLoading, setTicketLoading] = useState(false);
   const [loadingCreateTicket, setLoadingCreateTicket] = useState(false);
   const [showCreateTicketForm, setShowCreateTicketForm] = useState(false);
+  const [showCreateDiscountForm, setShowCreateDiscountForm] = useState(false);
+  const [idDiscount ,setIdDiscount] = useState()
   const [eventVisibility, setEventVisibility] = useState();
   const [cities, setCities] = useState([]);
   const [localidad, setLocalidad] = useState(null);
@@ -337,11 +341,29 @@ const EditProd = () => {
       setChangeButton(true);
       setLoadingCreateTicket(false);
       e.target.reset();
-      /*setTimeout(() => {
-                    window.location.reload(false)
-                },2000)*/
+      setTimeout(() => {
+                   setMessage(0);
+      },3000)
     }
   };
+
+  const createDiscountCode = async (e) => {
+    e.preventDefault()
+    const cantidadDescuentos = e.target.elements.cantidadDescuentos.value
+    const numeroDescuento = e.target.elements.numeroDescuento.value
+    console.log(prodId, idDiscount, cantidadDescuentos, numeroDescuento)
+    const res = await createDiscountCodeRequest({prodId, idDiscount, cantidadDescuentos, numeroDescuento})
+    console.log(res)
+    if (res.data.message.length > 0) {
+      alert(res.data.message)
+      setLoadingCreateTicket(false);
+      e.target.reset();
+      setTimeout(() => {
+          setMessage(0);
+      }, 3000)
+    }
+    nanoid('')
+ }
 
   const addRRPP = async (e) => {
     e.preventDefault();
@@ -1203,6 +1225,110 @@ const EditProd = () => {
               </form>
             </>
           )}
+         {showCreateDiscountForm && (
+  <>
+    <div
+      className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
+      onClick={() => setShowCreateDiscountForm(false)}
+    ></div>
+
+    <form
+      className="add-tickets-form h-[auto]! fixed pl-4 pr-7 pb-4 rounded-xl bg-gray-800!"
+      onSubmit={(e) => createDiscountCode(e)}
+    >
+      <div className="mt-4">
+        <div className="flex items-center">
+          <h3 className="text-xl text-yellow-600!">
+            Crear nuevo descuento:
+          </h3>
+          <img
+            className="ml-5"
+            src={ticketPng}
+            alt=""
+            loading="lazy"
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-gray-200!">Generar codigo:</label>
+          <div className="flex items-center">
+            <input
+              className="w-[140px]! text-gray-300! border-amber-500! mr-3"
+              type="text"
+              placeholder="..."
+              value={idDiscount}
+              required
+              readOnly
+            />
+            <button
+              type="button"
+              className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] rounded-xl p-3"
+              onClick={() => setIdDiscount(nanoid(8))}
+            >
+              Generar
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-2">
+          <label className="text-gray-300!">
+            Cantidad de descuentos:
+          </label>
+          <input
+            className="text-gray-300! border-amber-500!"
+            type="number"
+            placeholder="..."
+            name="cantidadDescuentos"
+          />
+        </div>
+
+        <div className="mt-2">
+            <label className="text-gray-300!">
+              Valor del descuento:
+            </label>
+            <input
+              className="text-gray-300! border-amber-500!"
+              type="number"
+              placeholder="..."
+              name="numeroDescuento"
+              required
+            />
+        </div>
+
+        <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-1">
+          <button
+            type="button"
+            className="bg-amber-600 p-2 rounded-xl"
+            onClick={() =>
+              changeButton
+                ? window.location.reload(false)
+                : setShowCreateDiscountForm(false)
+            }
+          >
+            {changeButton ? "Confirmar Descuento" : "Cancelar"}
+          </button>
+
+          <button
+            className="w-[180px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] rounded-xl p-2"
+            type="submit"
+          >
+            {loadingCreateTicket ? <LoadingButton /> : "Agregar Descuento"}
+          </button>
+        </div>
+
+        {message === 2 && (
+          <div className="flex items-center">
+            <img className="mt-3" src={addedTicket} alt="" />
+            <p className="ml-2 mt-3 text-lg text-orange-500!">
+              ¡Se agregó el nuevo descuento!
+            </p>
+          </div>
+        )}
+      </div>
+    </form>
+  </>
+)}
+
         </div>
         <div className="flex items-center">
           {/*<button className="flex items-center text-xl mt-16 bg-violet-900 pl-6 pr-6 pt-3 pb-3 rounded-lg cursor-pointer"><p>Editar tickets</p><img className="w-[15px] h-[15px] ml-3" src={downArrow} alt=""></img></button> */}
@@ -1210,11 +1336,18 @@ const EditProd = () => {
         <div className="edit-tickets-container mt-10">
           <div className="add-ticket flex items-center mb-3">
             <button
-              className="flex items-center pt-1 pb-1 pl-3 pr-3 mt-[75px]! bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] cursor-pointer rounded-lg "
+              className="flex items-center pt-1 pb-1 pl-3 pr-3 mt-[75px]! bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-[#111827] cursor-pointer rounded-lg "
               type="button"
               onClick={() => setShowCreateTicketForm(true)}
             >
               Agregar nuevo ticket +
+            </button>
+            <button
+              className="flex items-center ml-3 pt-1 pb-1 pl-3 pr-3 mt-[75px]! bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-[#111827] cursor-pointer rounded-lg "
+              type="button"
+              onClick={() => setShowCreateDiscountForm(true)}
+            >
+              Agregar nuevo codigo de descuento +
             </button>
           </div>
           <div className="tickets-edit-prod max-h-[432px]!">
