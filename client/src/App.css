@@ -1289,3 +1289,407 @@ border: 1px solid #e0e0e0;
     justify-content: center !important;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================
+   NAVIGATION & FOOTER
+   ============================================ */
+.nav, footer, .nav-mobile-options, .conditions-container {
+  z-index: 4;
+  background: linear-gradient(135deg, #0f172a 0%, #111827 50%, #1e293b 100%) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(10px);
+}
+
+/* ============================================
+   SETTINGS & LOGOUT
+   ============================================ */
+.settings, .logout-b {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+}
+
+.settings > div:hover, .settings > button:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #111827 !important;
+  transform: translateX(4px);
+}
+
+/* ============================================
+   LINKS & BUTTONS
+   ============================================ */
+.link-profile {
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, #fbbf24, #f59e0b) 1;
+  position: relative;
+}
+
+.link-profile::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  transition: width 0.3s ease;
+}
+
+.link-profile:hover::after {
+  width: 100%;
+}
+
+.session-b:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+  color: #111827 !important;
+  transition: all 0.3s ease;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.session-b-img:hover {
+  background-color: #fef3c7 !important;
+  color: #111827 !important;
+  transition: all 0.3s ease;
+  transform: scale(1.05);
+}
+
+.nav-mobile-options > div:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  transition: all 0.4s ease;
+  cursor: pointer;
+  transform: translateX(8px);
+}
+
+/* ============================================
+   TEXT GRADIENTS
+   ============================================ */
+.iniciar-session, .event-desc:hover h3 {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+/* ============================================
+   EVENTS CONTAINER
+   ============================================ */
+.events-and-categories {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.events-and-categories::-webkit-scrollbar {
+  width: 8px;
+  background-color: #1f2937;
+}
+
+.events-and-categories::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 10px;
+  border: 2px solid #1f2937;
+}
+
+.events-and-categories::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f59e0b 0%, #ef4444 100%);
+}
+
+/* ============================================
+   CATEGORY BUTTONS
+   ============================================ */
+.categories button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.categories button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.categories button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.categories button:hover {
+  color: #111827;
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 25px -5px rgba(251, 191, 36, 0.4), 0 8px 10px -6px rgba(251, 191, 36, 0.3);
+}
+
+.categories button:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+/* ============================================
+   EVENT CARDS
+   ============================================ */
+.primary-div {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-div::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.primary-div:hover::before {
+  opacity: 1;
+}
+
+.primary-div:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 
+              0 0 20px rgba(251, 191, 36, 0.2),
+              inset 0 0 60px rgba(251, 191, 36, 0.05);
+  border-color: #fbbf24;
+}
+
+.primary-div img {
+  transition: all 0.4s ease;
+}
+
+.primary-div:hover img {
+  transform: scale(1.05);
+  filter: brightness(0.85) saturate(1.2);
+}
+
+.event-desc {
+  position: relative;
+  z-index: 2;
+}
+
+.event-desc h3 {
+  transition: all 0.3s ease;
+}
+
+/* Star button enhancement */
+.primary-div button {
+  transition: all 0.3s ease;
+  z-index: 3;
+}
+
+.primary-div button:hover {
+  transform: scale(1.2) rotate(15deg);
+}
+
+.primary-div button:active {
+  transform: scale(0.9) rotate(-15deg);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media screen and (max-width: 955px) {
+  .home h1 {
+    text-align: center;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+  }
+
+  .search-form {
+    display: block !important;
+    margin: auto;
+    text-align: center;
+  }
+
+  .search-form p {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .search-form input {
+    margin-left: 0px;
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 750px) {
+  .nav > div {
+    width: 100% !important;
+  }
+
+  .home, .events {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  .primary-div:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+@media screen and (max-width: 655px) {
+  .primary-div {
+    width: 100%;
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .primary-div h3 {
+    font-size: 19px;
+  }
+
+  .primary-div p {
+    font-size: 15px;
+  }
+
+  .primary-div label {
+    font-size: 17px;
+  }
+}
+
+@media screen and (max-width: 610px) {
+  .home h1 {
+    font-size: 29px;
+  }
+
+  .categories button {
+    min-width: 140px;
+  }
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-loading {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    90deg,
+    #1f2937 0%,
+    #374151 50%,
+    #1f2937 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+.categories button:focus,
+.primary-div button:focus {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   SCROLLBAR FOR HORIZONTAL CATEGORIES
+   ============================================ */
+.categories > div::-webkit-scrollbar {
+  height: 6px;
+}
+
+.categories > div::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.5);
+  border-radius: 10px;
+}
+
+.categories > div::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 10px;
+}
+
+.categories > div::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%);
+}
+
+/* ============================================
+   FILTER SECTION ENHANCEMENTS
+   ============================================ */
+.filtrar-eventos select,
+.filtrar-eventos input[type="date"] {
+  transition: all 0.3s ease;
+}
+
+.filtrar-eventos select:hover,
+.filtrar-eventos input[type="date"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.filtrar-eventos select:focus,
+.filtrar-eventos input[type="date"]:focus {
+  ring-color: #f59e0b;
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.no-events-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #9ca3af;
+}
+
+.no-events-message h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
