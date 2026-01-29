@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { contactarRequest } from "../../api/userRequests"
 import { useNavigate } from "react-router"
-import goOriginalPng from '../../assets/goticketImgs/IPS.svg'
+import goOriginalPng from '../../assets/goticketImgs/IPSg.svg'
 
 const Contact = () => {
     const navigate = useNavigate()

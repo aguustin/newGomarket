@@ -4,7 +4,7 @@ import {Link, useNavigate} from 'react-router'
 import { LoadingButton } from "../../globalscomp/globalscomp"
 import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
-import goOriginalPng from '../../assets/goticketImgs/IPS.svg'
+import goOriginalPng from '../../assets/goticketImgs/IPSg.svg'
 
 const Login = () => {
     const { setSession, message, loginContext} = useContext(UserContext)
@@ -84,7 +84,7 @@ const Login = () => {
     return (
     <div className="min-h-screen flex items-center justify-center  py-12 px-4 ">
       {/* Logo */}
-      <div className="absolute top-5">
+      <div className="absolute top-30">
         <Link to="/">
           <img 
             className="h-16 transition-transform hover:scale-110" 

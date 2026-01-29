@@ -80,12 +80,15 @@ const EditProd = () => {
   const [showSoldOutAdv, setShowSoldOutAdv] = useState(false);
   const [isSoldOut, setIsSoldOut] = useState(null);
   const [showDesc, setShowDesc] = useState(false);
+  const [changeTDLayout, setChangeTDLayout] = useState(false)
+  const [discounts, setDiscounts] = useState([])
 
   useEffect(() => {
     const userId = session?.userFinded?.[0]?._id;
     const getOneProd = async () => {
       const res = await getOneProdRequest(prodId, userId); //userId va la session del usuario
-      setProd(res.data);
+      setProd(res.data.tickets);
+      setDiscounts(res.data.prodDiscount)
       const othersRes = await getProdsRequest(userId);
       setOthersProds(othersRes.data);
       setCities(
@@ -96,7 +99,7 @@ const EditProd = () => {
       );
     };
     getOneProd();
-
+    console.log(prod)
     const mediaQuery = window.matchMedia("(min-width: 1290px)");
     const mediaQueryB = window.matchMedia("(min-width: 890px)");
 
@@ -455,8 +458,15 @@ const EditProd = () => {
     <>
       <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-gray-800 border-[1px] border-gray-700 rounded-2xl p-5">
         <div>
-          <div className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 p-6 rounded-t-lg">
-            <h2 className="text-[#111827]! text-center text-2xl font-bold flex items-center justify-center">
+          <div className="
+              bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 
+              p-8
+            ">
+            <h2 className="
+                text-gray-900 text-center 
+                text-3xl font-bold 
+                tracking-tight
+              ">
               Editar evento
             </h2>
           </div>
@@ -491,55 +501,136 @@ const EditProd = () => {
                 encType="multipart/form-data"
               >
                 <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center">
-                  <div className="">
-                    <img
-                      className="w-[250px] h-[200px] object-cover rounded-lg"
-                      src={previewPortada ?? p.imgEvento}
-                      alt=""
-                      loading="lazy"
-                    ></img>
-                  </div>
+                  <div className="relative group">
+                <img
+                  className="
+                    w-full h-64 
+                    object-cover rounded-2xl 
+                    shadow-lg 
+                    ring-2 ring-amber-500/20 
+                    transition-transform 
+                    group-hover:scale-105
+                  "
+                  src={previewPortada ?? p.imgEvento}
+                  alt="Event"
+                />
+                <div 
+                  className="
+                    absolute inset-0 
+                    bg-gradient-to-t from-black/60 to-transparent 
+                    rounded-2xl 
+                    opacity-0 group-hover:opacity-100 
+                    transition-opacity
+                  " 
+                />
+              </div>
                   <div className="edit-evet-desc text-left ml-4">
                     <h2 className="text-3xl text-gray-300!">
                       {p.nombreEvento}
                     </h2>
                     <p className="mt-3 text-gray-400!">
-                      Puedes subir otra imagen para tu evento y cambiar su
-                      información
+                      Puedes subir otra imagen para tu evento y cambiar su información
                     </p>
-                    <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]">
-                      <img className="mr-3" src={megaphonePng} alt=""></img>{" "}
-                      Consejo: Un titulo corto + una portada llamativa mejora la
-                      busqueda del evento
-                    </p>
-                    <div className="edit-evet-img-upload top-15 right-10">
-                      <label
-                        htmlFor="imgEventoHtml"
-                        className="flex items-center border-[1px] border-gray-300 text-gray-300! p-3 rounded-2xl"
-                      >
-                        <img className="mr-3" src={uploadPng} alt=""></img>
-                        Cargar nueva portada
-                      </label>
-                      <br></br>
-                      <input
-                        id="imgEventoHtml"
-                        className="border-none hidden"
-                        type="file"
-                        name="imgEvento"
-                        ref={fileRef}
-                        onChange={handleFileChange}
-                      />
-                    </div>
+                    <div 
+                  className="
+                    flex items-start gap-3 
+                    p-4 
+                    bg-gradient-to-r from-amber-50 to-yellow-50 
+                    rounded-xl 
+                    border border-amber-200 
+                    shadow-sm
+                  "
+                >
+                  <div 
+                    className="
+                      flex-shrink-0 
+                      w-6 h-6 
+                      bg-amber-500 
+                      rounded-full 
+                      flex items-center justify-center
+                    "
+                  >
+                <img className="" src={megaphonePng} alt=""></img>{" "}
+                  </div>
+                  <p className="text-sm text-gray-900 font-medium">
+                    <span className="font-bold">Consejo:</span> Un título corto + una portada llamativa mejora la búsqueda del evento
+                  </p>
+                </div>
+                      
+                    <label 
+                  className="
+                    inline-flex items-center gap-3 mt-3 
+                    px-6 py-3 
+                    bg-gray-700/50 hover:bg-gray-700 
+                    border border-gray-600 
+                    text-gray-200 
+                    rounded-xl 
+                    cursor-pointer 
+                    transition-all 
+                    hover:shadow-lg hover:scale-105 
+                    active:scale-95
+                  "
+                >
+                  <svg 
+                    className="w-5 h-5" 
+                    fill="none" 
+                    stroke="whitesmoke" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" 
+                    />
+                  </svg>
+                  <span className="font-medium text-gray-300">Cargar nueva portada</span>
+                  <input type="file" className="hidden" name="imgEvento" ref={fileRef} onChange={handleFileChange}/>
+                </label>
                     <div>
                       <button
-                        className="relation-buttons bg-yellow-500 text-[#111827]! p-3 rounded-lg translate-x-auto!"
+                        className="
+                      px-5 py-2.5 
+                      bg-gradient-to-r from-amber-500 to-yellow-500 
+                      hover:from-amber-400 hover:to-yellow-400 
+                      text-gray-900 font-semibold 
+                      rounded-xl shadow-md 
+                      hover:shadow-lg 
+                      transition-all 
+                      hover:scale-105 active:scale-95
+                    "
                         onClick={() => setShowOthersProds(!showOthersProds)}
                       >
                         Relacionar eventos
                       </button>
-                      {showDesc ? <button className="bg-gradient-to-r from-orange-600 to-amber-500 text-[#111827] ml-3 p-3 rounded-lg translate-x-auto!" onClick={() => setShowDesc(false)}>Cerrar inf. evento</button> : <button className="relation-buttons bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827] ml-3 p-3 rounded-lg translate-x-auto!" onClick={() => setShowDesc(true)}>Editar inf. evento</button>}
+                        <button 
+                    onClick={() => setShowDesc(!showDesc)}
+                    className={`
+                      px-5 py-2.5 ml-3
+                      ${showDesc 
+                        ? 'bg-gradient-to-r from-orange-600 to-amber-500' 
+                        : 'bg-gradient-to-r from-amber-600 to-yellow-500'
+                      } 
+                      hover:shadow-lg 
+                      text-gray-900 font-semibold 
+                      rounded-xl shadow-md 
+                      transition-all 
+                      hover:scale-105 active:scale-95
+                    `}
+                  >
+                    {showDesc ? 'Cerrar inf. evento' : 'Editar inf. evento'}
+                  </button>
                       <button
-                        className="relation-buttons bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-[#111827] ml-3 p-3 rounded-lg translate-x-auto!"
+                        className="
+                      px-5 py-2.5 ml-3
+                      bg-gradient-to-r from-orange-500 to-red-500 
+                      hover:from-orange-600 hover:to-red-600 
+                      text-gray-900 font-semibold 
+                      rounded-xl shadow-md 
+                      hover:shadow-lg 
+                      transition-all 
+                      hover:scale-105 active:scale-95
+                    "
                         onClick={() => setShowSoldOutAdv(!showSoldOutAdv)}
                       >
                         Marcar como Sold out
@@ -740,11 +831,16 @@ const EditProd = () => {
                 {showDesc && <div className="edit-info-event flex justify-center">
                   <div className="p-3">
                     <div>
-                      <label className="text-gray-300!">Nombre del evento:</label>
-                      <br></br>
+                      <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Nombre del evento:</label>
+                      
                       <input
                         type="text"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
                         value={
                           eventosEditados[p._id]?.nombreEvento ?? p.nombreEvento
                         }
@@ -754,11 +850,29 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div>
-                      <label className="text-gray-300!">Descripcion:</label>
-                      <br></br>
+                      <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300!
+                        mb-2
+                      ">Descripcion:</label>
+                     
                       <input
                         type="textarea"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50! 
+                        focus:border-amber-500 
+                        text-white! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all 
+                        min-h-[100px] 
+                        resize-none
+                      "
                         value={
                           eventosEditados[p._id]?.descripcionEvento ??
                           p.descripcionEvento
@@ -769,21 +883,43 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div>
-                      <label className="text-gray-300!">Aviso importante:</label>
-                      <br></br>
+                      <label className="block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Aviso importante:</label>
+                      
                       <input
                         type="textarea"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50! 
+                        focus:border-amber-500 
+                        text-white! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all 
+                        min-h-[100px] 
+                        resize-none
+                      "
                         value={eventosEditados[p._id]?.aviso ?? p.aviso}
                         onChange={(e) => handleChangeEvento(e, p._id, "aviso")}
                       ></input>
                     </div>
                     <div>
-                      <label className="text-gray-300!">Edad minima:</label>
-                      <br></br>
+                      <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Edad minima:</label>
+                     
                       <input
                         type="number"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
                         value={
                           eventosEditados[p._id]?.eventoEdad ?? p.eventoEdad
                         }
@@ -797,11 +933,27 @@ const EditProd = () => {
                                             <input type="text"  placeholder="..." value={eventosEditados[p._id]?.categorias ??  p.categorias} onChange={(e) => handleChangeEvento(e, p._id, 'categorias')} name="categorias"></input>
                                         </div>*/}
                     <div>
-                      <label className="text-gray-300!">Artistas que participan:</label>
-                      <br></br>
+                      <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Artistas que participan:</label>
+                     
                       <input
                         type="text"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50!
+                        focus:border-amber-500 
+                        text-white! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all
+                      "
                         placeholder="..."
                         value={eventosEditados[p._id]?.artistas ?? p.artistas}
                         onChange={(e) =>
@@ -811,13 +963,29 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div>
-                      <label className="text-gray-300!">Monto de ventas estimado:</label>
-                      <br></br>
+                      <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Monto de ventas estimado:</label>
+                      
                       <input
                         type="number"
                         min="0"
                         placeholder="0"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50! 
+                        focus:border-amber-500 
+                        text-white! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all
+                      "
                         value={
                           eventosEditados[p._id]?.montoVentas ?? p.montoVentas
                         }
@@ -830,13 +998,17 @@ const EditProd = () => {
                     <div>
                       <label
                         htmlFor="fileUploadBanner"
-                        className="text-gray-300! "
+                        className="block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      "
                       >
                         Banner del evento (opcional)
                       </label>
                       <input
                         id="fileUploadBanner"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
                         type="file"
                         name="bannerEvento"
                         onChange={handleBannerChange}
@@ -846,13 +1018,17 @@ const EditProd = () => {
                     <div>
                       <label
                         htmlFor="fileUploadDescriptive"
-                        className="text-gray-300!"
+                        className="block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      "
                       >
                         Imagen descriptiva (opcional)
                       </label>
                       <input
                         id="fileUploadDescriptive"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
                         type="file"
                         name="imagenDescriptiva"
                         onChange={handleDescriptiveChange}
@@ -862,10 +1038,34 @@ const EditProd = () => {
                   </div>
                   <div className="relative p-3">
                     <div>
-                      <label className="text-gray-300!">Fecha y hora de inicio:</label>
-                      <br></br>
+                      <div className="flex items-center mb-2">
+                        <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300!
+                        
+                      ">Fecha y hora de inicio:</label>
+                        {dateMessage == 1 && (
+                          <p className="text-gray-400! ml-2  text-sm font-medium ">
+                            La fecha de inicio no puede ser menor a la fecha
+                            actual
+                          </p>
+                        )}
+                      </div>
                       <input
-                        className="bg-amber-600! hover:from-blue-600 hover:to-purple-600 text-[#111827]!"
+                        className="
+                        w-full 
+                        px-4 py-3 
+                        bg-amber-600 
+                        text-gray-300! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500 
+                        transition-all 
+                        font-medium
+                        border-amber-500/50! 
+                       
+                      "
                         type="datetime-local"
                         value={formatearFechaParaInput(
                           eventosEditados[p._id]?.fechaInicio ?? p.fechaInicio
@@ -874,18 +1074,28 @@ const EditProd = () => {
                           handleChangeEvento(e, p._id, "fechaInicio")
                         }
                       ></input>
-                      {dateMessage == 1 && (
-                        <p className="text-red-600!">
-                          La fecha de inicio no puede ser menor a la fecha
-                          actual
-                        </p>
-                      )}
                     </div>
                     <div>
-                      <label className="text-gray-300!">Fecha y hora de fin:</label>
-                      <br></br>
+                      <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Fecha y hora de fin:</label>
+                      
                       <input
-                        className="bg-amber-600! hover:from-blue-600 hover:to-purple-600 to-pink-500 text-[#111827]!"
+                        className="
+                        w-full 
+                        px-4 py-3 
+                        bg-amber-600 
+                        text-gray-300! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500 
+                        transition-all 
+                        font-medium
+                        border-amber-500/50! 
+                      "
                         type="datetime-local"
                         value={formatearFechaParaInput(
                           eventosEditados[p._id]?.fechaFin ?? p.fechaFin
@@ -903,13 +1113,29 @@ const EditProd = () => {
                     </div>
                     <div className="prov-localidad flex items-center p-0! text-left!">
                       <div className="w-[100%]!">
-                        <label className="text-gray-300!">
+                        <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">
                           Visibilidad del evento:{" "}
                           {p.tipoEvento === 1 ? "Publico" : "Privado"}
                         </label>
-                        <br></br>
+                        
                         <select
-                          className="pr-2 pl-2 rounded-lg py-4! bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                          className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50! 
+                        focus:border-amber-500 
+                        text-white! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all
+                      "
                           name="tipoEvento"
                           value={
                             eventosEditados[p._id]?.tipoEvento ??
@@ -944,10 +1170,26 @@ const EditProd = () => {
                                                 </select>
                                             </div>*/}
                       <div className="w-[100%]! ">
-                        <label className="text-gray-300!">Localidad: {p.localidad}</label>
-                        <br></br>
+                        <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Localidad: {p.localidad}</label>
+                      
                         <select
-                          className="pr-2 pl-2 rounded-lg py-4! bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                          className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50! 
+                        focus:border-amber-500 
+                        text-white! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all
+                      "
                           name="localidad"
                           onChange={(e) =>
                             setLocalidad(
@@ -977,11 +1219,16 @@ const EditProd = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="text-gray-300!">Direccion:</label>
-                      <br></br>
+                      <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Direccion:</label>
+                  
                       <input
                         name="direccion"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
                         value={eventosEditados[p._id]?.direccion ?? p.direccion}
                         onChange={(e) =>
                           handleChangeEvento(e, p._id, "direccion")
@@ -989,11 +1236,27 @@ const EditProd = () => {
                       ></input>
                     </div>
                     <div>
-                      <label className="text-gray-200!">Lugar del evento:</label>
-                      <br></br>
+                      <label className="
+                        block 
+                        text-sm font-medium 
+                        text-gray-300! 
+                        mb-2
+                      ">Lugar del evento:</label>
+                    
                       <input
                         type="text"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!"
+                        className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50! 
+                        focus:border-amber-500 
+                        text-white! 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all
+                      "
                         value={
                           eventosEditados[p._id]?.lugarEvento ?? p.lugarEvento
                         }
@@ -1056,14 +1319,36 @@ const EditProd = () => {
                       )}
                     </div>
                     <button
-                      className="absolute bg-yellow-400 right-3 bottom-[-60px] rounded-2xl p-3 text-md text-[#111827]"
+                      className="
+                      px-8 py-3 
+                      bg-gradient-to-r from-amber-500 to-yellow-400 
+                      hover:from-amber-600 hover:to-yellow-500 
+                      text-gray-900 font-bold 
+                      rounded-xl 
+                      shadow-lg hover:shadow-xl 
+                      transition-all 
+                      hover:scale-105 active:scale-95 
+                      flex items-center gap-2
+                    "
                       type="submit"
                     >
                       {loading ? (
                         <LoadingButton />
                       ) : (
                         <div className="flex items-center">
-                          <img src={updatePng} alt=""></img>
+                          <svg 
+                      className="w-5 h-5" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                      />
+                    </svg>
                           <p className="ml-3">Actualizar evento</p>
                         </div>
                       )}
@@ -1119,7 +1404,18 @@ const EditProd = () => {
                       <div>
                         <label className="text-gray-300!">Precio del ticket:</label>
                         <input
-                          className="w-[120px] text-gray-300! border-amber-500!"
+                          className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50! 
+                        focus:border-amber-500 
+                        text-white 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all
+                      "
                           type="number"
                           placeholder="..."
                           name="precio"
@@ -1130,7 +1426,18 @@ const EditProd = () => {
                     <div className="qty">
                       <label className="text-gray-300!">Cantidad:</label>
                       <input
-                        className="w-[120px] text-gray-300! border-amber-500!"
+                        className="
+                        w-full 
+                        px-4 py-3 
+                        bg-gradient-to-r from-gray-800 to-gray-900 
+                        border border-amber-500/50! 
+                        focus:border-amber-500 
+                        text-white 
+                        rounded-xl 
+                        focus:outline-none 
+                        focus:ring-2 focus:ring-amber-500/20 
+                        transition-all
+                      "
                         type="number"
                         min="1"
                         placeholder="..."
@@ -1336,300 +1643,368 @@ const EditProd = () => {
         <div className="edit-tickets-container mt-10">
           <div className="add-ticket flex items-center mb-3">
             <button
-              className="flex items-center pt-1 pb-1 pl-3 pr-3 mt-[75px]! bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-[#111827] cursor-pointer rounded-lg "
+              className="
+                    px-5 py-2.5 
+                    bg-gradient-to-r from-amber-500 to-yellow-500 
+                    hover:from-amber-400 hover:to-yellow-500 
+                    text-gray-900 font-semibold 
+                    rounded-xl shadow-md 
+                    hover:shadow-lg 
+                    transition-all 
+                    hover:scale-105 active:scale-95
+                  "
               type="button"
               onClick={() => setShowCreateTicketForm(true)}
             >
               Agregar nuevo ticket +
             </button>
             <button
-              className="flex items-center ml-3 pt-1 pb-1 pl-3 pr-3 mt-[75px]! bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-[#111827] cursor-pointer rounded-lg "
+              className="
+                  ml-3
+                    px-5 py-2.5 
+                    bg-gradient-to-r from-orange-500 to-red-500 
+                    hover:from-orange-400 hover:to-red-500 
+                    text-gray-900 font-semibold 
+                    rounded-xl shadow-md 
+                    hover:shadow-lg 
+                    transition-all 
+                    hover:scale-105 active:scale-95
+                  "
               type="button"
               onClick={() => setShowCreateDiscountForm(true)}
             >
               Agregar nuevo codigo de descuento +
             </button>
+              <button
+              className="
+                  ml-3
+                    px-5 py-2.5 
+                    bg-gradient-to-r from-orange-600 to-red-700 
+                    hover:from-orange-600 hover:to-red-600 
+                    text-gray-900 font-semibold 
+                    rounded-xl shadow-md 
+                    hover:shadow-lg 
+                    transition-all 
+                    hover:scale-105 active:scale-95
+                  "
+              onClick={() => setChangeTDLayout(!changeTDLayout)}
+            >
+              {changeTDLayout ? 'Ver tickets' : 'Ver descuentos'}
+            </button>
           </div>
           <div className="tickets-edit-prod max-h-[432px]!">
-            {prod.map((pr) => {
-              const allTickets = [
-                ...(pr.tickets?.map((t) => ({ ...t, type: "ticket" })) || []),
-                ...(pr.cortesiaRRPP?.map((c) => ({ ...c, type: "cortesia" })) ||
-                  []),
-              ];
-              return allTickets.map((tick) => (
-                <div key={tick._id}>
-                  <div
-                    className="flex justify-center mx-auto text-center"
-                    key={tick._id}
-                  >
-                    <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3 p-1! pt-2! pb-2!">
-                      <img
-                        className="ticket-img w-[60px] h-[60px] rounded-xl ml-1"
-                        src={tick.imgTicket ?? goPng}
-                        alt=""
-                        loading="lazy"
-                      ></img>
-                      <div className="summary-event-info text-left w-full">
-                        <p className="text-sm text-gray-200 ml-3">
-                          {tick.nombreTicket}
-                        </p>
-                        <p className="text-sm text-gray-400 ml-3 ">
-                          {tick.precio >= 0 ? `$${tick.precio}` : "Cortesia"}
-                        </p>
-                        <p className="text-sm text-gray-400 ml-3 flex items-center">
-                          Cant. :
-                          <img
-                            className="h-[16px]! w-[16px]! ml-2 mr-1"
-                            src={ticketCantPng}
-                            alt=""
-                          ></img>
-                          {tick.cantidad ?? tick.cantidadDeCortesias}
-                        </p>
-                        <p className="text-sm text-amber-500 ml-3 flex flex-wrap items-center">
-                          Cierre:{" "}
-                          <img
-                            className="h-[16px]! w-[16px]! ml-2 mr-1"
-                            src={calendarPng}
-                            alt=""
-                          ></img>
-                          {formatDate(tick.fechaDeCierre)}
-                        </p>
-                      </div>
-                      <button
-                        className="editProd-edit-ticket text-yellow-500 p-3 cursor-pointer text-md rounded-xl"
-                        onClick={(e) => showTicketFunc(e, tick._id)}
+            {changeTDLayout ? 
+            (
+              <>
+                {discounts.map((ds) => {
+                     <div
+                        className="flex justify-center mx-auto text-center"
+                        key={ds._id}
                       >
-                        Editar
-                      </button>
-                    </div>
-                  </div>
-                  {openTicketId === tick._id && (
-                    <>
-                      <div
-                        className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
-                        onClick={() => setOpenTicketId(null)}
-                      ></div>
-                      <div className="add-tickets-form fixed p-6 rounded-lg bg-gray-800!">
-                        <div className="mt-3 mb-3">
-                          <label className="text-gray-200!">Cambiar imagen del ticket:</label>
-                          <br></br>
-                          <input
-                            type="file"
-                            name="imgTicket"
-                            className="border-amber-500! text-gray-400!"
-                            ref={(el) => (fileRefsB.current[tick._id] = el)}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-gray-200!">Nombre del ticket:</label>
-                          <br></br>
-                          <input
-                            type="text"
-                            name="nombreTicket"
-                            className="border-amber-500! text-gray-400!"
-                            value={
-                              ticketData[tick._id]?.nombreTicket ??
-                              tick.nombreTicket
-                            }
-                            onChange={(e) =>
-                              setTicketData((prev) => ({
-                                ...prev,
-                                [tick._id]: {
-                                  ...prev[tick._id],
-                                  nombreTicket: e.target.value,
-                                },
-                              }))
-                            }
-                          ></input>
-                        </div>
-                        <div>
-                          <label className="text-gray-200!">Descripcion del ticket</label>
-                          <br></br>
-                          <input
-                            type="text"
-                            name="descripcionTicket"
-                            className="border-amber-500! text-gray-400!"
-                            value={
-                              ticketData[tick._id]?.descripcionTicket ??
-                              tick.descripcionTicket
-                            }
-                            onChange={(e) =>
-                              setTicketData((prev) => ({
-                                ...prev,
-                                [tick._id]: {
-                                  ...prev[tick._id],
-                                  descripcionTicket: e.target.value,
-                                },
-                              }))
-                            }
-                          ></input>
-                        </div>
-                        {Number(ticketData[tick._id]?.estado ?? tick.estado) !==
-                          3 && (
-                          <div>
-                            <label className="text-gray-200!">Precio:</label>
-                            <br />
-                            <input
-                              type="number"
-                              min="1"
-                              name="precio"
-                              className="border-amber-500! text-gray-400!"
-                              value={
-                                ticketData[tick._id]?.precio ?? tick.precio
-                              }
-                              onChange={(e) =>
-                                setTicketData((prev) => ({
-                                  ...prev,
-                                  [tick._id]: {
-                                    ...prev[tick._id],
-                                    precio: e.target.value,
-                                  },
-                                }))
-                              }
-                            />
+                        <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3 p-1! pt-2! pb-2!">
+                          <div className="summary-event-info text-left w-full">
+                            <p className="text-sm text-gray-200 ml-3">
+                              {ds.idDescuento}
+                            </p>
                           </div>
-                        )}
-                        <div>
-                          <label className="text-gray-200!">Cantidad:</label>
-                          <br></br>
-                          <input
-                            type="number"
-                            min="1"
-                            name="cantidad"
-                            className="border-amber-500! text-gray-400!"
-                            value={
-                              ticketData[tick._id]?.cantidad ?? tick.cantidad
-                            }
-                            onChange={(e) =>
-                              setTicketData((prev) => ({
-                                ...prev,
-                                [tick._id]: {
-                                  ...prev[tick._id],
-                                  cantidad: e.target.value,
-                                },
-                              }))
-                            }
-                          ></input>
-                        </div>
-                        <div>
-                          <label className="text-gray-200!">Limite:</label>
-                          <br></br>
-                          <input
-                            type="number"
-                            min="1"
-                            name="limit"
-                            className="border-amber-500! text-gray-400!"
-                            value={ticketData[tick._id]?.limit ?? tick.limit}
-                            onChange={(e) =>
-                              setTicketData((prev) => ({
-                                ...prev,
-                                [tick._id]: {
-                                  ...prev[tick._id],
-                                  limit: e.target.value,
-                                },
-                              }))
-                            }
-                          ></input>
-                        </div>
-                        <div className="mt-3 mb-3">
-                          <label className="text-gray-200!">Estado:</label>
-                          <br></br>
-                          <select
-                            className="rounded-lg border-amber-500! text-gray-400!"
-                            name="estado"
-                            ref={estadoRef}
+                          <p>Cant. {ds.cantidadDescuentos} </p>
+                          <p>{ds.numeroDescuento} </p>
+                          <button
+                           type="button"
+                           className="editProd-edit-ticket text-yellow-500 p-3 cursor-pointer text-md rounded-xl"
+                           onClick={() => navigator.clipboard.writeText(ds.idDescuento)}
                           >
-                            <option className="text-gray-900!" value={tick.estado}>
-                              {(tick.estado === 1 && "Activo") ||
-                                (tick.estado === 2 && "No visible") ||
-                                (tick.estado === 3 && "Cortesia") ||
-                                (tick.estado === 4 && "Agotado")}
-                            </option>
-                            {tick.estado !== 1 && <option className="text-gray-900!" value={1}>Activo</option>}
-                            {tick.estado !== 2 && <option className="text-gray-900!" value={2}>No visible</option>}
-                            {tick.estado !== 4 && <option className="text-gray-900!" value={4}>Agotado</option>}
-                            {/*<option className="text-gray-900!" value={3}>Cortesia</option>*/ }
-                          </select>
+                            Copiar
+                          </button>
                         </div>
-                        <div className="mt-3">
-                          <div className="items-center text-center">
-                            <label>Fecha de cierre: </label>
-                            <label>{formatDate(tick.fechaDeCierre)}</label>
-                            <br></br>
-                            <div className="mt-3">
-                              <label>Cambiar fecha a:</label>
+                      </div>
+                })}
+              </>
+            )
+            :
+            (
+              <>
+                {prod.map((pr) => {
+                  const allTickets = [
+                    ...(pr.tickets?.map((t) => ({ ...t, type: "ticket" })) || []),
+                    ...(pr.cortesiaRRPP?.map((c) => ({ ...c, type: "cortesia" })) ||
+                      []),
+                  ];
+                  return allTickets.map((tick) => (
+                    <div key={tick._id}>
+                      <div
+                        className="flex justify-center mx-auto text-center"
+                        key={tick._id}
+                      >
+                        <div className="tickets-desc-container relative w-full flex items-center justify-between mb-3 p-1! pt-2! pb-2!">
+                          <img
+                            className="ticket-img w-[60px] h-[60px] rounded-xl ml-1"
+                            src={tick.imgTicket ?? goPng}
+                            alt=""
+                            loading="lazy"
+                          ></img>
+                          <div className="summary-event-info text-left w-full">
+                            <p className="text-sm text-gray-200 ml-3">
+                              {tick.nombreTicket}
+                            </p>
+                            <p className="text-sm text-gray-400 ml-3 ">
+                              {tick.precio >= 0 ? `$${tick.precio}` : "Cortesia"}
+                            </p>
+                            <p className="text-sm text-gray-400 ml-3 flex items-center">
+                              Cant. :
+                              <img
+                                className="h-[16px]! w-[16px]! ml-2 mr-1"
+                                src={ticketCantPng}
+                                alt=""
+                              ></img>
+                              {tick.cantidad ?? tick.cantidadDeCortesias}
+                            </p>
+                            <p className="text-sm text-amber-500 ml-3 flex flex-wrap items-center">
+                              Cierre:{" "}
+                              <img
+                                className="h-[16px]! w-[16px]! ml-2 mr-1"
+                                src={calendarPng}
+                                alt=""
+                              ></img>
+                              {formatDate(tick.fechaDeCierre)}
+                            </p>
+                          </div>
+                          <button
+                            className="editProd-edit-ticket text-yellow-500 p-3 cursor-pointer text-md rounded-xl"
+                            onClick={(e) => showTicketFunc(e, tick._id)}
+                          >
+                            Editar
+                          </button>
+                        </div>
+                      </div>
+                      {openTicketId === tick._id && (
+                        <>
+                          <div
+                            className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
+                            onClick={() => setOpenTicketId(null)}
+                          ></div>
+                          <div className="add-tickets-form fixed p-6 rounded-lg bg-gray-800!">
+                            <div className="mt-3 mb-3">
+                              <label className="text-gray-200!">Cambiar imagen del ticket:</label>
                               <br></br>
                               <input
-                                type="datetime-local"
+                                type="file"
+                                name="imgTicket"
+                                className="border-amber-500! text-gray-400!"
+                                ref={(el) => (fileRefsB.current[tick._id] = el)}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-gray-200!">Nombre del ticket:</label>
+                              <br></br>
+                              <input
+                                type="text"
+                                name="nombreTicket"
                                 className="border-amber-500! text-gray-400!"
                                 value={
-                                  ticketData[tick._id]?.fechaDeCierre ??
-                                  tick.fechaDeCierre
+                                  ticketData[tick._id]?.nombreTicket ??
+                                  tick.nombreTicket
                                 }
                                 onChange={(e) =>
                                   setTicketData((prev) => ({
                                     ...prev,
                                     [tick._id]: {
                                       ...prev[tick._id],
-                                      fechaDeCierre: e.target.value,
+                                      nombreTicket: e.target.value,
                                     },
                                   }))
                                 }
                               ></input>
                             </div>
+                            <div>
+                              <label className="text-gray-200!">Descripcion del ticket</label>
+                              <br></br>
+                              <input
+                                type="text"
+                                name="descripcionTicket"
+                                className="border-amber-500! text-gray-400!"
+                                value={
+                                  ticketData[tick._id]?.descripcionTicket ??
+                                  tick.descripcionTicket
+                                }
+                                onChange={(e) =>
+                                  setTicketData((prev) => ({
+                                    ...prev,
+                                    [tick._id]: {
+                                      ...prev[tick._id],
+                                      descripcionTicket: e.target.value,
+                                    },
+                                  }))
+                                }
+                              ></input>
+                            </div>
+                            {Number(ticketData[tick._id]?.estado ?? tick.estado) !==
+                              3 && (
+                              <div>
+                                <label className="text-gray-200!">Precio:</label>
+                                <br />
+                                <input
+                                  type="number"
+                                  min="1"
+                                  name="precio"
+                                  className="border-amber-500! text-gray-400!"
+                                  value={
+                                    ticketData[tick._id]?.precio ?? tick.precio
+                                  }
+                                  onChange={(e) =>
+                                    setTicketData((prev) => ({
+                                      ...prev,
+                                      [tick._id]: {
+                                        ...prev[tick._id],
+                                        precio: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                />
+                              </div>
+                            )}
+                            <div>
+                              <label className="text-gray-200!">Cantidad:</label>
+                              <br></br>
+                              <input
+                                type="number"
+                                min="1"
+                                name="cantidad"
+                                className="border-amber-500! text-gray-400!"
+                                value={
+                                  ticketData[tick._id]?.cantidad ?? tick.cantidad
+                                }
+                                onChange={(e) =>
+                                  setTicketData((prev) => ({
+                                    ...prev,
+                                    [tick._id]: {
+                                      ...prev[tick._id],
+                                      cantidad: e.target.value,
+                                    },
+                                  }))
+                                }
+                              ></input>
+                            </div>
+                            <div>
+                              <label className="text-gray-200!">Limite:</label>
+                              <br></br>
+                              <input
+                                type="number"
+                                min="1"
+                                name="limit"
+                                className="border-amber-500! text-gray-400!"
+                                value={ticketData[tick._id]?.limit ?? tick.limit}
+                                onChange={(e) =>
+                                  setTicketData((prev) => ({
+                                    ...prev,
+                                    [tick._id]: {
+                                      ...prev[tick._id],
+                                      limit: e.target.value,
+                                    },
+                                  }))
+                                }
+                              ></input>
+                            </div>
+                            <div className="mt-3 mb-3">
+                              <label className="text-gray-200!">Estado:</label>
+                              <br></br>
+                              <select
+                                className="rounded-lg border-amber-500! text-gray-400!"
+                                name="estado"
+                                ref={estadoRef}
+                              >
+                                <option className="text-gray-900!" value={tick.estado}>
+                                  {(tick.estado === 1 && "Activo") ||
+                                    (tick.estado === 2 && "No visible") ||
+                                    (tick.estado === 3 && "Cortesia") ||
+                                    (tick.estado === 4 && "Agotado")}
+                                </option>
+                                {tick.estado !== 1 && <option className="text-gray-900!" value={1}>Activo</option>}
+                                {tick.estado !== 2 && <option className="text-gray-900!" value={2}>No visible</option>}
+                                {tick.estado !== 4 && <option className="text-gray-900!" value={4}>Agotado</option>}
+                                {/*<option className="text-gray-900!" value={3}>Cortesia</option>*/ }
+                              </select>
+                            </div>
+                            <div className="mt-3">
+                              <div className="items-center text-center">
+                                <label>Fecha de cierre: </label>
+                                <label>{formatDate(tick.fechaDeCierre)}</label>
+                                <br></br>
+                                <div className="mt-3">
+                                  <label>Cambiar fecha a:</label>
+                                  <br></br>
+                                  <input
+                                    type="datetime-local"
+                                    className="border-amber-500! text-gray-400!"
+                                    value={
+                                      ticketData[tick._id]?.fechaDeCierre ??
+                                      tick.fechaDeCierre
+                                    }
+                                    onChange={(e) =>
+                                      setTicketData((prev) => ({
+                                        ...prev,
+                                        [tick._id]: {
+                                          ...prev[tick._id],
+                                          fechaDeCierre: e.target.value,
+                                        },
+                                      }))
+                                    }
+                                  ></input>
+                                </div>
+                              </div>
+                            </div>
+                            {message === 3 && (
+                                <p className="text-center bg-gray-800! text-yellow-500! mt-3">
+                                  Ticket actualizado!
+                                </p>
+                              )}
+                            {/*  <div className="flex justify-center items-center mt-3">
+                                                    <label>Visibilidad</label>
+                                                    <input className="ml-2" type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>
+                                                    setTicketData(prev => ({
+                                                    ...prev,
+                                                    [tick._id]: {
+                                                        ...prev[tick._id],
+                                                        visibilidad: e.target.value
+                                                        }
+                                                    }))
+                                                }></input>
+                                                </div> */}
+                            <div className="flex items-center justify-between">
+                              <button
+                                className="bg-amber-600 mt-5 p-3 w-[100px] rounded-lg"
+                                onClick={() => setOpenTicketId(null)}
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] mt-5 p-3 w-[100px] rounded-lg cursor-pointer"
+                                onClick={(e) =>
+                                  editEventTicket(
+                                    e,
+                                    tick._id,
+                                    tick.imgTicket,
+                                    tick.nombreTicket,
+                                    tick.descripcionTicket,
+                                    tick.precio,
+                                    tick.cantidad,
+                                    tick.limit,
+                                    tick.fechaDeCierre,
+                                    tick.visibilidad
+                                  )
+                                }
+                              >
+                                {ticketLoading ? <LoadingButton /> : "Editar"}
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                         {message === 3 && (
-                            <p className="text-center bg-gray-800! text-yellow-500! mt-3">
-                              Ticket actualizado!
-                            </p>
-                          )}
-                        {/*  <div className="flex justify-center items-center mt-3">
-                                                <label>Visibilidad</label>
-                                                <input className="ml-2" type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>
-                                                setTicketData(prev => ({
-                                                ...prev,
-                                                [tick._id]: {
-                                                    ...prev[tick._id],
-                                                    visibilidad: e.target.value
-                                                    }
-                                                }))
-                                            }></input>
-                                            </div> */}
-                        <div className="flex items-center justify-between">
-                          <button
-                            className="bg-amber-600 mt-5 p-3 w-[100px] rounded-lg"
-                            onClick={() => setOpenTicketId(null)}
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] mt-5 p-3 w-[100px] rounded-lg cursor-pointer"
-                            onClick={(e) =>
-                              editEventTicket(
-                                e,
-                                tick._id,
-                                tick.imgTicket,
-                                tick.nombreTicket,
-                                tick.descripcionTicket,
-                                tick.precio,
-                                tick.cantidad,
-                                tick.limit,
-                                tick.fechaDeCierre,
-                                tick.visibilidad
-                              )
-                            }
-                          >
-                            {ticketLoading ? <LoadingButton /> : "Editar"}
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ));
-            })}
+                        </>
+                      )}
+                    </div>
+                  ));
+                })}
+              </>
+          )}
           </div>
         </div>
         <div className="send-back relative flex flex-wrap justify-between items-center">

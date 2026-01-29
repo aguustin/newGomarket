@@ -217,8 +217,9 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
     const {prodId, userId} = req.params
     console.log(prodId, ' ', userId)
     const getProd = await ticketModel.find({_id: prodId, userId: userId})
+    const getProdDiscount = await discountModel.find({prodId: prodId})
     
-    res.send(getProd)
+    res.send({tickets:getProd, prodDiscount: getProdDiscount})
 }
 
 
