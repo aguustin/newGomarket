@@ -456,15 +456,10 @@ const EditProd = () => {
   return (
     <>
       <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-gray-800 border-[1px] border-gray-700 rounded-3xl">
-        <div  className="
-            bg-gray-800/80 backdrop-blur-sm 
-            border border-gray-700/50 
-            rounded-3xl shadow-2xl 
-            overflow-hidden
-          ">
           <div className="
               bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 
               p-8
+              rounded-3xl
             ">
             <h2 className="
                 text-gray-900 text-center 
@@ -504,7 +499,7 @@ const EditProd = () => {
                 }}
                 encType="multipart/form-data"
               >
-                <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center">
+              <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center pb-6">
                   <div className="relative group">
                 <img
                   className="
@@ -1367,12 +1362,12 @@ const EditProd = () => {
           ))}
           {showCreateTicketForm && (
             <>
-              <div
-                className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
-                onClick={() => setShowCreateTicketForm(!showCreateTicketForm)}
-              ></div>
+            <div
+              className="abc fixed! w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
+              onClick={() => setShowCreateTicketForm(!showCreateTicketForm)}
+            ></div>
               <form
-                className="add-tickets-form fixed pl-4 pr-7 pb-4 rounded-xl bg-gray-800!"
+                className="add-tickets-form fixed! pl-4 pr-7 pb-4 rounded-xl bg-gray-800! top-[50%]!"
                 onSubmit={createEventTickets}
                 encType="multipart/form-data"
               >
@@ -1547,7 +1542,7 @@ const EditProd = () => {
     ></div>
 
     <form
-      className="add-tickets-form h-[auto]! fixed pl-4 pr-7 pb-4 rounded-xl bg-gray-800!"
+      className="add-tickets-form fixed! top-[50%]! h-auto! min-h-[416px]  pl-4 pr-7 pb-4 rounded-xl bg-gray-800!"
       onSubmit={(e) => createDiscountCode(e)}
     >
       <div className="mt-4">
@@ -1643,7 +1638,7 @@ const EditProd = () => {
   </>
 )}
 
-        </div>
+        
         <div className="flex items-center">
           {/*<button className="flex items-center text-xl mt-16 bg-violet-900 pl-6 pr-6 pt-3 pb-3 rounded-lg cursor-pointer"><p>Editar tickets</p><img className="w-[15px] h-[15px] ml-3" src={downArrow} alt=""></img></button> */}
         </div>
@@ -1851,7 +1846,7 @@ const EditProd = () => {
                       {openTicketId === tick._id && (
                         <>
                           <div
-                            className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
+                            className="abc fixed! w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
                             onClick={() => setOpenTicketId(null)}
                           ></div>
                           <div className="add-tickets-form fixed p-6 rounded-lg bg-gray-800!">

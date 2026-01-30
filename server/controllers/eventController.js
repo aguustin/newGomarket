@@ -1716,10 +1716,10 @@ export const createDiscountController = async (req, res) => {
 
 export const activeDiscountController = async (req, res) => {
   const {prodId, discountCode} = req.body
- 
+    
     const discount = await discountModel.findOneAndUpdate(
       {
-        discountCode,
+        idDescuento: discountCode,
         cantidadDescuentos: { $gt: 0 }
       },
       {
@@ -1729,7 +1729,7 @@ export const activeDiscountController = async (req, res) => {
         new: true
       }
     );
-
+    console.log(discount)
     if(!discount){
       return res.status(200).json({message: 'No hay mas descuentos disponibles' })
     }
@@ -1738,5 +1738,5 @@ export const activeDiscountController = async (req, res) => {
       await discountModel.deleteOne({discountCode: discount.discountCode})
     }
 
-    return res.status(200).json({message:'Se aplico el descuento correctamente', discount})
+    return res.status(200).json({message:'Se aplico el descuento correctamente', discount: discount})
 }

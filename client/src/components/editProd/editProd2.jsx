@@ -512,7 +512,7 @@ const EditProd = () => {
                     transition-transform 
                     group-hover:scale-105
                   "
-                  src={mockEvent.imgEvento}
+                  src={previewPortada ?? p.imgEvento}
                   alt="Event"
                 />
                 <div 
@@ -605,7 +605,7 @@ const EditProd = () => {
                     />
                   </svg>
                   <span className="font-medium">Cargar nueva portada</span>
-                  <input type="file" className="hidden" />
+                  <input type="file" className="hidden" name="imgEvento" ref={fileRef} onChange={handleFileChange}/>
                 </label>
 
                 {/* Action Buttons */}
