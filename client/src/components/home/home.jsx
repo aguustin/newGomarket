@@ -272,7 +272,7 @@ const Home = () => {
                                     onChange={(e) => setLocalidadSeleccionada(e.target.value)}
                                     disabled={!provinciaSeleccionada}
                                 >
-                                    <option value="">🏙️ Localidad</option>
+                                    <option value="">Localidad</option>
                                     {localidades.map((loc) => (
                                         <option className="text-white bg-gray-800" key={loc.name} value={loc.name}>
                                             {loc.name}
@@ -304,7 +304,7 @@ const Home = () => {
                                         onClick={clearFilters}
                                         className="px-5 py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105"
                                     >
-                                        🗑️ Limpiar
+                                        Limpiar
                                     </button>
                                 )}
                             </div>
@@ -501,7 +501,7 @@ const Home = () => {
                                                 </button>
                                             )}
                                             <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
-                                                <h3 className="text-xl font-bold w-[240px] text-white hover:text-amber-400 transition-colors line-clamp-2">
+                                                <h3 className="text-xl font-bold w-[240px] text-gray-300! hover:text-amber-400 transition-colors line-clamp-2">
                                                     {allEv.nombreEvento}
                                                 </h3>
                                             </Link>
@@ -528,10 +528,10 @@ const Home = () => {
 // Category button component for mobile
 const CategoryButton = ({ icon, label, isActive, onClick }) => (
     <button
-        className={`flex items-center min-w-[160px] border-2 rounded-full px-4 py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl whitespace-nowrap
+        className={`flex items-center min-w-[160px] border-2 rounded-full px-4 py-3 font-semibold transition-all duration-300 shadow-sm hover:shadow-sm whitespace-nowrap
             ${isActive 
-                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white border-red-500 scale-105' 
-                : 'bg-gradient-to-br from-amber-500 to-yellow-500 text-[#111827] border-amber-600 hover:scale-105'
+                ? 'bg-gradient-to-r from-amber-700 to-yellow-600 text-[#111827] scale-105' 
+                : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[#111827] border-amber-600 hover:scale-105'
             }`}
         onClick={onClick}
     >
@@ -545,7 +545,7 @@ const DesktopCategoryButton = ({ icon, label, isActive, onClick, isLast }) => (
     <button
         className={`flex justify-center items-center font-semibold text-center p-4 w-full transition-all duration-300 
             ${!isLast ? 'border-r-2 border-yellow-600/30' : ''} 
-            ${isActive ? 'bg-gradient-to-br from-red-600 to-red-500 text-white' : 'text-[#111827] hover:bg-gradient-to-br hover:from-amber-400 hover:to-yellow-400'}
+            ${isActive ? 'bg-gradient-to-br from-amber-700 to-yellow-600 text-[#111827]' : 'text-[#111827] hover:bg-gradient-to-br hover:from-amber-400 hover:to-yellow-400'}
         `}
         onClick={onClick}
     >

@@ -739,9 +739,8 @@ border: 1px solid #e0e0e0;
     font-size: 22px;
   }
   .add-ticket button{
-    margin: auto;
-    margin-top: 5px;
-    padding: 6px;
+    margin: 8px;
+    
   }
 
   .edit-prod-bottom-buttons{
@@ -1488,7 +1487,6 @@ border: 1px solid #e0e0e0;
 .categories button:hover {
   color: #111827;
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 10px 25px -5px rgba(251, 191, 36, 0.4), 0 8px 10px -6px rgba(251, 191, 36, 0.3);
 }
 
 .categories button:active {

@@ -296,7 +296,7 @@ export const createSellerController = async (req, res) => {
   };
     if(req.file){
         cloudinary.uploader.upload_stream(
-            { resource_type: 'auto', folder: 'gotickets_profiles' },
+            { resource_type: 'image', folder: 'gotickets_profiles' },
             async (error, result) => {
               if (error) {
                 console.log(error);

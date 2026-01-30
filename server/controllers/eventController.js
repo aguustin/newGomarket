@@ -55,7 +55,7 @@ export const createEventController = async (req, res) => {
   const uploadToCloudinary = (file) => {
     return new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { resource_type: 'auto', folder: 'eventsGoTicket' },
+        { resource_type: 'image', folder: 'eventsGoTicket' },
         (error, result) => {
           if (error) {
             console.error('Cloudinary upload error:', error);
@@ -185,7 +185,7 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
   
   // Si hay archivo, subimos a Cloudinary
   cloudinary.uploader.upload_stream(
-    { resource_type: 'auto', folder: 'GoTicketsT' },
+    { resource_type: 'image', folder: 'GoTicketsT' },
     async (error, result) => {
       if (error) {
         console.log(error);
@@ -218,7 +218,7 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
     console.log(prodId, ' ', userId)
     const getProd = await ticketModel.find({_id: prodId, userId: userId})
     const getProdDiscount = await discountModel.find({prodId: prodId})
-    
+    console.log(getProdDiscount)
     res.send({tickets:getProd, prodDiscount: getProdDiscount})
 }
 
@@ -273,7 +273,7 @@ if (!isNaN(Number(tipoEvento))) {
   const uploadToCloudinary = (file) => {
     return new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { resource_type: 'auto', folder: 'eventsGoTicket' },
+        { resource_type: 'image', folder: 'eventsGoTicket' },
         (error, result) => {
           if (error) {
             console.error('Cloudinary upload error:', error);
@@ -396,7 +396,7 @@ const updateTicket = async (imgUrl = null) => {
   // Si hay imagen, sube a Cloudinary
   if (req.file) {
     cloudinary.uploader.upload_stream(
-      { resource_type: 'auto', folder: 'GoTicketsT' },
+      { resource_type: 'image', folder: 'GoTicketsT' },
       async (error, result) => {
         if (error) {
           console.error(error);
