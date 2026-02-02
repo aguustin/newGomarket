@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { activeDiscountCodeRequest, buyTicketsRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
+import { activeDiscountCodeRequest, buyTicketsRequest, findDiscountCodeRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
 import { formatDate, formatDateB, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 import mapPng from "../../assets/botones/map.png"
@@ -119,7 +119,7 @@ const activeDiscountCode = async (e) => {
   e.preventDefault()
  
   if(discountCode?.length > 0){
-    const res = await activeDiscountCodeRequest({prodId, discountCode})
+    const res = await findDiscountCodeRequest({discountCode})
     console.log(res)
     if(res.data.discount){
       setDiscountValue(res.data.discount.numeroDescuento)
@@ -163,7 +163,7 @@ const activeDiscountCode = async (e) => {
         
         try {
             setLoading(true)
-            const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono);
+            const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono, discountCode);
             
             if (!data?.init_point) {
                 return;

@@ -75,7 +75,7 @@ export const getEventToBuyRequest = (prodId) => axios.get(`${import.meta.env.VIT
 
 //export const buyTicketsRequest = (quantities, total, totalQuantity, mail, nombreEvento) => axios.post(`${import.meta.env.URL}/buy`, {quantities, total, totalQuantity, mail, nombreEvento})
 
-export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono) => { 
+export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono, discountCode) => { 
   try {
     const response = await axios.post(`${import.meta.env.VITE_URL}/buy`, {
       prodId,
@@ -87,7 +87,8 @@ export const buyTicketsRequest = async (prodId, nombreEvento, quantities, mail, 
       emailHash, 
       nombreCompleto,
       dni,
-      telefono
+      telefono,
+      discountCode
     });
 
     return response.data;
@@ -148,4 +149,6 @@ export const getBuyersRequest = async (prodId) => axios.get(`${import.meta.env.V
 
 export const createDiscountCodeRequest = async ({prodId, idDiscount, cantidadDescuentos, numeroDescuento }) => axios.post(`${import.meta.env.VITE_URL}/create_discount`, {prodId, idDiscount, cantidadDescuentos, numeroDescuento})
 
-export const activeDiscountCodeRequest = async ({prodId, discountCode}) => axios.post(`${import.meta.env.VITE_URL}/active_discount`, {prodId, discountCode})
+export const activeDiscountCodeRequest = async ({discountCode}) => axios.post(`${import.meta.env.VITE_URL}/active_discount`, {discountCode})
+
+export const findDiscountCodeRequest = async ({discountCode}) => axios.get(`${import.meta.env.VITE_URL}/find_discount/${discountCode}`)

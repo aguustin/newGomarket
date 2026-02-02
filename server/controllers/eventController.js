@@ -615,7 +615,8 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     emailHash,
     nombreCompleto,
     dni,
-    paymentId
+    paymentId,
+    discountCode
   } = data;
 
   const cacheKey = `payment_processed:${paymentId}`;
@@ -633,6 +634,10 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     if (!event) {
       console.error("Evento no encontrado:", prodId);
       return;
+    }
+
+    if(discountCode?.length > 0){
+      await activeDiscount({discountCode})
     }
 
     const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
@@ -676,7 +681,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 };
 
 export const buyEventTicketsController = async (req, res) => {
-  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
+  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono, discountCode } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
   
   if(total <= 0){
     qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
@@ -716,7 +721,8 @@ export const buyEventTicketsController = async (req, res) => {
               emailHash,
               nombreCompleto,
               dni,
-              telefono:telefono.toString()
+              telefono:telefono.toString(),
+              discountCode
         },
     };
 
@@ -789,7 +795,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
         email_hash,
         nombre_completo,
         dni,
-        telefono
+        telefono,
+        discount_code
       } = payment.body.metadata;
 
       console.log("Metadata del pago:", payment.body.metadata);
@@ -811,7 +818,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
         emailHash: email_hash,
         nombreCompleto: nombre_completo,
         dni,
-        paymentId
+        paymentId,
+        discountCode: discount_code
       }); //comentado el 29/12/2025
 
       /*await guardarTransaccionExitosa( //agregado el 29/12/2025
@@ -1714,8 +1722,8 @@ export const createDiscountController = async (req, res) => {
   return res.status(200).json({message: 'El descuento fue creado con exito' })
 }
 
-export const activeDiscountController = async (req, res) => {
-  const {prodId, discountCode} = req.body
+export const activeDiscount= async (discountCode) => {
+  //const {discountCode} = req.body
     
     const discount = await discountModel.findOneAndUpdate(
       {
@@ -1729,13 +1737,28 @@ export const activeDiscountController = async (req, res) => {
         new: true
       }
     );
-    console.log(discount)
+
     if(!discount){
-      return res.status(200).json({message: 'No hay mas descuentos disponibles' })
+      return
     }
 
     if(discount.cantidadDescuentos <= 0){
       await discountModel.deleteOne({discountCode: discount.discountCode})
+    }
+}
+
+export const findDiscountController = async (req, res) => {
+  const {discountCode} = req.params
+
+  const discount = await discountModel.findOne(
+    {
+      idDescuento: discountCode,
+      cantidadDescuentos: { $gt: 0 }
+    }
+  );
+
+    if(!discount){
+      return res.status(200).json({message: 'No hay mas descuentos disponibles' })
     }
 
     return res.status(200).json({message:'Se aplico el descuento correctamente', discount: discount})
