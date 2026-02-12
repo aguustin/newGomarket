@@ -15,32 +15,36 @@ Chart.register(...registerables);
 
 const Statistics = () => {
     const { prodId, userId } = useParams();
-    const [graphic, setGraphic] = useState()
-    const [productions, setProductions] = useState([]);
-    const [currentView, setCurrentView] = useState('general'); // 'general', 'tickets', 'rrpp', 'courtesys'
+    const [graphic, setGraphic] = useState('bar');
+    const [productions, setProductions] = useState({
+        tickets: [],
+        prodDiscount: []
+    });
+    const [currentView, setCurrentView] = useState('general');
     const chartRef = useRef(null);
     const chartInstanceRef = useRef(null);
+    
     const currencyFormatter = new Intl.NumberFormat('es-AR', {
         style: 'currency',
         currency: 'ARS',
     });
+    
     useEffect(() => {
         const getProds = async () => {
             try {
-                if (!userId) return;
                 const res = await getOneProdRequest(prodId, userId);
-                setProductions(res.data); // Aseguramos que sea un array
-                setGraphic('bar')
+                setProductions(res.data);
+                setGraphic('bar');
             } catch (err) {
                 console.error("Failed to fetch productions:", err);
             }
         };
         getProds();
-    }, [userId]);
+    }, [prodId, userId]);
     
-    // Generar el gráfico dinámicamente
+    // Chart generation logic remains the same...
     useEffect(() => {
-        if (!chartRef.current || productions.length === 0) return;
+        if (!chartRef.current || productions?.tickets.length === 0) return;
 
         if (chartInstanceRef.current) {
             chartInstanceRef.current.destroy();
@@ -52,7 +56,7 @@ const Statistics = () => {
         switch (currentView) {
             case 'rrpp':
                 chartLabels = ['Vendidos RRPP', 'Total vendido', 'Promedio por venta', 'Devoluciones'];
-                chartData = productions?.flatMap((prod) =>
+                chartData = productions?.tickets?.flatMap((prod) =>
                     (prod.rrpp || []).flatMap((pdr) => 
                         (pdr.ventasRRPP || []).map((pdrVent) => ({
                             label: pdrVent.nombreCategoria,
@@ -69,7 +73,7 @@ const Statistics = () => {
 
             case 'courtesys':
                 chartLabels = ['Nombre cortesía', 'Cantidad de cortesías', 'Cortesías entregadas'];
-                chartData = productions?.flatMap((prod) =>
+                chartData = productions?.tickets?.flatMap((prod) =>
                     (prod.rrpp || []).flatMap((rrpp) =>
                         (rrpp.ticketsCortesias || []).flatMap((rtc) => 
                         (rtc.cortesiaRRPP || []).map((ctrp) => ({
@@ -87,7 +91,7 @@ const Statistics = () => {
 
             case 'tickets':
                 chartLabels = ['Tickets vendidos', 'Cantidad sobrante', 'Monto por ticket'];
-                chartData = productions?.flatMap((prod) =>
+                chartData = productions?.tickets?.flatMap((prod) =>
                     (prod.tickets || []).map((ticket) => ({
                         label: ticket.nombreTicket,
                         data: [
@@ -99,9 +103,9 @@ const Statistics = () => {
                 );
                 break;
 
-            default: // 'general'
+            default:
                 chartLabels = ['Ventas totales', 'Monto vendido', 'Monto esperado', 'Devoluciones'];
-                chartData = productions?.map((prod) => ({
+                chartData = productions?.tickets?.map((prod) => ({
                     label: prod.nombreEvento,
                     data: [
                         prod.totalVentas || 0,
@@ -120,23 +124,23 @@ const Statistics = () => {
                 datasets: chartData.map((item) => ({
                     label: item.label,
                     data: item.data,
-                     backgroundColor:  [
-                        'rgba(240, 3, 54, 0.3)',
-                        'rgba(54, 162, 235, 0.3)',
-                        'rgba(255, 206, 86, 0.3)',
-                        'rgba(75, 192, 192, 0.3)',
-                        'rgba(255, 14, 14, 0.3)',
-                        'rgba(255, 159, 64, 0.3)'
+                    backgroundColor: [
+                        'rgba(251, 146, 60, 0.3)',
+                        'rgba(245, 105, 11, 0.3)',
+                        'rgba(144, 234, 8, 0.3)',
+                        'rgba(68, 239, 108, 0.3)',
+                        'rgba(22, 101, 249, 0.3)',
+                        'rgba(86, 77, 252, 0.3)'
                     ],
                     borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
+                        'rgba(251, 146, 60, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(234, 179, 8, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(249, 115, 22, 1)',
+                        'rgba(252, 211, 77, 1)'
                     ],
-                    borderWidth: 1            
+                    borderWidth: 2
                 }))
             },
             options: {
@@ -145,88 +149,202 @@ const Statistics = () => {
                 plugins: {
                     title: {
                         display: true,
-                        text: `Estadísticas: ${currentView.toUpperCase()}`,
-                        color: 'rgba(233, 233, 233, 0.8)'
+                        text: `Estadísticas: ${currentView.charAt(0).toUpperCase() + currentView.slice(1)}`,
+                        color: '#f59e0b',
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        }
+                    },
+                    legend: {
+                        labels: {
+                            color: '#e5e7eb',
+                            font: {
+                                size: 12
+                            }
+                        }
                     }
                 },
                 scales: {
                     x: {
                         grid: {
-                            color: 'rgba(138, 138, 138, 0.7)' // líneas verticales
+                            color: 'rgba(75, 85, 99, 0.3)'
                         },
-                         ticks: {
-                            color: 'rgba(233, 233, 233, 0.8)' // color de los números
+                        ticks: {
+                            color: '#d1d5db'
                         }
                     },
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: 'rgba(138, 138, 138, 0.7)' // líneas horizontales
+                            color: 'rgba(75, 85, 99, 0.3)'
                         },
                         ticks: {
-                            color: 'rgba(233, 233, 233, 0.8)' // color de los números
+                            color: '#d1d5db'
                         }
                     }
                 }
             }
         });
 
-    }, [currentView, productions, graphic]);
-
+    }, [currentView, productions?.tickets, graphic]);
+   
     return (
-        <div className="statistics w-[96vw] mx-auto mt-6 mb-6 bg-white rounded-2xl bg-gray-800! border-gray-600!">
-            <div className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 p-6 rounded-t-lg">
-                    <h2 className="text-[#111827]! text-center text-2xl font-bold flex items-center justify-center">
-                        Tus estadisticas
-                    </h2>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500  p-8
+              rounded-3xl shadow-2xl mb-8">
+                    <div className="flex items-center justify-center gap-4">
+                        <svg className="w-8 h-8 text-gray-900!" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <h2 className="text-gray-900! text-3xl font-bold">Tus Estadísticas</h2>
+                    </div>
                 </div>
-            {productions.map((prod) => (
-                <div className="statistics-event-info mx-auto relative flex items-center p-4" key={prod._id}>
-                    <div className="flex flex-wrap items-center">
-                        <img className="w-[250px] h-[200px] object-cover rounded-lg" src={prod.imgEvento} alt="" loading="lazy"/>
-                        <div className="ml-4 max-[595px]:ml-0 max-[595px]:mt-2">
-                            <h2 className="statistic-even-name text-3xl text-gray-200! max-[840px]:text-sm!">{prod.nombreEvento}</h2>
-                            <div className="statistic-event-desc">
-                                <p className="mt-3 text-gray-300">{prod.paisDestino}, {prod.provincia}</p>
-                                <div className="flex flex-wrap items-center">
-                                    <p className="mt-3 text-gray-400 flex items-center max-[595px]:text-sm!"><img className="mr-1" src={calendaryPng} alt=""></img>{formatDate(prod.fechaInicio)}</p>
-                                    <p className="mt-3 ml-6 text-gray-400 flex items-center max-[595px]:text-sm!"><img className="mr-1 max-[595px]:ml-3" src={calendaryPng} alt=""></img>{formatDate(prod.fechaFin)}</p>
+
+                {/* Event Info */}
+                {productions?.tickets.map((prod) => (
+                    <div key={prod._id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-6 mb-8 border border-gray-700">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            {/* Event Image */}
+                            <div className="lg:col-span-3">
+                                <img 
+                                    className="w-full h-64 lg:h-full object-cover rounded-xl shadow-lg" 
+                                    src={prod.imgEvento} 
+                                    alt={prod.nombreEvento}
+                                    loading="lazy"
+                                />
+                            </div>
+
+                            {/* Event Details */}
+                            <div className="lg:col-span-6 space-y-4">
+                                <h2 className="text-3xl md:text-4xl font-bold text-amber-400! bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">
+                                    {prod.nombreEvento}
+                                </h2>
+                                
+                                <p className="text-gray-300 text-lg">
+                                    {prod.paisDestino}, {prod.provincia}
+                                </p>
+                                
+                                <div className="flex flex-wrap gap-4">
+                                    <div className="flex items-center gap-2 bg-gray-900/50 px-4 py-2 rounded-lg">
+                                        <img className="w-5 h-5" src={calendaryPng} alt="" />
+                                        <span className="text-gray-300">{formatDate(prod.fechaInicio)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-gray-900/50 px-4 py-2 rounded-lg">
+                                        <img className="w-5 h-5" src={calendaryPng} alt="" />
+                                        <span className="text-gray-300">{formatDate(prod.fechaFin)}</span>
+                                    </div>
+                                </div>
+
+                                {/* Stats Cards */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-gray-700 rounded-xl p-5">
+                                        <p className="text-gray-400 text-sm mb-1">Monto esperado</p>
+                                        <p className="text-amber-500 text-2xl font-bold mb-3">${prod.montoVentas}</p>
+                                        <p className="text-gray-400 text-sm mb-1">Total vendido</p>
+                                        <p className="text-orange-500 text-2xl font-bold">{currencyFormatter.format(prod.totalMontoVendido)}</p>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-gray-700 rounded-xl p-5">
+                                        <p className="text-gray-400 text-sm mb-1">Tickets vendidos</p>
+                                        <p className="text-amber-500 text-2xl font-bold mb-3">{prod.totalVentas}</p>
+                                        <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">
+                                            <img className="w-5 h-5" src={checkPng} alt="" />
+                                            <span className="text-green-400 text-sm font-semibold">Compras confirmadas</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="info-container flex items-center mt-4">
-                                <div className="info p-3 pr-12 border-[1px] rounded-2xl border-gray-600!">
-                                    <p className="text-gray-400 max-[595px]:text-sm!">Monto esperado</p>
-                                    <p className="text-amber-500 text-xl max-[595px]:text-sm!">${prod.montoVentas}</p>
-                                    <p className="text-gray-400 max-[595px]:text-sm!">Total vendido</p>
-                                    <p className="text-amber-500 text-xl max-[595px]:text-sm!">{currencyFormatter.format(prod.totalMontoVendido)}</p>
-                                </div>
-                                <div className="info ml-3 p-3 pr-12 rounded-2xl border-gray-600! max-[595px]:mb-3!">
-                                    <p className="text-gray-400 max-[595px]:text-sm!">Tickets vendidos</p>
-                                    <p className="text-amber-500 text-xl max-[595px]:text-sm!">{prod.totalVentas}</p>
-                                     <p className="flex items-center p-3 bg-gray-900 mt-3 mb-3 max-[595px]:mb-0 rounded-xl text-gray-400 max-[595px]:text-sm! max-[595px]:p-2"><img className="mr-2" src={checkPng} alt=""></img> Compras confirmadas</p>
+
+                            {/* Graph Type Selector */}
+                            <div className="lg:col-span-3 flex lg:flex-col gap-3">
+                                <div className="flex-1 bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-amber-500/30 rounded-xl p-4">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <img src={statisticsPng} alt="" className="w-8 h-8" />
+                                        <span className="text-gray-200 font-semibold">Tipo de gráfico</span>
+                                    </div>
+                                    <select 
+                                        className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all cursor-pointer"
+                                        name="graph" 
+                                        value={graphic}
+                                        onChange={(e) => setGraphic(e.target.value)}
+                                    >
+                                        <option value="bar">📊 Barras</option>
+                                        <option value="line">📈 Líneas</option>
+                                        <option value="pie">🥧 Circular</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                        <div className="p-3 ml-6 flex items-center rounded-xl cursor-pointer bg-gray-900!">
-                            <img src={statisticsPng} alt="" className="cursor-pointer"></img>
-                            <select className="ml-3 cursor-pointer text-[#111827]! bg-gray-900! text-gray-300!" name="graph" onChange={(e) => setGraphic(e.target.value)}>
-                                <option className="text-gray-300!" value={'bar'}>Grafico de Barras</option>
-                                <option className="text-gray-300!" value={'line'}>Grafico Linear</option>
-                                <option className="text-gray-300!" value={'pie'}>Grafico Circular</option>
-                            </select>
+                    </div>
+                ))}
+
+                {/* Chart Section */}
+                <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                    <h3 className="text-2xl font-bold text-amber-400! bg-clip-text bg-gradient-to-r from-orange-400 to-red-400 mb-6">
+                        Estadísticas Detalladas
+                    </h3>
+                    
+                    {/* Filter Buttons */}
+                    <div className="flex flex-wrap gap-3 mb-8">
+                        <button 
+                            onClick={() => setCurrentView('general')}
+                            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                                currentView === 'general' 
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white! shadow-lg' 
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                        >
+                            <img className="w-5 h-5" src={folderPng} alt="" />
+                            <span className="text-sm md:text-base">Datos generales</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => setCurrentView('tickets')}
+                            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                                currentView === 'tickets' 
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white! shadow-lg' 
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                        >
+                            <img className="w-5 h-5" src={ticketSelledPng} alt="" />
+                            <span className="text-sm md:text-base">Tickets vendidos</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => setCurrentView('courtesys')}
+                            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                                currentView === 'courtesys' 
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white! shadow-lg' 
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                        >
+                            <img className="w-5 h-5" src={invitationPng} alt="" />
+                            <span className="text-sm md:text-base">Cortesías</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => setCurrentView('rrpp')}
+                            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                                currentView === 'rrpp' 
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white! shadow-lg' 
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                        >
+                            <img className="w-5 h-5" src={coinPng} alt="" />
+                            <span className="text-sm md:text-base">Ventas RRPP</span>
+                        </button>
+                    </div>
+
+                    {/* Chart Canvas */}
+                    <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700">
+                        <div className="h-96 md:h-[500px]">
+                            <canvas ref={chartRef}></canvas>
                         </div>
                     </div>
                 </div>
-            ))}
-            <div className="statistics-categories mb-60 p-6 h-[550px]">
-                <p className="text-3xl">Estadísticas:</p>
-                <div className="filter-statics-button flex justify-start mt-5">
-                    <button onClick={() => setCurrentView('general')} className="flex items-center p-3 text-[#111827] rounded-xl bg-gradient-to-t from-amber-600 to-yellow-500 border-gray-600! hover:from-yellow-500 to-yellow-500 hover:scale-105 transition-all max-[840px]:p-1 max-[840px]:text-sm!"><img className="mr-2" src={folderPng} alt=""></img> Datos generales</button>   
-                    <button onClick={() => setCurrentView('tickets')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl bg-gradient-to-t from-amber-600 to-yellow-500 border-gray-600! hover:from-yellow-500 to-yellow-500 hover:scale-105 transition-all max-[840px]:p-1 max-[840px]:text-sm!"><img className="mr-2" src={ticketSelledPng} alt=""></img> Tickets vendidos</button>   
-                    <button onClick={() => setCurrentView('courtesys')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl bg-gradient-to-t from-amber-600 to-yellow-500 border-gray-600! hover:from-yellow-500 to-yellow-500 hover:scale-105 transition-all max-[840px]:p-1 max-[840px]:text-sm!"><img className="mr-2" src={invitationPng} alt=""></img> Cortesías entregadas</button>
-                    <button onClick={() => setCurrentView('rrpp')} className="flex items-center p-3 ml-2 text-[#111827] rounded-xl bg-gradient-to-t from-amber-600 to-yellow-500 border-gray-600! hover:from-yellow-500 to-yellow-500 hover:scale-105 transition-all max-[840px]:p-1 max-[840px]:text-sm!"><img className="mr-2" src={coinPng} alt=""></img> Ventas RRPP</button>
-                </div>
-                <canvas className="canvas mt-6" ref={chartRef}></canvas>
             </div>
         </div>
     );

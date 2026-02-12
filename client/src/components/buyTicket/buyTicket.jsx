@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { activeDiscountCodeRequest, buyTicketsRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
+import { activeDiscountCodeRequest, buyTicketsRequest, findDiscountCodeRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
 import { formatDate, formatDateB, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 import mapPng from "../../assets/botones/map.png"
@@ -104,10 +104,23 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
 });
 };
 
-const activeDiscountCode = (e) => {
+
+let total = prod.reduce((accProd, p) => {
+  const comision = p?.comisionServicio ?? 13; // 13% si no existe
+  const totalTickets = p.tickets.reduce((accTck, tck) => {
+    const qty = quantities[tck._id]?.amount || 0;
+    const subtotal = qty * tck.precio;
+    return accTck + subtotal + subtotal * (comision / 100);
+  }, 0);
+  return accProd + totalTickets;
+}, 0);
+
+const activeDiscountCode = async (e) => {
   e.preventDefault()
-  if(discountCode > 0){
-    const res = activeDiscountCodeRequest({prodId, discountCode})
+ 
+  if(discountCode?.length > 0){
+    const res = await findDiscountCodeRequest({discountCode})
+    console.log(res)
     if(res.data.discount){
       setDiscountValue(res.data.discount.numeroDescuento)
       return console.log('bien, salio')
@@ -117,15 +130,6 @@ const activeDiscountCode = (e) => {
   }
 }
 
-const total = prod.reduce((accProd, p) => {
-    const comision = p?.comisionServicio ?? 13; // 13% si no existe
-    const totalTickets = p.tickets.reduce((accTck, tck) => {
-        const qty = quantities[tck._id]?.amount || 0;
-        const subtotal = qty * tck.precio;
-        return accTck + subtotal + subtotal * (comision / 100);
-    }, 0);
-    return accProd + totalTickets;
-}, 0);
 
 
     /*const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => { //version estable pero sin comision
@@ -159,7 +163,7 @@ const total = prod.reduce((accProd, p) => {
         
         try {
             setLoading(true)
-            const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono);
+            const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono, discountCode);
             
             if (!data?.init_point) {
                 return;
@@ -251,9 +255,9 @@ const total = prod.reduce((accProd, p) => {
                            <>
                            <p className="text-gray-300! max-[450px]:text-center">Filtrar tickets por fecha:</p>
                            <div className="max-[780px]:text-center! max-[450px]:justify-center mt-1 flex flex-wrap items-center">
-                                <select className="w-auto mt-1 mb-3 bg-gray-700 p-3 border border-gray-300 rounded-lg appearance-none" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)}>
-                                    <option className="text-white!" value=''>Cambiar fecha</option>
-                                    {relates.map((rel) => (<option key={rel._id} value={rel._id}>{rel.nombreEvento} - {formatDateB(rel.fechaInicio)}</option>))}
+                                <select className="w-auto mt-1 mb-3 bg-gradient-to-r from-gray-950 to-gray-900 p-3 border border-gray-300 rounded-lg appearance-none text-gray-300!" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)}>
+                                    <option className="bg-gray-950!" value=''>Cambiar fecha</option>
+                                    {relates.map((rel) => (<option className="bg-gray-950!" key={rel._id} value={rel._id}>{rel.nombreEvento} - {formatDateB(rel.fechaInicio)}</option>))}
                                 </select>
                                 <Link className="w-[101.5px]! ml-3! text-[#111827]! bg-yellow-500 rounded-lg p-2 mb-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
                             </div> 
@@ -366,17 +370,20 @@ const total = prod.reduce((accProd, p) => {
                         <input className="w-[100%] text-gray-200!" type="number" name="telefono" placeholder="..."></input>
                     </div>
                 </div>
-                <div>
+                <div className="flex items-center mt-4">
                   <p>Codigo de descuento:</p>
-                  <input type="number" onChange={(e) => setDiscountValueCode(e.target.value)}></input>
-                  <button type="button" onClick={() => activeDiscountCode()}></button>
+                  <input className="border-[1px] border-gray-400 rounded-lg p-2 ml-1 text-gray-300!" type="text" onChange={(e) => setDiscountValueCode(e.target.value)}></input>
+                  <button className="flex items-center py-2 px-3 ml-2 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-lg" type="button" onClick={(e) => activeDiscountCode(e)}>
+                    <svg viewBox="0 0 24 24" width={24} className="mr-1" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3.9889 14.6604L2.46891 13.1404C1.84891 12.5204 1.84891 11.5004 2.46891 10.8804L3.9889 9.36039C4.2489 9.10039 4.4589 8.59038 4.4589 8.23038V6.08036C4.4589 5.20036 5.1789 4.48038 6.0589 4.48038H8.2089C8.5689 4.48038 9.0789 4.27041 9.3389 4.01041L10.8589 2.49039C11.4789 1.87039 12.4989 1.87039 13.1189 2.49039L14.6389 4.01041C14.8989 4.27041 15.4089 4.48038 15.7689 4.48038H17.9189C18.7989 4.48038 19.5189 5.20036 19.5189 6.08036V8.23038C19.5189 8.59038 19.7289 9.10039 19.9889 9.36039L21.5089 10.8804C22.1289 11.5004 22.1289 12.5204 21.5089 13.1404L19.9889 14.6604C19.7289 14.9204 19.5189 15.4304 19.5189 15.7904V17.9403C19.5189 18.8203 18.7989 19.5404 17.9189 19.5404H15.7689C15.4089 19.5404 14.8989 19.7504 14.6389 20.0104L13.1189 21.5304C12.4989 22.1504 11.4789 22.1504 10.8589 21.5304L9.3389 20.0104C9.0789 19.7504 8.5689 19.5404 8.2089 19.5404H6.0589C5.1789 19.5404 4.4589 18.8203 4.4589 17.9403V15.7904C4.4589 15.4204 4.2489 14.9104 3.9889 14.6604Z" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M9 15L15 9" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M14.4945 14.5H14.5035" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M9.49451 9.5H9.50349" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                    <p className="text-[#111827]">Aplicar descuento</p>
+                  </button>
                 </div>
-                <div className="mt-6 p-4 rounded-xl text-center" >
+                <div className="mt-3 p-4 rounded-xl text-center" >
                     <Timer duration={720000}></Timer>
                 </div>
                 <div className="relative h-[auto] mt-4">
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
-                    <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total)}</p>
+                    <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total -  (total * discountValue) / 100)}</p>
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
                     <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo Ipass regresará el valor de las entradas No así el cargo por servicio.</p>

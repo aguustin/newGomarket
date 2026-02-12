@@ -27,12 +27,8 @@ import qrCodePng from "../../assets/images/qr-code.png";
 import ticketPng from "../../assets/images/ticket.png";
 import UserContext from "../../context/userContext";
 import addedTicket from "../../assets/images/added-ticket.png";
-import uploadPng from "../../assets/botones/upload.png";
+
 import megaphonePng from "../../assets/images/megaphone.png";
-import updatePng from "../../assets/images/update.png";
-import calendarPng from "../../assets/images/calendar.png";
-import ticketCantPng from "../../assets/images/ticket-cant.png";
-import cancelPng from "../../assets/images/cancel.png";
 import cancelEventPng from "../../assets/images/cancel-event.png";
 import eraserPng from "../../assets/images/eraser.png";
 import megaphoneBPng from "../../assets/images/megaphoneB.png";
@@ -110,8 +106,8 @@ const EditProd = () => {
     mediaQuery.addEventListener("change", handleResize);
 
     return () => mediaQuery.removeEventListener("change", handleResize);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+ 
+  }, [prodId, session]);
 
   useEffect(() => {
     if (prod && prod[0]) {
@@ -378,14 +374,16 @@ const EditProd = () => {
       nombreEvento,
       eventImg,
     });
+    console.log(res.data.msg)
+      if (res.data.msg === 1) {
+        alert('Se añadio el nuevo colaborador al evento')
+      } else if(res.data.msg === 3){
+        alert('No existe este colaborador en el evento')
+      }else{
+        alert('El colaborador ya existe en este evento')
+
+      }
     
-    if (res.data.msg === 1) {
-      setMessage(1);
-      setTimeout(() => setMessage(0), 3000);
-    } else {
-      setMessage(4);
-      setTimeout(() => setMessage(0), 5000);
-    }
   };
 
   const showTicketFunc = async (e, ticketId) => {
@@ -456,15 +454,10 @@ const EditProd = () => {
   return (
     <>
       <div className="edit-event-and-tickets-container mx-12 mt-[30px] mb-20 bg-gray-800 border-[1px] border-gray-700 rounded-3xl">
-        <div  className="
-            bg-gray-800/80 backdrop-blur-sm 
-            border border-gray-700/50 
-            rounded-3xl shadow-2xl 
-            overflow-hidden
-          ">
           <div className="
               bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 
               p-8
+              rounded-3xl
             ">
             <h2 className="
                 text-gray-900 text-center 
@@ -504,7 +497,7 @@ const EditProd = () => {
                 }}
                 encType="multipart/form-data"
               >
-                <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center">
+              <div className="edit-event-img relative w-[100%] flex flex-wrap items-start mx-auto justify-center pb-6">
                   <div className="relative group">
                 <img
                   className="
@@ -847,7 +840,7 @@ const EditProd = () => {
                       
                       <input
                         type="text"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!!"
                         value={
                           eventosEditados[p._id]?.nombreEvento ?? p.nombreEvento
                         }
@@ -872,7 +865,7 @@ const EditProd = () => {
                         bg-gradient-to-r from-gray-800 to-gray-900 
                         border border-amber-500/50! 
                         focus:border-amber-500 
-                        text-white! 
+                        text-white!! 
                         rounded-xl 
                         focus:outline-none 
                         focus:ring-2 focus:ring-amber-500/20 
@@ -904,7 +897,7 @@ const EditProd = () => {
                         bg-gradient-to-r from-gray-800 to-gray-900 
                         border border-amber-500/50! 
                         focus:border-amber-500 
-                        text-white! 
+                        text-white!! 
                         rounded-xl 
                         focus:outline-none 
                         focus:ring-2 focus:ring-amber-500/20 
@@ -926,7 +919,7 @@ const EditProd = () => {
                      
                       <input
                         type="number"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!!"
                         value={
                           eventosEditados[p._id]?.eventoEdad ?? p.eventoEdad
                         }
@@ -955,7 +948,7 @@ const EditProd = () => {
                         bg-gradient-to-r from-gray-800 to-gray-900 
                         border border-amber-500/50!
                         focus:border-amber-500 
-                        text-white! 
+                        text-white!! 
                         rounded-xl 
                         focus:outline-none 
                         focus:ring-2 focus:ring-amber-500/20 
@@ -987,7 +980,7 @@ const EditProd = () => {
                         bg-gradient-to-r from-gray-800 to-gray-900 
                         border border-amber-500/50! 
                         focus:border-amber-500 
-                        text-white! 
+                        text-white!! 
                         rounded-xl 
                         focus:outline-none 
                         focus:ring-2 focus:ring-amber-500/20 
@@ -1015,7 +1008,7 @@ const EditProd = () => {
                       </label>
                       <input
                         id="fileUploadBanner"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!!"
                         type="file"
                         name="bannerEvento"
                         onChange={handleBannerChange}
@@ -1035,7 +1028,7 @@ const EditProd = () => {
                       </label>
                       <input
                         id="fileUploadDescriptive"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!!"
                         type="file"
                         name="imagenDescriptiva"
                         onChange={handleDescriptiveChange}
@@ -1137,7 +1130,7 @@ const EditProd = () => {
                         bg-gradient-to-r from-gray-800 to-gray-900 
                         border border-amber-500/50! 
                         focus:border-amber-500 
-                        text-white! 
+                        text-white!! 
                         rounded-xl 
                         focus:outline-none 
                         focus:ring-2 focus:ring-amber-500/20 
@@ -1191,7 +1184,7 @@ const EditProd = () => {
                         bg-gradient-to-r from-gray-800 to-gray-900 
                         border border-amber-500/50! 
                         focus:border-amber-500 
-                        text-white! 
+                        text-white!! 
                         rounded-xl 
                         focus:outline-none 
                         focus:ring-2 focus:ring-amber-500/20 
@@ -1235,7 +1228,7 @@ const EditProd = () => {
                   
                       <input
                         name="direccion"
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!"
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!!"
                         value={eventosEditados[p._id]?.direccion ?? p.direccion}
                         onChange={(e) =>
                           handleChangeEvento(e, p._id, "direccion")
@@ -1258,7 +1251,7 @@ const EditProd = () => {
                         bg-gradient-to-r from-gray-800 to-gray-900 
                         border border-amber-500/50! 
                         focus:border-amber-500 
-                        text-white! 
+                        text-white!! 
                         rounded-xl 
                         focus:outline-none 
                         focus:ring-2 focus:ring-amber-500/20 
@@ -1365,218 +1358,278 @@ const EditProd = () => {
               </form>
             </>
           ))}
-          {showCreateTicketForm && (
-            <>
-              <div
-                className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
-                onClick={() => setShowCreateTicketForm(!showCreateTicketForm)}
-              ></div>
-              <form
-                className="add-tickets-form fixed pl-4 pr-7 pb-4 rounded-xl bg-gray-800!"
-                onSubmit={createEventTickets}
-                encType="multipart/form-data"
-              >
-                <div className="mt-4">
-                  <div className="flex items-center">
-                    <h3 className="text-xl text-yellow-600!">Crear nuevo ticket:</h3>
-                    <img
-                      className="ml-5"
-                      src={ticketPng}
-                      alt=""
-                      loading="lazy"
-                    ></img>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-gray-200!">Nombre del ticket:</label>
-                    <input
-                      className="text-gray-300! border-amber-500!"
-                      type="text"
-                      placeholder="..."
-                      name="nombreTicket"
-                      required
-                    ></input>
-                  </div>
-                  <div className="mt-2">
-                    <label className="text-gray-300!">Descripcion del ticket:</label>
-                    <input
-                      className="text-gray-300! border-amber-500!"
-                      type="text"
-                      placeholder="..."
-                      name="descripcionTicket"
-            
-                    ></input>
-                  </div>
-                  <div className="price-qty-state flex items-center mt-3">
-                    {estado !== "3" && (
-                      <div>
-                        <label className="text-gray-300!">Precio del ticket:</label>
-                        <input
-                          className="
-                        w-full 
-                        px-4 py-3 
-                        bg-gradient-to-r from-gray-800 to-gray-900 
-                        border border-amber-500/50! 
-                        focus:border-amber-500 
-                        text-white 
-                        rounded-xl 
-                        focus:outline-none 
-                        focus:ring-2 focus:ring-amber-500/20 
-                        transition-all
-                      "
-                          type="number"
-                          placeholder="..."
-                          name="precio"
-                          required
-                        ></input>
-                      </div>
-                    )}
-                    <div className="qty">
-                      <label className="text-gray-300!">Cantidad:</label>
-                      <input
-                        className="
-                        w-full 
-                        px-4 py-3 
-                        bg-gradient-to-r from-gray-800 to-gray-900 
-                        border border-amber-500/50! 
-                        focus:border-amber-500 
-                        text-white 
-                        rounded-xl 
-                        focus:outline-none 
-                        focus:ring-2 focus:ring-amber-500/20 
-                        transition-all
-                      "
-                        type="number"
-                        min="1"
-                        placeholder="..."
-                        name="cantidad"
-                        required
-                      ></input>
-                    </div>
-                    <div className="est ml-3">
-                      <label className="text-gray-300!">Estado:</label>
-                      <br></br>
-                      <select
-                        className="pr-2 pl-2 rounded-lg text-gray-300! border-amber-500!"
-                        name="estado"
-                        onChange={(e) => setEstado(e.target.value)}
-                        ref={estadoRef}
-                      >
-                        <option className="text-[#111827]" value={1}>Activo</option>
-                        <option className="text-[#111827]" value={2}>No visible</option>
-                        <option className="text-[#111827]" value={3}>Cortesia</option>
-                        <option className="text-[#111827]" value={4}>Agotado</option>
-                      </select>
-                    </div>
-                  </div>
-                  {estado === "3" && (
-                    <div className="est mt-3">
-                      <label className="text-gray-300!">Para:</label>
-                      <br></br>
-                      <select
-                        className="ml-1 text-gray-300! border-amber-500!"
-                        name="distribution"
-                        onChange={(e) => setDistribution(e.target.value)}
-                      >
-                        <option className="text-[#111827]" value={1}>RRPP</option>
-                        <option className="text-[#111827]" value={2}>Clientes</option>
-                      </select>
-                    </div>
-                  )}
-                  <div className=" mt-2">
-                    <label className="text-gray-300!">Limite a sacar por persona:</label>
-                    <input
-                      type="number"
-                      name="limit"
-                      placeholder="Ej: 3"
-                      className="text-gray-300! border-amber-500!"
-                    ></input>
-                  </div>
-                  <div className="edit-form-date mt-3">
-                    <label className="text-gray-300!">Fecha y hora de fin:</label>
-                    <input
-                      className="text-gray-300! border-amber-500!"
-                      type="datetime-local"
-                      value={closeDate}
-                      onChange={(e) => setCloseDate(e.target.value)}
-                      required
-                    ></input>
-                  </div>
-                  {/*<div className="flex items-center">
-                                        <label>Visibilidad</label><br></br>
-                                        <input type="checkbox" name="visibilidad" onChange={(e) => setVisibilidad(e.target.value)}/>
-                                </div>*/}
-                  <div className="mt-2">
-                    <label className="text-gray-300!">Imagen del ticket</label>
-                    <input className="text-gray-300! border-amber-500!" type="file" name="imgTicket"></input>
-                  </div>
-                </div>
-                <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-5">
-                  <button
-                    className="bg-amber-600 p-2 rounded-xl"
-                    onClick={() =>
-                      changeButton
-                        ? window.location.reload(false)
-                        : setShowCreateTicketForm(!showCreateTicketForm)
-                    }
-                  >
-                    {changeButton ? "Confirmar tickets" : "Cancelar"}{" "}
-                  </button>
-                  <button
-                    className="w-[180px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] rounded-xl p-2"
-                    type="submit"
-                  >
-                    {loadingCreateTicket ? <LoadingButton /> : "Agregar ticket"}
-                  </button>
-                </div>
-                {message == 2 && (
-                  <div className="flex items-center">
-                    <img className="mt-3" src={addedTicket} alt=""></img>
-                    <p className="ml-2 mt-3 text-lg text-orange-500!">
-                      Se agrego el nuevo ticket!
-                    </p>
-                  </div>
-                )}
-              </form>
-            </>
-          )}
-         {showCreateDiscountForm && (
+{/* Formulario de Crear Ticket */}
+{showCreateTicketForm && (
   <>
     <div
-      className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
-      onClick={() => setShowCreateDiscountForm(false)}
-    ></div>
-
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
+      onClick={() => setShowCreateTicketForm(!showCreateTicketForm)}
+    />
+    
     <form
-      className="add-tickets-form h-[auto]! fixed pl-4 pr-7 pb-4 rounded-xl bg-gray-800!"
-      onSubmit={(e) => createDiscountCode(e)}
+      className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-8 z-50 animate-slideIn"
+      onSubmit={createEventTickets}
+      encType="multipart/form-data"
     >
-      <div className="mt-4">
-        <div className="flex items-center">
-          <h3 className="text-xl text-yellow-600!">
-            Crear nuevo descuento:
-          </h3>
-          <img
-            className="ml-5"
-            src={ticketPng}
-            alt=""
-            loading="lazy"
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-amber-500/30">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-r rounded-xl flex items-center justify-center">
+            <img className="w-7 h-7" src={ticketPng} alt="" loading="lazy" />
+          </div>
+          <h3 className="text-2xl font-bold text-amber-400!">Crear nuevo ticket</h3>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowCreateTicketForm(!showCreateTicketForm)}
+          className="w-8 h-8 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white! transition-all flex items-center justify-center"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="space-y-5">
+        {/* Nombre del ticket */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200 mb-2">
+            Nombre del ticket
+          </label>
+          <input
+            className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+            type="text"
+            placeholder="Ej: VIP General"
+            name="nombreTicket"
+            required
           />
         </div>
 
-        <div className="mt-4">
-          <label className="text-gray-200!">Generar codigo:</label>
-          <div className="flex items-center">
+        {/* Descripción */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200 mb-2">
+            Descripción del ticket
+          </label>
+          <input
+            className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+            type="text"
+            placeholder="Descripción opcional..."
+            name="descripcionTicket"
+          />
+        </div>
+
+        {/* Precio, Cantidad y Estado */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {estado !== "3" && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-200 mb-2">
+                Precio del ticket
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 font-bold">$</span>
+                <input
+                  className="w-full pl-8 pr-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+                  type="number"
+                  placeholder="0"
+                  name="precio"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-200 mb-2">
+              Cantidad
+            </label>
             <input
-              className="w-[140px]! text-gray-300! border-amber-500! mr-3"
+              className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+              type="number"
+              min="1"
+              placeholder="100"
+              name="cantidad"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-200 mb-2">
+              Estado
+            </label>
+            <select
+              className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all cursor-pointer"
+              name="estado"
+              onChange={(e) => setEstado(e.target.value)}
+              ref={estadoRef}
+            >
+              <option value={1}>Activo</option>
+              <option value={2}>No visible</option>
+              <option value={3}>Cortesía</option>
+              <option value={4}>Agotado</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Distribución (si es cortesía) */}
+        {estado === "3" && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-200 mb-2">
+              Distribución para
+            </label>
+            <select
+              className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all cursor-pointer"
+              name="distribution"
+              onChange={(e) => setDistribution(e.target.value)}
+            >
+              <option value={1}>RRPP</option>
+              <option value={2}>Clientes</option>
+            </select>
+          </div>
+        )}
+
+        {/* Límite por persona */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200 mb-2">
+            Límite a sacar por persona
+          </label>
+          <input
+            type="number"
+            name="limit"
+            placeholder="Ej: 3"
+            className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+          />
+        </div>
+
+        {/* Fecha y hora de fin */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200 mb-2">
+            Fecha y hora de finalización
+          </label>
+          <input
+            className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all"
+            type="datetime-local"
+            value={closeDate}
+            onChange={(e) => setCloseDate(e.target.value)}
+            required
+          />
+        </div>
+
+        {/* Imagen del ticket */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200 mb-2">
+            Imagen del ticket
+          </label>
+          <div className="relative">
+            <input
+              className="w-full px-4 py-3 bg-gray-900 border-2 border-dashed border-gray-700 focus:border-amber-500 text-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-amber-500 file:to-yellow-500 file:text-gray-900 file:font-semibold hover:file:from-amber-600 hover:file:to-yellow-600 file:cursor-pointer"
+              type="file"
+              name="imgTicket"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Botones de acción */}
+      <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-gray-700">
+        <button
+          type="button"
+          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white! rounded-xl font-semibold transition-all"
+          onClick={() =>
+            changeButton
+              ? window.location.reload(false)
+              : setShowCreateTicketForm(!showCreateTicketForm)
+          }
+        >
+          {changeButton ? "Confirmar tickets" : "Cancelar"}
+        </button>
+        <button
+          className="px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-gray-900 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg"
+          type="submit"
+        >
+          {loadingCreateTicket ? <LoadingButton /> : "Agregar ticket"}
+        </button>
+      </div>
+
+      {/* Mensaje de éxito */}
+      {message === 2 && (
+        <div className="flex items-center gap-3 mt-4 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+          <img className="w-6 h-6" src={addedTicket} alt="" />
+          <p className="text-orange-400 font-semibold">
+            ¡Se agregó el nuevo ticket!
+          </p>
+        </div>
+      )}
+    </form>
+
+    <style jsx>{`
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+         
+        }
+        to {
+          opacity: 1;
+          
+        }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
+      .animate-slideIn {
+        animation: slideIn 0.4s ease-out;
+      }
+    `}</style>
+  </>
+)}
+
+{/* Formulario de Crear Descuento */}
+{showCreateDiscountForm && (
+  <>
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
+      onClick={() => setShowCreateDiscountForm(false)}
+    />
+
+    <form
+      className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-8 z-50 animate-slideIn"
+      onSubmit={(e) => createDiscountCode(e)}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-amber-500/30">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-r rounded-xl flex items-center justify-center">
+            <img className="w-7 h-7" src={ticketPng} alt="" loading="lazy" />
+          </div>
+          <h3 className="text-2xl font-bold text-amber-400!">Crear descuento</h3>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowCreateDiscountForm(false)}
+          className="w-8 h-8 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white! transition-all flex items-center justify-center"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="space-y-5">
+        {/* Generar código */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200 mb-2">
+            Código de descuento
+          </label>
+          <div className="flex gap-3">
+            <input
+              className="flex-1 px-4 py-3 bg-gray-900 border-2 border-gray-700 text-amber-400! rounded-xl font-mono font-bold text-lg focus:outline-none cursor-default"
               type="text"
-              placeholder="..."
               value={idDiscount}
               required
               readOnly
             />
             <button
               type="button"
-              className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] rounded-xl p-3"
+              className="px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-gray-900 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
               onClick={() => setIdDiscount(nanoid(8))}
             >
               Generar
@@ -1584,66 +1637,92 @@ const EditProd = () => {
           </div>
         </div>
 
-        <div className="mt-2">
-          <label className="text-gray-300!">
-            Cantidad de descuentos:
+        {/* Cantidad de descuentos */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200 mb-2">
+            Cantidad de usos disponibles
           </label>
           <input
-            className="text-gray-300! border-amber-500!"
+            className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
             type="number"
-            placeholder="..."
+            placeholder="Ej: 50"
             name="cantidadDescuentos"
           />
         </div>
 
-        <div className="mt-2">
-            <label className="text-gray-300!">
-              Valor del descuento:
-            </label>
+        {/* Valor del descuento */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200 mb-2">
+            Valor del descuento
+          </label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 font-bold text-lg">%</span>
             <input
-              className="text-gray-300! border-amber-500!"
+              className="w-full pl-10 pr-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
               type="number"
-              placeholder="..."
+              placeholder="Ej: 20"
               name="numeroDescuento"
               required
             />
-        </div>
-
-        <div className="h-[80px] w-[300px] flex justify-between items-center w-full mt-1">
-          <button
-            type="button"
-            className="bg-amber-600 p-2 rounded-xl"
-            onClick={() =>
-              changeButton
-                ? window.location.reload(false)
-                : setShowCreateDiscountForm(false)
-            }
-          >
-            {changeButton ? "Confirmar Descuento" : "Cancelar"}
-          </button>
-
-          <button
-            className="w-[180px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] rounded-xl p-2"
-            type="submit"
-          >
-            {loadingCreateTicket ? <LoadingButton /> : "Agregar Descuento"}
-          </button>
-        </div>
-
-        {message === 2 && (
-          <div className="flex items-center">
-            <img className="mt-3" src={addedTicket} alt="" />
-            <p className="ml-2 mt-3 text-lg text-orange-500!">
-              ¡Se agregó el nuevo descuento!
-            </p>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Botones de acción */}
+      <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-gray-700">
+        <button
+          type="button"
+          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white! rounded-xl font-semibold transition-all"
+          onClick={() =>
+            changeButton
+              ? window.location.reload(false)
+              : setShowCreateDiscountForm(false)
+          }
+        >
+          {changeButton ? "Confirmar Descuento" : "Cancelar"}
+        </button>
+        <button
+          className="px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-gray-900 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg"
+          type="submit"
+        >
+          {loadingCreateTicket ? <LoadingButton /> : "Agregar Descuento"}
+        </button>
+      </div>
+
+      {/* Mensaje de éxito */}
+      {message === 2 && (
+        <div className="flex items-center gap-3 mt-4 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+          <img className="w-6 h-6" src={addedTicket} alt="" />
+          <p className="text-orange-400 font-semibold">
+            ¡Se agregó el nuevo descuento!
+          </p>
+        </div>
+      )}
     </form>
+
+    <style jsx>{`
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
+      .animate-slideIn {
+        animation: slideIn 0.4s ease-out;
+      }
+    `}</style>
   </>
 )}
-
-        </div>
+        
         <div className="flex items-center">
           {/*<button className="flex items-center text-xl mt-16 bg-violet-900 pl-6 pr-6 pt-3 pb-3 rounded-lg cursor-pointer"><p>Editar tickets</p><img className="w-[15px] h-[15px] ml-3" src={downArrow} alt=""></img></button> */}
         </div>
@@ -1827,18 +1906,6 @@ const EditProd = () => {
                         </span>
                         <span>{formatDate(tick.fechaDeCierre)}</span>
                       </div>
-
-
-
-                       
-
-
-
-
-
-
-
-
                           </div>
                           <button
                             className="editProd-edit-ticket text-yellow-500 p-3 cursor-pointer text-md rounded-xl"
@@ -1848,232 +1915,296 @@ const EditProd = () => {
                           </button>
                         </div>
                       </div>
-                      {openTicketId === tick._id && (
-                        <>
-                          <div
-                            className="abc fixed w-screen h-screen top-0 bottom-0 left-0 right-0 bg-black-500"
-                            onClick={() => setOpenTicketId(null)}
-                          ></div>
-                          <div className="add-tickets-form fixed p-6 rounded-lg bg-gray-800!">
-                            <div className="mt-3 mb-3">
-                              <label className="text-gray-200!">Cambiar imagen del ticket:</label>
-                              <br></br>
-                              <input
-                                type="file"
-                                name="imgTicket"
-                                className="border-amber-500! text-gray-400!"
-                                ref={(el) => (fileRefsB.current[tick._id] = el)}
-                              />
-                            </div>
-                            <div>
-                              <label className="text-gray-200!">Nombre del ticket:</label>
-                              <br></br>
-                              <input
-                                type="text"
-                                name="nombreTicket"
-                                className="border-amber-500! text-gray-400!"
-                                value={
-                                  ticketData[tick._id]?.nombreTicket ??
-                                  tick.nombreTicket
-                                }
-                                onChange={(e) =>
-                                  setTicketData((prev) => ({
-                                    ...prev,
-                                    [tick._id]: {
-                                      ...prev[tick._id],
-                                      nombreTicket: e.target.value,
-                                    },
-                                  }))
-                                }
-                              ></input>
-                            </div>
-                            <div>
-                              <label className="text-gray-200!">Descripcion del ticket</label>
-                              <br></br>
-                              <input
-                                type="text"
-                                name="descripcionTicket"
-                                className="border-amber-500! text-gray-400!"
-                                value={
-                                  ticketData[tick._id]?.descripcionTicket ??
-                                  tick.descripcionTicket
-                                }
-                                onChange={(e) =>
-                                  setTicketData((prev) => ({
-                                    ...prev,
-                                    [tick._id]: {
-                                      ...prev[tick._id],
-                                      descripcionTicket: e.target.value,
-                                    },
-                                  }))
-                                }
-                              ></input>
-                            </div>
-                            {Number(ticketData[tick._id]?.estado ?? tick.estado) !==
-                              3 && (
-                              <div>
-                                <label className="text-gray-200!">Precio:</label>
-                                <br />
-                                <input
-                                  type="number"
-                                  min="1"
-                                  name="precio"
-                                  className="border-amber-500! text-gray-400!"
-                                  value={
-                                    ticketData[tick._id]?.precio ?? tick.precio
-                                  }
-                                  onChange={(e) =>
-                                    setTicketData((prev) => ({
-                                      ...prev,
-                                      [tick._id]: {
-                                        ...prev[tick._id],
-                                        precio: e.target.value,
-                                      },
-                                    }))
-                                  }
-                                />
-                              </div>
-                            )}
-                            <div>
-                              <label className="text-gray-200!">Cantidad:</label>
-                              <br></br>
-                              <input
-                                type="number"
-                                min="1"
-                                name="cantidad"
-                                className="border-amber-500! text-gray-400!"
-                                value={
-                                  ticketData[tick._id]?.cantidad ??
-                                  (Number(ticketData[tick._id]?.estado ?? tick.estado) === 3
-                                    ? tick.cantidadDeCortesias
-                                    : tick.cantidad)
-                                }
-                                onChange={(e) =>
-                                  setTicketData((prev) => ({
-                                    ...prev,
-                                    [tick._id]: {
-                                      ...prev[tick._id],
-                                      cantidad: e.target.value,
-                                    },
-                                  }))
-                                }
-                              ></input>
-                            </div>
-                            <div>
-                              <label className="text-gray-200!">Limite:</label>
-                              <br></br>
-                              <input
-                                type="number"
-                                min="1"
-                                name="limit"
-                                className="border-amber-500! text-gray-400!"
-                                value={ticketData[tick._id]?.limit ?? tick.limit}
-                                onChange={(e) =>
-                                  setTicketData((prev) => ({
-                                    ...prev,
-                                    [tick._id]: {
-                                      ...prev[tick._id],
-                                      limit: e.target.value,
-                                    },
-                                  }))
-                                }
-                              ></input>
-                            </div>
-                            <div className="mt-3 mb-3">
-                              <label className="text-gray-200!">Estado:</label>
-                              <br></br>
-                              <select
-                                className="rounded-lg border-amber-500! text-gray-400!"
-                                name="estado"
-                                ref={estadoRef}
-                              >
-                                <option className="text-gray-900!" value={tick.estado}>
-                                  {(tick.estado === 1 && "Activo") ||
-                                    (tick.estado === 2 && "No visible") ||
-                                    (tick.estado === 3 && "Cortesia") ||
-                                    (tick.estado === 4 && "Agotado")}
-                                </option>
-                                {tick.estado !== 1 && <option className="text-gray-900!" value={1}>Activo</option>}
-                                {tick.estado !== 2 && <option className="text-gray-900!" value={2}>No visible</option>}
-                                {tick.estado !== 4 && <option className="text-gray-900!" value={4}>Agotado</option>}
-                                {/*<option className="text-gray-900!" value={3}>Cortesia</option>*/ }
-                              </select>
-                            </div>
-                            <div className="mt-3">
-                              <div className="items-center text-center">
-                                <label>Fecha de cierre: </label>
-                                <label>{formatDate(tick.fechaDeCierre)}</label>
-                                <br></br>
-                                <div className="mt-3">
-                                  <label>Cambiar fecha a:</label>
-                                  <br></br>
-                                  <input
-                                    type="datetime-local"
-                                    className="border-amber-500! text-gray-400!"
-                                    value={
-                                      ticketData[tick._id]?.fechaDeCierre ??
-                                      tick.fechaDeCierre
-                                    }
-                                    onChange={(e) =>
-                                      setTicketData((prev) => ({
-                                        ...prev,
-                                        [tick._id]: {
-                                          ...prev[tick._id],
-                                          fechaDeCierre: e.target.value,
-                                        },
-                                      }))
-                                    }
-                                  ></input>
-                                </div>
-                              </div>
-                            </div>
-                            {message === 3 && (
-                                <p className="text-center bg-gray-800! text-yellow-500! mt-3">
-                                  Ticket actualizado!
-                                </p>
-                              )}
-                            {/*  <div className="flex justify-center items-center mt-3">
-                                                    <label>Visibilidad</label>
-                                                    <input className="ml-2" type="checkbox" name="visibilidad" value={ticketData[tick._id]?.visibilidad ?? tick.visibilidad}  onChange={(e) =>
-                                                    setTicketData(prev => ({
-                                                    ...prev,
-                                                    [tick._id]: {
-                                                        ...prev[tick._id],
-                                                        visibilidad: e.target.value
-                                                        }
-                                                    }))
-                                                }></input>
-                                                </div> */}
-                            <div className="flex items-center justify-between">
-                              <button
-                                className="bg-amber-600 mt-5 p-3 w-[100px] rounded-lg"
-                                onClick={() => setOpenTicketId(null)}
-                              >
-                                Cancelar
-                              </button>
-                              <button
-                                className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-[#111827] mt-5 p-3 w-[100px] rounded-lg cursor-pointer"
-                                onClick={(e) =>
-                                  editEventTicket(
-                                    e,
-                                    tick._id,
-                                    tick.imgTicket,
-                                    tick.nombreTicket,
-                                    tick.descripcionTicket,
-                                    tick.precio,
-                                    tick.cantidad,
-                                    tick.limit,
-                                    tick.fechaDeCierre,
-                                    tick.visibilidad
-                                  )
-                                }
-                              >
-                                {ticketLoading ? <LoadingButton /> : "Editar"}
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
+         {openTicketId === tick._id && (
+  <>
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
+      onClick={() => setOpenTicketId(null)}
+    />
+
+    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-8 z-50 animate-slideIn">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-amber-500/30">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl flex items-center justify-center">
+            <svg className="w-7 h-7 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-amber-400!">Editar ticket</h3>
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpenTicketId(null)}
+          className="w-8 h-8 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white! transition-all flex items-center justify-center"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="space-y-5">
+        {/* Cambiar imagen */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200! mb-2">
+            Cambiar imagen del ticket
+          </label>
+          <div className="relative">
+            <input
+              type="file"
+              name="imgTicket"
+              className="w-full px-4 py-3 bg-gray-900 border-2 border-dashed border-gray-700 focus:border-amber-500 text-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-amber-500 file:to-yellow-500 file:text-gray-900 file:font-semibold hover:file:from-amber-600 hover:file:to-yellow-600 file:cursor-pointer"
+              ref={(el) => (fileRefsB.current[tick._id] = el)}
+            />
+          </div>
+        </div>
+
+        {/* Nombre del ticket */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200! mb-2">
+            Nombre del ticket
+          </label>
+          <input
+            type="text"
+            name="nombreTicket"
+            className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+            value={ticketData[tick._id]?.nombreTicket ?? tick.nombreTicket}
+            onChange={(e) =>
+              setTicketData((prev) => ({
+                ...prev,
+                [tick._id]: {
+                  ...prev[tick._id],
+                  nombreTicket: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+
+        {/* Descripción del ticket */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200! mb-2">
+            Descripción del ticket
+          </label>
+          <input
+            type="text"
+            name="descripcionTicket"
+            className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+            value={ticketData[tick._id]?.descripcionTicket ?? tick.descripcionTicket}
+            onChange={(e) =>
+              setTicketData((prev) => ({
+                ...prev,
+                [tick._id]: {
+                  ...prev[tick._id],
+                  descripcionTicket: e.target.value,
+                },
+              }))
+            }
+          />
+        </div>
+
+        {/* Grid de Precio, Cantidad y Límite */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Precio (solo si no es cortesía) */}
+          {Number(ticketData[tick._id]?.estado ?? tick.estado) !== 3 && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-200! mb-2">
+                Precio del ticket
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 font-bold">$</span>
+                <input
+                  type="number"
+                  min="1"
+                  name="precio"
+                  className="w-full pl-8 pr-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+                  value={ticketData[tick._id]?.precio ?? tick.precio}
+                  onChange={(e) =>
+                    setTicketData((prev) => ({
+                      ...prev,
+                      [tick._id]: {
+                        ...prev[tick._id],
+                        precio: e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Cantidad */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-200! mb-2">
+              Cantidad
+            </label>
+            <input
+              type="number"
+              min="1"
+              name="cantidad"
+              className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+              value={
+                ticketData[tick._id]?.cantidad ??
+                (Number(ticketData[tick._id]?.estado ?? tick.estado) === 3
+                  ? tick.cantidadDeCortesias
+                  : tick.cantidad)
+              }
+              onChange={(e) =>
+                setTicketData((prev) => ({
+                  ...prev,
+                  [tick._id]: {
+                    ...prev[tick._id],
+                    cantidad: e.target.value,
+                  },
+                }))
+              }
+            />
+          </div>
+
+          {/* Límite */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-200! mb-2">
+              Límite por persona
+            </label>
+            <input
+              type="number"
+              min="1"
+              name="limit"
+              className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-gray-500"
+              value={ticketData[tick._id]?.limit ?? tick.limit}
+              onChange={(e) =>
+                setTicketData((prev) => ({
+                  ...prev,
+                  [tick._id]: {
+                    ...prev[tick._id],
+                    limit: e.target.value,
+                  },
+                }))
+              }
+            />
+          </div>
+        </div>
+
+        {/* Estado */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-200! mb-2">
+            Estado del ticket
+          </label>
+          <select
+            className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all cursor-pointer"
+            name="estado"
+            ref={estadoRef}
+          >
+            <option value={tick.estado}>
+              {(tick.estado === 1 && "Activo") ||
+                (tick.estado === 2 && "No visible") ||
+                (tick.estado === 3 && "Cortesía") ||
+                (tick.estado === 4 && "Agotado")}
+            </option>
+            {tick.estado !== 1 && <option value={1}>Activo</option>}
+            {tick.estado !== 2 && <option value={2}>No visible</option>}
+            {tick.estado !== 4 && <option value={4}>Agotado</option>}
+          </select>
+        </div>
+
+        {/* Fecha de cierre */}
+        <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700">
+          <div className="text-center space-y-3">
+            <div>
+              <label className="block text-sm font-semibold text-gray-400! mb-1">
+                Fecha de cierre actual
+              </label>
+              <p className="text-amber-400! font-mono text-lg">
+                {formatDate(tick.fechaDeCierre)}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-200! mb-2">
+                Cambiar fecha a
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700 focus:border-amber-500 text-white! rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all"
+                value={ticketData[tick._id]?.fechaDeCierre ?? tick.fechaDeCierre}
+                onChange={(e) =>
+                  setTicketData((prev) => ({
+                    ...prev,
+                    [tick._id]: {
+                      ...prev[tick._id],
+                      fechaDeCierre: e.target.value,
+                    },
+                  }))
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Mensaje de éxito */}
+        {message === 3 && (
+          <div className="flex items-center justify-center gap-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+            <svg className="w-6 h-6 text-amber-400!" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-amber-400! font-semibold">
+              ¡Ticket actualizado exitosamente!
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Botones de acción */}
+      <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-gray-700">
+        <button
+          type="button"
+          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white! rounded-xl font-semibold transition-all"
+          onClick={() => setOpenTicketId(null)}
+        >
+          Cancelar
+        </button>
+        <button
+          className="px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-orange-600 hover:to-red-600 text-gray-900 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg"
+          onClick={(e) =>
+            editEventTicket(
+              e,
+              tick._id,
+              tick.imgTicket,
+              tick.nombreTicket,
+              tick.descripcionTicket,
+              tick.precio,
+              tick.cantidad,
+              tick.limit,
+              tick.fechaDeCierre,
+              tick.visibilidad
+            )
+          }
+        >
+          {ticketLoading ? <LoadingButton /> : "Guardar cambios"}
+        </button>
+      </div>
+    </div>
+
+    <style jsx>{`
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
+      .animate-slideIn {
+        animation: slideIn 0.4s ease-out;
+      }
+    `}</style>
+  </>
+)}
                     </div>
                   ));
                 })}
@@ -2120,16 +2251,6 @@ const EditProd = () => {
                 Añadir Colaborador
               </button>
             </div>
-            {message == 1 && (
-              <p className="text-lg mt-2 text-green-700 text-center">
-                Se añadio el colaborador al evento!
-              </p>
-            )}
-            {message == 4 && (
-              <p className="text-lg mt-2 text-[#111827]! text-center">
-                El colaborador ya existe!
-              </p>
-            )}
           </form>
           <div className="edit-prod-bottom-buttons flex flex-wrap justify-center items-center">
             <Link
@@ -2158,7 +2279,7 @@ const EditProd = () => {
               }
             </button>
             <Link
-              className="flex items-center mx-2 p-2 bg-gradient-to-r from-gray-900 to-gray-950 hover:scale-105 active:scale-95  text-white rounded-lg text-white! text-sm! min-w-[172px] mt-2! transition-all"
+              className="flex items-center mx-2 p-2 bg-gradient-to-r from-gray-900 to-gray-950 hover:scale-105 active:scale-95  text-white! rounded-lg text-white!! text-sm! min-w-[172px] mt-2! transition-all"
               to="/productions"
             >
               <img src={nextPng} alt="" loading="lazy"></img>
@@ -2167,51 +2288,120 @@ const EditProd = () => {
           </div>
         </div>
       </div>
-      {cancelAlert && (
-        <>
-          <div className="fixed z-[3] bg-black h-screen  top-[0%] w-screen opacity-[0.5]"></div>
-          <div className="cancel-alert fixed z-[4] top-[50%] w-[450px] text-center bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl">
-            <div className="flex items-center justify-center bg-gradient-to-r from-amber-600 to-yellow-500 p-2 rounded-t-xl">
-              <img className="megaphone" src={megaphoneBPng} alt=""></img>
-              <h2 className="text-3xl text-[#111827]! ml-2">Aviso!</h2>
-            </div>
-            <div className="p-4">
-              <p className="text-md text-gray-300">
-                ¿Estas seguro de cancelar el evento? Si das de baja el evento se
-                reembolsara el dinero de los tickets comprados y no se mostrara
-                el evento.
-              </p>
-            </div>
-            <div className="flex justify-center mt-1 mb-8">
-              <img src={cancelEventPng} alt=""></img>
-              <img className="ml-5" src={eraserPng} alt=""></img>
-            </div>
-            <div className="flex items-center justify-around pb-2">
-              <button
-                className="w-[100px] rounded-lg text-[#111827] p-2 bg-yellow-500 "
-                onClick={() => setCancelAlert(false)}
-              >
-                Atras
-              </button>
-              {prod[0]?.active ? 
-                <button
-                  className="w-[100px] rounded-lg text-[#111827] p-2 bg-red-500"
-                  onClick={() => cancelarEvento(prod[0]._id)}
-                >
-                  Bajar
-                </button>
-              :
-                <button
-                  className="w-[100px] rounded-lg text-[#111827] p-2 bg-red-400"
-                  onClick={() => reactivarEvento(prod[0]._id)}
-                >
-                  Subir
-                </button>
-              }
-            </div>
+    {cancelAlert && (
+  <>
+    {/* Overlay */}
+    <div 
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
+      onClick={() => setCancelAlert(false)}
+    />
+
+    {/* Modal de alerta */}
+    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl z-50 animate-slideIn overflow-hidden">
+      
+      {/* Header con gradiente */}
+      <div className="flex items-center justify-center gap-4 bg-gradient-to-r from-amber-500 to-yellow-500 p-5">
+        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+          <img className="w-8 h-8" src={megaphoneBPng} alt="Alerta" />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900">¡Atención!</h2>
+      </div>
+
+      {/* Contenido */}
+      <div className="p-8">
+        <div className="bg-red-500/10 border-2 border-red-500/30 rounded-xl p-5 mb-6">
+          <p className="text-gray-200 text-center leading-relaxed">
+            {prod[0]?.active ? (
+              <>
+                ¿Estás seguro de <span className="text-red-400 font-bold">cancelar el evento</span>? 
+                <br />
+                <span className="text-sm text-gray-400 mt-2 block">
+                  Se reembolsará el dinero de los tickets comprados y el evento dejará de mostrarse.
+                </span>
+              </>
+            ) : (
+              <>
+                ¿Deseas <span className="text-green-400 font-bold">reactivar el evento</span>?
+                <br />
+                <span className="text-sm text-gray-400 mt-2 block">
+                  El evento volverá a estar visible y disponible para la compra de tickets.
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+
+        {/* Iconos ilustrativos */}
+        <div className="flex justify-center items-center gap-6 mb-8">
+          <div className="w-20 h-20 bg-gray-900/50 rounded-xl flex items-center justify-center border-2 border-gray-700 transform hover:scale-110 transition-transform">
+            <img className="w-12 h-12" src={cancelEventPng} alt="Cancelar evento" />
           </div>
-        </>
-      )}
+          <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+          <div className="w-20 h-20 bg-gray-900/50 rounded-xl flex items-center justify-center border-2 border-gray-700 transform hover:scale-110 transition-transform">
+            <img className="w-12 h-12" src={eraserPng} alt="Eliminar" />
+          </div>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="flex gap-4">
+          <button
+            className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-semibold transition-all transform hover:scale-105"
+            onClick={() => setCancelAlert(false)}
+          >
+            Cancelar
+          </button>
+          
+          {prod[0]?.active ? (
+            <button
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+              onClick={() => cancelarEvento(prod[0]._id)}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              Dar de baja
+            </button>
+          ) : (
+            <button
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+              onClick={() => reactivarEvento(prod[0]._id)}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+              Reactivar
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <style jsx>{`
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+      
+        }
+        to {
+          opacity: 1;
+
+        }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
+      .animate-slideIn {
+        animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+    `}</style>
+  </>
+)}
     </>
   );
 };

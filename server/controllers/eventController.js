@@ -215,7 +215,7 @@ export const getMyProdsController = async (req, res) => {  //OBTENER MIS PRODUCC
 
 export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO DE UNA SOLA PRODUCCION
     const {prodId, userId} = req.params
-    console.log(prodId, ' ', userId)
+    console.log('ADASDASDASD')
     const getProd = await ticketModel.find({_id: prodId, userId: userId})
     const getProdDiscount = await discountModel.find({prodId: prodId})
     console.log(getProdDiscount)
@@ -615,7 +615,8 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     emailHash,
     nombreCompleto,
     dni,
-    paymentId
+    paymentId,
+    discountCode
   } = data;
 
   const cacheKey = `payment_processed:${paymentId}`;
@@ -633,6 +634,10 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     if (!event) {
       console.error("Evento no encontrado:", prodId);
       return;
+    }
+
+    if(discountCode?.length > 0){
+      await activeDiscount({discountCode})
     }
 
     const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
@@ -676,7 +681,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
 };
 
 export const buyEventTicketsController = async (req, res) => {
-  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
+  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono, discountCode } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
   
   if(total <= 0){
     qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
@@ -689,7 +694,7 @@ export const buyEventTicketsController = async (req, res) => {
           {
             title: `Ticket para ${nombreEvento}`,
             quantity: 1,
-            unit_price: 1, // aca va "total"
+            unit_price: total, // aca va "total"
             currency_id: 'ARS',
           },
         ],
@@ -716,7 +721,8 @@ export const buyEventTicketsController = async (req, res) => {
               emailHash,
               nombreCompleto,
               dni,
-              telefono:telefono.toString()
+              telefono:telefono.toString(),
+              discountCode
         },
     };
 
@@ -776,6 +782,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
         dni,
         telefono
       } = payment.body.metadata || {};
+
+
       // Chequeo de idempotencia
       const processed = await guardarTransaccionExitosa(
         prod_id,
@@ -809,7 +817,8 @@ export const mercadoPagoWebhookController = async (req, res) => {
         emailHash: email_hash,
         nombreCompleto: nombre_completo,
         dni,
-        paymentId
+        paymentId,
+        discountCode: discount_code
       }); //comentado el 29/12/2025
 
       /*await guardarTransaccionExitosa( //agregado el 29/12/2025
@@ -1027,17 +1036,17 @@ export const addRRPPController = async (req, res) => {
       _id: prodId,
       'rrpp.mail': rrppMail
     });
-
+    console.log(rrppExist)
     // 2. Si ya existe → enviar email y cortar
     if (rrppExist) {
       await sendColabMail(rrppMail, nombreEvento, eventImg);
-      return res.status(200).json({ msg: 'El colaborador ya existe en este evento' });
+      return res.status(200).json({ msg: 2 });
     }
 
     // 3. Obtener datos del colaborador
     const colabData = await userModel.findOne({ mail: rrppMail });
     if (!colabData) {
-      return res.status(404).json({ msg: 'El usuario no existe en la base de datos' });
+      return res.status(200).json({ msg: 3 });
     }
 
     // 4. Agregar datos como RRPP al evento
@@ -1061,7 +1070,7 @@ export const addRRPPController = async (req, res) => {
     // 5. Enviar correo
     await sendColabMail(rrppMail, nombreEvento, eventImg);
 
-    return res.status(200).json({ msg: 1 });
+    return res.status(200).json({ msg: 2 });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ msg: 'Error en el servidor', error: err.message });
@@ -1712,12 +1721,12 @@ export const createDiscountController = async (req, res) => {
   return res.status(200).json({message: 'El descuento fue creado con exito' })
 }
 
-export const activeDiscountController = async (req, res) => {
-  const {prodId, discountCode} = req.body
- 
+export const activeDiscount= async (discountCode) => {
+  //const {discountCode} = req.body
+    
     const discount = await discountModel.findOneAndUpdate(
       {
-        discountCode,
+        idDescuento: discountCode,
         cantidadDescuentos: { $gt: 0 }
       },
       {
@@ -1729,12 +1738,27 @@ export const activeDiscountController = async (req, res) => {
     );
 
     if(!discount){
-      return res.status(200).json({message: 'No hay mas descuentos disponibles' })
+      return
     }
 
     if(discount.cantidadDescuentos <= 0){
       await discountModel.deleteOne({discountCode: discount.discountCode})
     }
+}
 
-    return res.status(200).json({message:'Se aplico el descuento correctamente', discount})
+export const findDiscountController = async (req, res) => {
+  const {discountCode} = req.params
+
+  const discount = await discountModel.findOne(
+    {
+      idDescuento: discountCode,
+      cantidadDescuentos: { $gt: 0 }
+    }
+  );
+
+    if(!discount){
+      return res.status(200).json({message: 'No hay mas descuentos disponibles' })
+    }
+
+    return res.status(200).json({message:'Se aplico el descuento correctamente', discount: discount})
 }

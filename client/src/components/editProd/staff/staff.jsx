@@ -5,7 +5,6 @@ import { useState } from "react"
 import { formatDate } from "../../../globalscomp/globalscomp"
 import { useContext } from "react"
 import UserContext from "../../../context/userContext"
-import checkWhitePng from "../../../assets/images/check-white.png"
 import calendarPng from "../../../assets/images/calendar.png"
 
 const Staff = () => {
