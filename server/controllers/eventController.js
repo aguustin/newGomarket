@@ -215,7 +215,6 @@ export const getMyProdsController = async (req, res) => {  //OBTENER MIS PRODUCC
 
 export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO DE UNA SOLA PRODUCCION
     const {prodId, userId} = req.params
-    console.log('ADASDASDASD')
     const getProd = await ticketModel.find({_id: prodId, userId: userId})
     const getProdDiscount = await discountModel.find({prodId: prodId})
     console.log(getProdDiscount)
@@ -785,7 +784,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
 
       // Chequeo de idempotencia
-      const processed = await guardarTransaccionExitosa(
+    /*  const processed = await guardarTransaccionExitosa(
         prod_id,
         nombre_completo,
         mail,
@@ -796,7 +795,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       if (!processed) {
         console.log(`Pago ${paymentId} ya procesado — omitido`);
         return res.sendStatus(200);
-      }
+      }*/
 
       console.log("Metadata del pago:", payment.body.metadata);
 
@@ -868,29 +867,29 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
   
-  if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
-      const bulkOps = Object.entries(quantities).filter(([_, quantityObj]) => quantityObj.amount > 0).map(([ticketId, quantityObj]) => ({
-        updateOne: {
-          filter: {
-            "rrpp.mail": mail,
-            "rrpp.ticketsCortesias.ticketIdCortesia": ticketId
-          },
-          update: {
-            $inc: {
-              "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount,
-              "rrpp.$[rrppElem].freeEntregados": quantityObj.amount
-            }
-          },
-          arrayFilters: [
-            { "rrppElem.mail": mail },
-            { "ticketElem.ticketIdCortesia": ticketId }
-          ]
-        }
-      }));
-      await ticketModel.bulkWrite(bulkOps);
-  }
-
   try {
+    
+    if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
+        const bulkOps = Object.entries(quantities).filter(([_, quantityObj]) => quantityObj.amount > 0).map(([ticketId, quantityObj]) => ({
+          updateOne: {
+            filter: {
+              "rrpp.mail": mail,
+              "rrpp.ticketsCortesias.ticketIdCortesia": ticketId
+            },
+            update: {
+              $inc: {
+                "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount,
+                "rrpp.$[rrppElem].freeEntregados": quantityObj.amount
+              }
+            },
+            arrayFilters: [
+              { "rrppElem.mail": mail },
+              { "ticketElem.ticketIdCortesia": ticketId }
+            ]
+          }
+        }));
+        await ticketModel.bulkWrite(bulkOps);
+    }
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
   const event = await ticketModel.findById(prodId);
 
