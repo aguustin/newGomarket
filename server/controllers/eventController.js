@@ -763,7 +763,19 @@ export const mercadoPagoWebhookController = async (req, res) => {
       const status = payment.body?.status;
 
       if (status !== 'approved') return;
-
+            // Extraer metadata
+      const {
+        prod_id,
+        nombre_evento,
+        quantities,
+        mail,
+        state,
+        total,
+        email_hash,
+        nombre_completo,
+        dni,
+        telefono
+      } = payment.body.metadata || {};
       // Chequeo de idempotencia
       const processed = await guardarTransaccionExitosa(
         prod_id,
@@ -777,20 +789,6 @@ export const mercadoPagoWebhookController = async (req, res) => {
         console.log(`Pago ${paymentId} ya procesado — omitido`);
         return res.sendStatus(200);
       }
-
-      // Extraer metadata
-      const {
-        prod_id,
-        nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        email_hash,
-        nombre_completo,
-        dni,
-        telefono
-      } = payment.body.metadata;
 
       console.log("Metadata del pago:", payment.body.metadata);
 

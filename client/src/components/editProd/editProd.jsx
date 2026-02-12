@@ -2090,9 +2090,9 @@ const EditProd = () => {
               <input
                 type="email"
                   placeholder="email@colaborador.com"
+                  name="rrppMail"
                   className="
                     ml-1
-                   
                     bg-gray-900 
                     border border-amber-500! 
                     text-gray-200! 
