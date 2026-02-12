@@ -711,17 +711,17 @@ export const buyEventTicketsController = async (req, res) => {
         auto_return: 'approved',
         notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
         metadata: {
-              prodId,
-              nombreEvento,
-              quantities,
-              mail,
-              state,
-              total,
-              emailHash,
-              nombreCompleto,
-              dni,
-              telefono:telefono.toString(),
-              discountCode
+          prod_id: prodId,
+          nombre_evento: nombreEvento,
+          quantities,
+          mail,
+          state,
+          total,
+          email_hash: emailHash,
+          nombre_completo: nombreCompleto,
+          dni,
+          telefono: telefono.toString(),
+          discount_code: discountCode ?? null
         },
     };
 
@@ -770,16 +770,17 @@ export const mercadoPagoWebhookController = async (req, res) => {
       if (status !== 'approved') return;
             // Extraer metadata
       const {
-        prod_id,
-        nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        email_hash,
-        nombre_completo,
-        dni,
-        telefono
+            prod_id,
+            nombre_evento,
+            quantities,
+            mail,
+            state,
+            total,
+            email_hash,
+            nombre_completo,
+            dni,
+            telefono,
+            discount_code = null
       } = payment.body.metadata || {};
 
 
@@ -807,17 +808,17 @@ export const mercadoPagoWebhookController = async (req, res) => {
       // Procesamos el pago exitoso
 
       const resHandle = await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
-        prodId: prod_id,
-        nombreEvento: nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash: email_hash,
-        nombreCompleto: nombre_completo,
-        dni,
-        paymentId,
-        discountCode: discount_code
+          prodId: prod_id,
+          nombreEvento: nombre_evento,
+          quantities,
+          mail,
+          state,
+          total,
+          emailHash: email_hash,
+          nombreCompleto: nombre_completo,
+          dni,
+          paymentId,
+          discountCode: discount_code
       }); //comentado el 29/12/2025
 
       /*await guardarTransaccionExitosa( //agregado el 29/12/2025
