@@ -598,7 +598,7 @@ const guardarTransaccionExitosa = async (
       montoPagado: totalPagoEntradas,
       fecha: new Date()
     });
-
+    console.log(`Transacción guardada exitosamente: ${paymentId}`);
     return true;
 
   } catch (error) {
