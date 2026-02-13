@@ -602,8 +602,10 @@ const guardarTransaccionExitosa = async (
     return true;
 
   } catch (error) {
-    // Si es duplicado → ya estaba procesado
+
+    // DUPLICADO (idempotencia)
     if (error.code === 11000) {
+      console.log(`Transacción duplicada detectada: ${paymentId}`);
       return false;
     }
 
@@ -614,44 +616,24 @@ const guardarTransaccionExitosa = async (
 
 
 
-export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULPAYMENT ES EL DE PRODUCCION Y EL ACTUAL QUE TOMA EL PAYMENT ID Y TRANSACCIONES DE MERCADOPAGO
-  const {
-    prodId,
-    quantities,
-    mail,
-    state,
-    total,
-    emailHash,
-    nombreCompleto,
-    dni,
-    paymentId,
-    discountCode
-  } = data;
 
-  const cacheKey = `payment_processed:${paymentId}`;
+const handleSuccessfulPayment = async ({
+  prodId,
+  nombreEvento,
+  quantities,
+  mail,
+  state,
+  total,
+  emailHash,
+  nombreCompleto,
+  dni,
+  paymentId,
+  discountCode
+}) => {
 
   try {
-    // Revisar si ya se procesó el pago (cache Redis)
-    // const cached = await redisClient.get(cacheKey); //expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
-    /*if (cached) { // DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS Y PARA QUE FUNCIONE TODO BIEN
-      console.log(`Pago ${paymentId} ya procesado (cache).`);
-      return;
-    }*/
 
-    // Si no está en cache, validar en DB (tu función actual)
-    const event = await ticketModel.findOne({ _id: prodId }).lean();
-    if (!event) {
-      console.error("Evento no encontrado:", prodId);
-      return;
-    }
-
-    if(discountCode?.length > 0){
-      await activeDiscount({discountCode})
-    }
-
-    const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
-
-    // Guardamos la transacción (validación real en BD)
+    // 🔒 Idempotencia en DB
     const guardado = await guardarTransaccionExitosa(
       prodId,
       nombreCompleto,
@@ -661,28 +643,20 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
     );
 
     if (!guardado) {
-       console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
-      // Marcar en cache para acelerar futuros chequeos
-      // await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
-        return;
+      console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
+      return 0;
     }
 
-    // Nuevo pago, generamos QRs y procesamos venta
+    // 🔥 Procesos pesados
     const tasks = [
       qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
-      procesarVentaGeneral(event, quantities, total)
+      procesarVentaGeneral(nombreEvento, quantities, total)
     ];
 
-    if (rrppMatch && decryptedMail) {
-      console.log('SI EJECUTA LA FUNCION PARA PROCESAR LA VENTA: ', rrppMatch, ' ', decryptedMail)
-      tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
-    }
     await Promise.all(tasks);
 
-    // Marcar como procesado en cache
-    //await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
+    return 1;
 
-    return 1
   } catch (error) {
     console.error("Error en handleSuccessfulPayment:", error);
     throw error;
@@ -764,116 +738,83 @@ export const buyEventTicketsController = async (req, res) => {
 };
 
 export const mercadoPagoWebhookController = async (req, res) => {
+
+  const paymentId = req.query.id || req.query['data.id'];
+  const topic = req.query.topic || req.query.type;
+
+  // Siempre responder si no es payment
+  if (!paymentId || topic !== 'payment') {
+    return res.sendStatus(200);
+  }
+
+  // 🔥 RESPONDEMOS INMEDIATAMENTE
+  res.sendStatus(200);
+
   try {
-    const paymentId = req.query.id || req.query['data.id'];
-    const topic = req.query.topic || req.query.type;
-    
-    if (!paymentId || topic !== 'payment') {
-      console.error("No payment ID or topic !== 'payment'");
-      return res.sendStatus(200);
-    }
-    
-    try {
-      const payment = await mercadopago.payment.findById(paymentId);
-      const status = payment.body?.status;
 
-      if (status !== 'approved') return;
-            // Extraer metadata
-      const {
-            prod_id,
-            nombre_evento,
-            quantities,
-            mail,
-            state,
-            total,
-            email_hash,
-            nombre_completo,
-            dni,
-            telefono,
-            discount_code = null
-      } = payment.body.metadata || {};
+    const payment = await mercadopago.payment.findById(paymentId);
+    const status = payment.body?.status;
 
-
-      // Chequeo de idempotencia
-    /*  const processed = await guardarTransaccionExitosa(
-        prod_id,
-        nombre_completo,
-        mail,
-        total,
-        paymentId
-      );
-
-      if (!processed) {
-        console.log(`Pago ${paymentId} ya procesado — omitido`);
-        return res.sendStatus(200);
-      }*/
-
-      console.log("Metadata del pago:", payment.body.metadata);
-
-      if (!quantities || !mail || !prod_id || !total) {
-        console.error("Metadata incompleta:", payment.body.metadata);
-        return;
-      }
-      console.log("quantities: " , quantities)
-      // Procesamos el pago exitoso
-
-      const resHandle = await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
-          prodId: prod_id,
-          nombreEvento: nombre_evento,
-          quantities,
-          mail,
-          state,
-          total,
-          emailHash: email_hash,
-          nombreCompleto: nombre_completo,
-          dni,
-          paymentId,
-          discountCode: discount_code
-      }); //comentado el 29/12/2025
-
-      /*await guardarTransaccionExitosa( //agregado el 29/12/2025
-        prod_id,
-        nombre_completo,
-        mail,
-        total,
-        paymentId
-      );
-
-       //PAYMENTQUEUE HACE EL PAGO BIEN SIN DUPLICAR EL PAYMENTID PERO SOLO LO VOY A USAR EN PRODUCCION CUANDO ESTE TODO ANDANDO BIEN
-      await paymentQueue.add('generar-qr-y-mail', { prodId: prod_id, quantities, mail, state, total, emailHash: email_hash, nombreCompleto: nombre_completo, dni, paymentId}, //agregado el 29/12/2025
-        {
-          jobId: paymentId.toString(),
-          attempts: 3, // Reintentar 3 veces si falla
-          backoff: {
-            type: 'exponential', // o 'fixed'
-            delay: 5000 // 5 segundos de espera antes de reintentar
-          },
-          removeOnComplete: true, // limpia el job si se completó
-          removeOnFail: false // puedes dejarlo en false para revisar errores
-      })*/
-
-      if(resHandle === 1){
-       
-
-        await purchaseModel.create({
-          prodId: prod_id,
-          nombreCompleto: nombre_completo,
-          email: mail,
-          dni:dni,
-          telefono: parseInt(telefono)
-        })
-      }
-      return res.sendStatus(200)
-    } catch (err) {
-      console.error("Error procesando pago en background:", err);
-      return res.sendStatus(500)
+    if (status !== 'approved') {
+      console.log(`Pago ${paymentId} no aprobado aún.`);
+      return;
     }
 
-  } catch (error) {
-    console.error('Error en webhook:', error.message, error.stack);
-    return res.sendStatus(500);
+    const metadata = payment.body.metadata || {};
+
+    const {
+      prod_id,
+      nombre_evento,
+      quantities,
+      mail,
+      state,
+      total,
+      email_hash,
+      nombre_completo,
+      dni,
+      telefono,
+      discount_code = null
+    } = metadata;
+
+    console.log("Metadata del pago:", metadata);
+
+    if (!quantities || !mail || !prod_id || !total) {
+      console.error("Metadata incompleta:", metadata);
+      return;
+    }
+
+    const resHandle = await handleSuccessfulPayment({
+      prodId: prod_id,
+      nombreEvento: nombre_evento,
+      quantities,
+      mail,
+      state,
+      total,
+      emailHash: email_hash,
+      nombreCompleto: nombre_completo,
+      dni,
+      paymentId,
+      discountCode: discount_code
+    });
+
+    // Solo si fue realmente nuevo
+    if (resHandle === 1) {
+
+      await purchaseModel.create({
+        prodId: prod_id,
+        nombreCompleto: nombre_completo,
+        email: mail,
+        dni: dni,
+        telefono: parseInt(telefono)
+      });
+
+    }
+
+  } catch (err) {
+    console.error("Error procesando webhook:", err);
   }
 };
+
 
 
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
