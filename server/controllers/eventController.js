@@ -214,12 +214,17 @@ export const getMyProdsController = async (req, res) => {  //OBTENER MIS PRODUCC
 }
 
 export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO DE UNA SOLA PRODUCCION
-    const {prodId, userId} = req.params
+   /* const {prodId, userId} = req.params
     console.log(prodId, ' ', userId)
     const getProd = await ticketModel.find({_id: prodId, userId: userId})
     const getProdDiscount = await discountModel.find({prodId: prodId})
     console.log(getProdDiscount)
-    res.send({tickets:getProd, prodDiscount: getProdDiscount})
+    res.send({tickets:getProd, prodDiscount: getProdDiscount})*/
+       const {prodId, userId} = req.params
+    console.log(prodId, ' ', userId)
+    const getProd = await ticketModel.find({_id: prodId, userId: userId})
+    
+    res.send(getProd)
 }
 
 
@@ -655,7 +660,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
        console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
       // Marcar en cache para acelerar futuros chequeos
       // await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
-      return;
+     // return;
     }
 
     // Nuevo pago, generamos QRs y procesamos venta
@@ -694,7 +699,7 @@ export const buyEventTicketsController = async (req, res) => {
           {
             title: `Ticket para ${nombreEvento}`,
             quantity: 1,
-            unit_price: 1, // aca va "total"
+            unit_price: total, // aca va "total"
             currency_id: 'ARS',
           },
         ],
@@ -1317,6 +1322,7 @@ const sendQrEmail = async (
         contentId: `qrcodeimg${index}`, // Content-ID para imagen embebida
         disposition: "inline"   // Indica que se debe mostrar inline
     }))
+    
     const info = await resend.emails.send({
       from: '"Ipass" <no-reply@ipassi.com>',
       to: [email],
