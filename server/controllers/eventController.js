@@ -214,17 +214,16 @@ export const getMyProdsController = async (req, res) => {  //OBTENER MIS PRODUCC
 }
 
 export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO DE UNA SOLA PRODUCCION
-   /* const {prodId, userId} = req.params
-    console.log(prodId, ' ', userId)
+    const {prodId, userId} = req.params
     const getProd = await ticketModel.find({_id: prodId, userId: userId})
     const getProdDiscount = await discountModel.find({prodId: prodId})
     console.log(getProdDiscount)
-    res.send({tickets:getProd, prodDiscount: getProdDiscount})*/
-       const {prodId, userId} = req.params
+    res.send({tickets:getProd, prodDiscount: getProdDiscount})
+    /*const {prodId, userId} = req.params
     console.log(prodId, ' ', userId)
     const getProd = await ticketModel.find({_id: prodId, userId: userId})
     
-    res.send(getProd)
+    res.send(getProd)*/
 }
 
 
@@ -717,17 +716,17 @@ export const buyEventTicketsController = async (req, res) => {
         auto_return: 'approved',
         notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
         metadata: {
-              prodId,
-              nombreEvento,
-              quantities,
-              mail,
-              state,
-              total,
-              emailHash,
-              nombreCompleto,
-              dni,
-              telefono:telefono.toString(),
-              discountCode
+          prod_id: prodId,
+          nombre_evento: nombreEvento,
+          quantities,
+          mail,
+          state,
+          total,
+          email_hash: emailHash,
+          nombre_completo: nombreCompleto,
+          dni,
+          telefono: telefono.toString(),
+          discount_code: discountCode ?? null
         },
     };
 
@@ -774,9 +773,24 @@ export const mercadoPagoWebhookController = async (req, res) => {
       const status = payment.body?.status;
 
       if (status !== 'approved') return;
+            // Extraer metadata
+      const {
+            prod_id,
+            nombre_evento,
+            quantities,
+            mail,
+            state,
+            total,
+            email_hash,
+            nombre_completo,
+            dni,
+            telefono,
+            discount_code = null
+      } = payment.body.metadata || {};
+
 
       // Chequeo de idempotencia
-      const processed = await guardarTransaccionExitosa(
+    /*  const processed = await guardarTransaccionExitosa(
         prod_id,
         nombre_completo,
         mail,
@@ -787,22 +801,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
       if (!processed) {
         console.log(`Pago ${paymentId} ya procesado — omitido`);
         return res.sendStatus(200);
-      }
-
-      // Extraer metadata
-      const {
-        prod_id,
-        nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        email_hash,
-        nombre_completo,
-        dni,
-        telefono,
-        discount_code
-      } = payment.body.metadata;
+      }*/
 
       console.log("Metadata del pago:", payment.body.metadata);
 
@@ -814,17 +813,17 @@ export const mercadoPagoWebhookController = async (req, res) => {
       // Procesamos el pago exitoso
 
       const resHandle = await handleSuccessfulPayment({ //COMENTADO PORQUE SE REPITE PAYMENTID PORQUE MP LO MANDA VARIAS VECES Y SE INTENTA DUPLICAR EN LA BASE (PERO FUNCIONA IGUAL)
-        prodId: prod_id,
-        nombreEvento: nombre_evento,
-        quantities,
-        mail,
-        state,
-        total,
-        emailHash: email_hash,
-        nombreCompleto: nombre_completo,
-        dni,
-        paymentId,
-        discountCode: discount_code
+          prodId: prod_id,
+          nombreEvento: nombre_evento,
+          quantities,
+          mail,
+          state,
+          total,
+          emailHash: email_hash,
+          nombreCompleto: nombre_completo,
+          dni,
+          paymentId,
+          discountCode: discount_code
       }); //comentado el 29/12/2025
 
       /*await guardarTransaccionExitosa( //agregado el 29/12/2025
@@ -874,29 +873,29 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
 export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
   
-  if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
-      const bulkOps = Object.entries(quantities).filter(([_, quantityObj]) => quantityObj.amount > 0).map(([ticketId, quantityObj]) => ({
-        updateOne: {
-          filter: {
-            "rrpp.mail": mail,
-            "rrpp.ticketsCortesias.ticketIdCortesia": ticketId
-          },
-          update: {
-            $inc: {
-              "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount,
-              "rrpp.$[rrppElem].freeEntregados": quantityObj.amount
-            }
-          },
-          arrayFilters: [
-            { "rrppElem.mail": mail },
-            { "ticketElem.ticketIdCortesia": ticketId }
-          ]
-        }
-      }));
-      await ticketModel.bulkWrite(bulkOps);
-  }
-
   try {
+    
+    if(state === 3){                                                        //si estado = 3 resta la cantidad de cortesias que puede enviar el rrpp
+        const bulkOps = Object.entries(quantities).filter(([_, quantityObj]) => quantityObj.amount > 0).map(([ticketId, quantityObj]) => ({
+          updateOne: {
+            filter: {
+              "rrpp.mail": mail,
+              "rrpp.ticketsCortesias.ticketIdCortesia": ticketId
+            },
+            update: {
+              $inc: {
+                "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": -quantityObj.amount,
+                "rrpp.$[rrppElem].freeEntregados": quantityObj.amount
+              }
+            },
+            arrayFilters: [
+              { "rrppElem.mail": mail },
+              { "ticketElem.ticketIdCortesia": ticketId }
+            ]
+          }
+        }));
+        await ticketModel.bulkWrite(bulkOps);
+    }
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
   const event = await ticketModel.findById(prodId);
 
@@ -1042,17 +1041,17 @@ export const addRRPPController = async (req, res) => {
       _id: prodId,
       'rrpp.mail': rrppMail
     });
-
+    console.log(rrppExist)
     // 2. Si ya existe → enviar email y cortar
     if (rrppExist) {
       await sendColabMail(rrppMail, nombreEvento, eventImg);
-      return res.status(200).json({ msg: 'El colaborador ya existe en este evento' });
+      return res.status(200).json({ msg: 2 });
     }
 
     // 3. Obtener datos del colaborador
     const colabData = await userModel.findOne({ mail: rrppMail });
     if (!colabData) {
-      return res.status(404).json({ msg: 'El usuario no existe en la base de datos' });
+      return res.status(200).json({ msg: 3 });
     }
 
     // 4. Agregar datos como RRPP al evento
@@ -1076,7 +1075,7 @@ export const addRRPPController = async (req, res) => {
     // 5. Enviar correo
     await sendColabMail(rrppMail, nombreEvento, eventImg);
 
-    return res.status(200).json({ msg: 1 });
+    return res.status(200).json({ msg: 2 });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ msg: 'Error en el servidor', error: err.message });

@@ -5,7 +5,6 @@ import { useState } from "react"
 import { formatDate } from "../../../globalscomp/globalscomp"
 import { useContext } from "react"
 import UserContext from "../../../context/userContext"
-import checkWhitePng from "../../../assets/images/check-white.png"
 import calendarPng from "../../../assets/images/calendar.png"
 
 const Staff = () => {
@@ -76,12 +75,12 @@ const Staff = () => {
             }
         }
     }
-
+console.log(producction.tickets)
    return (
   <>
     <div className="min-h-screen py-8 px-4">
       <form onSubmit={(e) => addStaff(e)} className="max-w-6xl mx-auto bg-gray-800 rounded-3xl">
-        {producction.map((p) => (
+        {producction?.tickets?.map((p) => (
           <div key={p._id} className="rounded-3xl shadow-xl overflow-hidden">
             {/* Header con degradado */}
             <div className="bg-gradient-to-r from-amber-600 to-yellow-500 p-6">
@@ -166,7 +165,7 @@ const Staff = () => {
                 </h3>
 
                 <div className="staff-tickets space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                  {p.cortesiaRRPP.map((tck) => (
+                  {p.cortesiaRRPP?.map((tck) => (
                     <div 
                       key={tck._id} 
                       className="bg-gray-900 border-2 border-gray-500 rounded-2xl p-5 hover:shadow-lg transition-all duration-300"
