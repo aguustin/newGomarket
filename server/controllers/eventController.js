@@ -589,32 +589,24 @@ const guardarTransaccionExitosa = async (
   const totalPagoEntradas = Math.round(total / 1.10);
 
   try {
-    const result = await transactionModel.findOneAndUpdate(
-      { paymentId },
-      {
-        $setOnInsert: {
-          prodId,
-          paymentId,
-          transaccionId: paymentId,
-          nombre: nombreCompleto,
-          email: mail,
-          montoPagado: totalPagoEntradas,
-          fecha: new Date()
-        }
-      },
-      {
-        upsert: true,
-        new: false,
-        rawResult: true
-      }
-    );
+    await transactionModel.create({
+      prodId,
+      paymentId,
+      transaccionId: paymentId,
+      nombre: nombreCompleto,
+      email: mail,
+      montoPagado: totalPagoEntradas,
+      fecha: new Date()
+    });
 
-    if (result.lastErrorObject.updatedExisting) {
-      return false; // ya estaba procesado
+    return true;
+
+  } catch (error) {
+    // Si es duplicado → ya estaba procesado
+    if (error.code === 11000) {
+      return false;
     }
 
-    return true; // se insertó ahora
-  } catch (error) {
     console.error("Error guardando transacción:", error);
     throw error;
   }
