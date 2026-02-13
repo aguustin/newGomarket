@@ -579,32 +579,45 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 
 
 
-const guardarTransaccionExitosa = async ( prodId, nombreCompleto, mail, total, paymentId) => {
+const guardarTransaccionExitosa = async (
+  prodId,
+  nombreCompleto,
+  mail,
+  total,
+  paymentId
+) => {
   const totalPagoEntradas = Math.round(total / 1.10);
 
-  const result = await transactionModel.updateOne(
-    {
-      prodId,
-      'compradores.transaccionId': { $ne: paymentId }
-    },
-    {
-      $push: {
-        compradores: {
+  try {
+    const result = await transactionModel.findOneAndUpdate(
+      { paymentId },
+      {
+        $setOnInsert: {
+          prodId,
+          paymentId,
           transaccionId: paymentId,
           nombre: nombreCompleto,
           email: mail,
           montoPagado: totalPagoEntradas,
-          fecha: new Date(),
+          fecha: new Date()
         }
+      },
+      {
+        upsert: true,
+        new: false,
+        rawResult: true
       }
+    );
+
+    if (result.lastErrorObject.updatedExisting) {
+      return false; // ya estaba procesado
     }
-  );
 
-  if (result.modifiedCount === 0) {
-    return false;
+    return true; // se insertó ahora
+  } catch (error) {
+    console.error("Error guardando transacción:", error);
+    throw error;
   }
-
-  return true;
 };
 
 
@@ -659,7 +672,7 @@ export const handleSuccessfulPayment = async (data) => { //ESTE HANDLESUCCESFULP
        console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
       // Marcar en cache para acelerar futuros chequeos
       // await redisClient.set(cacheKey, "true", { EX: 60 * 60 * 24 }); // expira en 24 horas DESCOMENTAR LUEGO QUE ES PARA QUE CONECTE A REDIS
-     // return;
+        return;
     }
 
     // Nuevo pago, generamos QRs y procesamos venta
@@ -1486,9 +1499,10 @@ export const descargarCompradoresController = async (req, res) => {
 
   const transaction = await transactionModel.findOne({prodId: prodId})
 
-  if(!transaction){
-    return res.status(404).send("No se encontro ninguna transacción")
+  if (!transactions.length) {
+    return res.status(404).send("No se encontraron transacciones");
   }
+
 
   const workbook = new ExcelJS.Workbook()
   const worksheet = workbook.addWorksheet('Compradores')
@@ -1498,10 +1512,10 @@ export const descargarCompradoresController = async (req, res) => {
     {header: 'Email', key: 'email', width: 30}
   ]
 
-  transaction.compradores.forEach(comprador => {
+  transactions.forEach(tx => {
     worksheet.addRow({
-      nombre:comprador.nombre,
-      email:comprador.email
+      nombre: tx.nombre,
+      email: tx.email
     })
   })
 
@@ -1516,55 +1530,79 @@ export const descargarCompradoresController = async (req, res) => {
   res.end()
 }
 
-export const refundsFunc = async ({prodId}) => {
-  
-try{
-  await ticketModel.updateOne(
-    {_id: prodId},
-    {
-      $set:{
-        active: false
-      }
+export const refundsFunc = async ({ prodId }) => {
+  try {
+    // 1️⃣ Desactivar el evento
+    await ticketModel.updateOne(
+      { _id: prodId },
+      { $set: { active: false } }
+    );
+
+    // 2️⃣ Traer todos los pagos de ese evento
+    const payments = await transactionModel.find({ prodId });
+
+    if (!payments.length) {
+      return { success: true, fallidos: [] };
     }
-  )
-  const getPaymentsIds = await transactionModel.findOne({prodId: prodId})
-  if (!getPaymentsIds) {
-    return { success: true, fallidos: [] }; 
-  }
-  const refundPromises = getPaymentsIds.compradores?.map((pays) => {
+
+    // 3️⃣ Crear requests de reembolso
+    const refundPromises = payments.map((pay) => {
+      // Si ya fue reembolsado, no volver a intentarlo
+      if (pay.reembolsado) {
+        return Promise.resolve({ skipped: true });
+      }
+
       const idempotencyKey = `refund-${uuidv4()}`;
-      return axios.post(`https://api.mercadopago.com/v1/payments/${pays.transaccionId}/refunds`, 
-        {"amount": pays.montoPagado},
+
+      return axios.post(
+        `https://api.mercadopago.com/v1/payments/${pay.paymentId}/refunds`,
+        { amount: pay.montoPagado },
         {
-          headers:{
-            Authorization:`Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`,
-            'Content-Type': 'application/json',
-            'X-Idempotency-Key': idempotencyKey
+          headers: {
+            Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`,
+            "Content-Type": "application/json",
+            "X-Idempotency-Key": idempotencyKey
           }
         }
-      )
+      );
+    });
+
+    // 4️⃣ Ejecutar todos los reembolsos
+    const results = await Promise.allSettled(refundPromises);
+
+    // 5️⃣ Actualizar estado en DB
+    const fallidos = [];
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const payment = payments[i];
+
+      // Si fue skipped (ya estaba reembolsado)
+      if (result.value?.skipped) continue;
+
+      if (result.status === "fulfilled") {
+        payment.reembolsado = true;
+      } else {
+        fallidos.push({
+          paymentId: payment.paymentId,
+          error: result.reason?.response?.data || result.reason
+        });
+      }
     }
-  )
-  const results = await Promise.allSettled(refundPromises);
 
-  results.forEach((r, i) => {
-    getPaymentsIds.compradores[i].reembolsado = r.status === 'fulfilled';
-  });
+    await Promise.all(payments.map((p) => p.save()));
 
-  await getPaymentsIds.save();
+    if (fallidos.length > 0) {
+      console.warn("Algunos reembolsos fallaron:", fallidos);
+    }
 
-  // Ver resultados
-  const fallidos = results.filter(r => r.status === 'rejected');
-  if (fallidos.length > 0) {
-    console.warn('Algunos reembolsos fallaron:', fallidos);
+    return { success: true, fallidos };
+
+  } catch (err) {
+    console.error("Error en refundsFunc:", err);
+    return { success: false, fallidos: [] };
   }
-  //await transactionModel.deleteOne({prodId: prodId})
-  return { success: true, fallidos };
-}catch(err){
-  console.log(err)
-  return { success: false, fallidos: [] };
-}
-}
+};
 
 export const relateEventsController = async (req, res) => {
   const {prodId, otherId} = req.body
