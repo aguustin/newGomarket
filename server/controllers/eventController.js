@@ -653,6 +653,11 @@ const handleSuccessfulPayment = async ({
       procesarVentaGeneral(nombreEvento, quantities, total)
     ];
 
+    if (rrppMatch && decryptedMail) {
+      console.log('SI EJECUTA LA FUNCION PARA PROCESAR LA VENTA: ', rrppMatch, ' ', decryptedMail)
+      tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
+    }
+    
     await Promise.all(tasks);
 
     return 1;

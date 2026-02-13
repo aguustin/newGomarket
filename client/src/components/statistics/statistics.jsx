@@ -248,7 +248,7 @@ const Statistics = () => {
                                     </div>
                                     
                                     <div className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-gray-700 rounded-xl p-5">
-                                        <p className="text-gray-400 text-sm mb-1">Tickets vendidos</p>
+                                        <p className="text-gray-400 text-sm mb-1">Compras totales</p>
                                         <p className="text-amber-500 text-2xl font-bold mb-3">{prod.totalVentas}</p>
                                         <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">
                                             <img className="w-5 h-5" src={checkPng} alt="" />
