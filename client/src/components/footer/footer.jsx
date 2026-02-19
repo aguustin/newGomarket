@@ -7,7 +7,7 @@ import goPng from "../../assets/bannerR.png"
 
 const Footer = () => {
  return (
-  <footer className="bg-gradient-to-br from-gray-100 to-gray-300 text-white ">
+  <footer className="w-screen bg-gradient-to-br from-gray-100 to-gray-300 text-white ">
     {/* Main Footer Content */}
     <div className="mx-auto px-6 py-12">
       {/* Social Media Section */}

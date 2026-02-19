@@ -633,7 +633,6 @@ const handleSuccessfulPayment = async ({
 
   try {
 
-    // 🔒 Idempotencia en DB
     const guardado = await guardarTransaccionExitosa(
       prodId,
       nombreCompleto,
@@ -647,7 +646,6 @@ const handleSuccessfulPayment = async ({
       return 0;
     }
 
-    // 🔥 Procesos pesados
     const tasks = [
       qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
       procesarVentaGeneral(nombreEvento, quantities, total)
@@ -752,7 +750,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
     return res.sendStatus(200);
   }
 
-  // 🔥 RESPONDEMOS INMEDIATAMENTE
+  // RESPONDEMOS INMEDIATAMENTE
   res.sendStatus(200);
 
   try {
