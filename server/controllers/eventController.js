@@ -450,9 +450,8 @@ const obtenerRRPPDesdeHash = (event, emailHash) => {
   return { rrppMatch: null, decryptedMail: null };
 };
 
-const procesarVentaGeneral = async (event, quantities, total) => {
-  const prodId = event._id;
-
+const procesarVentaGeneral = async (prodId, quantities, total) => {
+  console.log('ENTRO A PROCESAR VENTA GENERAL: ', prodId, ' ', quantities, ' ', total)
   const bulkOps = Object.entries(quantities).map(([ticketId, quantityObj]) => {
     const { amount, free } = quantityObj;
     return {
@@ -461,7 +460,7 @@ const procesarVentaGeneral = async (event, quantities, total) => {
         update: {
           $inc: {
             "tickets.$.ventas": amount,
-            "tickets.$.cantidad": free ? 0 : -amount, // solo decrementa si no es free
+            "tickets.$.cantidad": free ? 0 : -amount,
           },
         },
       },
@@ -469,6 +468,7 @@ const procesarVentaGeneral = async (event, quantities, total) => {
   });
 
   const ventasTotales = Object.values(quantities).reduce((sum, quantityObj) => sum + quantityObj.amount, 0);
+  console.log('VENTAS GENERALES: ', ventasTotales)
 
   await Promise.all([
     ticketModel.updateOne(
@@ -648,7 +648,7 @@ const handleSuccessfulPayment = async ({
 
     const tasks = [
       qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
-      procesarVentaGeneral(nombreEvento, quantities, total)
+      procesarVentaGeneral(prodId, quantities, total)
     ];
 
     if (rrppMatch && decryptedMail) {

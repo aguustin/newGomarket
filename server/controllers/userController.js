@@ -130,7 +130,7 @@ export const verifyAccountController = async (req, res) => {
 export const loginController = async (req, res) => {
     const {mail, contrasenia} = req.body
     const userFinded = await userModel.find({mail: mail})
-    console.log(mail, contrasenia)
+   
     if(userFinded.length > 0){
         const decryptContrasenia = await bcrypt.compare(contrasenia, userFinded[0].contrasenia)
         if(decryptContrasenia){
