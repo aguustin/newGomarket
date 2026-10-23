@@ -1,4 +1,4 @@
-import { pass, user_mail } from "../config.js"
+import { pass, user_mail, urlFront, urlBack, mailEnabled } from "../config.js"
 import userModel from "../models/userModel.js"
 import bcrypt from "bcrypt"
 import nodemailer from 'nodemailer'; 
@@ -34,7 +34,19 @@ export const registerController = async (req, res) => {
     }
     
     const encriptContrasenia = await bcrypt.hash(contrasenia, 12);
-    
+
+    if(!mailEnabled){  //sin mails no hay verificacion: se crea la cuenta directamente
+        await userModel.create({
+            nombreCompleto: nombreCompleto,
+            mail: mail,
+            dni: dni,
+            pais: pais,
+            contrasenia: encriptContrasenia,
+            comisionServicio: 15
+        })
+        return res.status(200).json({msj:1});
+    }
+
     const secret = JWT_SECRET
  
     const token = jwt.sign({nombreCompleto, mail, dni, pais, encriptContrasenia}, secret, {expiresIn: '20m'});
@@ -87,7 +99,7 @@ export const registerController = async (req, res) => {
                 <div class="container">
                     <p>Gracias por registrarte en <strong>Ipasss</strong>. Para completar tu registro y empezar a disfrutar de todos nuestros servicios, necesitamos que verifiques tu dirección de correo electrónico.</p>
                     <p>
-                        <a href="https://gomarket-1-backend.onrender.com/verify_account/${token}" class="button">Verificar mi correo</a>
+                        <a href="${urlBack}/verify_account/${token}" class="button">Verificar mi correo</a>
                     </p>
                     <p>Si no creaste una cuenta en Ipasss, puedes ignorar este correo.</p>
                     <p>¡Bienvenido a <strong>Ipasss</strong>!<br>El equipo de Ipasss</p>
@@ -115,6 +127,11 @@ export const verifyAccountController = async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const { nombreCompleto, mail, dni, pais, encriptContrasenia } = decoded;
 
+    const userExist = await userModel.exists({mail: mail})  //si ya verifico antes no se duplica
+    if(userExist){
+        return res.redirect(`${urlFront}/login`);
+    }
+
     await userModel.create({
             nombreCompleto: nombreCompleto,
             mail: mail,
@@ -124,7 +141,7 @@ export const verifyAccountController = async (req, res) => {
             comisionServicio: 15
     })
 
-    return res.redirect('https://www.ipassi.com/login');
+    return res.redirect(`${urlFront}/login`);
 }
 
 export const loginController = async (req, res) => {
@@ -156,7 +173,7 @@ export const recoverPassController = async (req, res) => {
         from: '"Ipass" <no-reply@ipassi.com>',
         to: [mail],
         subject: `Recuperar contraseña para ${mail} - Ipasss`,
-        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${process.env.URL_FRONT}/recover_password/${token}">Recuperar mi contraseña</a>`
+        html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${urlFront}/recover_password/${token}">Recuperar mi contraseña</a>`
     });  
     res.status(200).json({ok:true})
 

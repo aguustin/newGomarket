@@ -1,9 +1,8 @@
 import mercadopago from 'mercadopago';
-import dotenv from "dotenv";
-dotenv.config()
+import { mpAccessToken } from "../config.js";
 
 mercadopago.configure({
-  access_token: process.env.MP_ACCESS_TOKEN_PROD,
+  access_token: mpAccessToken,
 });
 
 export default mercadopago;

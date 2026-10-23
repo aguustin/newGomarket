@@ -5,11 +5,15 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { LoadingButton } from "../../globalscomp/globalscomp";
 import goOriginalPng from '../../assets/goticketImgs/IPSg.svg'
 
+// reCAPTCHA activable por entorno: VITE_RECAPTCHA_ENABLED=false lo apaga (por ejemplo, en local
+// mientras la clave no es válida). Sin la variable, sigue activo como siempre.
+const CAPTCHA_ENABLED = import.meta.env.VITE_RECAPTCHA_ENABLED !== "false"
+
 const Register = () => {
     const navigate = useNavigate() 
     const [showMsg, setShowMsg] = useState()
     const [showMsgB, setShowMsgB] = useState()
-    const [captchaStatus, setCaptchaStatus] = useState(false)
+    const [captchaStatus, setCaptchaStatus] = useState(!CAPTCHA_ENABLED)
     const [loading, setLoading] = useState(false)
     
      const onSuccess = () => {
@@ -204,12 +208,14 @@ const Register = () => {
         </div>
 
         {/* ReCAPTCHA */}
-        <div className="flex justify-center my-6">
-          <ReCAPTCHA
-            sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
-            onChange={onSuccess}
-          />
-        </div>
+        {CAPTCHA_ENABLED && (
+          <div className="flex justify-center my-6">
+            <ReCAPTCHA
+              sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
+              onChange={onSuccess}
+            />
+          </div>
+        )}
 
         {/* Botón de submit */}
         <div className="mt-6">

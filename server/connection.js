@@ -7,6 +7,7 @@ export const connecDb = async () => {
        console.log("Database connected")
     }catch(err){
         console.log(err)
+        throw err
     }
 
 }

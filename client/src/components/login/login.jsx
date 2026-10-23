@@ -6,11 +6,15 @@ import { recoverPassRequest } from "../../api/userRequests"
 import ReCAPTCHA from "react-google-recaptcha";
 import goOriginalPng from '../../assets/goticketImgs/IPSg.svg'
 
+// reCAPTCHA activable por entorno: VITE_RECAPTCHA_ENABLED=false lo apaga (por ejemplo, en local
+// mientras la clave no es válida). Sin la variable, sigue activo como siempre.
+const CAPTCHA_ENABLED = import.meta.env.VITE_RECAPTCHA_ENABLED !== "false"
+
 const Login = () => {
     const { setSession, message, loginContext} = useContext(UserContext)
     const [showMsg, setShowMsg] = useState('')
     const [recoverPass, setRecoverPass] = useState(false)
-    const [captchaStatus, setCaptchaStatus] = useState(false)
+    const [captchaStatus, setCaptchaStatus] = useState(!CAPTCHA_ENABLED)
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
@@ -256,12 +260,14 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="flex justify-center my-6">
-            <ReCAPTCHA
-              sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
-              onChange={onSuccess}
-            />
-          </div>
+          {CAPTCHA_ENABLED && (
+            <div className="flex justify-center my-6">
+              <ReCAPTCHA
+                sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
+                onChange={onSuccess}
+              />
+            </div>
+          )}
 
           <div className="mt-6">
             {loading ? (

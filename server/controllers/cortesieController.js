@@ -1,4 +1,5 @@
 import { formatDateB } from "../lib/dates.js";
+import { urlFront } from "../config.js";
 import XLSX from 'xlsx';
 import nodemailer from 'nodemailer';
 import { v4 as uuidv4 } from 'uuid';
@@ -111,7 +112,7 @@ export const sendCortesiesController = async (req, res) => {
         await saveToken.save();
 
         // 2. Generar QR
-        const qrData = `${process.env.URL_FRONT}/ticket/validate/${token}`;
+        const qrData = `${urlFront}/ticket/validate/${token}`;
         const qrBase64 = await generateQr(qrData);
         const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64');
 
@@ -274,7 +275,7 @@ export const sendRRPPColabsListController = async (req, res) => {
                 <h2>Ya eres parte del staff del evento ${evento.nombreEvento}</h2>
                 <p>
                   Genera tu link de cobranza
-                  <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${colaborator.email}">
+                  <a href="${urlFront}/get_my_rrpp_events/${colaborator.email}">
                     aquí
                   </a>
                 </p>

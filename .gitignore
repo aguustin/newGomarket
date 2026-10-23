@@ -1,1 +1,5 @@
 /node_modules
+# Archivos de entorno: nunca se versionan (usar los .env.example como plantilla)
+.env
+.env.*
+!.env.example

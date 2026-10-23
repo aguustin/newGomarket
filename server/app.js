@@ -12,7 +12,7 @@ import responseTime from 'response-time'
 
 dotenv.config()
 const app = express()
-connecDb()
+await connecDb() //no aceptar pedidos sin base de datos
 
 //setting
 

@@ -5,7 +5,7 @@ import mercadopago from "../lib/mercadopago.js";
 import QRCode from 'qrcode';
 import nodemailer from 'nodemailer'; 
 import dotenv from 'dotenv';
-import { user_mail, pass } from "../config.js";
+import { user_mail, pass, urlFront, urlBack, mpAccessToken, mailEnabled, isDev } from "../config.js";
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid'
 import userModel from "../models/userModel.js";
@@ -633,6 +633,14 @@ const handleSuccessfulPayment = async ({
 
   try {
 
+    const event = await ticketModel.findOne({ _id: prodId }).lean();
+    if (!event) {
+      console.error("Evento no encontrado:", prodId);
+      return 0;
+    }
+
+    const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
+
     const guardado = await guardarTransaccionExitosa(
       prodId,
       nombreCompleto,
@@ -690,13 +698,13 @@ export const buyEventTicketsController = async (req, res) => {
           email: mail,
         },
         back_urls: {
-          success: `${process.env.URL_BACK}/payment-success`,
-          failure: `${process.env.URL_BACK}/payment-failure`,
-          pending: `${process.env.URL_BACK}/payment-pending`,
+          success: `${urlBack}/payment-success`,
+          failure: `${urlBack}/payment-failure`,
+          pending: `${urlBack}/payment-pending`,
         },
         external_reference: "164382724",
         auto_return: 'approved',
-        notification_url: `${process.env.URL_BACK}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
+        notification_url: `${urlBack}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
         metadata: {
           prod_id: prodId,
           nombre_evento: nombreEvento,
@@ -899,7 +907,8 @@ for (const ticket of filteredTickets) {
     const saveToken = new tokenModel({ token });
     await saveToken.save();
 
-    const qrUrl = `${process.env.URL_FRONT}/ticket/validate/${token}`;
+    const qrUrl = `${urlFront}/ticket/validate/${token}`;
+    if (!mailEnabled && isDev) console.log('[QR sin mail]', ticket.nombreTicket, qrUrl);
     const ticketDate = formatDateB(ticket.fechaDeCierre);
     const eventDate = formatDateB(event.fechaInicio);
     
@@ -962,7 +971,7 @@ async function sendColabMail(rrppMail, nombreEvento, eventImg) {
           <div style="text-align:center; padding:20px 15px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
             <h3 style="font-size:30px; margin:auto;">Ya eres parte del staff del evento ${nombreEvento}</h3>
             <p style="margin-top:20px;">Ya puedes generar tu link de cobranza del evento. Ingresa a este link 
-              <a href="${process.env.URL_FRONT}/get_my_rrpp_events/${rrppMail}">
+              <a href="${urlFront}/get_my_rrpp_events/${rrppMail}">
                 aquí
               </a> y créalo!
             </p>
@@ -1157,7 +1166,7 @@ export const sendQrStaffQrController = async (req, res) => {
               <h3>${mail}, ¡Ingresa al link que esta debajo para crear tu link de pago!</h3>
               ${findRrPp ? `
                 <div style="height:60px;">
-                  <a style="padding:10px; background-color: orange; color:#111827; text-decoration:none;" href="${process.env.URL_FRONT}/get_my_rrpp_events/${mail}">Crear mi link de pago</a>
+                  <a style="padding:10px; background-color: orange; color:#111827; text-decoration:none;" href="${urlFront}/get_my_rrpp_events/${mail}">Crear mi link de pago</a>
                 </div>
                 <img src="${findRrPp.imgEvento || ''}" alt="" style="width:230px; height:230px;"/>
                 <div>
@@ -1393,11 +1402,11 @@ export const generateMyRRPPLinkController = async (req, res) => {  //guardar en 
         $set:{
           'rrpp.$.mailEncriptado': encryptedMail,
           'rrpp.$.mailHash': emailHash,
-          'rrpp.$.linkDePago': `${process.env.URL_FRONT}/buy_tickets/${prodId}/${emailHash}`
+          'rrpp.$.linkDePago': `${urlFront}/buy_tickets/${prodId}/${emailHash}`
         }
       }
     )
-   return res.json({message: `${process.env.URL_FRONT}/buy_tickets/${prodId}/${emailHash}`}).status(200)
+   return res.json({message: `${urlFront}/buy_tickets/${prodId}/${emailHash}`}).status(200)
   }
   return res.json({message: 'Ya tienes tu link de pago'})
 }
@@ -1495,7 +1504,7 @@ export const refundsFunc = async ({ prodId }) => {
         { amount: pay.montoPagado },
         {
           headers: {
-            Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`,
+            Authorization: `Bearer ${mpAccessToken}`,
             "Content-Type": "application/json",
             "X-Idempotency-Key": idempotencyKey
           }
