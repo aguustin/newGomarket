@@ -26,6 +26,7 @@ import MyFavoritesEvents from './components/myFavoritesEvents/myFavoritesEvents'
 import UserInfo from './components/userInfo/userInfo'
 import ProfileCards from './components/seeProfile/seeProfile'
 import BuyersList from './components/buyersList/buyersList'
+import PaymentResult from './components/paymentResult/paymentResult'
 
 
 function AppRoutes() {
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route path="/get_buyers/:prodId" element={<BuyersList/>} />
         <Route path="/rrpp_get_event_free/:prodId/:mail" element={<SendFree />} />
         <Route path="/ticket/validate/:token" element={<TicketQr />} />
+        <Route path="/payment_result" element={<PaymentResult />} />
         <Route path="/statistics/:prodId/:userId" element={<Statistics />} />
         <Route path="/cortesies/:prodId" element={<Cortesies />} />
         <Route path="/new_excel/:prodId" element={<NewCortesie />} />

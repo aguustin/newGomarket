@@ -1,11 +1,10 @@
-import { pass, user_mail, urlFront, urlBack, mailEnabled } from "../config.js"
+import { pass, user_mail, urlFront, urlBack } from "../config.js"
 import userModel from "../models/userModel.js"
 import bcrypt from "bcrypt"
-import nodemailer from 'nodemailer'; 
 import jwt from "jsonwebtoken"
 import ticketModel from "../models/ticketsModel.js";
 import cloudinary from "../middleware/cloudinary.js";
-import { resend } from "../lib/resendDomain.js";
+import { resend, createMailTransport } from "../lib/resendDomain.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
@@ -35,23 +34,11 @@ export const registerController = async (req, res) => {
     
     const encriptContrasenia = await bcrypt.hash(contrasenia, 12);
 
-    if(!mailEnabled){  //sin mails no hay verificacion: se crea la cuenta directamente
-        await userModel.create({
-            nombreCompleto: nombreCompleto,
-            mail: mail,
-            dni: dni,
-            pais: pais,
-            contrasenia: encriptContrasenia,
-            comisionServicio: 15
-        })
-        return res.status(200).json({msj:1});
-    }
-
     const secret = JWT_SECRET
- 
+
     const token = jwt.sign({nombreCompleto, mail, dni, pais, encriptContrasenia}, secret, {expiresIn: '20m'});
 
-    await resend.emails.send({
+    const { error: mailError } = await resend.emails.send({
         from: 'Ipass <no-reply@ipassi.com>',
         to: [mail],
         subject: 'Verifica tu correo para completar tu registro en Ipasss',
@@ -109,7 +96,10 @@ export const registerController = async (req, res) => {
     `,
     });
 
-    
+    if(mailError){  //sin mail no hay forma de verificar: avisar en vez de responder exito
+        return res.status(200).json({msj:'No pudimos enviar el correo de verificación. Intentá de nuevo más tarde'})
+    }
+
     //return res.sendStatus(200)
     /*await userModel.create({
             nombreCompleto: nombreCompleto,
@@ -167,14 +157,15 @@ export const recoverPassController = async (req, res) => {
 
     const token = jwt.sign({mail:mail}, secret, {expiresIn: '20m'});
 
-    console.log("token generated", token)
-
-    await resend.emails.send({
+    const { error: mailError } = await resend.emails.send({
         from: '"Ipass" <no-reply@ipassi.com>',
         to: [mail],
         subject: `Recuperar contraseña para ${mail} - Ipasss`,
         html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${urlFront}/recover_password/${token}">Recuperar mi contraseña</a>`
-    });  
+    });
+    if(mailError){
+        return res.status(200).json({ok:false})
+    }
     res.status(200).json({ok:true})
 
 }
@@ -202,7 +193,7 @@ export const newPasswordController = async (req, res) => {
 
 export const contactController = async (req, res) => {
     const {pais, nombreCompleto, correo, dni, nombreEvento, mensaje} = req.body
-    const transporter = nodemailer.createTransport({
+    const transporter = createMailTransport({
         service: 'gmail',
         auth: {
             user: user_mail,

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { activeDiscount, addRRPPController, buyEventTicketsController, cancelarEventoController, createDiscountController, createEventController, createEventTicketsController, descargarCompradoresController, findDiscountController, generateMyRRPPLinkController, getAllEventsController, getBuyersController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRelateEventsController, getRRPPInfoController, mercadoPagoWebhookController, paymentSuccessController, qrGeneratorController, reactivarEventoController, relateEventsController, sendQrStaffQrController, soldOutEventController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
+import { activeDiscount, addRRPPController, buyEventTicketsController, cancelarEventoController, createDiscountController, createEventController, createEventTicketsController, descargarCompradoresController, findDiscountController, generateMyRRPPLinkController, getAllEventsController, getBuyersController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRelateEventsController, getRRPPInfoController, mercadoPagoWebhookController, paymentConfirmController, paymentReturnController, paymentStatusController, paymentSuccessController, qrGeneratorController, reactivarEventoController, relateEventsController, sendQrStaffQrController, soldOutEventController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -32,7 +32,13 @@ router.post('/sendQrStaff', sendQrStaffQrController)
 
 router.post('/webhook/mercadopago', mercadoPagoWebhookController);
 
-router.get('/payment-success', paymentSuccessController);
+router.get('/payment-success', paymentSuccessController);  //back_url de preferencias viejas
+
+router.get('/payment_return', paymentReturnController);
+
+router.get('/payment_status/:paymentId', paymentStatusController);
+
+router.post('/payment_confirm/:paymentId', paymentConfirmController);
 
 router.get('/get_my_rrpp_events/:mail', getRRPPInfoController)
 

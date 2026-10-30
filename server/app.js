@@ -1,10 +1,12 @@
+import './lib/checkConfig.js' //primero: valida la configuracion antes de cargar el resto
 import express, { json, urlencoded } from "express"
 import morgan from "morgan"
-import { port } from "./config.js"
+import { port, isDev, appEnv } from "./config.js"
 import { connecDb } from "./connection.js"
 import userRoutes from "./routes/userRoutes.js"
 import ticketRoutes from "./routes/ticketRoutes.js"
 import cortesieRoutes from "./routes/cortesieRoutes.js"
+import devMailRoutes from "./routes/devMailRoutes.js"
 import cors from "cors"
 import dotenv from "dotenv"
 import './lib/cron.js'
@@ -28,10 +30,13 @@ app.use(cors(corsOptions))
 app.use(express.text())
 app.use(express.json())
 app.use(urlencoded({extended:true}))
-app.use(morgan("tiny"))
+if (appEnv !== 'test') app.use(morgan("tiny"))
 //routes
 app.use(userRoutes)
 app.use(ticketRoutes)
 app.use(cortesieRoutes)
+if (isDev) app.use(devMailRoutes) //bandeja de mails: solo development/test
 //listeng
-app.listen(port)
+if (appEnv !== 'test') app.listen(port) //los tests usan la app sin abrir el puerto
+
+export default app

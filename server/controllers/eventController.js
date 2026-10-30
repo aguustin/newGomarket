@@ -5,7 +5,7 @@ import mercadopago from "../lib/mercadopago.js";
 import QRCode from 'qrcode';
 import nodemailer from 'nodemailer'; 
 import dotenv from 'dotenv';
-import { user_mail, pass, urlFront, urlBack, mpAccessToken, mailEnabled, isDev } from "../config.js";
+import { user_mail, pass, urlFront, urlBack, mpAccessToken } from "../config.js";
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid'
 import userModel from "../models/userModel.js";
@@ -584,9 +584,12 @@ const guardarTransaccionExitosa = async (
   nombreCompleto,
   mail,
   total,
-  paymentId
+  paymentId,
+  comisionServicio
 ) => {
-  const totalPagoEntradas = Math.round(total / 1.10);
+  //montoPagado = lo reembolsable: el total sin el cargo por servicio del evento (15% si el evento no lo tiene)
+  const comision = Number(comisionServicio ?? 15);
+  const totalPagoEntradas = Math.round(total / (1 + comision / 100));
 
   try {
     await transactionModel.create({
@@ -646,7 +649,8 @@ const handleSuccessfulPayment = async ({
       nombreCompleto,
       mail,
       total,
-      paymentId
+      paymentId,
+      event.comisionServicio
     );
 
     if (!guardado) {
@@ -697,10 +701,10 @@ export const buyEventTicketsController = async (req, res) => {
           surname: nombreCompleto,
           email: mail,
         },
-        back_urls: {
-          success: `${urlBack}/payment-success`,
-          failure: `${urlBack}/payment-failure`,
-          pending: `${urlBack}/payment-pending`,
+        back_urls: {  //MP exige https con auto_return: vuelve al backend y este redirige al frontend (paymentReturnController)
+          success: `${urlBack}/payment_return`,
+          failure: `${urlBack}/payment_return`,
+          pending: `${urlBack}/payment_return`,
         },
         external_reference: "164382724",
         auto_return: 'approved',
@@ -748,30 +752,21 @@ export const buyEventTicketsController = async (req, res) => {
   }
 };
 
-export const mercadoPagoWebhookController = async (req, res) => {
+//Procesa un pago consultandolo a MP: si esta aprobado y no se proceso antes, guarda la transaccion,
+//genera los QR, registra la venta y el comprador. Lo usan el webhook y la confirmacion desde la
+//pagina de resultado; el indice unico de paymentId garantiza que solo uno de los dos lo procese.
+//Devuelve { payment, procesado }. Lanza si MP no responde o no encuentra el pago.
+const procesarPagoMP = async (paymentId, origen) => {
+  paymentId = String(paymentId);
+  const payment = (await mercadopago.payment.findById(paymentId)).body;
 
-  const paymentId = req.query.id || req.query['data.id'];
-  const topic = req.query.topic || req.query.type;
-
-  // Siempre responder si no es payment
-  if (!paymentId || topic !== 'payment') {
-    return res.sendStatus(200);
+  if (payment?.status !== 'approved') {
+    console.log(`Pago ${paymentId} no aprobado aún (${origen}).`);
+    return { payment, procesado: false };
   }
 
-  // RESPONDEMOS INMEDIATAMENTE
-  res.sendStatus(200);
-
   try {
-
-    const payment = await mercadopago.payment.findById(paymentId);
-    const status = payment.body?.status;
-
-    if (status !== 'approved') {
-      console.log(`Pago ${paymentId} no aprobado aún.`);
-      return;
-    }
-
-    const metadata = payment.body.metadata || {};
+    const metadata = payment.metadata || {};
 
     const {
       prod_id,
@@ -787,11 +782,9 @@ export const mercadoPagoWebhookController = async (req, res) => {
       discount_code = null
     } = metadata;
 
-    console.log("Metadata del pago:", metadata);
-
     if (!quantities || !mail || !prod_id || !total) {
-      console.error("Metadata incompleta:", metadata);
-      return;
+      console.error(`Metadata incompleta en el pago ${paymentId} (${origen}):`, Object.keys(metadata));
+      return { payment, procesado: false };
     }
 
     const resHandle = await handleSuccessfulPayment({
@@ -819,8 +812,32 @@ export const mercadoPagoWebhookController = async (req, res) => {
         telefono: parseInt(telefono)
       });
 
+      console.log(`Pago ${paymentId} procesado (${origen}).`);
     }
 
+    return { payment, procesado: resHandle === 1 };
+
+  } catch (err) {
+    console.error(`Error procesando el pago ${paymentId} (${origen}):`, err);
+    return { payment, procesado: false };
+  }
+};
+
+export const mercadoPagoWebhookController = async (req, res) => {
+
+  const paymentId = req.query.id || req.query['data.id'];
+  const topic = req.query.topic || req.query.type;
+
+  // Siempre responder si no es payment
+  if (!paymentId || topic !== 'payment') {
+    return res.sendStatus(200);
+  }
+
+  // RESPONDEMOS INMEDIATAMENTE
+  res.sendStatus(200);
+
+  try {
+    await procesarPagoMP(paymentId, 'webhook');
   } catch (err) {
     console.error("Error procesando webhook:", err);
   }
@@ -908,7 +925,6 @@ for (const ticket of filteredTickets) {
     await saveToken.save();
 
     const qrUrl = `${urlFront}/ticket/validate/${token}`;
-    if (!mailEnabled && isDev) console.log('[QR sin mail]', ticket.nombreTicket, qrUrl);
     const ticketDate = formatDateB(ticket.fechaDeCierre);
     const eventDate = formatDateB(event.fechaInicio);
     
@@ -1425,6 +1441,56 @@ export const paymentSuccessController = async (req, res) => {
   } catch (error) {
     console.error('Error al verificar pago:', error);
     res.status(500).send('Error interno');
+  }
+};
+
+//Vuelta desde MP: redirige a la pagina de resultado del frontend con los mismos parametros.
+//El destino es siempre urlFront (no se puede usar para redirigir a otro sitio)
+export const paymentReturnController = (req, res) => {
+  const query = new URLSearchParams(req.query).toString();
+  return res.redirect(`${urlFront}/payment_result${query ? `?${query}` : ''}`);
+};
+
+const paymentSummary = ({ status, status_detail, metadata }) => ({
+  status,
+  statusDetail: status_detail,
+  nombreEvento: metadata?.nombre_evento ?? null,
+  prodId: metadata?.prod_id ?? null
+});
+
+const respondMpError = (res, error, accion) => {
+  const notFound = error?.status === 404;
+  console.error(`Error ${accion}:`, error?.status, error?.message);
+  return res.status(notFound ? 404 : 502).json({ status: notFound ? 'not_found' : 'unavailable' });
+};
+
+const isPaymentId = (id) => /^\d+$/.test(String(id));
+
+//Estado real de un pago consultado a MP. No confia en el status que trae la URL de retorno de MP.
+//Solo lectura: no procesa el pago.
+export const paymentStatusController = async (req, res) => {
+  const { paymentId } = req.params;
+  if (!isPaymentId(paymentId)) return res.status(400).json({ status: 'invalid' });
+
+  try {
+    const payment = await mercadopago.payment.findById(paymentId);
+    return res.status(200).json(paymentSummary(payment.body));
+  } catch (error) {
+    return respondMpError(res, error, 'consultando el estado del pago');
+  }
+};
+
+//La pagina /payment_result lo llama al volver de MP: si el pago esta aprobado y el webhook
+//todavia no lo proceso (o nunca llego), lo procesa aca. Mismo procesamiento e idempotencia que el webhook.
+export const paymentConfirmController = async (req, res) => {
+  const { paymentId } = req.params;
+  if (!isPaymentId(paymentId)) return res.status(400).json({ status: 'invalid' });
+
+  try {
+    const { payment, procesado } = await procesarPagoMP(paymentId, 'pagina de resultado');
+    return res.status(200).json({ ...paymentSummary(payment), procesado });
+  } catch (error) {
+    return respondMpError(res, error, 'confirmando el pago');
   }
 };
 

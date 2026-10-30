@@ -80,6 +80,9 @@ const Login = () => {
             setTimeout(() => {
                 setShowMsg('')
             }, 3000)
+        }else{
+            setLoading(false)
+            setShowMsg('No pudimos enviar el correo. Intentá de nuevo más tarde')
         }
     }
 

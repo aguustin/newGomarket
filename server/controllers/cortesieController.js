@@ -1,7 +1,7 @@
 import { formatDateB } from "../lib/dates.js";
 import { urlFront } from "../config.js";
 import XLSX from 'xlsx';
-import nodemailer from 'nodemailer';
+
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 import ticketModel from "../models/ticketsModel.js";
@@ -9,7 +9,7 @@ import cortesieModel from "../models/cortesiesModel.js"
 import jwt from 'jsonwebtoken';
 import tokenModel from "../models/tokenModel.js";
 import rrppExcelModel from "../models/rrppExcelModel.js";
-import { resend } from "../lib/resendDomain.js";
+import { resend, createMailTransport } from "../lib/resendDomain.js";
 
 export const getAllExcelsInfoController = async (req, res) => {
     const {userId, prodId} = req.params
@@ -93,7 +93,7 @@ export const sendCortesiesController = async (req, res) => {
     const cortesiaDoc = await cortesieModel.findById(cortesieId);
     const usuarios = cortesiaDoc.people;
 
-    const transporter = nodemailer.createTransport({
+    const transporter = createMailTransport({
       service: 'gmail',
       auth: { user: process.env.USER_MAIL, pass: process.env.PASS } /*process.env.USER_MAIL*/
     });
