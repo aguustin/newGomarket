@@ -151,7 +151,7 @@ export const createDiscountCodeRequest = async ({prodId, idDiscount, cantidadDes
 
 export const activeDiscountCodeRequest = async ({discountCode}) => axios.post(`${import.meta.env.VITE_URL}/active_discount`, {discountCode})
 
-export const findDiscountCodeRequest = async ({discountCode}) => axios.get(`${import.meta.env.VITE_URL}/find_discount/${discountCode}`)
+export const findDiscountCodeRequest = async ({discountCode, prodId}) => axios.get(`${import.meta.env.VITE_URL}/find_discount/${encodeURIComponent(discountCode)}`, { params: { prodId } })
 export const getPaymentStatusRequest = (paymentId) => axios.get(`${import.meta.env.VITE_URL}/payment_status/${paymentId}`)
 
 export const confirmPaymentRequest = (paymentId) => axios.post(`${import.meta.env.VITE_URL}/payment_confirm/${paymentId}`)

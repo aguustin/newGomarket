@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import cloudinary from "../middleware/cloudinary.js";
 import ticketModel from "../models/ticketsModel.js";
 import mercadopago from "../lib/mercadopago.js";
@@ -20,6 +20,7 @@ import { paymentQueue, refundQueue } from "../queues/paymentQueue.js";
 import { resend } from "../lib/resendDomain.js";
 import purchaseModel from "../models/purchaseModel.js";
 import discountModel from "../models/discountModel.js";
+import { calcularCompra } from "../lib/pricing.js";
 
 dotenv.config();
 
@@ -590,11 +591,13 @@ const guardarTransaccionExitosa = async (
   mail,
   total,
   paymentId,
-  comisionServicio
+  comisionServicio,
+  montoEntradas
 ) => {
-  //montoPagado = lo reembolsable: el total sin el cargo por servicio del evento (15% si el evento no lo tiene)
+  //montoPagado = lo reembolsable: entradas sin el cargo por servicio y con el descuento.
+  //Lo calcula /buy (metadata monto_entradas); las preferencias anteriores a ese cambio no lo traen y se deduce del total
   const comision = Number(comisionServicio ?? 15);
-  const totalPagoEntradas = Math.round(total / (1 + comision / 100));
+  const totalPagoEntradas = typeof montoEntradas === 'number' ? montoEntradas : Math.round(total / (1 + comision / 100));
 
   try {
     await transactionModel.create({
@@ -636,7 +639,8 @@ const handleSuccessfulPayment = async ({
   nombreCompleto,
   dni,
   paymentId,
-  discountCode
+  discountCode,
+  montoEntradas
 }) => {
 
   try {
@@ -655,7 +659,8 @@ const handleSuccessfulPayment = async ({
       mail,
       total,
       paymentId,
-      event.comisionServicio
+      event.comisionServicio,
+      montoEntradas
     );
 
     if (!guardado) {
@@ -675,6 +680,9 @@ const handleSuccessfulPayment = async ({
     
     await Promise.all(tasks);
 
+    //El uso del descuento se consume una sola vez, con el pago ya registrado
+    await consumirDescuento(discountCode, prodId, `pago ${paymentId}`);
+
     return 1;
 
   } catch (error) {
@@ -683,77 +691,114 @@ const handleSuccessfulPayment = async ({
   }
 };
 
+//Descuento valido: mismo evento y con usos disponibles. No consume el uso (eso pasa al aprobarse el pago)
+const buscarDescuento = async (discountCode, prodId) => {
+  if (typeof discountCode !== 'string' || discountCode.trim() === '') return null
+  return discountModel.findOne({ idDescuento: discountCode.trim(), prodId: String(prodId), cantidadDescuentos: { $gt: 0 } }).lean()
+}
+
+//Consume un uso de forma atomica. Si el cupo se agoto entre la compra y el pago, el comprador ya pago
+//con descuento: se registra y no se le cobra la diferencia
+const consumirDescuento = async (discountCode, prodId, origen) => {
+  if (!discountCode) return
+  const consumido = await discountModel.findOneAndUpdate(
+    { idDescuento: discountCode, prodId: String(prodId), cantidadDescuentos: { $gt: 0 } },
+    { $inc: { cantidadDescuentos: -1 } },
+    { new: true }
+  )
+  if (!consumido) console.warn(`Descuento ${discountCode} sin cupo al confirmar (${origen}): se respeta el precio pagado`)
+}
+
+const MAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+//El precio, el descuento y la disponibilidad se calculan aca con los datos de la base (lib/pricing.js).
+//Del navegador solo se usan las cantidades elegidas, los datos del comprador y el total que mostro la
+//pagina, que tiene que coincidir con el calculado: si no, 409 con el total correcto y no se cobra nada.
 export const buyEventTicketsController = async (req, res) => {
-  const { prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni, telefono, discountCode } = req.body;  //guardar el mail del rrpp tambien encriptandolo con un jwt
-  
-  if(total <= 0){
-    qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni)
-    return res.status(200).json(3)
+  const { prodId, quantities, mail, total: totalMostrado, emailHash, nombreCompleto, dni, telefono, discountCode } = req.body ?? {};
+
+  if (!isValidObjectId(prodId)) return res.status(400).json({ code: 'EVENTO_INEXISTENTE', error: 'Evento inválido' })
+  if (typeof mail !== 'string' || !MAIL_RE.test(mail.trim())) return res.status(400).json({ code: 'DATOS_COMPRADOR', error: 'Email inválido' })
+  if (typeof nombreCompleto !== 'string' || nombreCompleto.trim() === '' || !dni || !telefono) {
+    return res.status(400).json({ code: 'DATOS_COMPRADOR', error: 'Completá nombre, DNI y teléfono' })
   }
- 
+
   try {
-      const preference = {
-        items: [
-          {
-            title: `Ticket para ${nombreEvento}`,
-            quantity: 1,
-            unit_price: total, // aca va "total"
-            currency_id: 'ARS',
-          },
-        ],
-        payer: {
-          name: nombreCompleto,
-          surname: nombreCompleto,
-          email: mail,
+    const event = await ticketModel.findById(prodId).lean()
+
+    let descuento = null
+    if (discountCode) {
+      descuento = await buscarDescuento(discountCode, prodId)
+      if (!descuento) return res.status(409).json({ code: 'DESCUENTO_INVALIDO', error: 'El código de descuento no es válido para este evento o ya no tiene usos' })
+    }
+
+    const compra = calcularCompra(event, quantities, { descuento })
+    if (!compra.ok) return res.status(compra.status).json({ code: compra.code, error: compra.error })
+
+    if (typeof totalMostrado !== 'number' || Math.abs(totalMostrado - compra.total) > 1) {
+      return res.status(409).json({ code: 'TOTAL_DISTINTO', error: 'El total cambió. Revisá tu compra antes de pagar', total: compra.total })
+    }
+
+    const comprador = { mail: mail.trim(), nombreCompleto: nombreCompleto.trim(), dni, telefono: String(telefono) }
+
+    //Gratis solo si lo calcula el servidor (entradas de precio 0 o 100% de descuento): se emite sin pasar por MP
+    if (compra.total === 0) {
+      const enviados = await qrGeneratorController(prodId, compra.quantities, comprador.mail, 1, comprador.nombreCompleto, dni)
+      if (!enviados) return res.status(502).json({ code: 'ENTRADAS_NO_ENVIADAS', error: 'No pudimos enviar tus entradas. Intentá de nuevo' })
+      await procesarVentaGeneral(prodId, compra.quantities, 0)
+      await purchaseModel.create({ prodId, nombreCompleto: comprador.nombreCompleto, email: comprador.mail, dni, telefono: parseInt(comprador.telefono) })
+      await consumirDescuento(descuento?.idDescuento, prodId, 'compra gratuita')
+      return res.status(200).json(3)
+    }
+
+    const preference = {
+      items: [
+        {
+          title: `Ticket para ${event.nombreEvento}`,
+          quantity: 1,
+          unit_price: compra.total,
+          currency_id: 'ARS',
         },
-        back_urls: {  //MP exige https con auto_return: vuelve al backend y este redirige al frontend (paymentReturnController)
-          success: `${urlBack}/payment_return`,
-          failure: `${urlBack}/payment_return`,
-          pending: `${urlBack}/payment_return`,
-        },
-        external_reference: "164382724",
-        auto_return: 'approved',
-        notification_url: `${urlBack}/webhook/mercadopago`,  //esto va descomentado para ejecutar "handleSuccesfulPayment" en producción
-        metadata: {
-          prod_id: prodId,
-          nombre_evento: nombreEvento,
-          quantities,
-          mail,
-          state,
-          total,
-          email_hash: emailHash,
-          nombre_completo: nombreCompleto,
-          dni,
-          telefono: telefono.toString(),
-          discount_code: discountCode ?? null
-        },
+      ],
+      payer: {
+        name: comprador.nombreCompleto,
+        surname: comprador.nombreCompleto,
+        email: comprador.mail,
+      },
+      back_urls: {  //MP exige https con auto_return: vuelve al backend y este redirige al frontend (paymentReturnController)
+        success: `${urlBack}/payment_return`,
+        failure: `${urlBack}/payment_return`,
+        pending: `${urlBack}/payment_return`,
+      },
+      external_reference: "164382724",
+      auto_return: 'approved',
+      notification_url: `${urlBack}/webhook/mercadopago`,
+      metadata: {
+        prod_id: String(prodId),
+        nombre_evento: event.nombreEvento,
+        quantities: compra.quantities,
+        mail: comprador.mail,
+        state: 1,
+        total: compra.total,
+        monto_entradas: compra.montoEntradas,  //reembolsable (sin cargo por servicio, con descuento)
+        email_hash: emailHash ?? null,
+        nombre_completo: comprador.nombreCompleto,
+        dni,
+        telefono: comprador.telefono,
+        discount_code: descuento?.idDescuento ?? null
+      },
     };
 
     const response = await mercadopago.preferences.create(preference);
 
-    if(response.body && response.body.init_point){
-     // await handleSuccessfulPayment({ prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni });//esta va en "desarrollo - dev" y lo reemplazo con el paymentQueue para probar si funciona mas rapido
-      
-      /*await paymentQueue.add('ejecutar-pago', 
-        {prodId, nombreEvento, quantities, mail, state, total, emailHash, nombreCompleto, dni},
-        {
-          attempts: 3, // Reintentar 3 veces si falla
-          backoff: {
-            type: 'exponential', // o 'fixed'
-            delay: 5000 // 5 segundos de espera antes de reintentar
-          },
-          removeOnComplete: true, // limpia el job si se completó
-          removeOnFail: false // puedes dejarlo en false para revisar errores
-        }
-      )*/
-      
-      return res.status(200).json({
-        init_point: response.body.init_point,
-      });
+    if (response.body && response.body.init_point) {
+      return res.status(200).json({ init_point: response.body.init_point, total: compra.total });
     }
+    console.error('Mercado Pago no devolvio init_point');
+    return res.status(502).json({ message: 'Error creando la preferencia' });
   } catch (error) {
-    console.error('Error al crear preferencia:', error);
-    res.status(500).json({ message: 'Error creando la preferencia' });
+    console.error('Error al crear preferencia:', error?.message ?? error);
+    return res.status(500).json({ message: 'Error creando la preferencia' });
   }
 };
 
@@ -784,7 +829,8 @@ const procesarPagoMP = async (paymentId, origen) => {
       nombre_completo,
       dni,
       telefono,
-      discount_code = null
+      discount_code = null,
+      monto_entradas
     } = metadata;
 
     if (!quantities || !mail || !prod_id || !total) {
@@ -803,7 +849,8 @@ const procesarPagoMP = async (paymentId, origen) => {
       nombreCompleto: nombre_completo,
       dni,
       paymentId,
-      discountCode: discount_code
+      discountCode: discount_code,
+      montoEntradas: monto_entradas
     });
 
     // Solo si fue realmente nuevo
@@ -1782,40 +1829,21 @@ export const createDiscountController = async (req, res) => {
   return res.status(200).json({message: 'El descuento fue creado con exito' })
 }
 
-export const activeDiscount= async (discountCode) => {
-  //const {discountCode} = req.body
-    
-    const discount = await discountModel.findOneAndUpdate(
-      {
-        idDescuento: discountCode,
-        cantidadDescuentos: { $gt: 0 }
-      },
-      {
-        $inc: { cantidadDescuentos: -1 }
-      },
-      {
-        new: true
-      }
-    );
-
-    if(!discount){
-      return
-    }
-
-    if(discount.cantidadDescuentos <= 0){
-      await discountModel.deleteOne({discountCode: discount.discountCode})
-    }
+//El uso de un descuento ya no se consume desde el navegador: lo consume el servidor al aprobarse el pago
+//(consumirDescuento). Esta ruta queda para clientes viejos y no modifica nada.
+//Antes borraba con un filtro invalido ({discountCode: undefined} = el primer descuento de la coleccion)
+export const activeDiscount = async (req, res) => {
+  return res.status(410).json({ message: 'El descuento se aplica automáticamente al pagar' })
 }
 
 export const findDiscountController = async (req, res) => {
   const {discountCode} = req.params
+  const {prodId} = req.query
 
-  const discount = await discountModel.findOne(
-    {
-      idDescuento: discountCode,
-      cantidadDescuentos: { $gt: 0 }
-    }
-  );
+  //Con prodId (pagina de compra actual) solo vale un descuento de ese evento
+  const discount = prodId
+    ? await buscarDescuento(discountCode, prodId)
+    : await discountModel.findOne({ idDescuento: discountCode, cantidadDescuentos: { $gt: 0 } });
 
     if(!discount){
       return res.status(200).json({message: 'No hay mas descuentos disponibles' })

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { E2E_BACK } from '../playwright.config.js'
 import { uniqueMail, registerAndVerify, login, createEventViaApi } from './helpers.js'
 
 //Compra hasta el checkout de Mercado Pago. La preferencia se crea DE VERDAD en el sandbox de MP
@@ -89,4 +90,52 @@ test('ticket con la fecha de cierre vencida: "Venta cerrada" y no se puede elegi
   await expect(page.getByText('Venta cerrada')).toBeVisible()
   await expect(page.getByRole('button', { name: '+' })).toHaveCount(0)
   await expect(page.getByText(/Total:\s*\$\s*0,00/)).toBeVisible()
+})
+
+test('codigo de descuento: se aplica en pantalla y el servidor cobra el total con descuento', async ({ page, request }) => {
+  const mail = uniqueMail('descuento')
+  await registerAndVerify(page, request, { mail })
+  await login(page, { mail })
+  await expect(page).toHaveURL(/\/$/)
+  const userId = await page.evaluate(() => JSON.parse(localStorage.getItem('session')).userFinded[0]._id)
+  const eventId = await createEventViaApi(request, { userId, prodMail: mail, nombreEvento: `Descuento E2E ${Date.now()}`, precio: 20000 })
+  const code = `E2E${Date.now()}`
+  expect((await request.post(`${E2E_BACK}/create_discount`, { data: { prodId: eventId, idDiscount: code, cantidadDescuentos: 5, numeroDescuento: 10 } })).ok()).toBe(true)
+
+  await page.goto(`/buy_tickets/${eventId}`)
+  await page.getByRole('button', { name: '+' }).first().click()
+  await page.getByRole('button', { name: '+' }).first().click()
+  await expect(page.getByText(/Total:\s*\$\s*46\.000/)).toBeVisible()
+
+  //Codigo inexistente: avisa y no cambia el total
+  await page.locator('input[type="text"]').last().fill('NO-EXISTE')
+  await page.getByRole('button', { name: 'Aplicar descuento' }).click()
+  await expect(page.getByText('El código de descuento no es válido')).toBeVisible()
+  await expect(page.getByText(/Total:\s*\$\s*46\.000/)).toBeVisible()
+
+  await page.locator('input[type="text"]').last().fill(code)
+  await page.getByRole('button', { name: 'Aplicar descuento' }).click()
+  await expect(page.getByText('Descuento aplicado: 10%')).toBeVisible()
+  await expect(page.getByText(/Total:\s*\$\s*41\.400/)).toBeVisible()
+
+  await page.locator('input[name="nombreCompleto"]').fill('Comprador E2E')
+  await page.locator('input[name="mail"]').fill('comprador@ipass-e2e.local')
+  await page.locator('input[name="repetirMail"]').fill('comprador@ipass-e2e.local')
+  await page.locator('input[name="dni"]').fill('30111222')
+  await page.locator('input[name="telefono"]').fill('1155550000')
+
+  let sent, buyStatus, buyBody
+  await page.route(/mercadopago\.com/, (route) => route.abort())
+  await page.route(/\/buy$/, async (route) => {
+    sent = route.request().postDataJSON()
+    const response = await route.fetch()
+    buyStatus = response.status()
+    buyBody = await response.json()
+    await route.fulfill({ response })
+  })
+  await page.getByRole('button', { name: 'Comprar' }).click()
+  await expect.poll(() => buyStatus).toBe(200)
+  expect(sent.total).toBe(41400)
+  expect(sent.discountCode).toBe(code)
+  expect(buyBody.total).toBe(41400)
 })

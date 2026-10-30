@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { Link, useParams } from "react-router"
-import { activeDiscountCodeRequest, buyTicketsRequest, findDiscountCodeRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
+import { buyTicketsRequest, findDiscountCodeRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
 import { formatDate, formatDateB, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
 import checkWhitePng from "../../assets/images/check-white.png"
 import mapPng from "../../assets/botones/map.png"
@@ -25,7 +25,9 @@ const BuyTicket = () => {
     // eslint-disable-next-line no-unused-vars
     const [totalQuantity, setTotalQuantity] = useState(0)
     const [discountCode, setDiscountValueCode] = useState(0)
-    const [discountValue, setDiscountValue] = useState(0)
+    const [appliedDiscount, setAppliedDiscount] = useState(null)  //{ code, pct } validado contra el evento
+    const [serverMsg, setServerMsg] = useState('')
+    const [reloadKey, setReloadKey] = useState(0)
     const [showMsg, setShowMsg] = useState(0)
     const [loading, setLoading] = useState(false)
     const [showMap, setShowMap] = useState(false)
@@ -50,7 +52,7 @@ const BuyTicket = () => {
     }
   };
   fetchData();
-}, [session, prodId, navigate]);
+}, [session, prodId, navigate, reloadKey]);
 
     const currencyFormatter = new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -112,40 +114,37 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
 };
 
 
-let total = prod.reduce((accProd, p) => {
-  const comision = p?.comisionServicio ?? 15; // 15% si no existe (igual que el backend)
-  const totalTickets = p.tickets.reduce((accTck, tck) => {
-    const qty = quantities[tck._id]?.amount || 0;
-    const subtotal = qty * tck.precio;
-    return accTck + subtotal + subtotal * (comision / 100);
-  }, 0);
-  return accProd + totalTickets;
-}, 0);
+//Mismo calculo que el servidor (server/lib/pricing.js) sobre el evento que se esta viendo.
+//Es solo para mostrar: el servidor recalcula y, si no coincide, rechaza la compra y devuelve el total correcto
+const redondear = (n) => Math.round(n * 100) / 100
+const eventToRender = selectedEvent || prod[0];
+const comision = eventToRender?.comisionServicio ?? 15; // 15% si no existe (igual que el backend)
+const subtotal = (eventToRender?.tickets ?? []).reduce((acc, tck) => acc + (quantities[tck._id]?.amount || 0) * tck.precio, 0)
+const descuentoPct = appliedDiscount?.pct ?? 0
+const total = redondear(subtotal * (1 + comision / 100) * (1 - descuentoPct / 100))
 
 const activeDiscountCode = async (e) => {
   e.preventDefault()
- 
-  if(discountCode?.length > 0){
-    const res = await findDiscountCodeRequest({discountCode})
-    console.log(res)
-    if(res.data.discount){
-      setDiscountValue(res.data.discount.numeroDescuento)
-      return console.log('bien, salio')
-    }
+  setServerMsg('')
+  const code = String(discountCode || '').trim()
+  if(code.length === 0) return
 
-    return console.log('no se encuentra el descuento')
+  try {
+    const res = await findDiscountCodeRequest({discountCode: code, prodId: eventToRender?._id})
+    if(res.data.discount){
+      setAppliedDiscount({ code, pct: Number(res.data.discount.numeroDescuento) || 0 })
+      return
+    }
+    setAppliedDiscount(null)
+    setServerMsg('El código de descuento no es válido para este evento o ya no tiene usos')
+  } catch {
+    setServerMsg('No pudimos verificar el código de descuento. Intentá de nuevo')
   }
 }
 
-
-
-    /*const total = prod.flatMap(p => p.tickets).reduce((acc, tck) => { //version estable pero sin comision
-        const qty = quantities[tck._id]?.amount || 0;
-        return acc + qty * tck.precio + (qty * tck.precio) / 13/*tck?.comisionServicio;
-    }, 0);*/
-
     const buyTickets = async (e) => {
         e.preventDefault();
+        setServerMsg('')
         const mail = e.target.elements.mail.value;
         const repetirMail = e.target.elements.repetirMail.value
         const nombreCompleto = e.target.elements.nombreCompleto.value
@@ -169,11 +168,9 @@ const activeDiscountCode = async (e) => {
         }
 
         //Por si la venta cerro mientras la pagina estaba abierta: se quitan esos tickets y se avisa
-        const eventos = [...prod, ...relates]
         const cerrados = Object.keys(quantities).filter((ticketId) => {
-            const evento = eventos.find((ev) => ev.tickets?.some((t) => t._id === ticketId))
-            const ticket = evento?.tickets.find((t) => t._id === ticketId)
-            return !ticket || ventaCerrada(evento, ticket)
+            const ticket = eventToRender?.tickets.find((t) => t._id === ticketId)
+            return !ticket || ventaCerrada(eventToRender, ticket)
         })
         if (cerrados.length > 0) {
             setQuantities((prev) => Object.fromEntries(Object.entries(prev).filter(([id]) => !cerrados.includes(id))))
@@ -183,27 +180,35 @@ const activeDiscountCode = async (e) => {
 
         try {
             setLoading(true)
-            const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono, discountCode);
-            
-            if (!data?.init_point) {
+            //Se compra el evento que se esta viendo (puede ser otra fecha relacionada). El total es el que se muestra
+            const data = await buyTicketsRequest(eventToRender._id, eventToRender.nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono, appliedDiscount?.code ?? null);
+            setLoading(false)
+
+            if (data === 3) {  //entradas gratis: el servidor las emitio sin pasar por Mercado Pago
+                setQuantities({})
+                setShowMsg(5)
                 return;
             }
-          /*  const updateSessionInfo = await getUserProfileRequest(session?.userFinded[0]?._id)
-
-            if (updateSessionInfo.length > 0) {
-                localStorage.setItem('session', JSON.stringify(updateSessionInfo?.data));
-                const sess = JSON.parse(localStorage.getItem('session'))
-                setSession(sess);
-            } LO ULTIMO AGREGADO!!*/ 
-            setLoading(false)
+            if (!data?.init_point) {
+                setServerMsg('No pudimos iniciar el pago. Intentá de nuevo')
+                return;
+            }
             window.location.href = data.init_point;
         } catch (error) {
             setLoading(false)
-            console.error("Error en handlePayment:", error);
+            const body = error?.response?.data
+            setServerMsg(body?.error || 'No pudimos iniciar el pago. Intentá de nuevo')
+            //Cambiaron precios, disponibilidad o el descuento: se recargan los datos del evento
+            if (['TOTAL_DISTINTO', 'SIN_STOCK', 'AGOTADO', 'VENTA_CERRADA', 'TICKET_NO_DISPONIBLE'].includes(body?.code)) setReloadKey((k) => k + 1)
+            if (body?.code === 'DESCUENTO_INVALIDO') setAppliedDiscount(null)
         }
     }
 
    const handleEventChange = (eventId) => {
+        //Al cambiar de fecha se empieza de cero: las entradas y el descuento son de cada evento
+        setQuantities({})
+        setAppliedDiscount(null)
+        setServerMsg('')
         if (eventId === '') {
             setSelectedEvent(null);
         } else {
@@ -211,8 +216,7 @@ const activeDiscountCode = async (e) => {
             setSelectedEvent(foundEvent);
         }
     };
-
-    const eventToRender = selectedEvent || prod[0];
+    
     
     return(
          
@@ -396,7 +400,7 @@ const activeDiscountCode = async (e) => {
                 </div>
                 <div className="flex flex-wrap justify-center items-center mt-4">
                   <p>Codigo de descuento:</p>
-                  <input className="border-[1px] border-gray-400 rounded-lg p-2 ml-1 text-gray-300!" type="text" onChange={(e) => setDiscountValueCode(e.target.value)}></input>
+                  <input className="border-[1px] border-gray-400 rounded-lg p-2 ml-1 text-gray-300!" type="text" onChange={(e) => { setDiscountValueCode(e.target.value); setAppliedDiscount(null) }}></input>
                   <button className="flex items-center py-2 px-3 ml-2 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-lg max-[630px]:mt-3" type="button" onClick={(e) => activeDiscountCode(e)}>
                     <svg viewBox="0 0 24 24" width={24} className="mr-1" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3.9889 14.6604L2.46891 13.1404C1.84891 12.5204 1.84891 11.5004 2.46891 10.8804L3.9889 9.36039C4.2489 9.10039 4.4589 8.59038 4.4589 8.23038V6.08036C4.4589 5.20036 5.1789 4.48038 6.0589 4.48038H8.2089C8.5689 4.48038 9.0789 4.27041 9.3389 4.01041L10.8589 2.49039C11.4789 1.87039 12.4989 1.87039 13.1189 2.49039L14.6389 4.01041C14.8989 4.27041 15.4089 4.48038 15.7689 4.48038H17.9189C18.7989 4.48038 19.5189 5.20036 19.5189 6.08036V8.23038C19.5189 8.59038 19.7289 9.10039 19.9889 9.36039L21.5089 10.8804C22.1289 11.5004 22.1289 12.5204 21.5089 13.1404L19.9889 14.6604C19.7289 14.9204 19.5189 15.4304 19.5189 15.7904V17.9403C19.5189 18.8203 18.7989 19.5404 17.9189 19.5404H15.7689C15.4089 19.5404 14.8989 19.7504 14.6389 20.0104L13.1189 21.5304C12.4989 22.1504 11.4789 22.1504 10.8589 21.5304L9.3389 20.0104C9.0789 19.7504 8.5689 19.5404 8.2089 19.5404H6.0589C5.1789 19.5404 4.4589 18.8203 4.4589 17.9403V15.7904C4.4589 15.4204 4.2489 14.9104 3.9889 14.6604Z" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M9 15L15 9" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M14.4945 14.5H14.5035" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M9.49451 9.5H9.50349" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                     <p className="text-[#111827]">Aplicar descuento</p>
@@ -407,10 +411,13 @@ const activeDiscountCode = async (e) => {
                 </div>
                 <div className="relative h-[auto] mt-4">
                     {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
-                    <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total -  (total * discountValue) / 100)}</p>
+                    <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total)}</p>
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
                     {showMsg === 4 && <p className="text-md text-orange-500! h-[0px]">La venta de alguno de los tickets elegidos ya cerró. Lo quitamos de tu compra</p>}
+                    {showMsg === 5 && <p className="text-md text-green-500! text-center">¡Listo! Te enviamos las entradas por email</p>}
+                    {serverMsg && <p className="text-md text-orange-500! text-center">{serverMsg}</p>}
+                    {appliedDiscount && <p className="text-sm text-green-400! text-center">Descuento aplicado: {appliedDiscount.pct}%</p>}
                     <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo Ipass regresará el valor de las entradas No así el cargo por servicio.</p>
                     <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>
