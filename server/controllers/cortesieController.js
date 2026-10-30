@@ -1,4 +1,5 @@
 import { formatDateB } from "../lib/dates.js";
+import { isValidObjectId } from "mongoose";
 import { urlFront } from "../config.js";
 import XLSX from 'xlsx';
 
@@ -29,10 +30,20 @@ export const getProdCortesiesController = async (req, res) => {
   res.send(findExcels)
 }
 
+//Borra el registro de un Excel cargado (no toca mails ya enviados ni RRPP ya agregados al evento).
+//Se filtra tambien por userId para no borrar Excels de otro usuario.
 export const deleteCortesiesController = async (req, res) => {
-  const {cortesieId} = req.params
-  await cortesieModel.deleteOne({_id: cortesieId})
-  res.sendStatus(200)
+  const {cortesieId, userId} = req.params
+  if (!isValidObjectId(cortesieId)) return res.status(400).json({ deleted: 0 })
+  const result = await cortesieModel.deleteOne({_id: cortesieId, userId: userId})
+  res.status(200).json({ deleted: result.deletedCount })
+}
+
+export const deleteRRPPExcelController = async (req, res) => {
+  const {rrppListId, userId} = req.params
+  if (!isValidObjectId(rrppListId)) return res.status(400).json({ deleted: 0 })
+  const result = await rrppExcelModel.deleteOne({_id: rrppListId, userId: userId})
+  res.status(200).json({ deleted: result.deletedCount })
 }
 
 export const editCortesiesController = async (req, res) => {

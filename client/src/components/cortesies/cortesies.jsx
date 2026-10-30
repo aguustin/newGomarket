@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import UserContext from "../../context/userContext";
-import { getAllExcelsRequest, getAllRRPPExcelsRequest, sendCortesiesRequest, sendRRPPLinksRequest } from "../../api/cortesieRequest";
+import { deleteCortesieRequest, deleteRRPPExcelRequest, getAllExcelsRequest, getAllRRPPExcelsRequest, sendCortesiesRequest, sendRRPPLinksRequest } from "../../api/cortesieRequest";
 
 const Cortesies = () => {
     const {session} = useContext(UserContext)
@@ -32,6 +32,24 @@ const Cortesies = () => {
 
     const handleSendRRPPLinks = async (rrppListId) => {
         await sendRRPPLinksRequest({prodId, rrppListId})
+    }
+
+    //Borra solo el registro del Excel: los mails ya enviados y los RRPP ya agregados no se deshacen
+    const deleteExcel = async (e, excelId, isRRPP) => {
+        e.preventDefault()
+        if (!window.confirm('¿Eliminar este Excel de la lista? Los envíos ya realizados no se deshacen.')) return
+        const userId = session?.userFinded?.[0]?._id
+        try {
+            if (isRRPP) {
+                await deleteRRPPExcelRequest({userId, rrppListId: excelId})
+                setRrppExcels(prev => prev.filter(x => x._id !== excelId))
+            } else {
+                await deleteCortesieRequest({userId, cortesieId: excelId})
+                setCortesies(prev => prev.filter(x => x._id !== excelId))
+            }
+        } catch {
+            alert('No se pudo eliminar el Excel. Intentá de nuevo.')
+        }
     }
 
     return(
@@ -90,7 +108,7 @@ const Cortesies = () => {
                                     <p className="ml-2">Enviar</p>
                                 </button>
                                {/* <Link to={`/get_cortesie/${cort._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>*/ }
-                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-red-700 rounded-lg text-xs font-semibold transition-colors" onClick={(e) => deleteExcel(e)}>
+                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-red-700 rounded-lg text-xs font-semibold transition-colors" onClick={(e) => deleteExcel(e, rrpp._id, true)}>
                                      <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="16"
@@ -139,7 +157,7 @@ const Cortesies = () => {
                                     <p className="ml-2">Enviar</p>
                                 </button>
                                {/* <Link to={`/get_cortesie/${cort._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>*/ }
-                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-red-700 rounded-lg text-xs font-semibold transition-colors" onClick={(e) => deleteExcel(e)}>
+                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-red-700 rounded-lg text-xs font-semibold transition-colors" onClick={(e) => deleteExcel(e, cort._id, false)}>
                                      <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="16"

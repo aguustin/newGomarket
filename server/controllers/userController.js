@@ -1,4 +1,5 @@
 import { pass, user_mail, urlFront, urlBack } from "../config.js"
+import { isValidObjectId } from "mongoose"
 import userModel from "../models/userModel.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
@@ -243,23 +244,24 @@ export const saveEventsController = async (req, res) => {
 export const getMySavedEventsController = async (req, res) => {
     const {userId} = req.body
 
-    const getUserInfo = await userModel.findById({_id: userId})
-
-    if(!getUserInfo){
-        res.send(200).json({empty: true})
+    //Duplicado de getFavoritesEventsController (el que usa Home); se conserva devolviendo un array
+    if(!isValidObjectId(userId)){
+        return res.status(200).json([])
     }
+
+    const getUserInfo = await userModel.findById(userId, {favorites: 1}).lean()
 
     const filterFavorites = getUserInfo ? getUserInfo.favorites.map((fav) => fav.eventId) : []
 
     if(filterFavorites.length <= 0){
-        res.send(200).json({empty: true})
+        return res.status(200).json([])
     }
 
     const favoriteEvents = await ticketModel.find({
         _id:{$in: filterFavorites}
     })
 
-    res.send(favoriteEvents).json({empty:false})
+    return res.status(200).json(favoriteEvents)
 }
 
 export const createSellerController = async (req, res) => {

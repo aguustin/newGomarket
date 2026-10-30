@@ -13,3 +13,7 @@ export const chargeRRPPExcelRequest = (formData) => axios.post(`${import.meta.en
 export const sendCortesiesRequest = ({prodId, cortesieId}) => axios.post(`${import.meta.env.VITE_URL}/send_cortesies`, {prodId, cortesieId})
 
 export const sendRRPPLinksRequest = ({prodId, rrppListId}) => axios.post(`${import.meta.env.VITE_URL}/send_rrpp_cortesies`, {prodId, rrppListId})
+
+export const deleteCortesieRequest = ({userId, cortesieId}) => axios.delete(`${import.meta.env.VITE_URL}/delete_cortesie/${userId}/${cortesieId}`)
+
+export const deleteRRPPExcelRequest = ({userId, rrppListId}) => axios.delete(`${import.meta.env.VITE_URL}/delete_rrpp_excel/${userId}/${rrppListId}`)

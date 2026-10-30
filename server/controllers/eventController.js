@@ -28,7 +28,12 @@ const SECRET_MAIL_KEY = process.env.SECRET_MAIL_KEY || 'mjac32nk12n3123ja7das2'
 const IV_LENGTH = 16
 
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
-    const getEvents = await ticketModel.find({active: true})
+    //Los eventos terminados dejan de listarse en el momento (el cron solo los marca inactivos una vez por semana).
+    //Un evento sin fechaFin se sigue listando como antes
+    const getEvents = await ticketModel.find({
+      active: true,
+      $or: [{ fechaFin: { $gte: new Date() } }, { fechaFin: null }]
+    })
     res.send(getEvents)
 }
 
@@ -1508,7 +1513,8 @@ export const descargarCompradoresController = async (req, res) => {
     return res.status(404).send("No se encontro ningun evento")
   }
 
-  const transaction = await transactionModel.findOne({prodId: prodId})
+  //Orden de compra (sin sort, Mongo no garantiza ningun orden)
+  const transactions = await transactionModel.find({prodId: prodId}, {nombre: 1, email: 1}).sort({fecha: 1, _id: 1}).lean()
 
   if (!transactions.length) {
     return res.status(404).send("No se encontraron transacciones");

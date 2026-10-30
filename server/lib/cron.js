@@ -14,20 +14,9 @@ cron.schedule('0 0 * * 0', async () => {
 
         console.log(`Eventos desactivados: ${eventosCaducados.modifiedCount}`);
 
-        // 🔥 Desactivar tickets caducados dentro de eventos
-        const ticketsCaducados = await ticketModel.updateMany(
-            { "tickets.fechaDeCierre": { $lt: now } },
-            {
-                $set: {
-                    "tickets.$[t].isActive": false
-                }
-            },
-            {
-                arrayFilters: [{ "t.fechaDeCierre": { $lt: now } }]
-            }
-        );
-
-        console.log(`Tickets desactivados: ${ticketsCaducados.modifiedCount}`);
+        // Los tickets vencidos no se marcan aca: la venta se cierra en el momento comparando
+        // fechaDeCierre (pagina de compra; el backend lo valida desde la etapa 4).
+        // Antes se escribia "isActive", un campo que no existe en el modelo y nadie leia.
 
     } catch (err) {
         console.error("Error en cron:", err);

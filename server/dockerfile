@@ -1,12 +1,13 @@
-FROM node:18
+FROM node:22
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+# npm ci respeta el package-lock. Incluye devDependencies porque app.js importa morgan
+RUN npm ci
 
 COPY . .
 
 EXPOSE 4000
 
-CMD ["node", "index.js"]
+CMD ["node", "app.js"]

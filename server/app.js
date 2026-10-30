@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url"
 import './lib/checkConfig.js' //primero: valida la configuracion antes de cargar el resto
 import express, { json, urlencoded } from "express"
 import morgan from "morgan"
@@ -37,6 +38,8 @@ app.use(ticketRoutes)
 app.use(cortesieRoutes)
 if (isDev) app.use(devMailRoutes) //bandeja de mails: solo development/test
 //listeng
-if (appEnv !== 'test') app.listen(port) //los tests usan la app sin abrir el puerto
+//Escucha solo si se ejecuta directamente (node app.js); los tests de integracion la importan sin abrir el puerto
+const runDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+if (runDirectly) app.listen(port)
 
 export default app

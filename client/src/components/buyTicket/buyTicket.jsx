@@ -10,6 +10,13 @@ import { useNavigate } from "react-router"
 import calendarPng from "../../assets/images/calendar.png"
 import goPng from "../../assets/bannerR.png"
 
+//La venta de un ticket cierra al pasar su fecha de cierre, al terminar el evento o si el evento esta inactivo.
+//Se calcula en el momento (no depende del cron, que corre una vez por semana)
+const ventaCerrada = (event, ticket, now = new Date()) =>
+    event?.active === false ||
+    (event?.fechaFin && new Date(event.fechaFin) < now) ||
+    (ticket?.fechaDeCierre && new Date(ticket.fechaDeCierre) < now)
+
 const BuyTicket = () => {
     const {session} = useContext(UserContext)
     const {prodId, emailHash} = useParams()
@@ -106,7 +113,7 @@ const addQuantity = (e, ticketId, limit, cantidad, free) => {
 
 
 let total = prod.reduce((accProd, p) => {
-  const comision = p?.comisionServicio ?? 13; // 13% si no existe
+  const comision = p?.comisionServicio ?? 15; // 15% si no existe (igual que el backend)
   const totalTickets = p.tickets.reduce((accTck, tck) => {
     const qty = quantities[tck._id]?.amount || 0;
     const subtotal = qty * tck.precio;
@@ -160,7 +167,20 @@ const activeDiscountCode = async (e) => {
             setShowMsg(3)
             return;
         }
-        
+
+        //Por si la venta cerro mientras la pagina estaba abierta: se quitan esos tickets y se avisa
+        const eventos = [...prod, ...relates]
+        const cerrados = Object.keys(quantities).filter((ticketId) => {
+            const evento = eventos.find((ev) => ev.tickets?.some((t) => t._id === ticketId))
+            const ticket = evento?.tickets.find((t) => t._id === ticketId)
+            return !ticket || ventaCerrada(evento, ticket)
+        })
+        if (cerrados.length > 0) {
+            setQuantities((prev) => Object.fromEntries(Object.entries(prev).filter(([id]) => !cerrados.includes(id))))
+            setShowMsg(4)
+            return;
+        }
+
         try {
             setLoading(true)
             const data = await buyTicketsRequest(prodId, prod[0].nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono, discountCode);
@@ -301,7 +321,11 @@ const activeDiscountCode = async (e) => {
                                   </div>
 
                                   {/* Cantidades */}
-                                  {/*tck.cantidad >= 1 && */ tck.estado !== 4 && !eventToRender?.soldOut ? (
+                                  {ventaCerrada(eventToRender, tck) ? (
+                                    <div className="flex items-center space-x-2 bg-gray-700 border border-gray-500 px-4 py-2 rounded-xl shadow-sm">
+                                        <p className="text-gray-200 font-semibold">Venta cerrada</p>
+                                    </div>
+                                  ) : /*tck.cantidad >= 1 && */ tck.estado !== 4 && !eventToRender?.soldOut ? (
                                     <div className="flex items-center space-x-2 bg-gray-700 rounded-xl p-1 border border-gray-200 shadow-sm max-[550px]:w-[90%] max-[550px]:justify-between max-[550px]:mt-2">
                                       <button
                                         className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95" 
@@ -331,7 +355,7 @@ const activeDiscountCode = async (e) => {
                                         <p className="text-red-700 font-semibold">Agotado</p>
                                     </div>
                                   )}
-                                  {tck.cantidad >= 1 && eventToRender?.soldOut === false && (
+                                  {tck.cantidad >= 1 && eventToRender?.soldOut === false && !ventaCerrada(eventToRender, tck) && (
                                     <p className="text-white-800 font-medium text-sm mt-2">
                                       {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}
                                     </p>
@@ -386,6 +410,7 @@ const activeDiscountCode = async (e) => {
                     <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total -  (total * discountValue) / 100)}</p>
                     {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
                     {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
+                    {showMsg === 4 && <p className="text-md text-orange-500! h-[0px]">La venta de alguno de los tickets elegidos ya cerró. Lo quitamos de tu compra</p>}
                     <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo Ipass regresará el valor de las entradas No así el cargo por servicio.</p>
                     <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
                 </div>

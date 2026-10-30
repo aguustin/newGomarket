@@ -18,7 +18,7 @@ const RecoverPass = () => {
         if(nuevaContrasenia === repetirNuevaContrasenia){
             setError(false)
             const res = await confirmNewPassRequest({token, nuevaContrasenia})
-            if(res === 1){
+            if(res.data === 1){  //axios devuelve la respuesta completa: el valor del backend esta en data
                 setMessage(true)
                 setTimeout(() => {
                     navigate('/')

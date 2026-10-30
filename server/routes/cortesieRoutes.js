@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { chargeExcelController, chargeRRPPExcelController, getAllExcelsInfoController, getAllRRPPExcelsController, getProdCortesiesController, sendCortesiesController, sendRRPPColabsListController } from "../controllers/cortesieController.js";
+import { chargeExcelController, chargeRRPPExcelController, deleteCortesiesController, deleteRRPPExcelController, getAllExcelsInfoController, getAllRRPPExcelsController, getProdCortesiesController, sendCortesiesController, sendRRPPColabsListController } from "../controllers/cortesieController.js";
 import multer from "multer"
 
 const storage = multer.memoryStorage();
@@ -19,5 +19,9 @@ router.post('/charge_rrpp_excel', upload.single('excelFile'), chargeRRPPExcelCon
 router.post('/send_cortesies', sendCortesiesController)
 
 router.post('/send_rrpp_cortesies', sendRRPPColabsListController)
+
+router.delete('/delete_cortesie/:userId/:cortesieId', deleteCortesiesController)
+
+router.delete('/delete_rrpp_excel/:userId/:rrppListId', deleteRRPPExcelController)
 
 export default router
