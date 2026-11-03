@@ -2,7 +2,7 @@ import { test, before, after, beforeEach } from "node:test"
 import assert from "node:assert/strict"
 import request from "supertest"
 import ExcelJS from "exceljs"
-import { loadApp, closeDb, resetDb } from "./helpers.js"
+import { loadApp, closeDb, resetDb, crearSesion } from "./helpers.js"
 
 //Correcciones chicas: borrar Excels de cortesias/RRPP, descarga de compradores, favoritos guardados
 let app, cortesieModel, rrppExcelModel, ticketModel, transactionModel, userModel
@@ -21,28 +21,39 @@ beforeEach(resetDb)
 const crearEvento = (nombreEvento = 'Fiesta Test') => ticketModel.create({ userId: 'dueno', nombreEvento, tickets: [] })
 
 test('borrar Excel de cortesias: solo el del dueño, y responde cuantos borro', async () => {
-  const doc = await cortesieModel.create({ prodId: 'p1', userId: 'dueno', excelName: 'a.xlsx', people: [] })
+  const dueno = await crearSesion()
+  const otro = await crearSesion()
+  const doc = await cortesieModel.create({ prodId: 'p1', userId: dueno.id, excelName: 'a.xlsx', people: [] })
 
-  const ajeno = await request(app).delete(`/delete_cortesie/otro/${doc._id}`)
+  //Otro usuario con su propia sesion: el Excel no es suyo, no borra nada
+  const ajeno = await request(app).delete(`/delete_cortesie/${otro.id}/${doc._id}`).set(otro.auth)
   assert.equal(ajeno.status, 200)
   assert.equal(ajeno.body.deleted, 0)
+  //Otro usuario haciendose pasar por el dueño: rechazado antes de llegar al controlador
+  assert.equal((await request(app).delete(`/delete_cortesie/${dueno.id}/${doc._id}`).set(otro.auth)).status, 403)
+  //Sin sesion
+  assert.equal((await request(app).delete(`/delete_cortesie/${dueno.id}/${doc._id}`)).status, 401)
   assert.equal(await cortesieModel.countDocuments(), 1, 'otro usuario no puede borrarlo')
 
-  const propio = await request(app).delete(`/delete_cortesie/dueno/${doc._id}`)
+  const propio = await request(app).delete(`/delete_cortesie/${dueno.id}/${doc._id}`).set(dueno.auth)
   assert.equal(propio.body.deleted, 1)
   assert.equal(await cortesieModel.countDocuments(), 0)
 })
 
 test('borrar Excel de RRPP: solo el del dueño', async () => {
-  const doc = await rrppExcelModel.create({ prodId: 'p1', userId: 'dueno', excelName: 'r.xlsx', rrppList: [] })
-  assert.equal((await request(app).delete(`/delete_rrpp_excel/otro/${doc._id}`)).body.deleted, 0)
-  assert.equal((await request(app).delete(`/delete_rrpp_excel/dueno/${doc._id}`)).body.deleted, 1)
+  const dueno = await crearSesion()
+  const otro = await crearSesion()
+  const doc = await rrppExcelModel.create({ prodId: 'p1', userId: dueno.id, excelName: 'r.xlsx', rrppList: [] })
+  assert.equal((await request(app).delete(`/delete_rrpp_excel/${otro.id}/${doc._id}`).set(otro.auth)).body.deleted, 0)
+  assert.equal((await request(app).delete(`/delete_rrpp_excel/${dueno.id}/${doc._id}`).set(otro.auth)).status, 403)
+  assert.equal((await request(app).delete(`/delete_rrpp_excel/${dueno.id}/${doc._id}`).set(dueno.auth)).body.deleted, 1)
   assert.equal(await rrppExcelModel.countDocuments(), 0)
 })
 
 test('borrar con id invalido responde 400 sin romper el servidor', async () => {
-  assert.equal((await request(app).delete('/delete_cortesie/dueno/no-es-un-id')).status, 400)
-  assert.equal((await request(app).delete('/delete_rrpp_excel/dueno/no-es-un-id')).status, 400)
+  const dueno = await crearSesion()
+  assert.equal((await request(app).delete(`/delete_cortesie/${dueno.id}/no-es-un-id`).set(dueno.auth)).status, 400)
+  assert.equal((await request(app).delete(`/delete_rrpp_excel/${dueno.id}/no-es-un-id`).set(dueno.auth)).status, 400)
 })
 
 test('descargar compradores: devuelve un xlsx con todas las transacciones del evento', async () => {
@@ -53,7 +64,8 @@ test('descargar compradores: devuelve un xlsx con todas las transacciones del ev
     { prodId: 'otro-evento', paymentId: 'p-3', transaccionId: 'p-3', nombre: 'Ajeno', email: 'x@ipass-test.local', montoPagado: 100 }
   ])
 
-  const res = await request(app).post('/descargar_compradores').send({ prodId: ev._id.toString() })
+  const { auth } = await crearSesion()
+  const res = await request(app).post('/descargar_compradores').set(auth).send({ prodId: ev._id.toString() })
     .buffer(true).parse((r, cb) => { const c = []; r.on('data', (d) => c.push(d)); r.on('end', () => cb(null, Buffer.concat(c))) })
 
   assert.equal(res.status, 200)
@@ -68,23 +80,29 @@ test('descargar compradores: devuelve un xlsx con todas las transacciones del ev
 
 test('descargar compradores: evento sin ventas o inexistente responde 404', async () => {
   const ev = await crearEvento()
-  assert.equal((await request(app).post('/descargar_compradores').send({ prodId: ev._id.toString() })).status, 404)
-  assert.equal((await request(app).post('/descargar_compradores').send({ prodId: '000000000000000000000000' })).status, 404)
+  const { auth } = await crearSesion()
+  assert.equal((await request(app).post('/descargar_compradores').set(auth).send({ prodId: ev._id.toString() })).status, 404)
+  assert.equal((await request(app).post('/descargar_compradores').set(auth).send({ prodId: '000000000000000000000000' })).status, 404)
+  assert.equal((await request(app).post('/descargar_compradores').send({ prodId: ev._id.toString() })).status, 401, 'sin sesion')
 })
 
 test('favoritos guardados (/obtain_saved_event): devuelve un array con los eventos', async () => {
   const ev = await crearEvento()
-  const user = await userModel.create({ mail: 'fav@ipass-test.local', favorites: [{ eventId: ev._id.toString() }] })
-  const sinFavs = await userModel.create({ mail: 'nofav@ipass-test.local', favorites: [] })
+  const conFavs = await crearSesion({ favorites: [{ eventId: ev._id.toString() }] })
+  const sinFavs = await crearSesion({ favorites: [] })
 
-  const conFav = await request(app).post('/obtain_saved_event').send({ userId: user._id.toString() })
+  const conFav = await request(app).post('/obtain_saved_event').set(conFavs.auth).send({ userId: conFavs.id })
   assert.equal(conFav.status, 200)
   assert.deepEqual(conFav.body.map((e) => e.nombreEvento), ['Fiesta Test'])
 
-  for (const userId of [sinFavs._id.toString(), '000000000000000000000000', 'invalido', undefined]) {
-    const r = await request(app).post('/obtain_saved_event').send({ userId })
-    assert.equal(r.status, 200, `userId=${userId}`)
-    assert.deepEqual(r.body, [], `userId=${userId}`)
+  const vacio = await request(app).post('/obtain_saved_event').set(sinFavs.auth).send({ userId: sinFavs.id })
+  assert.equal(vacio.status, 200)
+  assert.deepEqual(vacio.body, [])
+
+  //Pedir los favoritos de otro usuario (o un id inventado) ya no responde: 403
+  for (const userId of [conFavs.id, '000000000000000000000000', 'invalido', undefined]) {
+    const r = await request(app).post('/obtain_saved_event').set(sinFavs.auth).send({ userId })
+    assert.equal(r.status, 403, `userId=${userId}`)
   }
 })
 

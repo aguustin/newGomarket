@@ -102,8 +102,8 @@ const Cortesies = () => {
                             <td className="px-6 py-4">
                                 <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-green-700 rounded-lg text-xs font-semibold transition-colors mb-2" onClick={() => handleSendRRPPLinks(rrpp._id)}>
                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M22 4H2V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V4Z" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <path d="M22 4L12 13L2 4" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M22 4H2V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V4Z" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M22 4L12 13L2 4" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
                                     <p className="ml-2">Enviar</p>
                                 </button>
@@ -151,8 +151,8 @@ const Cortesies = () => {
                             <td className="px-6 py-4">
                                 <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-green-700 rounded-lg text-xs font-semibold transition-colors mb-2" onClick={() => handleSendCortesies(cort._id)}>
                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M22 4H2V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V4Z" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <path d="M22 4L12 13L2 4" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M22 4H2V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V4Z" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M22 4L12 13L2 4" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
                                     <p className="ml-2">Enviar</p>
                                 </button>

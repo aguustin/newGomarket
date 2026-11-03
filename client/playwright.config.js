@@ -41,14 +41,14 @@ export default defineConfig({
       url: `${E2E_BACK}/getAllEvents`,
       env: backendEnv,
       reuseExistingServer: false,
-      timeout: 60_000
+      timeout: 180_000  //el arranque de Vite puede tardar ~1 min con el equipo cargado
     },
     {
       command: 'npx vite --port 5174 --strictPort',
       url: E2E_FRONT,
       env: { ...process.env, VITE_URL: E2E_BACK, VITE_URL_FRONT: E2E_FRONT, VITE_RECAPTCHA_ENABLED: 'false' },
       reuseExistingServer: false,
-      timeout: 60_000
+      timeout: 180_000  //el arranque de Vite puede tardar ~1 min con el equipo cargado
     }
   ]
 })

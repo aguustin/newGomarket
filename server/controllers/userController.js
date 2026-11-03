@@ -6,18 +6,21 @@ import jwt from "jsonwebtoken"
 import ticketModel from "../models/ticketsModel.js";
 import cloudinary from "../middleware/cloudinary.js";
 import { resend, createMailTransport } from "../lib/resendDomain.js";
+import { firmarSesion, sinDatosPrivados } from "../lib/auth.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
+//Perfil publico (pagina de la productora): nunca incluye la contraseña
 export const getUserProfileController = async (req, res) => {
     const {userId} = req.body
-    const getUsers = await userModel.find({_id:userId})
+    if(!isValidObjectId(userId)) return res.send([])
+    const getUsers = await userModel.find({_id:userId}, {contrasenia: 0}).lean()
     res.send(getUsers)
 }
 
+//Cerrado: devolvia todos los usuarios con sus datos bancarios y contraseñas. Ningun componente lo usa
 export const getAllUsersController = async (req, res) => {
-    const getUsers = await userModel.find({})
-    res.send(getUsers)
+    res.status(410).json({ message: 'Este recurso ya no está disponible' })
 }
 
 export const registerController = async (req, res) => {
@@ -142,7 +145,8 @@ export const loginController = async (req, res) => {
     if(userFinded.length > 0){
         const decryptContrasenia = await bcrypt.compare(contrasenia, userFinded[0].contrasenia)
         if(decryptContrasenia){
-            return res.status(200).json({userFinded, estado: 1 })
+            //Misma forma que antes (userFinded es un array) mas el token de sesion; sin la contraseña
+            return res.status(200).json({userFinded: userFinded.map(sinDatosPrivados), estado: 1, token: firmarSesion(userFinded[0]) })
         }else{
             return res.status(200).json({estado:2})
         }
@@ -321,7 +325,7 @@ export const createSellerController = async (req, res) => {
               );
               const userFinded = await userModel.find({_id: userId})
               
-              return res.status(200).json({userFinded, estado: 1 })
+              return res.status(200).json({userFinded: userFinded.map(sinDatosPrivados), estado: 1 })
     
             }
           ).end(req.file.buffer); 
@@ -341,7 +345,7 @@ export const createSellerController = async (req, res) => {
         }
         const userFinded = await userModel.find({_id: userId})
         
-        return res.status(200).json({userFinded, estado: 1 })
+        return res.status(200).json({userFinded: userFinded.map(sinDatosPrivados), estado: 1 })
     }
 }
 

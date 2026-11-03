@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAuth, mismoUserId } from "../lib/auth.js";
 import { contactController, getAllUsersController, getMySavedEventsController, loginController, newPasswordController, recoverPassController, registerController, saveEventsController, createSellerController, getUserProfileController, getFavoritesEventsController, verifyAccountController } from "../controllers/userController.js";
 import multer from "multer"
 
@@ -21,14 +22,14 @@ router.post('/new_password', newPasswordController)
 
 router.post('/contactar', contactController)
 
-router.post('/save_event', saveEventsController)
+router.post('/save_event', requireAuth, mismoUserId((req) => req.body.userId), saveEventsController)
 
-router.post('/obtain_saved_event', getMySavedEventsController)
+router.post('/obtain_saved_event', requireAuth, mismoUserId((req) => req.body.userId), getMySavedEventsController)
 
 router.get('/verify_account/:token', verifyAccountController)
 
-router.post('/create_seller_profile', upload.single('productoraImg'), createSellerController)
+router.post('/create_seller_profile', requireAuth, upload.single('productoraImg'), mismoUserId((req) => req.body.userId), createSellerController)
 
-router.post('/get_favorites', getFavoritesEventsController)
+router.post('/get_favorites', requireAuth, mismoUserId((req) => req.body.userId), getFavoritesEventsController)
 
 export default router

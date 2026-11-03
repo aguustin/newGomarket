@@ -20,6 +20,10 @@ const Login = () => {
     useEffect(() => {
         setSession('')
         localStorage.clear()
+        //Llega aca desde http.js cuando el backend rechazo la sesion
+        const motivo = new URLSearchParams(window.location.search).get('sesion')
+        if (motivo === 'vencida') setShowMsg('Tu sesión venció. Ingresá de nuevo')
+        if (motivo === 'requerida') setShowMsg('Iniciá sesión para continuar')
     // eslint-disable-next-line react-hooks/exhaustive-deps
     
   }, [])

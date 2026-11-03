@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { E2E_BACK } from '../playwright.config.js'
-import { uniqueMail, registerAndVerify, login, createEventViaApi } from './helpers.js'
+import { uniqueMail, registerAndVerify, login, createEventViaApi, sesionDelNavegador } from './helpers.js'
 
 //Compra hasta el checkout de Mercado Pago. La preferencia se crea DE VERDAD en el sandbox de MP
 //(token de prueba); el navegador no llega a abrir MP: se intercepta la redireccion.
@@ -10,10 +10,10 @@ test('evento publico en Home -> pagina de compra -> total con 15% -> redireccion
   await registerAndVerify(page, request, { mail })
   await login(page, { mail })
   await expect(page).toHaveURL(/\/$/)
-  const userId = await page.evaluate(() => JSON.parse(localStorage.getItem('session')).userFinded[0]._id)
+  const { userId, auth } = await sesionDelNavegador(page)
 
   const nombreEvento = `Festival E2E ${Date.now()}`
-  const eventId = await createEventViaApi(request, { userId, prodMail: mail, nombreEvento, precio: 20000 })
+  const eventId = await createEventViaApi(request, { auth, userId, prodMail: mail, nombreEvento, precio: 20000 })
 
   //Home lista el evento publico y lleva a la pagina de compra
   await page.goto('/')
@@ -81,10 +81,10 @@ test('ticket con la fecha de cierre vencida: "Venta cerrada" y no se puede elegi
   await registerAndVerify(page, request, { mail })
   await login(page, { mail })
   await expect(page).toHaveURL(/\/$/)
-  const userId = await page.evaluate(() => JSON.parse(localStorage.getItem('session')).userFinded[0]._id)
+  const { userId, auth } = await sesionDelNavegador(page)
 
   const ayer = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
-  const eventId = await createEventViaApi(request, { userId, prodMail: mail, nombreEvento: `Cerrado E2E ${Date.now()}`, fechaDeCierre: ayer })
+  const eventId = await createEventViaApi(request, { auth, userId, prodMail: mail, nombreEvento: `Cerrado E2E ${Date.now()}`, fechaDeCierre: ayer })
 
   await page.goto(`/buy_tickets/${eventId}`)
   await expect(page.getByText('Venta cerrada')).toBeVisible()
@@ -97,10 +97,10 @@ test('codigo de descuento: se aplica en pantalla y el servidor cobra el total co
   await registerAndVerify(page, request, { mail })
   await login(page, { mail })
   await expect(page).toHaveURL(/\/$/)
-  const userId = await page.evaluate(() => JSON.parse(localStorage.getItem('session')).userFinded[0]._id)
-  const eventId = await createEventViaApi(request, { userId, prodMail: mail, nombreEvento: `Descuento E2E ${Date.now()}`, precio: 20000 })
+  const { userId, auth } = await sesionDelNavegador(page)
+  const eventId = await createEventViaApi(request, { auth, userId, prodMail: mail, nombreEvento: `Descuento E2E ${Date.now()}`, precio: 20000 })
   const code = `E2E${Date.now()}`
-  expect((await request.post(`${E2E_BACK}/create_discount`, { data: { prodId: eventId, idDiscount: code, cantidadDescuentos: 5, numeroDescuento: 10 } })).ok()).toBe(true)
+  expect((await request.post(`${E2E_BACK}/create_discount`, { headers: auth, data: { prodId: eventId, idDiscount: code, cantidadDescuentos: 5, numeroDescuento: 10 } })).ok()).toBe(true)
 
   await page.goto(`/buy_tickets/${eventId}`)
   await page.getByRole('button', { name: '+' }).first().click()

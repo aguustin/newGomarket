@@ -35,3 +35,11 @@ export const findLink = (html, fragment) => {
   if (!link) throw new Error(`No hay ningun link con "${fragment}" en el mail`)
   return link
 }
+
+//Usuario real en la base con un token de sesion firmado igual que en el login
+export const crearSesion = async (datos = {}) => {
+  const userModel = (await import('../models/userModel.js')).default
+  const { firmarSesion } = await import('../lib/auth.js')
+  const user = await userModel.create({ mail: uniqueMail('sesion'), nombreCompleto: 'Usuario Test', comisionServicio: 15, ...datos })
+  return { user, id: user._id.toString(), auth: { Authorization: `Bearer ${firmarSesion(user)}` } }
+}

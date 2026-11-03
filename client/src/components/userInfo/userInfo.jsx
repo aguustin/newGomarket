@@ -106,9 +106,9 @@ const UserInfo = () => {
         }
         const updateSessionInfo = await createSellerProfileRequest(formData)
         setMessage(1)
-       
+
         if (updateSessionInfo) {
-            localStorage.setItem('session', JSON.stringify(updateSessionInfo?.data));
+            localStorage.setItem('session', JSON.stringify({ ...updateSessionInfo?.data, token: session?.token }));  //se conserva el token de la sesion
             const sess = JSON.parse(localStorage.getItem('session'))
             setSession(sess);
         }
@@ -144,7 +144,7 @@ const UserInfo = () => {
         setMessage(2)
 
         if (updateSessionInfo) {
-            localStorage.setItem('session', JSON.stringify(updateSessionInfo?.data));
+            localStorage.setItem('session', JSON.stringify({ ...updateSessionInfo?.data, token: session?.token }));  //se conserva el token de la sesion
             const sess = JSON.parse(localStorage.getItem('session'))
             setSession(sess);
         }
@@ -191,43 +191,43 @@ const UserInfo = () => {
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">Nombre completo</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreCompleto" value={nombre} onChange={(e) => setNombre(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreCompleto" value={nombre ?? ''} onChange={(e) => setNombre(e.target.value)} required></input>
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">Email</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="email" name="email" value={session?.userFinded?.[0]?.mail} disabled required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="email" name="email" value={session?.userFinded?.[0]?.mail ?? ''} disabled required></input>
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">Telefono</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="telefono" value={telefono} onChange={(e) => setTelefono(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="telefono" value={telefono ?? ''} onChange={(e) => setTelefono(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">DNI</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="dni" value={dni} onChange={(e) => setDni(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="dni" value={dni ?? ''} onChange={(e) => setDni(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">CUIT</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="cuit" value={cuit} onChange={(e) => setCuit(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="cuit" value={cuit ?? ''} onChange={(e) => setCuit(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Domicilio</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="domicilio" value={domicilio} onChange={(e) => setDomicilio(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="domicilio" value={domicilio ?? ''} onChange={(e) => setDomicilio(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Pais</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="pais" value={pais} onChange={(e) => setPais(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="pais" value={pais ?? ''} onChange={(e) => setPais(e.target.value)} required></input>
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">CBU</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="cbu" maxLength={22} pattern="\d*" inputMode="numeric" value={cbu} onChange={(e) => setCbu(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="cbu" maxLength={22} pattern="\d*" inputMode="numeric" value={cbu ?? ''} onChange={(e) => setCbu(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Alias</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="alias" value={alias} onChange={(e) => setAlias(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="alias" value={alias ?? ''} onChange={(e) => setAlias(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Nombre del titular</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreTitular" value={nombreTitular} onChange={(e) => setNombreTitular(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreTitular" value={nombreTitular ?? ''} onChange={(e) => setNombreTitular(e.target.value)} required></input>
                     </div>
                     {message === 1 ? <button className="w-[100%] text-center mt-6 bg-orange-500! text-[#111827] font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link className=' text-white! font-semibold' to="/home">Ir a inicio</Link></button> : <button className="w-[100%] text-center mt-6 bg-yellow-500! text-[#111827] font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar particular</button>}
                     {message === 1 && <p className='text-green-600! text-center mt-6'>Particular actualizada con exito!</p>}
@@ -249,59 +249,59 @@ const UserInfo = () => {
             </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Nombre de productora</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreProductora" value={nombreProductora} onChange={(e) => setNombreProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreProductora" value={nombreProductora ?? ''} onChange={(e) => setNombreProductora(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">DNI del representante</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="dniRepresentante" value={dniRepresentante} onChange={(e) => setDniRepresentante(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="dniRepresentante" value={dniRepresentante ?? ''} onChange={(e) => setDniRepresentante(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Domicilio de Productora</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="domicilioProductora" value={domicilioProductora} onChange={(e) => setDomicilioProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="domicilioProductora" value={domicilioProductora ?? ''} onChange={(e) => setDomicilioProductora(e.target.value)} required></input>
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">Telefono</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="telefonoProductora" value={telefonoProductora} onChange={(e) => setTelefonoProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="telefonoProductora" value={telefonoProductora ?? ''} onChange={(e) => setTelefonoProductora(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Nombre del titular</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="paisProductora" value={paisProductora} onChange={(e) => setPaisProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="paisProductora" value={paisProductora ?? ''} onChange={(e) => setPaisProductora(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Razon social</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="razonSocial" value={razonSocial} onChange={(e) => setRazonSocial(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="razonSocial" value={razonSocial ?? ''} onChange={(e) => setRazonSocial(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Cuit de Productora</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="cuitProductora" value={cuitProductora} onChange={(e) => setCuitProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="cuitProductora" value={cuitProductora ?? ''} onChange={(e) => setCuitProductora(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Numero de cuenta</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="numeroCuenta" value={numeroCuenta} onChange={(e) => setnumeroCuenta(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="numeroCuenta" value={numeroCuenta ?? ''} onChange={(e) => setnumeroCuenta(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Nombre del banco</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreBanco" value={nombreBanco} onChange={(e) => setNombreBanco(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreBanco" value={nombreBanco ?? ''} onChange={(e) => setNombreBanco(e.target.value)} required></input>
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">CBU</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="cbuProductora" value={cbuProductora} maxLength={22} pattern="\d*" inputMode="numeric" onChange={(e) => setCbuProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="cbuProductora" value={cbuProductora ?? ''} maxLength={22} pattern="\d*" inputMode="numeric" onChange={(e) => setCbuProductora(e.target.value)} required></input>
                     </div>
                      <div className="mt-3">
                         <label className="text-gray-300!">Alias</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="aliasProductora" value={aliasProductora} onChange={(e) => setAliasProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="aliasProductora" value={aliasProductora ?? ''} onChange={(e) => setAliasProductora(e.target.value)} required></input>
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">Codigo internacional (solo si no eres de Argentina)</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="codigoInternacional" value={codigoInternacional} onChange={(e) => setCodigoInternacional(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="codigoInternacional" value={codigoInternacional ?? ''} onChange={(e) => setCodigoInternacional(e.target.value)} required></input>
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">Email</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="email" name="mailProductora" value={mailProductora} onChange={(e) => setMailProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="email" name="mailProductora" value={mailProductora ?? ''} onChange={(e) => setMailProductora(e.target.value)} required></input>
                     </div>
                     <div className="mt-3">
                         <label className="text-gray-300!">Nombre del titular</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreTitularProductora" value={nombreTitularProductora} onChange={(e) => setNombreTitularProductora(e.target.value)} required></input>
+                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreTitularProductora" value={nombreTitularProductora ?? ''} onChange={(e) => setNombreTitularProductora(e.target.value)} required></input>
                     </div>
                     {message === 2 ? <button className="w-[100%] text-center mt-6 bg-orange-500! text-[#111827] font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link className='text-white! font-semibold' to="/home">Ir a inicio</Link></button> : <button className="w-[100%] text-center mt-4 bg-orange-500! text-[#111827] font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar productora</button>}
                     {message === 2 && <p className='text-green-600! text-center mt-4'>Productora actualizada con exito!</p>}

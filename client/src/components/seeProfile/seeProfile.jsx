@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, Fragment } from 'react';
 import userPng from "../../assets/user.png"
 import { Link, useParams } from 'react-router';
 
@@ -38,7 +38,7 @@ const ProfileCards = () => {
         </div>
 
            {profile.map((pr) => 
-           <div className="flex justify-center mb-6">
+           <div key={pr._id} className="flex justify-center mb-6">
               <div className="relative">
                 <img 
                   src={session?.userFinded?.[0]?.imagenProductora ?? userPng} 
@@ -68,7 +68,7 @@ const ProfileCards = () => {
             {/* Profile Info */}
             <div className="space-y-4">
               {profile.map((pr) =>  
-                <>
+                <Fragment key={pr._id}>
                 <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                   <div className="flex items-start gap-3">
                   
@@ -118,7 +118,7 @@ const ProfileCards = () => {
                     </div>
                   </div>
                 </div>
-                </>
+                </Fragment>
                 )}
             </div>
 
@@ -147,7 +147,7 @@ const ProfileCards = () => {
             {/* Profile Info */}
             <div className="space-y-4">
               {profile.map((pr) => 
-                <>
+                <Fragment key={pr._id}>
                   <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! rounded-xl p-4">
                     <div className="flex items-start gap-3">
                       
@@ -207,7 +207,7 @@ const ProfileCards = () => {
                       </div>
                     </div>
                   </div>
-                </>
+                </Fragment>
               )}
             </div>
 

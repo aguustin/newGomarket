@@ -76,3 +76,35 @@ test('reCAPTCHA desactivado en desarrollo: no se carga el widget en login ni reg
   await expect(page.locator('iframe[src*="recaptcha"]')).toHaveCount(0)
   expect(recaptcha).toEqual([])
 })
+
+test('sesion guardada antes del token: se descarta y el usuario queda sin sesion', async ({ page }) => {
+  await page.goto('/')
+  //Sesion como la guardaba el frontend antes de esta etapa (sin token)
+  await page.evaluate(() => localStorage.setItem('session', JSON.stringify({ userFinded: [{ _id: '000000000000000000000000', mail: 'viejo@ipass-e2e.local', nombreCompleto: 'Viejo' }], estado: 1 })))
+  await page.reload()
+  await expect(page.getByRole('link', { name: 'Iniciar sesión' })).toBeVisible()
+  await expect(page.getByText('Viejo')).toHaveCount(0)
+  expect(await page.evaluate(() => localStorage.getItem('session'))).toBeNull()
+})
+
+test('sesion con token invalido o vencido: la pagina privada lleva al login con aviso', async ({ page }) => {
+  await page.goto('/')
+  await page.evaluate(() => localStorage.setItem('session', JSON.stringify({ userFinded: [{ _id: '000000000000000000000000', mail: 'vencida@ipass-e2e.local', nombreCompleto: 'Vencida' }], estado: 1, token: 'token-vencido-o-invalido' })))
+  await page.goto('/productions')
+  await expect(page).toHaveURL(/\/login\?sesion=requerida/)
+  await expect(page.getByText('Iniciá sesión para continuar')).toBeVisible()
+  expect(await page.evaluate(() => localStorage.getItem('session'))).toBeNull()
+})
+
+test('con sesion: la pagina privada carga y el backend recibe el token', async ({ page, request }) => {
+  const mail = uniqueMail('privada')
+  await registerAndVerify(page, request, { mail })
+  await login(page, { mail })
+  await expect(page).toHaveURL(/\/$/)
+
+  const pedido = page.waitForRequest((r) => r.url().includes('/my_productions/'))
+  await page.goto('/productions')
+  const req = await pedido
+  expect(req.headers()['authorization']).toMatch(/^Bearer /)
+  await expect(page).toHaveURL(/\/productions$/)
+})

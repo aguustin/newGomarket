@@ -47,9 +47,16 @@ export const login = async (page, { mail, pass = 'Clave12345' }) => {
 }
 
 //Crea un evento publico con un ticket pago usando la API real (multipart, sin imagenes)
-export const createEventViaApi = async (request, { userId, prodMail, nombreEvento, precio = 20000, cantidad = 50, fechaDeCierre }) => {
+//Sesion que guardo el frontend al iniciar sesion (userId y token reales)
+export const sesionDelNavegador = (page) => page.evaluate(() => {
+  const s = JSON.parse(localStorage.getItem('session'))
+  return { userId: s.userFinded[0]._id, token: s.token, auth: { Authorization: `Bearer ${s.token}` } }
+})
+
+export const createEventViaApi = async (request, { auth, userId, prodMail, nombreEvento, precio = 20000, cantidad = 50, fechaDeCierre }) => {
   const enUnMes = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString()
   const ev = await request.post(`${E2E_BACK}/createEvent`, {
+    headers: auth,
     multipart: {
       userId, prodMail, nombreEvento, codigoPais: 'AR', codigoCiudad: 'C', paisDestino: 'AR', tipoEvento: '1',
       eventoEdad: '18', descripcionEvento: 'Evento creado por E2E', aviso: '', categoriasEventos: '["Musica"]',
@@ -61,6 +68,7 @@ export const createEventViaApi = async (request, { userId, prodMail, nombreEvent
   expect(ev.ok()).toBe(true)
   const { eventId } = await ev.json()
   const tk = await request.post(`${E2E_BACK}/createEventTickets`, {
+    headers: auth,
     multipart: { prodId: eventId, nombreTicket: 'General', descripcionTicket: 'Entrada general', precio: String(precio),
       cantidad: String(cantidad), fechaDeCierre: fechaDeCierre ?? enUnMes, visibilidad: '1', estado: '1', distribution: '0', limit: '10' }
   })

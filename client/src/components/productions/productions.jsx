@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState, Fragment } from "react"
 import UserContext from "../../context/userContext"
 import { descargarCompradoresRequest, getProdsRequest } from "../../api/eventRequests"
 import { Link } from "react-router"
@@ -105,7 +105,7 @@ return (
 
               <tbody className="bg-gray-800! divide-y divide-gray-600">
                 {productions.map((prod) => (
-                  <>
+                  <Fragment key={prod._id}>
                     {/* Fila principal del evento */}
                     <tr 
                       key={prod._id} 
@@ -403,7 +403,7 @@ return (
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

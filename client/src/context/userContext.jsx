@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react"
 import { loginUserRequest } from "../api/userRequests"
+import { leerSesion } from "../api/http"
 
 const UserContext = createContext()
 
@@ -11,7 +12,14 @@ export const UserContextProvider = ({children}) => {
 
     useEffect(() => {
         const getSess = () => {
-            setSession(JSON.parse(localStorage.getItem('session')))
+            const guardada = leerSesion()
+            //Sesiones de antes del login con token: no sirven para el backend, hay que volver a ingresar
+            if (guardada && !guardada.token) {
+                localStorage.removeItem('session')
+                setSession(null)
+                return
+            }
+            setSession(guardada)
         }
         getSess()
     }, [])

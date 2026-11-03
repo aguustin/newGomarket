@@ -21,6 +21,8 @@ import { resend } from "../lib/resendDomain.js";
 import purchaseModel from "../models/purchaseModel.js";
 import discountModel from "../models/discountModel.js";
 import { calcularCompra } from "../lib/pricing.js";
+import orderModel from "../models/orderModel.js";
+import { RESERVA_MINUTOS, fechaMP, reservarStock, devolverStock, liberarOrden, confirmarOrdenPagada } from "../lib/stock.js";
 
 dotenv.config();
 
@@ -40,10 +42,10 @@ export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS
 
 export const createEventController = async (req, res) => {
   const {
-    userId, prodMail, codigoPais, codigoCiudad, paisDestino, tipoEvento,
+    codigoPais, codigoCiudad, paisDestino, tipoEvento,
     eventoEdad, nombreEvento, descripcionEvento, aviso, categoriasEventos,
     artistas, montoVentas, porcentajeRRPP, fechaInicio, fechaFin, provincia, localidad,
-    tipoMoneda, direccion, lugarEvento, linkVideo, comisionServicio
+    tipoMoneda, direccion, lugarEvento, linkVideo
   } = req.body;
 
   const eventoEdadPush = (eventoEdad !== undefined && eventoEdad !== null && eventoEdad !== '' &&
@@ -51,7 +53,13 @@ export const createEventController = async (req, res) => {
     ? Number(eventoEdad)
     : undefined;
 
-  const parsedCategorias = JSON.parse(categoriasEventos);
+  //El dueño, su mail y la comision salen de la sesion (antes los mandaba el navegador, incluida la comision)
+  const userId = String(req.user._id);
+  const prodMail = req.user.mail;
+  const comisionServicio = req.user.comisionServicio ?? 15;
+
+  let parsedCategorias = [];
+  try { parsedCategorias = JSON.parse(categoriasEventos ?? '[]'); } catch { return res.status(400).json({ error: 'Categorías inválidas' }); }
   const encryptedMail = encrypt(prodMail);
 
   const defaultImage = 'https://res.cloudinary.com/drmcrdf4r/image/upload/v1767393484/eventsGoTicket/tdbkxf15dsmhwrxxyigl.png';
@@ -456,7 +464,8 @@ const obtenerRRPPDesdeHash = (event, emailHash) => {
   return { rrppMatch: null, decryptedMail: null };
 };
 
-const procesarVentaGeneral = async (prodId, quantities, total) => {
+//descontarStock=false cuando el stock ya se reservo al crear la orden (lib/stock.js)
+const procesarVentaGeneral = async (prodId, quantities, total, { descontarStock = true } = {}) => {
   console.log('ENTRO A PROCESAR VENTA GENERAL: ', prodId, ' ', quantities, ' ', total)
   const bulkOps = Object.entries(quantities).map(([ticketId, quantityObj]) => {
     const { amount, free } = quantityObj;
@@ -466,7 +475,7 @@ const procesarVentaGeneral = async (prodId, quantities, total) => {
         update: {
           $inc: {
             "tickets.$.ventas": amount,
-            "tickets.$.cantidad": free ? 0 : -amount,
+            "tickets.$.cantidad": free || !descontarStock ? 0 : -amount,
           },
         },
       },
@@ -640,7 +649,8 @@ const handleSuccessfulPayment = async ({
   dni,
   paymentId,
   discountCode,
-  montoEntradas
+  montoEntradas,
+  orderId
 }) => {
 
   try {
@@ -668,9 +678,15 @@ const handleSuccessfulPayment = async ({
       return 0;
     }
 
+    //Con orden, el stock se reservo en /buy (o se vuelve a tomar si la reserva vencio). Sin orden
+    //(preferencias anteriores a las ordenes) se descuenta aca como antes
+    const { stockYaDescontado } = isValidObjectId(orderId)
+      ? await confirmarOrdenPagada(orderId, paymentId)
+      : { stockYaDescontado: false };
+
     const tasks = [
       qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
-      procesarVentaGeneral(prodId, quantities, total)
+      procesarVentaGeneral(prodId, quantities, total, { descontarStock: !stockYaDescontado })
     ];
 
     if (rrppMatch && decryptedMail) {
@@ -723,6 +739,7 @@ export const buyEventTicketsController = async (req, res) => {
     return res.status(400).json({ code: 'DATOS_COMPRADOR', error: 'Completá nombre, DNI y teléfono' })
   }
 
+  let orden = null
   try {
     const event = await ticketModel.findById(prodId).lean()
 
@@ -741,14 +758,34 @@ export const buyEventTicketsController = async (req, res) => {
 
     const comprador = { mail: mail.trim(), nombreCompleto: nombreCompleto.trim(), dni, telefono: String(telefono) }
 
+    //Reserva atomica: si otra compra se llevo las ultimas entradas, no se cobra nada
+    if (!(await reservarStock(prodId, compra.quantities))) {
+      return res.status(409).json({ code: 'SIN_STOCK', error: 'No quedan suficientes entradas. Revisá la disponibilidad' })
+    }
+
     //Gratis solo si lo calcula el servidor (entradas de precio 0 o 100% de descuento): se emite sin pasar por MP
     if (compra.total === 0) {
       const enviados = await qrGeneratorController(prodId, compra.quantities, comprador.mail, 1, comprador.nombreCompleto, dni)
-      if (!enviados) return res.status(502).json({ code: 'ENTRADAS_NO_ENVIADAS', error: 'No pudimos enviar tus entradas. Intentá de nuevo' })
-      await procesarVentaGeneral(prodId, compra.quantities, 0)
+      if (!enviados) {
+        await devolverStock(prodId, compra.quantities)
+        return res.status(502).json({ code: 'ENTRADAS_NO_ENVIADAS', error: 'No pudimos enviar tus entradas. Intentá de nuevo' })
+      }
+      await procesarVentaGeneral(prodId, compra.quantities, 0, { descontarStock: false })
       await purchaseModel.create({ prodId, nombreCompleto: comprador.nombreCompleto, email: comprador.mail, dni, telefono: parseInt(comprador.telefono) })
       await consumirDescuento(descuento?.idDescuento, prodId, 'compra gratuita')
       return res.status(200).json(3)
+    }
+
+    const ahora = new Date()
+    const expiraEn = new Date(ahora.getTime() + RESERVA_MINUTOS * 60 * 1000)
+    try {
+      orden = await orderModel.create({
+        prodId: String(prodId), quantities: compra.quantities, total: compra.total, montoEntradas: compra.montoEntradas,
+        discountCode: descuento?.idDescuento ?? null, expiraEn
+      })
+    } catch (err) {
+      await devolverStock(prodId, compra.quantities)
+      throw err
     }
 
     const preference = {
@@ -770,8 +807,14 @@ export const buyEventTicketsController = async (req, res) => {
         failure: `${urlBack}/payment_return`,
         pending: `${urlBack}/payment_return`,
       },
-      external_reference: "164382724",
+      external_reference: orden._id.toString(),
       auto_return: 'approved',
+      //MP no acepta el pago despues de vencida la reserva
+      expires: true,
+      expiration_date_from: fechaMP(ahora),
+      expiration_date_to: fechaMP(expiraEn),
+      //Sin medios en efectivo (Rapipago/Pago Facil): se aprueban horas despues, incompatibles con la reserva
+      payment_methods: { excluded_payment_types: [{ id: 'ticket' }, { id: 'atm' }] },
       notification_url: `${urlBack}/webhook/mercadopago`,
       metadata: {
         prod_id: String(prodId),
@@ -785,7 +828,8 @@ export const buyEventTicketsController = async (req, res) => {
         nombre_completo: comprador.nombreCompleto,
         dni,
         telefono: comprador.telefono,
-        discount_code: descuento?.idDescuento ?? null
+        discount_code: descuento?.idDescuento ?? null,
+        order_id: orden._id.toString()
       },
     };
 
@@ -795,9 +839,11 @@ export const buyEventTicketsController = async (req, res) => {
       return res.status(200).json({ init_point: response.body.init_point, total: compra.total });
     }
     console.error('Mercado Pago no devolvio init_point');
+    await liberarOrden(orden._id, 'fallida');
     return res.status(502).json({ message: 'Error creando la preferencia' });
   } catch (error) {
     console.error('Error al crear preferencia:', error?.message ?? error);
+    if (orden) await liberarOrden(orden._id, 'fallida').catch(() => {});
     return res.status(500).json({ message: 'Error creando la preferencia' });
   }
 };
@@ -830,7 +876,8 @@ const procesarPagoMP = async (paymentId, origen) => {
       dni,
       telefono,
       discount_code = null,
-      monto_entradas
+      monto_entradas,
+      order_id
     } = metadata;
 
     if (!quantities || !mail || !prod_id || !total) {
@@ -850,7 +897,8 @@ const procesarPagoMP = async (paymentId, origen) => {
       dni,
       paymentId,
       discountCode: discount_code,
-      montoEntradas: monto_entradas
+      montoEntradas: monto_entradas,
+      orderId: order_id ?? payment.external_reference
     });
 
     // Solo si fue realmente nuevo
@@ -1546,9 +1594,9 @@ export const paymentConfirmController = async (req, res) => {
   }
 };
 
+//Cerrado: devolvia todos los tokens de QR validos (cualquiera podia entrar con entradas ajenas)
 export const verTokensController = async (req , res) => {
-  const response = await tokenModel.find()
-  res.send(response)
+  res.status(410).json({ message: 'Este recurso ya no está disponible' })
 }
 
 export const descargarCompradoresController = async (req, res) => {
