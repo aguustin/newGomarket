@@ -4,7 +4,7 @@ import { chargeExcelRequest, chargeRRPPExcelRequest, getCortesieRequest } from "
 import UserContext from "../../context/userContext"
 import excelEjPng from "../../assets/images/excelEj.png"
 import { getOneProdRequest } from "../../api/eventRequests"
-import { formatDateB } from "../../globalscomp/globalscomp"
+import { EventoNoDisponible, formatDateB } from "../../globalscomp/globalscomp"
 import uploadPng from "../../assets/images/upload.png"
 
 const NewCortesie = () => {
@@ -12,17 +12,21 @@ const NewCortesie = () => {
     const {session} = useContext(UserContext)
     const [productions, setProductions] = useState([])
     const [listType, setListType] = useState('1')
+    const [noDisponible, setNoDisponible] = useState(false)
     const navigate = useNavigate()
 
     useEffect(() => {
-        if(prodId.length > 0){
+        const userId = session?.userFinded?.[0]?._id
+        if(prodId.length > 0 && userId){  //esperar a que cargue la sesion
             const getProdFunc = async () => {
-                const res = await getOneProdRequest(prodId, session?.userFinded?.[0]?._id)
+                const res = await getOneProdRequest(prodId, userId)
+                setNoDisponible(!res.data.tickets?.length) //no existe o no es de este usuario
                 setProductions(res.data)
             }
             getProdFunc()
         }
-    }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session])
    
     const handleExcelUpload = async (e) => {
         e.preventDefault()
@@ -51,6 +55,8 @@ const NewCortesie = () => {
         navigate(`/cortesies/${prodId}`)
         
     }
+
+    if (noDisponible) return <EventoNoDisponible />
 
     return(
         <>

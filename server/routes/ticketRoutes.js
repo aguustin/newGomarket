@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { requireAuth, mismoUserId, mismoMail } from "../lib/auth.js";
-import { activeDiscount, addRRPPController, buyEventTicketsController, cancelarEventoController, createDiscountController, createEventController, createEventTicketsController, descargarCompradoresController, findDiscountController, generateMyRRPPLinkController, getAllEventsController, getBuyersController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRelateEventsController, getRRPPInfoController, mercadoPagoWebhookController, paymentConfirmController, paymentReturnController, paymentStatusController, paymentSuccessController, qrGeneratorController, reactivarEventoController, relateEventsController, sendQrStaffQrController, soldOutEventController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
+import { requireAuth, authOpcional, mismoUserId, mismoMail } from "../lib/auth.js";
+import { duenoDelEvento, duenoDelTicket, rrppDelEvento } from "../lib/permisos.js";
+import { validarEntradaController, rrppCortesiasController, rrppEnviarCortesiasController, activeDiscount, addRRPPController, buyEventTicketsController, cancelarEventoController, createDiscountController, createEventController, createEventTicketsController, descargarCompradoresController, findDiscountController, generateMyRRPPLinkController, getAllEventsController, getBuyersController, getEventsFreesController, getEventToBuyController, getInfoQrController, getMyProdsController, getOneProdController, getRelateEventsController, getRRPPInfoController, mercadoPagoWebhookController, paymentConfirmController, paymentReturnController, paymentStatusController, paymentSuccessController, qrGeneratorController, reactivarEventoController, relateEventsController, sendQrStaffQrController, soldOutEventController, updateEventController, updateEventTicketsController, verTokensController } from "../controllers/eventController.js";
 import multer from "multer"
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -11,11 +12,11 @@ router.get('/getAllEvents', getAllEventsController)
 
 router.post('/createEvent', requireAuth, upload.fields([{name:'imgEvento', maxCount: 1}, {name:'bannerEvento', maxCount: 1}, {name:'imagenDescriptiva', maxCount: 1}]), createEventController)
 
-router.post('/createEventTickets', requireAuth, upload.single('imgTicket'), createEventTicketsController)
+router.post('/createEventTickets', requireAuth, upload.single('imgTicket'), duenoDelEvento((req) => req.body.prodId), createEventTicketsController)
 
-router.post('/updateEvent', requireAuth, upload.fields([{name:'imgEvento'}, {name: 'bannerEvento', maxCount: 1}, {name: 'imagenDescriptiva', maxCount: 1}]),  updateEventController)
+router.post('/updateEvent', requireAuth, upload.fields([{name:'imgEvento'}, {name: 'bannerEvento', maxCount: 1}, {name: 'imagenDescriptiva', maxCount: 1}]),  duenoDelEvento((req) => req.body.eventId), updateEventController)
 
-router.post('/updateTickets', requireAuth, upload.single('imgTicket'), updateEventTicketsController)
+router.post('/updateTickets', requireAuth, upload.single('imgTicket'), duenoDelTicket((req) => req.body.ticketId), updateEventTicketsController)
 
 router.get('/my_productions/:userId', requireAuth, mismoUserId((req) => req.params.userId), getMyProdsController)
 
@@ -25,11 +26,14 @@ router.get('/buy_tickets/:prodId', getEventToBuyController)
 
 router.post('/buy', buyEventTicketsController)
 
-router.post('/addRRPP', requireAuth, addRRPPController)
+router.post('/addRRPP', requireAuth, duenoDelEvento((req) => req.body.prodId), addRRPPController)
 
-router.get('/ticket/validate/:token', getInfoQrController);
+//Mostrar la entrada (publico; con sesion indica si puede validar) y validar el ingreso (dueño o RRPP)
+router.get('/ticket/validate/:token', authOpcional, getInfoQrController);
 
-router.post('/sendQrStaff', requireAuth, sendQrStaffQrController)
+router.post('/ticket/validate/:token', requireAuth, validarEntradaController);
+
+router.post('/sendQrStaff', requireAuth, duenoDelEvento((req) => req.body.prodId), sendQrStaffQrController)
 
 router.post('/webhook/mercadopago', mercadoPagoWebhookController);
 
@@ -45,25 +49,30 @@ router.get('/get_my_rrpp_events/:mail', requireAuth, mismoMail((req) => req.para
 
 router.get('/rrpp_get_event_free/:prodId/:mail', requireAuth, mismoMail((req) => req.params.mail), getEventsFreesController)
 
-router.post('/generate_rrpp_url', requireAuth, mismoMail((req) => req.body.rrppMail), generateMyRRPPLinkController)
+//Cortesias del RRPP para sus clientes (etapa 7b)
+router.get('/rrpp_cortesias/:prodId', requireAuth, rrppDelEvento((req) => req.params.prodId), rrppCortesiasController)
+
+router.post('/rrpp_enviar_cortesias', requireAuth, rrppDelEvento((req) => req.body.prodId), rrppEnviarCortesiasController)
+
+router.post('/generate_rrpp_url', requireAuth, mismoMail((req) => req.body.rrppMail), rrppDelEvento((req) => req.body.prodId), generateMyRRPPLinkController)
 
 router.get('/tokens', verTokensController)
 
-router.post('/descargar_compradores', requireAuth, descargarCompradoresController)
+router.post('/descargar_compradores', requireAuth, duenoDelEvento((req) => req.body.prodId), descargarCompradoresController)
 
-router.post('/relacionar_eventos', requireAuth, relateEventsController)
+router.post('/relacionar_eventos', requireAuth, duenoDelEvento((req) => req.body.prodId), duenoDelEvento((req) => req.body.otherId), relateEventsController)
 
 router.get('/obtener_eventos_relacionados/:prodId', getRelateEventsController)
 
-router.post('/cancelar_evento', requireAuth, cancelarEventoController)
+router.post('/cancelar_evento', requireAuth, duenoDelEvento((req) => req.body.prodId), cancelarEventoController)
 
-router.post('/reactivar_evento', requireAuth, reactivarEventoController)
+router.post('/reactivar_evento', requireAuth, duenoDelEvento((req) => req.body.prodId), reactivarEventoController)
 
-router.post('/sold_out', requireAuth, soldOutEventController)
+router.post('/sold_out', requireAuth, duenoDelEvento((req) => req.body.prodId), soldOutEventController)
 
-router.get('/get_buyers/:prodId', requireAuth, getBuyersController)
+router.get('/get_buyers/:prodId', requireAuth, duenoDelEvento((req) => req.params.prodId), getBuyersController)
 
-router.post('/create_discount', requireAuth, createDiscountController)
+router.post('/create_discount', requireAuth, duenoDelEvento((req) => req.body.prodId), createDiscountController)
 
 router.post('/active_discount', activeDiscount)
 

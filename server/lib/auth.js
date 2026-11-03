@@ -50,6 +50,22 @@ export const requireAuth = async (req, res, next) => {
   }
 }
 
+//Para rutas publicas que muestran algo extra si hay sesion (ej: el QR muestra "Validar ingreso" al organizador).
+//Con un token valido deja req.user; sin token o con uno invalido sigue sin usuario (nunca responde 401)
+export const authOpcional = async (req, res, next) => {
+  const [tipo, token] = String(req.headers.authorization || '').split(' ')
+  if (tipo !== 'Bearer' || !token) return next()
+  try {
+    const payload = jwt.verify(token, JWT_SECRET)
+    if (payload.typ === TIPO_SESION && isValidObjectId(payload.sub)) {
+      req.user = await userModel.findById(payload.sub, { contrasenia: 0 }).lean() ?? undefined
+    }
+  } catch {
+    //sesion invalida o vencida: se trata como visitante
+  }
+  return next()
+}
+
 //Para rutas que reciben "quien soy" (userId o mail): solo se acepta el mismo usuario de la sesion.
 //Se usa DESPUES de requireAuth (y de multer en las rutas con archivos, para que el body ya este armado).
 const prohibido = (res) => res.status(403).json({ code: 'OTRO_USUARIO', error: 'No podés operar en nombre de otro usuario' })

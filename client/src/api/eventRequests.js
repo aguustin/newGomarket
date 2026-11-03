@@ -155,3 +155,11 @@ export const findDiscountCodeRequest = async ({discountCode, prodId}) => axios.g
 export const getPaymentStatusRequest = (paymentId) => axios.get(`${import.meta.env.VITE_URL}/payment_status/${paymentId}`)
 
 export const confirmPaymentRequest = (paymentId) => axios.post(`${import.meta.env.VITE_URL}/payment_confirm/${paymentId}`)
+
+export const getRRPPCortesiasRequest = (prodId) => axios.get(`${import.meta.env.VITE_URL}/rrpp_cortesias/${prodId}`)
+
+export const sendRRPPCortesiasRequest = (data) => axios.post(`${import.meta.env.VITE_URL}/rrpp_enviar_cortesias`, data)
+
+export const getEntradaRequest = (token) => axios.get(`${import.meta.env.VITE_URL}/ticket/validate/${token}`)
+
+export const validarEntradaRequest = (token) => axios.post(`${import.meta.env.VITE_URL}/ticket/validate/${token}`)

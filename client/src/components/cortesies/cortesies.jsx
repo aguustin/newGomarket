@@ -1,6 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import UserContext from "../../context/userContext";
+import { getOneProdRequest } from "../../api/eventRequests";
+import { EventoNoDisponible } from "../../globalscomp/globalscomp";
 import { deleteCortesieRequest, deleteRRPPExcelRequest, getAllExcelsRequest, getAllRRPPExcelsRequest, sendCortesiesRequest, sendRRPPLinksRequest } from "../../api/cortesieRequest";
 
 const Cortesies = () => {
@@ -9,10 +11,15 @@ const Cortesies = () => {
     const [cortesies, setCortesies] = useState([])
     const [rrppExcels, setRrppExcels] = useState([])
     const [showColabs, setShowColabs] = useState(false)
+    const [noDisponible, setNoDisponible] = useState(false)
 
     useEffect(() => {
         const getProdCortesiesFunc = async () => {
-            const res = await getAllExcelsRequest(session?.userFinded?.[0]?._id, prodId)
+            const userId = session?.userFinded?.[0]?._id
+            if (!userId) return //esperar a que cargue la sesion
+            const prod = await getOneProdRequest(prodId, userId)
+            if (!prod.data.tickets?.length) { setNoDisponible(true); return } //no existe o no es de este usuario
+            const res = await getAllExcelsRequest(userId, prodId)
             setCortesies(res.data)
         }
         getProdCortesiesFunc()
@@ -51,6 +58,8 @@ const Cortesies = () => {
             alert('No se pudo eliminar el Excel. Intentá de nuevo.')
         }
     }
+
+    if (noDisponible) return <EventoNoDisponible />
 
     return(
         <>

@@ -34,3 +34,14 @@ cron.schedule('* * * * *', async () => {
         console.error("Error liberando reservas vencidas:", err);
     }
 });
+
+//Cada 5 minutos: pagos cobrados cuyas entradas no se pudieron entregar (ej: fallo el mail) se reintentan
+cron.schedule('*/5 * * * *', async () => {
+    try {
+        const { reintentarPagosPendientes } = await import('../controllers/eventController.js');
+        const pendientes = await reintentarPagosPendientes();
+        if (pendientes > 0) console.log(`Pagos con entrega pendiente reintentados: ${pendientes}`);
+    } catch (err) {
+        console.error("Error reintentando entregas pendientes:", err);
+    }
+});

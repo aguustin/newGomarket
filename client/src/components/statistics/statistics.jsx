@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { getOneProdRequest } from "../../api/eventRequests";
 import { Chart, registerables } from 'chart.js';
-import { formatDate } from "../../globalscomp/globalscomp";
+import { EventoNoDisponible, formatDate } from "../../globalscomp/globalscomp";
 import checkPng from '../../assets/images/check.png'
 import statisticsPng from '../../assets/images/statistics.png'
 import folderPng from '../../assets/images/folder.png'
@@ -21,6 +21,7 @@ const Statistics = () => {
         prodDiscount: []
     });
     const [currentView, setCurrentView] = useState('general');
+    const [noDisponible, setNoDisponible] = useState(false);
     const chartRef = useRef(null);
     const chartInstanceRef = useRef(null);
     
@@ -33,9 +34,11 @@ const Statistics = () => {
         const getProds = async () => {
             try {
                 const res = await getOneProdRequest(prodId, userId);
+                setNoDisponible(!res.data.tickets?.length); //no existe o no es de este usuario
                 setProductions(res.data);
                 setGraphic('bar');
             } catch (err) {
+                if ([403, 404].includes(err?.response?.status)) setNoDisponible(true);
                 console.error("Failed to fetch productions:", err);
             }
         };
@@ -189,6 +192,8 @@ const Statistics = () => {
 
     }, [currentView, productions?.tickets, graphic]);
    
+    if (noDisponible) return <EventoNoDisponible />;
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
             <div className="max-w-7xl mx-auto">

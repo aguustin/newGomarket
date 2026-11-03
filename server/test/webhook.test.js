@@ -20,7 +20,8 @@ before(async () => {
   mock.method(mercadopago.payment, 'findById', async (id) => {
     const body = mpPayments[String(id)]
     if (!body) throw Object.assign(new Error('Payment not found'), { status: 404 })
-    return { body }
+    //Como Mercado Pago: el pago trae lo cobrado y la moneda (por defecto, lo que calculo el servidor)
+    return { body: { currency_id: 'ARS', transaction_amount: body.metadata?.total, ...body } }
   })
 })
 after(closeDb)
@@ -109,6 +110,7 @@ test('compra con link de RRPP: registra la venta y la comision del RRPP', async 
   await webhook('1003')
   await esperar(async () => (await purchaseModel.countDocuments()) === 1)
   await esperar(async () => (await ticketModel.findById(evento._id).lean()).rrpp[0].ventasRRPP.length === 1)
+  await esperar(async () => (await mailsPara(mail)).length === 1)  //la entrega termina despues de la venta
 
   const { rrpp: [rrpp] } = await ticketModel.findById(evento._id).lean()
   assert.equal(rrpp.ventasRRPP[0].vendidos, 2)

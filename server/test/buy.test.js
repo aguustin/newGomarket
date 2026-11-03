@@ -25,7 +25,8 @@ before(async () => {
   mock.method(mercadopago.payment, 'findById', async (id) => {
     const body = mpPayments[String(id)]
     if (!body) throw Object.assign(new Error('Payment not found'), { status: 404 })
-    return { body }
+    //Como Mercado Pago: el pago trae lo cobrado y la moneda (por defecto, lo que calculo el servidor)
+    return { body: { currency_id: 'ARS', transaction_amount: body.metadata?.total, ...body } }
   })
 })
 after(closeDb)
@@ -235,5 +236,6 @@ test('pago de una preferencia vieja (sin monto_entradas): el reembolsable se ded
   } }
   await request(app).post('/webhook/mercadopago').query({ type: 'payment', 'data.id': '5002' })
   await esperar(async () => (await transactionModel.countDocuments()) === 1)
+  await esperar(async () => (await tokenModel.countDocuments()) === 2)  //la entrega termina despues de la venta
   assert.equal((await transactionModel.findOne({ paymentId: '5002' }).lean()).montoPagado, 40000)
 })

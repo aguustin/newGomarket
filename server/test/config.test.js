@@ -50,3 +50,11 @@ test('produccion con MAIL_MODE=resend exige RESEND_API_KEY', () => {
   const { RESEND_API_KEY, ...resto } = base
   assert.ok(validateConfig(resto).errors.includes('Falta la variable RESEND_API_KEY'))
 })
+
+test('WEBHOOK_FIRMA: valor desconocido es error; estricto exige WEBHOOK_SECRET_KEY', () => {
+  const base = { APP_ENV: 'development', MONGO_URI: 'x', JWT_SECRET: 'x', SECRET_MAIL_KEY: 'x', MAIL_MODE: 'bandeja' }
+  assert.ok(validateConfig({ ...base, WEBHOOK_FIRMA: 'quizas' }).errors.some((e) => e.includes('WEBHOOK_FIRMA')))
+  assert.ok(validateConfig({ ...base, WEBHOOK_FIRMA: 'estricto' }).errors.some((e) => e.includes('WEBHOOK_SECRET_KEY')))
+  assert.equal(validateConfig({ ...base, WEBHOOK_FIRMA: 'estricto', WEBHOOK_SECRET_KEY: 's' }).errors.length, 0)
+  assert.equal(validateConfig(base).errors.length, 0, 'por defecto: registrar')
+})

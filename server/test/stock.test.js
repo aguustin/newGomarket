@@ -27,7 +27,8 @@ before(async () => {
   mock.method(mercadopago.payment, 'findById', async (id) => {
     const body = mpPayments[String(id)]
     if (!body) throw Object.assign(new Error('Payment not found'), { status: 404 })
-    return { body }
+    //Como Mercado Pago: el pago trae lo cobrado y la moneda (por defecto, lo que calculo el servidor)
+    return { body: { currency_id: 'ARS', transaction_amount: body.metadata?.total, ...body } }
   })
 })
 after(closeDb)

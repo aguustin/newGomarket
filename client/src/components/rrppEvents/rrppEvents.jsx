@@ -154,13 +154,15 @@ const RRPPEvents = () => {
                   >
                     Generar mi link de pago
                   </button>
-
-                  <Link
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:to-pink-500 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center group text-white! hover:text-white!"
-                    to={`${import.meta.env.VITE_URL_FRONT}/get_buyers/${rpe._id}`}
-                  >
-                    Lista de compradores
-                  </Link>
+                  {/* La lista de compradores (datos personales) la ve solo el dueño del evento */}
+                  {rrppCoincidente?.ticketsCortesias?.some((t) => t.cantidadDeCortesias > 0) && (
+                    <Link
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:to-pink-500 text-white! px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center"
+                      to={`/rrpp_get_event_free/${rpe._id}/${session?.userFinded?.[0]?.mail}`}
+                    >
+                      Enviar cortesías ({rrppCoincidente.ticketsCortesias.reduce((acc, t) => acc + (t.cantidadDeCortesias || 0), 0)})
+                    </Link>
+                  )}
                 </div>
               </div>
             );

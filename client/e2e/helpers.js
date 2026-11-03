@@ -75,3 +75,20 @@ export const createEventViaApi = async (request, { auth, userId, prodMail, nombr
   expect(tk.ok()).toBe(true)
   return eventId
 }
+
+//Ultimo QR emitido en la base de E2E (el mail lo trae como imagen, sin link)
+export const ultimoTokenQR = async () => {
+  const { createRequire } = await import('node:module')
+  const { fileURLToPath } = await import('node:url')
+  const serverDir = fileURLToPath(new URL('../../server/', import.meta.url))
+  const require = createRequire(serverDir + 'package.json')
+  const env = require('dotenv').parse(require('fs').readFileSync(serverDir + '.env'))
+  const mongoose = require('mongoose')
+  const conn = await mongoose.createConnection(env.MONGO_URI, { dbName: 'ipass_e2e' }).asPromise()
+  try {
+    const [doc] = await conn.db.collection('tokenschemas').find().sort({ _id: -1 }).limit(1).toArray()
+    return doc?.token
+  } finally {
+    await conn.close()
+  }
+}

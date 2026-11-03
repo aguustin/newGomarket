@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ipassBanckground from "../assets/images/fondoB.jpeg"
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import timerPng from "../assets/images/timer.png"
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 
@@ -57,6 +57,16 @@ export default function FadeInImage({ src, alt, className }) {
         </div>
     );
 }
+
+//Pantallas de gestion de un evento abiertas por alguien que no es el dueño (o con un evento que no existe).
+//El backend ya rechaza cualquier cambio: esto solo explica por que la pantalla no muestra nada
+export const EventoNoDisponible = () => (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+        <h2 className="text-2xl font-bold text-gray-200! mb-3">Este evento no está disponible</h2>
+        <p className="text-gray-400! mb-6">No existe o no lo creaste vos. Solo el dueño del evento puede gestionarlo.</p>
+        <Link className="bg-gradient-to-r from-amber-500 to-yellow-500 text-[#111827]! px-5 py-2 rounded-xl" to="/productions">Ir a mis producciones</Link>
+    </div>
+)
 
 export const Message = (props) => {
     return(

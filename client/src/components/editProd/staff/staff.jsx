@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useParams } from "react-router"
 import { getOneProdRequest, staffQrRequest } from "../../../api/eventRequests"
 import { useState } from "react"
-import { formatDate } from "../../../globalscomp/globalscomp"
+import { EventoNoDisponible, formatDate } from "../../../globalscomp/globalscomp"
 import { useContext } from "react"
 import UserContext from "../../../context/userContext"
 import calendarPng from "../../../assets/images/calendar.png"
@@ -15,11 +15,14 @@ const Staff = () => {
     const [quantity, setQuantity] = useState(0)
     const [totalQuantity, setTotalQuantity] = useState(0)
     const [showMsg, setShowMsg] = useState(0)
+    const [noDisponible, setNoDisponible] = useState(false)
 
     useEffect(() => {
         const obtainUserProd = async () => {
             const userId = session?.userFinded?.[0]?._id
+            if (!userId) return //esperar a que cargue la sesion
             const res = await getOneProdRequest(prodId, userId)
+            setNoDisponible(!res.data.tickets?.length) //no existe o no es de este usuario
             setProducction(res.data)
         }
         obtainUserProd()
@@ -76,6 +79,8 @@ const Staff = () => {
         }
     }
 console.log(producction.tickets)
+   if (noDisponible) return <EventoNoDisponible />
+
    return (
   <>
     <div className="min-h-screen py-8 px-4">

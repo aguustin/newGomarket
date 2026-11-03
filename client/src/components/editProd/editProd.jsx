@@ -22,6 +22,7 @@ import {
   formatDateB,
   formatearFechaParaInput,
   LoadingButton,
+  EventoNoDisponible,
 } from "../../globalscomp/globalscomp";
 import qrCodePng from "../../assets/images/qr-code.png";
 import ticketPng from "../../assets/images/ticket.png";
@@ -78,11 +79,15 @@ const EditProd = () => {
   const [showDesc, setShowDesc] = useState(false);
   const [changeTDLayout, setChangeTDLayout] = useState(false)
   const [discounts, setDiscounts] = useState([])
+  const [noDisponible, setNoDisponible] = useState(false)
 
   useEffect(() => {
     const userId = session?.userFinded?.[0]?._id;
     const getOneProd = async () => {
+      if (!userId) return; //esperar a que cargue la sesion
       const res = await getOneProdRequest(prodId, userId); //userId va la session del usuario
+      if (!res.data.tickets?.length) { setNoDisponible(true); return; } //no existe o no es de este usuario
+      setNoDisponible(false);
       setProd(res.data.tickets);
       setDiscounts(res.data.prodDiscount)
       const othersRes = await getProdsRequest(userId);
@@ -123,6 +128,7 @@ const EditProd = () => {
 }, [message]);
 
   if (width === null) return null;
+  if (noDisponible) return <EventoNoDisponible />;
 
 
   const updateEvent = async (

@@ -4,12 +4,13 @@ import { useState } from "react";
 import UserContext from "../../context/userContext";
 import { useParams } from "react-router";
 import { getBuyersRequest } from "../../api/eventRequests";
-import { formatDate } from "../../globalscomp/globalscomp";
+import { EventoNoDisponible, formatDate } from "../../globalscomp/globalscomp";
 
 const BuyersList = () => { 
     const {session} = useContext(UserContext)
     const {prodId} = useParams()
     const [buyers, setBuyers] = useState([])
+    const [noDisponible, setNoDisponible] = useState(false)
 
        useEffect(() => {
             const getBuyers = async () => {
@@ -20,13 +21,15 @@ const BuyersList = () => {
                     const res = await getBuyersRequest(prodId);
                     setBuyers(res.data);
                 } catch (err) {
+                    if ([400, 403, 404].includes(err?.response?.status)) setNoDisponible(true);
                     console.error("Failed to fetch buyers:", err);
                 }
             };
             getBuyers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [session]);
-console.log(buyers)
+if (noDisponible) return <EventoNoDisponible />
+
 return (
   <>
     <div className="min-h-screen to-pink-50 py-8 px-4">

@@ -22,6 +22,13 @@ export const mpAccessToken = isDev ? process.env.MP_ACCESS_TOKEN_DEV : process.e
 export const MAIL_MODES = ['resend', 'bandeja', 'falla', 'off']
 export const mailMode = process.env.MAIL_MODE || 'resend'
 
+//WEBHOOK_FIRMA: registrar (por defecto: verifica la firma de Mercado Pago y lo deja en el log, procesa igual)
+//               | estricto (rechaza avisos sin firma valida) | off (no verifica)
+//Cada aviso se confirma igual contra la API de MP, asi que un aviso falso nunca crea ventas
+export const WEBHOOK_FIRMA_MODOS = ['registrar', 'estricto', 'off']
+export const webhookFirma = process.env.WEBHOOK_FIRMA || 'registrar'
+export const webhookSecret = process.env.WEBHOOK_SECRET_KEY
+
 //Revisa la configuracion efectiva. errors = el servidor no debe arrancar; warnings = solo avisar
 export const validateConfig = (env = process.env) => {
   const errors = []
@@ -39,6 +46,9 @@ export const validateConfig = (env = process.env) => {
   if (!local && (mode === 'bandeja' || mode === 'falla')) {
     errors.push(`MAIL_MODE=${mode} es solo para desarrollo/test y no se permite en produccion`)
   }
+  const firma = env.WEBHOOK_FIRMA || 'registrar'
+  if (!WEBHOOK_FIRMA_MODOS.includes(firma)) errors.push(`WEBHOOK_FIRMA="${firma}" no es valido (${WEBHOOK_FIRMA_MODOS.join(' | ')})`)
+  if (firma === 'estricto' && !env.WEBHOOK_SECRET_KEY) errors.push('WEBHOOK_FIRMA=estricto necesita WEBHOOK_SECRET_KEY')
   if (env.MAIL_ENABLED !== undefined) {
     warnings.push('MAIL_ENABLED ya no se usa: reemplazar por MAIL_MODE')
   }

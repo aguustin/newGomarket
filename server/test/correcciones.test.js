@@ -18,7 +18,7 @@ before(async () => {
 after(closeDb)
 beforeEach(resetDb)
 
-const crearEvento = (nombreEvento = 'Fiesta Test') => ticketModel.create({ userId: 'dueno', nombreEvento, tickets: [] })
+const crearEvento = (nombreEvento = 'Fiesta Test', userId = 'dueno') => ticketModel.create({ userId, nombreEvento, tickets: [] })
 
 test('borrar Excel de cortesias: solo el del dueño, y responde cuantos borro', async () => {
   const dueno = await crearSesion()
@@ -57,14 +57,14 @@ test('borrar con id invalido responde 400 sin romper el servidor', async () => {
 })
 
 test('descargar compradores: devuelve un xlsx con todas las transacciones del evento', async () => {
-  const ev = await crearEvento()
+  const { auth, id } = await crearSesion()
+  const ev = await crearEvento('Fiesta Test', id)
   await transactionModel.create([
     { prodId: ev._id.toString(), paymentId: 'p-1', transaccionId: 'p-1', nombre: 'Ana', email: 'ana@ipass-test.local', montoPagado: 100 },
     { prodId: ev._id.toString(), paymentId: 'p-2', transaccionId: 'p-2', nombre: 'Beto', email: 'beto@ipass-test.local', montoPagado: 100 },
     { prodId: 'otro-evento', paymentId: 'p-3', transaccionId: 'p-3', nombre: 'Ajeno', email: 'x@ipass-test.local', montoPagado: 100 }
   ])
 
-  const { auth } = await crearSesion()
   const res = await request(app).post('/descargar_compradores').set(auth).send({ prodId: ev._id.toString() })
     .buffer(true).parse((r, cb) => { const c = []; r.on('data', (d) => c.push(d)); r.on('end', () => cb(null, Buffer.concat(c))) })
 
@@ -79,8 +79,8 @@ test('descargar compradores: devuelve un xlsx con todas las transacciones del ev
 })
 
 test('descargar compradores: evento sin ventas o inexistente responde 404', async () => {
-  const ev = await crearEvento()
-  const { auth } = await crearSesion()
+  const { auth, id } = await crearSesion()
+  const ev = await crearEvento('Fiesta Test', id)
   assert.equal((await request(app).post('/descargar_compradores').set(auth).send({ prodId: ev._id.toString() })).status, 404)
   assert.equal((await request(app).post('/descargar_compradores').set(auth).send({ prodId: '000000000000000000000000' })).status, 404)
   assert.equal((await request(app).post('/descargar_compradores').send({ prodId: ev._id.toString() })).status, 401, 'sin sesion')

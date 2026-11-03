@@ -5,7 +5,8 @@ import mercadopago from "../lib/mercadopago.js";
 import QRCode from 'qrcode';
 import nodemailer from 'nodemailer'; 
 import dotenv from 'dotenv';
-import { user_mail, pass, urlFront, urlBack, mpAccessToken } from "../config.js";
+import { user_mail, pass, urlFront, urlBack, mpAccessToken, webhookFirma, webhookSecret } from "../config.js";
+import { verificarFirmaMP } from "../lib/firmaMP.js";
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid'
 import userModel from "../models/userModel.js";
@@ -22,6 +23,9 @@ import purchaseModel from "../models/purchaseModel.js";
 import discountModel from "../models/discountModel.js";
 import { calcularCompra } from "../lib/pricing.js";
 import orderModel from "../models/orderModel.js";
+import { validarCantidades, asignarCortesiasARRPP, consumirCupoRRPP, devolverCupoRRPP, mailRRPPGuardado } from "../lib/cortesias.js";
+import { leerEntrada, marcarUsada } from "../lib/entradas.js";
+import { esDueno, esRRPP } from "../lib/permisos.js";
 import { RESERVA_MINUTOS, fechaMP, reservarStock, devolverStock, liberarOrden, confirmarOrdenPagada } from "../lib/stock.js";
 
 dotenv.config();
@@ -229,9 +233,10 @@ export const getMyProdsController = async (req, res) => {  //OBTENER MIS PRODUCC
 
 export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO DE UNA SOLA PRODUCCION
     const {prodId, userId} = req.params
+    if (!isValidObjectId(prodId)) return res.send({tickets: [], prodDiscount: []})
     const getProd = await ticketModel.find({_id: prodId, userId: userId})
-    const getProdDiscount = await discountModel.find({prodId: prodId})
-    console.log(getProdDiscount)
+    //Los codigos de descuento solo para el dueño (antes se devolvian aunque el evento fuera de otro)
+    const getProdDiscount = getProd.length > 0 ? await discountModel.find({prodId: prodId}) : []
     res.send({tickets:getProd, prodDiscount: getProdDiscount})
     /*const {prodId, userId} = req.params
     console.log(prodId, ' ', userId)
@@ -594,118 +599,130 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 
 
 
-const guardarTransaccionExitosa = async (
-  prodId,
-  nombreCompleto,
-  mail,
-  total,
-  paymentId,
-  comisionServicio,
-  montoEntradas
-) => {
-  //montoPagado = lo reembolsable: entradas sin el cargo por servicio y con el descuento.
-  //Lo calcula /buy (metadata monto_entradas); las preferencias anteriores a ese cambio no lo traen y se deduce del total
-  const comision = Number(comisionServicio ?? 15);
-  const totalPagoEntradas = typeof montoEntradas === 'number' ? montoEntradas : Math.round(total / (1 + comision / 100));
+//--- Procesamiento de un pago aprobado, por pasos (etapa 9) ---
+//Cada paso queda registrado en la transaccion (models/transactionsModel.js) y se "toma" de forma atomica,
+//asi el webhook, la pagina de resultado y el reintento automatico pueden correr a la vez sin duplicar nada:
+//  1. transaccion (indice unico de paymentId)   2. orden y stock (idempotente)
+//  3. venta: stock, ventas, RRPP, comprador, descuento (una sola vez; si falla queda errorVenta para revisar)
+//  4. entrega del mail con los QR (se reintenta hasta MAX_INTENTOS_ENTREGA veces)
+const MAX_INTENTOS_ENTREGA = 5
+const ENTREGA_EN_CURSO_MS = 2 * 60 * 1000
 
+//Lo reembolsable: entradas sin el cargo por servicio y con el descuento. Lo calcula /buy (metadata monto_entradas);
+//las preferencias anteriores a ese cambio no lo traen y se deduce del total
+const montoReembolsable = (total, comisionServicio, montoEntradas) => {
+  if (typeof montoEntradas === 'number') return montoEntradas
+  const comision = Number(comisionServicio ?? 15)
+  return Math.round(total / (1 + comision / 100))
+}
+
+const registrarTransaccion = async (datos) => {
   try {
-    await transactionModel.create({
-      prodId,
-      paymentId,
-      transaccionId: paymentId,
-      nombre: nombreCompleto,
-      email: mail,
-      montoPagado: totalPagoEntradas,
-      fecha: new Date()
-    });
-    console.log(`Transacción guardada exitosamente: ${paymentId}`);
-    return true;
-
+    return (await transactionModel.create({ ...datos, transaccionId: datos.paymentId, fecha: new Date(), ventaRegistrada: false, entregado: false })).toObject()
   } catch (error) {
-
-    // DUPLICADO (idempotencia)
-    if (error.code === 11000) {
-      console.log(`Transacción duplicada detectada: ${paymentId}`);
-      return false;
-    }
-
-    console.error("Error guardando transacción:", error);
-    throw error;
+    if (error.code === 11000) return transactionModel.findOne({ paymentId: datos.paymentId }).lean()  //ya estaba
+    throw error
   }
-};
+}
 
+//Devuelve true si en esta llamada se registro la venta (el pago era nuevo)
+const procesarPagoAprobado = async (paymentId, payment, origen) => {
+  const metadata = payment.metadata || {}
+  const {
+    prod_id, quantities, mail, state, total, email_hash, nombre_completo, dni, telefono,
+    discount_code = null, monto_entradas, order_id
+  } = metadata
 
-
-
-const handleSuccessfulPayment = async ({
-  prodId,
-  nombreEvento,
-  quantities,
-  mail,
-  state,
-  total,
-  emailHash,
-  nombreCompleto,
-  dni,
-  paymentId,
-  discountCode,
-  montoEntradas,
-  orderId
-}) => {
-
-  try {
-
-    const event = await ticketModel.findOne({ _id: prodId }).lean();
-    if (!event) {
-      console.error("Evento no encontrado:", prodId);
-      return 0;
-    }
-
-    const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, emailHash);
-
-    const guardado = await guardarTransaccionExitosa(
-      prodId,
-      nombreCompleto,
-      mail,
-      total,
-      paymentId,
-      event.comisionServicio,
-      montoEntradas
-    );
-
-    if (!guardado) {
-      console.log(`Transacción ya procesada para paymentId: ${paymentId}`);
-      return 0;
-    }
-
-    //Con orden, el stock se reservo en /buy (o se vuelve a tomar si la reserva vencio). Sin orden
-    //(preferencias anteriores a las ordenes) se descuenta aca como antes
-    const { stockYaDescontado } = isValidObjectId(orderId)
-      ? await confirmarOrdenPagada(orderId, paymentId)
-      : { stockYaDescontado: false };
-
-    const tasks = [
-      qrGeneratorController(prodId, quantities, mail, state, nombreCompleto, dni),
-      procesarVentaGeneral(prodId, quantities, total, { descontarStock: !stockYaDescontado })
-    ];
-
-    if (rrppMatch && decryptedMail) {
-      console.log('SI EJECUTA LA FUNCION PARA PROCESAR LA VENTA: ', rrppMatch, ' ', decryptedMail)
-      tasks.push(procesarVentaRRPP(event, quantities, decryptedMail));
-    }
-    
-    await Promise.all(tasks);
-
-    //El uso del descuento se consume una sola vez, con el pago ya registrado
-    await consumirDescuento(discountCode, prodId, `pago ${paymentId}`);
-
-    return 1;
-
-  } catch (error) {
-    console.error("Error en handleSuccessfulPayment:", error);
-    throw error;
+  if (!quantities || !mail || !prod_id || !total) {
+    console.error(`Metadata incompleta en el pago ${paymentId} (${origen}):`, Object.keys(metadata))
+    return false
   }
-};
+  const event = await ticketModel.findById(prod_id).lean()
+  if (!event) {
+    console.error(`ALERTA: el pago aprobado ${paymentId} es de un evento que no existe (${prod_id})`)
+    return false
+  }
+
+  const tx = await registrarTransaccion({
+    prodId: prod_id, paymentId, nombre: nombre_completo, email: mail,
+    montoPagado: montoReembolsable(total, event.comisionServicio, monto_entradas),
+    montoCobrado: payment.transaction_amount
+  })
+
+  //Mercado Pago tiene que haber cobrado lo que calculo el servidor, en pesos
+  const cobrado = Number(payment.transaction_amount)
+  const montoOk = (!payment.currency_id || payment.currency_id === 'ARS') && Number.isFinite(cobrado) && Math.abs(cobrado - Number(total)) <= 1
+  if (!montoOk || tx.alertaMonto) {
+    if (!tx.alertaMonto) {
+      await transactionModel.updateOne({ paymentId }, { $set: { alertaMonto: true } })
+      console.error(`ALERTA: el pago ${paymentId} cobró ${cobrado} ${payment.currency_id} y se esperaba ${total} ARS. No se entregan entradas (revisar)`)
+    }
+    return false
+  }
+  //Completa, o anterior a la etapa 9 (sin estos campos)
+  if (tx.ventaRegistrada !== false && tx.entregado !== false) return false
+
+  //2. Orden y stock (idempotente). Sin orden (preferencias viejas) el stock se descuenta en la venta
+  const orderId = order_id ?? payment.external_reference
+  const { stockYaDescontado } = isValidObjectId(orderId) ? await confirmarOrdenPagada(orderId, paymentId) : { stockYaDescontado: false }
+
+  //3. Venta: la toma un solo proceso
+  let ventaNueva = false
+  if (await transactionModel.findOneAndUpdate({ paymentId, ventaRegistrada: false }, { $set: { ventaRegistrada: true } })) {
+    try {
+      await procesarVentaGeneral(prod_id, quantities, total, { descontarStock: !stockYaDescontado })
+      const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, email_hash)
+      if (rrppMatch && decryptedMail) await procesarVentaRRPP(event, quantities, decryptedMail)
+      await purchaseModel.create({ prodId: prod_id, nombreCompleto: nombre_completo, email: mail, dni, telefono: parseInt(telefono) })
+      await consumirDescuento(discount_code, prod_id, `pago ${paymentId}`)
+      ventaNueva = true
+      console.log(`Pago ${paymentId}: venta registrada (${origen}).`)
+    } catch (err) {
+      //No se reintenta automaticamente para no contar la venta dos veces: queda para revision
+      await transactionModel.updateOne({ paymentId }, { $set: { errorVenta: String(err?.message ?? err).slice(0, 300) } })
+      console.error(`ALERTA: el pago ${paymentId} se cobro pero fallo el registro de la venta (${origen}):`, err?.message ?? err)
+    }
+  }
+
+  //4. Entrega del mail con los QR: la toma un solo proceso; si falla, se reintenta despues
+  const ahora = new Date()
+  const enCurso = await transactionModel.findOneAndUpdate(
+    { paymentId, entregado: false, intentosEntrega: { $lt: MAX_INTENTOS_ENTREGA },
+      $or: [{ entregandoDesde: null }, { entregandoDesde: { $lt: new Date(ahora.getTime() - ENTREGA_EN_CURSO_MS) } }] },
+    { $set: { entregandoDesde: ahora } }
+  )
+  if (enCurso) {
+    const enviado = await qrGeneratorController(prod_id, quantities, mail, state, nombre_completo, dni)
+    if (enviado) {
+      await transactionModel.updateOne({ paymentId }, { $set: { entregado: true, entregadoEn: new Date(), entregandoDesde: null, ultimoErrorEntrega: null } })
+    } else {
+      const fallida = await transactionModel.findOneAndUpdate(
+        { paymentId },
+        { $inc: { intentosEntrega: 1 }, $set: { entregandoDesde: null, ultimoErrorEntrega: 'No se pudo enviar el mail con las entradas' } },
+        { new: true }
+      ).lean()
+      const agotado = fallida.intentosEntrega >= MAX_INTENTOS_ENTREGA
+      console.error(`${agotado ? 'ALERTA' : 'Aviso'}: no se pudieron entregar las entradas del pago ${paymentId} (intento ${fallida.intentosEntrega}/${MAX_INTENTOS_ENTREGA}, ${origen})${agotado ? '. Sin mas reintentos: revisar' : '. Se reintenta'}`)
+    }
+  }
+  return ventaNueva
+}
+
+//Reintento automatico (cron cada 5 minutos): pagos cobrados con la entrega pendiente
+export const reintentarPagosPendientes = async (now = new Date()) => {
+  const pendientes = await transactionModel.find({
+    entregado: false, intentosEntrega: { $lt: MAX_INTENTOS_ENTREGA }, alertaMonto: { $ne: true },
+    fecha: { $lt: new Date(now.getTime() - 60 * 1000) }
+  }, { paymentId: 1 }).limit(50).lean()
+  for (const { paymentId } of pendientes) {
+    try {
+      await procesarPagoMP(paymentId, 'reintento')
+    } catch (err) {
+      console.error(`Reintento del pago ${paymentId} fallo:`, err?.message ?? err)
+    }
+  }
+  return pendientes.length
+}
 
 //Descuento valido: mismo evento y con usos disponibles. No consume el uso (eso pasa al aprobarse el pago)
 const buscarDescuento = async (discountCode, prodId) => {
@@ -862,61 +879,8 @@ const procesarPagoMP = async (paymentId, origen) => {
   }
 
   try {
-    const metadata = payment.metadata || {};
-
-    const {
-      prod_id,
-      nombre_evento,
-      quantities,
-      mail,
-      state,
-      total,
-      email_hash,
-      nombre_completo,
-      dni,
-      telefono,
-      discount_code = null,
-      monto_entradas,
-      order_id
-    } = metadata;
-
-    if (!quantities || !mail || !prod_id || !total) {
-      console.error(`Metadata incompleta en el pago ${paymentId} (${origen}):`, Object.keys(metadata));
-      return { payment, procesado: false };
-    }
-
-    const resHandle = await handleSuccessfulPayment({
-      prodId: prod_id,
-      nombreEvento: nombre_evento,
-      quantities,
-      mail,
-      state,
-      total,
-      emailHash: email_hash,
-      nombreCompleto: nombre_completo,
-      dni,
-      paymentId,
-      discountCode: discount_code,
-      montoEntradas: monto_entradas,
-      orderId: order_id ?? payment.external_reference
-    });
-
-    // Solo si fue realmente nuevo
-    if (resHandle === 1) {
-
-      await purchaseModel.create({
-        prodId: prod_id,
-        nombreCompleto: nombre_completo,
-        email: mail,
-        dni: dni,
-        telefono: parseInt(telefono)
-      });
-
-      console.log(`Pago ${paymentId} procesado (${origen}).`);
-    }
-
-    return { payment, procesado: resHandle === 1 };
-
+    const procesado = await procesarPagoAprobado(paymentId, payment, origen);
+    return { payment, procesado };
   } catch (err) {
     console.error(`Error procesando el pago ${paymentId} (${origen}):`, err);
     return { payment, procesado: false };
@@ -931,6 +895,18 @@ export const mercadoPagoWebhookController = async (req, res) => {
   // Siempre responder si no es payment
   if (!paymentId || topic !== 'payment') {
     return res.sendStatus(200);
+  }
+
+  //Firma de Mercado Pago (lib/firmaMP.js). En "registrar" solo se deja constancia: el pago se confirma
+  //igual contra la API de MP, asi que un aviso falso no puede crear ventas
+  if (webhookFirma !== 'off') {
+    const { valida, motivo } = verificarFirmaMP(req, webhookSecret);
+    if (!valida) {
+      console.warn(`Webhook de MP sin firma valida (${motivo}) para el pago ${paymentId}${webhookFirma === 'estricto' ? ': rechazado' : ''}`);
+      if (webhookFirma === 'estricto') return res.sendStatus(401);
+    } else {
+      console.log(`Webhook de MP con firma valida para el pago ${paymentId}`);
+    }
   }
 
   // RESPONDEMOS INMEDIATAMENTE
@@ -1159,98 +1135,25 @@ export const addRRPPController = async (req, res) => {
 
 
 
+//El dueño asigna cortesias a un RRPP (pantalla Staff). quantities = { idCortesia: cantidad }.
+//La asignacion es atomica (lib/cortesias.js): solo si el cupo total alcanza para todo lo pedido.
+//Respuesta: { state: 1 } asignado | { state: 2 } no alcanzan las cortesias | 400 datos invalidos
 export const sendQrStaffQrController = async (req, res) => {
   const { prodId, quantities, mail } = req.body;
-  const ticketIds = Object.keys(quantities);
 
-  // Buscar si el RRPP ya existe
-  const findRrPp = await ticketModel.findOne({ _id: prodId, "rrpp.mail": mail });
-
-  let i = 0;
-  for (const id of ticketIds) {
-    const verifyQuantity = await ticketModel.find({ _id: prodId, "cortesiaRRPP._id": id });
-
-    if (verifyQuantity[0]?.cortesiaRRPP[i]?.cantidadDeCortesias > 0) {
-      const quantityToAdd = quantities[id];
-
-      await ticketModel.updateOne(
-        {
-          _id: prodId,
-          "cortesiaRRPP._id": id,
-        },
-        {
-          $inc: {
-            "cortesiaRRPP.$.cantidadDeCortesias": -quantityToAdd,
-            "cortesiaRRPP.$.entregados": quantityToAdd,
-          }
-        }
-      );
-    } else {
-      return res.status(200).json({ state: 2 }); // No hay suficientes cortesías
-    }
-    i++;
+  if (typeof mail !== 'string' || !MAIL_RE.test(mail.trim())) {
+    return res.status(400).json({ state: 0, error: 'Email del colaborador inválido' });
   }
+  const evento = await ticketModel.findById(prodId, { cortesiaRRPP: 1, rrpp: 1, nombreEvento: 1, imgEvento: 1, fechaInicio: 1, fechaFin: 1, direccion: 1 }).lean();
+  const errorCantidades = validarCantidades(evento, quantities);
+  if (errorCantidades) return res.status(400).json({ state: 0, error: errorCantidades });
 
-  // Si existe RRPP, actualizamos su listado
-  if (findRrPp) {
-    for (const id of ticketIds) {
-      const quantityToAdd = quantities[id];
-
-      const updateResult = await ticketModel.updateOne(
-        { _id: prodId },
-        {
-          $inc: {
-            "rrpp.$[rrppElem].ticketsCortesias.$[ticketElem].cantidadDeCortesias": quantityToAdd
-          }
-        },
-        {
-          arrayFilters: [
-            { "rrppElem.mail": mail },
-            { "ticketElem.ticketIdCortesia": id }
-          ]
-        }
-      );
-
-      if (updateResult.modifiedCount === 0) {
-        await ticketModel.updateOne(
-          { _id: prodId },
-          {
-            $push: {
-              "rrpp.$[rrppElem].ticketsCortesias": {
-                ticketIdCortesia: id,
-                cantidadDeCortesias: quantityToAdd
-              }
-            }
-          },
-          {
-            arrayFilters: [
-              { "rrppElem.mail": mail }
-            ]
-          }
-        );
-      }
-    }
-  } else {
-    // Si no existe, lo agregamos
-    await ticketModel.updateOne(
-      {
-        _id: prodId,
-        'rrpp.mail': { $ne: mail }
-      },
-      {
-        $addToSet: {
-          rrpp: {
-            nombre: "",
-            mail: mail,
-            ticketsCortesias: ticketIds.map(id => ({
-              ticketIdCortesia: id,
-              cantidadDeCortesias: quantities[id]
-            }))
-          }
-        }
-      }
-    );
+  //Si el RRPP ya era colaborador se usa su mail tal como esta guardado
+  const mailRRPP = mailRRPPGuardado(evento, mail) ?? mail.trim();
+  if (!(await asignarCortesiasARRPP(prodId, mailRRPP, quantities))) {
+    return res.status(200).json({ state: 2 }); // No hay suficientes cortesías
   }
+  const findRrPp = evento;
 
   // Enviar correo
   /*const transporter = nodemailer.createTransport({
@@ -1308,10 +1211,77 @@ export const sendQrStaffQrController = async (req, res) => {
 };
 
 
+//Eventos donde el usuario es RRPP. Cada RRPP ve solo SU registro: antes recibia el evento completo,
+//con mails, CBU y alias de los demas RRPP y el mail (cifrado) del productor
+//Cortesias que el RRPP puede enviar en un evento (pantalla "Enviar cortesías")
+export const rrppCortesiasController = async (req, res) => {
+  const evento = await ticketModel.findById(req.params.prodId, {
+    nombreEvento: 1, imgEvento: 1, fechaInicio: 1, fechaFin: 1, direccion: 1, provincia: 1, localidad: 1, eventoEdad: 1, active: 1, cortesiaRRPP: 1, rrpp: 1
+  }).lean();
+  const mailRRPP = mailRRPPGuardado(evento, req.user.mail);
+  const cupos = evento.rrpp.find((r) => r.mail === mailRRPP)?.ticketsCortesias ?? [];
+  const ahora = new Date();
+  const eventoCerrado = evento.active === false || Boolean(evento.fechaFin && new Date(evento.fechaFin) < ahora);
+
+  const cortesias = (evento.cortesiaRRPP ?? [])
+    .map((c) => ({
+      ticketId: String(c._id),
+      nombreTicket: c.nombreTicket,
+      descripcionTicket: c.descripcionTicket,
+      imgTicket: c.imgTicket,
+      fechaDeCierre: c.fechaDeCierre,
+      limit: c.limit || 30,
+      disponibles: cupos.filter((t) => t.ticketIdCortesia === String(c._id)).reduce((acc, t) => acc + (t.cantidadDeCortesias || 0), 0),
+      cerrada: eventoCerrado || Boolean(c.fechaDeCierre && new Date(c.fechaDeCierre) < ahora)
+    }))
+    .filter((c) => cupos.some((t) => t.ticketIdCortesia === c.ticketId));
+
+  const { rrpp, cortesiaRRPP, ...datosEvento } = evento;
+  return res.status(200).json({ evento: datosEvento, cortesias });
+};
+
+//El RRPP envia cortesias de su cupo a un cliente: el cupo se descuenta de forma atomica y, si el mail
+//con los QR no sale, se devuelve. Body: { prodId, ticketId, cantidad, mail, nombreCompleto, dni? }
+export const rrppEnviarCortesiasController = async (req, res) => {
+  const { prodId, ticketId, cantidad, mail, nombreCompleto, dni } = req.body ?? {};
+
+  if (typeof mail !== 'string' || !MAIL_RE.test(mail.trim())) return res.status(400).json({ code: 'DATOS_CLIENTE', error: 'Email inválido' });
+  if (typeof nombreCompleto !== 'string' || nombreCompleto.trim() === '') return res.status(400).json({ code: 'DATOS_CLIENTE', error: 'Completá el nombre de quien recibe la cortesía' });
+
+  const evento = await ticketModel.findById(prodId, { active: 1, fechaFin: 1, cortesiaRRPP: 1, rrpp: 1 }).lean();
+  const cortesia = evento.cortesiaRRPP?.find((c) => String(c._id) === String(ticketId));
+  if (!cortesia) return res.status(400).json({ code: 'CORTESIA_INEXISTENTE', error: 'Esa cortesía no pertenece a este evento' });
+
+  const limite = cortesia.limit || 30;
+  if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > limite) {
+    return res.status(400).json({ code: 'CANTIDAD_INVALIDA', error: `Podés enviar entre 1 y ${limite} cortesías por vez` });
+  }
+  const ahora = new Date();
+  if (evento.active === false || (evento.fechaFin && new Date(evento.fechaFin) < ahora) || (cortesia.fechaDeCierre && new Date(cortesia.fechaDeCierre) < ahora)) {
+    return res.status(409).json({ code: 'CORTESIA_CERRADA', error: 'Esta cortesía ya no se puede enviar' });
+  }
+
+  const mailRRPP = mailRRPPGuardado(evento, req.user.mail);
+  if (!(await consumirCupoRRPP(prodId, mailRRPP, ticketId, cantidad))) {
+    return res.status(409).json({ code: 'SIN_CUPO', error: 'No te quedan suficientes cortesías de este tipo' });
+  }
+
+  const enviadas = await qrGeneratorController(prodId, { [String(ticketId)]: { amount: cantidad, free: true } }, mail.trim(), 1, nombreCompleto.trim(), dni ?? null);
+  if (!enviadas) {
+    await devolverCupoRRPP(prodId, mailRRPP, ticketId, cantidad);
+    return res.status(502).json({ code: 'CORTESIAS_NO_ENVIADAS', error: 'No pudimos enviar las cortesías. Tu cupo no se descontó, intentá de nuevo' });
+  }
+  return res.status(200).json({ enviadas: cantidad });
+};
+
 export const getRRPPInfoController = async (req,res) => {
     const {mail} = req.params
-    const rrppData = await ticketModel.find({"rrpp.mail": mail})
-    res.send(rrppData)
+    const mailLower = String(mail).trim().toLowerCase()
+    const rrppData = await ticketModel.find(
+      {"rrpp.mail": mail},
+      { prodMail: 0, cortesiaRRPP: 0, montoVentas: 0, totalMontoVendido: 0, totalMontoDescuento: 0, montoTotal: 0, categorias: 0 }
+    ).lean()
+    res.send(rrppData.map((ev) => ({ ...ev, rrpp: (ev.rrpp ?? []).filter((r) => String(r.mail).trim().toLowerCase() === mailLower) })))
 }
 
 export const getEventsFreesController = async (req, res) => { //a chequear
@@ -1403,6 +1373,8 @@ const sendQrEmail = async (
       html,
       attachments,
     });
+    //Resend no lanza: devuelve { error }. Sin esto, un envio rechazado se tomaba como exitoso
+    if (info?.error) throw new Error(`El proveedor de mail rechazo el envio: ${info.error.message ?? info.error.name}`);
   } catch (err) {
     console.error('❌ Error al enviar el email:', err);
     throw err;
@@ -1410,70 +1382,63 @@ const sendQrEmail = async (
 };
 
 
+const datosEntrada = (lectura) => ({
+  tipo: lectura.tipo,
+  estado: lectura.estado,                       //'vigente' | 'usada' | 'vencida'
+  usadaEn: lectura.tokenDoc.usedAt ?? null,
+  nombreCompleto: lectura.payload.nombreCompleto ?? null,
+  nombreEvento: lectura.evento.nombreEvento,
+  nombreTicket: lectura.entrada.nombreTicket,
+  direccion: lectura.evento.direccion,
+  localidad: lectura.evento.localidad,
+  eventoEdad: lectura.evento.eventoEdad,
+  fechaInicioEvento: lectura.evento.fechaInicio,
+  fechaCierreEvento: lectura.evento.fechaFin,
+  fechaDeCierreTicket: lectura.venceEn,
+  imgEvento: lectura.evento.imgEvento,
+})
+
+//Abrir el QR: SOLO muestra la entrada, nunca la marca como usada (antes la quemaba cualquiera que la abriera,
+//incluido el propio comprador). Si quien la abre es el dueño o un RRPP del evento, puedeValidar = true
 export const getInfoQrController = async (req, res) => {
-  const { token } = req.params;
-
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const { eventId, ticketId } = decoded;
-
-    const event = await ticketModel.findById(eventId, {
-      tickets: 1,
-      cortesiaRRPP: 1,
-      nombreEvento: 1,
-      fechaInicio: 1,
-      fechaFin: 1,
-      imgEvento: 1,
-      localidad: 1,
-      direccion: 1,
-      eventoEdad: 1
-    });
-
-    if (!event) return res.status(404).json({ error: 1 });
-
-    const ticketbyId = event.tickets.find(t => t._id.equals(ticketId));
-    const cortesia = event.cortesiaRRPP.find(c => c._id.equals(ticketId));
-
-    // Validar existencia
-    const entrada = ticketbyId || cortesia;
-    const tipo = ticketbyId ? 'Ticket' : cortesia ? 'Cortesia' : null;
-
-    if (!entrada) return res.status(404).json({ error: 1 });
-
-    const tokenValidation = await tokenModel.findOne({ token });
-    console.log('token Validation: ', tokenValidation)
-
-    if (!tokenValidation) return res.json({ error: 1 });
-    console.log(event)
-    if (tokenValidation.used) {
-       return res.status(200).json({ error: 1 });
-    }else{
-      tokenValidation.used = true;
-      await tokenValidation.save();
-  
-      // Validación de fecha de cierre
-      if (!entrada.fechaDeCierre || new Date() > entrada.fechaDeCierre) {
-        return res.status(400).json({ error: 1 });
-      }
-  
-      return res.status(200).json({
-        tipo,
-        nombreEvento: event.nombreEvento,
-        nombreTicket: entrada.nombreTicket,
-        direccion: event.direccion,
-        localidad: event.localidad,
-        eventoEdad: event.eventoEdad,
-        fechaInicioEvento: event.fechaInicio,
-        fechaCierreEvento: event.fechaFin,
-        fechaDeCierreTicket: entrada.fechaDeCierre,
-        imgEvento: event.imgEvento,
-      });
-    }
-    
-
+    const lectura = await leerEntrada(req.params.token);
+    if (!lectura.ok) return res.status(lectura.status).json({ error: 1 });
+    const puedeValidar = Boolean(req.user) && (esDueno(lectura.evento, req.user) || esRRPP(lectura.evento, req.user));
+    return res.status(200).json({ ...datosEntrada(lectura), puedeValidar });
   } catch (err) {
-    console.error('❌ Error en getInfoQrController:', err);
-    return res.status(401).json({ error: 1 });
+    console.error('Error leyendo la entrada:', err?.message ?? err);
+    return res.status(500).json({ error: 1 });
+  }
+};
+
+//Validar el ingreso en la puerta: solo el dueño o un RRPP del evento, con sesion.
+//Primero se revisa el vencimiento y despues se marca de forma atomica (dos celulares no validan la misma entrada)
+export const validarEntradaController = async (req, res) => {
+  try {
+    const lectura = await leerEntrada(req.params.token);
+    if (!lectura.ok) return res.status(lectura.status).json({ code: 'ENTRADA_INEXISTENTE', error: 'La entrada no existe' });
+
+    if (!esDueno(lectura.evento, req.user) && !esRRPP(lectura.evento, req.user)) {
+      return res.status(403).json({ code: 'NO_PUEDE_VALIDAR', error: 'Solo el organizador o un RRPP del evento puede validar entradas' });
+    }
+    if (lectura.estado === 'usada') {
+      return res.status(409).json({ code: 'YA_USADA', error: 'Esta entrada ya fue usada', ...datosEntrada(lectura) });
+    }
+    if (lectura.estado === 'vencida') {
+      return res.status(409).json({ code: 'VENCIDA', error: 'Esta entrada está vencida', ...datosEntrada(lectura) });
+    }
+
+    const marcada = await marcarUsada(req.params.token, req.user);
+    if (!marcada) {
+      //Otro celular la valido entre la lectura y este momento
+      const actual = await leerEntrada(req.params.token);
+      return res.status(409).json({ code: 'YA_USADA', error: 'Esta entrada ya fue usada', ...(actual.ok ? datosEntrada(actual) : {}) });
+    }
+    return res.status(200).json({ validada: true, ...datosEntrada({ ...lectura, estado: 'usada', tokenDoc: marcada }) });
+  } catch (err) {
+    console.error('Error validando la entrada:', err?.message ?? err);
+    return res.status(500).json({ code: 'ERROR', error: 'No se pudo validar la entrada. Intentá de nuevo' });
   }
 };
 
