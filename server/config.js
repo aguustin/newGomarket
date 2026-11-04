@@ -70,6 +70,7 @@ export const validateConfig = (env = process.env) => {
   for (const key of required) {
     if (!env[key]) (local ? warnings : errors).push(`Falta la variable ${key}`)
   }
+  if (!local && !env.ADMIN_MAIL) warnings.push('Falta ADMIN_MAIL: los avisos de casos para revisar (reembolsos, sobreventas) solo quedaran en el log')
   for (const key of ['CLOUD_NAME', 'API_KEY', 'API_SECRET']) {
     if (!env[key]) warnings.push(`Falta la variable ${key} (subida de imagenes)`)
   }

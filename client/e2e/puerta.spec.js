@@ -29,10 +29,13 @@ test('puerta: el QR se muestra sin gastarse y solo el organizador valida el ingr
     await expect(page.getByRole('button', { name: 'Validar ingreso' })).toHaveCount(0)
   }
 
-  //Organizador con sesion en el celular: valida el ingreso
-  await login(page, { mail: duenoMail })
-  await expect(page).toHaveURL(/\/$/)
-  await page.goto(`/ticket/validate/${token}`)
+  //Organizador sin sesion en el celular: escanea, toca "Iniciá sesión" y vuelve al mismo QR para validarlo
+  await page.getByRole('link', { name: 'Iniciá sesión' }).click()
+  await expect(page).toHaveURL(/\/login\?next=/)
+  await page.locator('input[name="mail"]').fill(duenoMail)
+  await page.locator('input[name="contrasenia"]').fill('Clave12345')
+  await page.getByRole('button', { name: 'Ingresar' }).click()
+  await expect(page).toHaveURL(new RegExp(`/ticket/validate/${token}$`))
   await page.getByRole('button', { name: 'Validar ingreso' }).click()
   await expect(page.getByText('✓ Ingreso validado')).toBeVisible()
 
@@ -41,4 +44,17 @@ test('puerta: el QR se muestra sin gastarse y solo el organizador valida el ingr
   await expect(page.getByText('Entrada ya usada')).toBeVisible()
   await expect(page.getByText(/Validada el/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Validar ingreso' })).toHaveCount(0)
+})
+
+//Etapa 12: las paginas privadas sin sesion llevan al login y, al ingresar, vuelven a la pagina pedida
+test('pagina privada sin sesion -> login -> vuelve a la pagina', async ({ page, request }) => {
+  const mail = uniqueMail('privada')
+  await registerAndVerify(page, request, { mail })
+  await page.goto('/productions')
+  await expect(page).toHaveURL(/\/login\?sesion=requerida&next=%2Fproductions$/)
+  await expect(page.getByText('Iniciá sesión para continuar')).toBeVisible()
+  await page.locator('input[name="mail"]').fill(mail)
+  await page.locator('input[name="contrasenia"]').fill('Clave12345')
+  await page.getByRole('button', { name: 'Ingresar' }).click()
+  await expect(page).toHaveURL(/\/productions$/)
 })

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import ticketModel from "../models/ticketsModel.js";
 import orderModel from "../models/orderModel.js";
+import { alertarAdmin } from "./alertas.js";
 
 //Stock de entradas. Todos los tickets de un evento viven en el mismo documento, asi que cada operacion
 //es UNA actualizacion atomica de ese documento: dos compras simultaneas nunca se llevan la misma entrada.
@@ -97,6 +98,7 @@ export const confirmarOrdenPagada = async (orderId, paymentId) => {
     await descontarStockSinControl(orden.prodId, orden.quantities)
     await orderModel.updateOne({ _id: orderId }, { $set: { sobreventa: true } })
     console.warn(`SOBREVENTA: el pago ${paymentId} llego con la reserva vencida y sin stock (orden ${orderId}). Se emitieron las entradas igual`)
+    await alertarAdmin('sobreventa', paymentId, `El pago ${paymentId} llego con la reserva vencida y ya no habia stock (evento ${orden.prodId}, orden ${orderId}). Las entradas se emitieron igual: el evento quedo sobrevendido.`)
   }
   return { stockYaDescontado: true }
 }

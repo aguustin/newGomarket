@@ -1,28 +1,23 @@
 import { formatDateB } from "../lib/dates.js";
 import { isValidObjectId } from "mongoose";
-import { urlFront } from "../config.js";
 import XLSX from 'xlsx';
 
-import { v4 as uuidv4 } from 'uuid';
-import QRCode from 'qrcode';
 import ticketModel from "../models/ticketsModel.js";
 import cortesieModel from "../models/cortesiesModel.js"
-import jwt from 'jsonwebtoken';
-import { jwtSecret } from "../lib/secretos.js";
-import tokenModel from "../models/tokenModel.js";
 import rrppExcelModel from "../models/rrppExcelModel.js";
-import { resend, createMailTransport } from "../lib/resendDomain.js";
+import { encolarInvitaciones, procesarInvitaciones, encolarAvisosRRPP, procesarAvisosRRPP, resumenEnvio } from "../lib/invitaciones.js";
 
+//Listas del evento con el resumen de envios (sin los QR de las invitaciones)
 export const getAllExcelsInfoController = async (req, res) => {
     const {userId, prodId} = req.params
-    const findExcels = await cortesieModel.find({prodId: prodId, userId: userId})
-    res.send(findExcels)
+    const findExcels = await cortesieModel.find({prodId: prodId, userId: userId}, { 'people.token': 0 }).lean()
+    res.send(findExcels.map((d) => ({ ...d, envio: resumenEnvio(d.people) })))
 }
 
 export const getAllRRPPExcelsController = async (req, res) => {
     const {userId, prodId} = req.params
-    const findExcels = await rrppExcelModel.find({prodId: prodId, userId: userId})
-    res.send(findExcels)
+    const findExcels = await rrppExcelModel.find({prodId: prodId, userId: userId}).lean()
+    res.send(findExcels.map((d) => ({ ...d, envio: resumenEnvio(d.rrppList) })))
 }
 
 export const getProdCortesiesController = async (req, res) => {
@@ -93,126 +88,14 @@ export const chargeExcelController = async (req, res) => {
   }
 }
 
-async function generateQr(data) {
-  return await QRCode.toDataURL(data); 
-}
-
+//Envia las invitaciones del Excel en segundo plano (lib/invitaciones.js). Responde enseguida con cuantas
+//se van a enviar. Volver a tocar "Enviar" solo manda a quienes todavia no la recibieron (mismo QR)
 export const sendCortesiesController = async (req, res) => {
-  const { prodId, cortesieId } = req.body;
- 
-  try {
-    const evento = await ticketModel.findById(prodId);
-    const cortesiaDoc = await cortesieModel.findById(cortesieId);
-    const usuarios = cortesiaDoc.people;
-
-    const transporter = createMailTransport({
-      service: 'gmail',
-      auth: { user: process.env.USER_MAIL, pass: process.env.PASS } /*process.env.USER_MAIL*/
-    });
-
-    for (const usuario of usuarios) {
-      try {
-        // 1. Generar token único
-        const payload = {
-          nombreCompleto: usuario.clientName,
-          prodId: evento._id,
-          iat: Math.floor(Date.now() / 1000),
-          jti: uuidv4()
-        };
-        const token = jwt.sign(payload, jwtSecret);
-        const saveToken = new tokenModel({ token, eventId: String(evento._id) });
-        await saveToken.save();
-
-        // 2. Generar QR
-        const qrData = `${urlFront}/ticket/validate/${token}`;
-        const qrBase64 = await generateQr(qrData);
-        const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64');
-
-        const messageId = `<${uuidv4()}@ipassi.com>`
-
-        const randomTips = [
-          'Presentá este QR sin necesidad de imprimir.',
-          'Mostrá tu entrada directamente desde tu celular.',
-          'Si tenés dudas, nuestro staff podrá ayudarte en la entrada.'
-        ];
-        const randomTip = randomTips[Math.floor(Math.random() * randomTips.length)];
-        // 3. Construir email dinámico
-        const emailHtml = `
-        <html>
-            <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-              </style>
-            </head>
-            <body style="font-family: 'Poppins', sans-serif; padding:3px; text-align:center; margin:0; -webkit-text-size-adjust: 100%;">
-              <div style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
-                <h1 style="font-size:30px; color:#111827; margin:auto;">Ipass</h1>
-              </div>
-              <div style="text-align:center; padding:20px 15px 40px 15px; background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338);">
-                <h3 style="font-size:20px">${usuario.clientName}, ¡Tienes una invitación!</h3>
-                <p style="font-size:18px">Invitación: <strong>ticket número A</strong></p>
-                <p style="font-size:18px">Escaneá este QR para acceder:</p>
-                <img src=${evento.imgEvento} alt="" style="width:230px; height:230px; margin:20px 0;">
-                <img src="cid:qrcodeimg" alt="QR de cortesia" style="width:230px; height:230px; margin:20px 0;"/>
-                <div style="color:#111827">
-                  <h2 style="font-size:20px">${evento.nombreEvento}</h2>
-                  <p style="font-size:18px">Fecha del evento: ${new Date(evento.fechaInicio).toLocaleDateString()}</p>
-                  <p style="font-size:18px">Invitación válida hasta: ${new Date(evento.fechaFin).toLocaleDateString()}</p>
-                  <p style="font-size:18px">${evento.direccion}</p>
-                </div>
-                  <p style="display:none">ID único: ${uuidv4()}</p>
-              </div>
-              <div style="background-color:oklch(21% 0.034 264.665); color:oklch(87.2% 0.01 258.338); padding:20px; text-align:center">
-                <h3 style="text-decoration: underline; font-size:25px;">Algunos consejos:</h3>
-                <p style="font-size:16px">- Recuerda presentar tu eTicket en el acceso del evento con tu teléfono.</p>
-                <p style="font-size:16px">- Siempre podrás acceder a tus compras o eTickets desde nuestra web.</p>
-                <p style="font-size:16px">- Recuerda llevar tus eTickets abiertos en tu celular.</p>
-                <p style="font-size:16px"> -${randomTip}</p>
-              </div>
-              <footer style="display:flex; height:90px; background-color:oklch(79.5% 0.184 86.047); justify-content:center; align-items:center;">
-                <h2 style="font-size:27px; color:#111827; margin:auto;">Ipass</h2>
-              </footer>
-            </body>
-          </html>
-        `;
-        // 4. Enviar email
-        await transporter.sendMail({
-          from: `"Ipass para ${usuario.clientName}" - <no-reply@ipassi.com>`,
-          envelope:{
-             from: 'bounce@ipassi.com', // inexistente o no monitoreado
-             to: usuario.email
-          },
-          to: usuario.email,
-          subject: `Tu invitación a ${evento.nombreEvento} - Cortesía para ${usuario.clientName} - Ref ${uuidv4().split('-')[0]}`,
-          html: emailHtml,
-          messageId: messageId,
-          attachments: [
-            {
-              filename: 'qrcode.png',
-              content: qrBuffer,
-              cid: 'qrcodeimg'
-            }
-          ]
-        });
-        // 5. Actualizar estado en la base
-        usuario.qrCode = qrBase64;
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-      } catch (error) {
-        usuario.status = 'error';
-        console.error(`Error al enviar a ${usuario.email}:`, error);
-      }
-    }
-
-    // Guardar cambios en cortesieModel
-    await cortesiaDoc.save();
-
-    res.json({ success: true, message: "Correos enviados" });
-  } catch (error) {
-    console.error('Error en el envío de cortesías:', error);
-    res.status(500).json({ error: 'Error al enviar correos' });
-  }
+  const { cortesieId } = req.body;
+  if (req.evento?.cancelado) return res.status(409).json({ code: 'EVENTO_CANCELADO', error: 'El evento fue cancelado' })
+  const { aEnviar, yaEnviadas } = await encolarInvitaciones(cortesieId)
+  setImmediate(() => procesarInvitaciones(cortesieId).catch((err) => console.error('Envio de invitaciones:', err?.message ?? err)))
+  return res.status(200).json({ success: true, aEnviar, yaEnviadas })
 };
 
 
@@ -259,69 +142,26 @@ export const chargeRRPPExcelController = async (req, res) => {
   }
 }
 
+//Agrega los colaboradores del Excel como RRPP del evento y les avisa por mail en segundo plano.
+//Volver a tocar "Enviar" solo avisa a quienes todavia no recibieron el mail
 export const sendRRPPColabsListController = async (req, res) => {
   const { prodId, rrppListId } = req.body;
-  
-  try {
-    const evento = await ticketModel.findById(prodId);
-    if (!evento) {
-      return res.status(404).json({ error: 'Evento no encontrado' });
-    }
+  if (req.evento?.cancelado) return res.status(409).json({ code: 'EVENTO_CANCELADO', error: 'El evento fue cancelado' })
+  const rrppListDoc = await rrppExcelModel.findById(rrppListId).lean();
+  if (!rrppListDoc) return res.status(404).json({ error: 'Lista RRPP no encontrada' });
 
-    const rrppListDoc = await rrppExcelModel.findById(rrppListId);
-    if (!rrppListDoc) {
-      return res.status(404).json({ error: 'Lista RRPP no encontrada' });
-    }
-
-    const rrpps = rrppListDoc.rrppList;
-
-    await Promise.all(
-      rrpps.map(colaborator =>
-        resend.emails.send({
-          from: '"Ipass" <no-reply@ipassi.com>',
-          to: [colaborator.email],
-          subject: `Ya eres colaborador en: ${evento.nombreEvento}`,
-          html: `
-            <html>
-              <body style="font-family:Poppins, sans-serif; text-align:center;">
-                <h2>Ya eres parte del staff del evento ${evento.nombreEvento}</h2>
-                <p>
-                  Genera tu link de cobranza
-                  <a href="${urlFront}/get_my_rrpp_events/${colaborator.email}">
-                    aquí
-                  </a>
-                </p>
-                <img src="${evento.imgEvento}" width="230"/>
-              </body>
-            </html>
-          `
-        })
-      )
-    );
-
-    const rrppToInsert = rrpps.map(r => ({
-      nombre: r.nombreRRPP,
-      mail: r.email,
-      freeEntregados: 0,
-      montoCorrespondienteRRPP: 0,
-      montoTotalVendidoRRPP: 0,
-      ventasRRPP: [],
-      ticketsCortesias: [],
-      onList: true
-    }));
-
-    await ticketModel.findByIdAndUpdate(
-      prodId,
-      {
-        $addToSet: {
-          rrpp: { $each: rrppToInsert }
-        }
-      }
-    );
-
-    res.json({ success: true, message: "Correos enviados" });
-  } catch (error) {
-    console.error('Error en el envío de cortesías:', error);
-    res.status(500).json({ error: 'Error al enviar correos' });
+  //Solo los que todavia no son RRPP del evento (antes $addToSet podia duplicarlos)
+  const evento = await ticketModel.findById(prodId, { 'rrpp.mail': 1 }).lean();
+  const yaEstan = new Set((evento?.rrpp ?? []).map((r) => String(r.mail ?? '').toLowerCase()))
+  const nuevos = rrppListDoc.rrppList.filter((r) => r.email && !yaEstan.has(String(r.email).toLowerCase()))
+  if (nuevos.length) {
+    await ticketModel.updateOne({ _id: prodId }, { $push: { rrpp: { $each: nuevos.map((r) => ({
+      nombre: r.nombreRRPP, mail: r.email, freeEntregados: 0, montoCorrespondienteRRPP: 0, montoTotalVendidoRRPP: 0,
+      ventasRRPP: [], ticketsCortesias: [], onList: true
+    })) } } });
   }
+
+  const { aEnviar, yaEnviadas } = await encolarAvisosRRPP(rrppListId)
+  setImmediate(() => procesarAvisosRRPP(rrppListId).catch((err) => console.error('Avisos a RRPP:', err?.message ?? err)))
+  return res.status(200).json({ success: true, aEnviar, yaEnviadas, rrppAgregados: nuevos.length });
 };

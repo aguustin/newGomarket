@@ -3,6 +3,7 @@ import tokenModel from "../models/tokenModel.js";
 import transactionModel from "../models/transactionsModel.js";
 import { mpAccessToken } from "../config.js";
 import { verificarTokenQR } from "./secretos.js";
+import { alertarAdmin } from "./alertas.js";
 
 //Cancelacion de eventos y reembolsos (etapa 10).
 //Los reembolsos se procesan en segundo plano y se reintentan (cron) hasta MAX_INTENTOS_REEMBOLSO.
@@ -88,6 +89,7 @@ export const reembolsarPago = async (paymentId) => {
         $set: { reembolsoEstado: 'revision', reembolsoError: String(detalle).slice(0, 300), reembolsoEnCursoDesde: null }
       })
       console.error(`ALERTA: Mercado Pago rechazo el reembolso del pago ${tx.paymentId} (HTTP ${err.response.status}): ${detalle}. No se reintenta: revisar a mano`)
+      await alertarAdmin('reembolsoRevision', tx.paymentId, `Mercado Pago rechazo el reembolso de ${tx.montoPagado} ARS del pago ${tx.paymentId} (evento ${tx.prodId}, HTTP ${err.response.status}): ${detalle}. No se reintenta: hacerlo a mano desde Mercado Pago.`)
       return 'revision'
     }
     const fallida = await transactionModel.findOneAndUpdate(
@@ -97,6 +99,7 @@ export const reembolsarPago = async (paymentId) => {
     ).lean()
     const agotado = fallida.reembolsoIntentos >= MAX_INTENTOS_REEMBOLSO
     console.error(`${agotado ? 'ALERTA' : 'Aviso'}: fallo el reembolso del pago ${tx.paymentId} (intento ${fallida.reembolsoIntentos}/${MAX_INTENTOS_REEMBOLSO}): ${detalle}${agotado ? '. Sin mas reintentos: revisar' : '. Se reintenta'}`)
+    if (agotado) await alertarAdmin('reembolsoAgotado', tx.paymentId, `El reembolso de ${tx.montoPagado} ARS del pago ${tx.paymentId} (evento ${tx.prodId}) fallo ${MAX_INTENTOS_REEMBOLSO} veces: ${detalle}. Ya no se reintenta: hacerlo a mano desde Mercado Pago.`)
     return 'fallido'
   }
 }

@@ -9,6 +9,12 @@ const rrppExcelSchema = mongoose.Schema({
     rrppList:[{
         nombreRRPP:{type: String},
         email: {type:String},
+        //Seguimiento del envio (etapa 13). Sin estado = nunca se intento enviar
+        estado: {type: String, enum: [null, 'pendiente', 'enviado', 'error', 'cancelada'], default: null},
+        intentos: {type: Number, default: 0},
+        ultimoError: {type: String, default: null},
+        enviandoDesde: {type: Date, default: null},
+        enviadoEn: {type: Date, default: null},
     }],
     RRPPCount:{type:Number},
 }, { strict: true })

@@ -16,7 +16,8 @@ import transactionModel from "../models/transactionsModel.js";
 import { formatDateB } from "../lib/dates.js";
 import ExcelJS from 'exceljs';
 import axios from "axios";
-import { paymentQueue, refundQueue } from "../queues/paymentQueue.js";
+//La cola de Redis (queues/paymentQueue.js) no se importa: el worker esta fuera de uso y conectarse sin usarla
+//hacia fallar el arranque si faltaba REDIS_URL
 //import { redisClient } from "../lib/redisClient.js"; //DESCOMENTAR PARA PRODUCCION
 import { resend } from "../lib/resendDomain.js";
 import purchaseModel from "../models/purchaseModel.js";
@@ -27,6 +28,7 @@ import { validarCantidades, asignarCortesiasARRPP, consumirCupoRRPP, devolverCup
 import { leerEntrada, marcarUsada } from "../lib/entradas.js";
 import { anularEntradasDelEvento, marcarParaReembolso, reembolsarPago, procesarReembolsosPendientes, comprasReembolsadas } from "../lib/reembolsos.js";
 import { esDueno, esRRPP } from "../lib/permisos.js";
+import { alertarAdmin } from "../lib/alertas.js";
 import { RESERVA_MINUTOS, fechaMP, reservarStock, devolverStock, liberarOrden, confirmarOrdenPagada } from "../lib/stock.js";
 
 dotenv.config();
@@ -34,13 +36,20 @@ dotenv.config();
 import { jwtSecret as JWT_SECRET, secretMailKey as SECRET_MAIL_KEY } from "../lib/secretos.js";
 const IV_LENGTH = 16
 
+//Las rutas publicas (inicio, compra, eventos relacionados) no devuelven datos del staff ni de ventas:
+//mails, CBU, alias y telefono de los RRPP, el mail del productor, ventas y montos
+export const CAMPOS_PRIVADOS_EVENTO = {
+  rrpp: 0, prodMail: 0, categorias: 0, montoVentas: 0, totalVentas: 0, totalDevoluciones: 0, totalCortesias: 0,
+  totalMontoVendido: 0, totalMontoDescuento: 0, montoTotal: 0, porcentajeRRPP: 0, 'cortesiaRRPP.email': 0
+}
+
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
     //Los eventos terminados dejan de listarse en el momento (el cron solo los marca inactivos una vez por semana).
     //Un evento sin fechaFin se sigue listando como antes
     const getEvents = await ticketModel.find({
       active: true,
       $or: [{ fechaFin: { $gte: new Date() } }, { fechaFin: null }]
-    })
+    }, CAMPOS_PRIVADOS_EVENTO)
     res.send(getEvents)
 }
 
@@ -446,7 +455,8 @@ const updateTicket = async (imgUrl = null) => {
 
 export const getEventToBuyController = async (req, res) => {
     const {prodId} = req.params
-    const getProd = await ticketModel.find({_id: prodId})
+    if (!isValidObjectId(prodId)) return res.send([])
+    const getProd = await ticketModel.find({_id: prodId}, CAMPOS_PRIVADOS_EVENTO)
     
     res.send(getProd)
 }
@@ -640,6 +650,7 @@ const procesarPagoAprobado = async (paymentId, payment, origen) => {
   const event = await ticketModel.findById(prod_id).lean()
   if (!event) {
     console.error(`ALERTA: el pago aprobado ${paymentId} es de un evento que no existe (${prod_id})`)
+    await alertarAdmin('eventoInexistente', paymentId, `El pago ${paymentId} se aprobo para el evento ${prod_id}, que no existe. No se entregaron entradas.`)
     return false
   }
 
@@ -656,6 +667,7 @@ const procesarPagoAprobado = async (paymentId, payment, origen) => {
     if (!tx.alertaMonto) {
       await transactionModel.updateOne({ paymentId }, { $set: { alertaMonto: true } })
       console.error(`ALERTA: el pago ${paymentId} cobró ${cobrado} ${payment.currency_id} y se esperaba ${total} ARS. No se entregan entradas (revisar)`)
+      await alertarAdmin('monto', paymentId, `El pago ${paymentId} (evento ${event.nombreEvento}, comprador ${mail}) cobro ${cobrado} ${payment.currency_id} y se esperaban ${total} ARS. No se entregaron entradas.`)
     }
     return false
   }
@@ -692,6 +704,7 @@ const procesarPagoAprobado = async (paymentId, payment, origen) => {
       //No se reintenta automaticamente para no contar la venta dos veces: queda para revision
       await transactionModel.updateOne({ paymentId }, { $set: { errorVenta: String(err?.message ?? err).slice(0, 300) } })
       console.error(`ALERTA: el pago ${paymentId} se cobro pero fallo el registro de la venta (${origen}):`, err?.message ?? err)
+      await alertarAdmin('errorVenta', paymentId, `El pago ${paymentId} (evento ${event.nombreEvento}, comprador ${mail}) se cobro pero fallo el registro de la venta: ${err?.message ?? err}`)
     }
   }
 
@@ -714,6 +727,7 @@ const procesarPagoAprobado = async (paymentId, payment, origen) => {
       ).lean()
       const agotado = fallida.intentosEntrega >= MAX_INTENTOS_ENTREGA
       console.error(`${agotado ? 'ALERTA' : 'Aviso'}: no se pudieron entregar las entradas del pago ${paymentId} (intento ${fallida.intentosEntrega}/${MAX_INTENTOS_ENTREGA}, ${origen})${agotado ? '. Sin mas reintentos: revisar' : '. Se reintenta'}`)
+      if (agotado) await alertarAdmin('entregaAgotada', paymentId, `No se pudo mandar el mail con las entradas del pago ${paymentId} (evento ${event.nombreEvento}, comprador ${mail}) despues de ${MAX_INTENTOS_ENTREGA} intentos.`)
     }
   }
   return ventaNueva
@@ -923,6 +937,32 @@ const procesarPagoMP = async (paymentId, origen) => {
     return { payment, procesado: false };
   }
 };
+
+//Compras del evento cuyo mail con las entradas NUNCA se pudo enviar (solo el dueño, ver rutas)
+export const entregasPendientesController = async (req, res) => {
+  const pendientes = await transactionModel.find(
+    { prodId: String(req.evento._id), entregado: false, alertaMonto: { $ne: true }, reembolsado: { $ne: true } },
+    { paymentId: 1, nombre: 1, email: 1, intentosEntrega: 1, ultimoErrorEntrega: 1, fecha: 1 }
+  ).sort({ fecha: -1 }).limit(200).lean()
+  return res.status(200).json({ pendientes: pendientes.map(({ _id, ...p }) => p) })
+}
+
+//Reenvia el mail con las entradas SOLO si nunca se envio (decision de negocio: si el comprador escribio mal
+//su mail, no se reenvia a otro). Vuelve a habilitar los reintentos y lo intenta en el momento, al mismo mail
+export const reenviarEntradasController = async (req, res) => {
+  const paymentId = String(req.body?.paymentId ?? '')
+  const tx = await transactionModel.findOne({ paymentId, prodId: String(req.evento._id) }, { entregado: 1, alertaMonto: 1, reembolsado: 1 }).lean()
+  if (!tx) return res.status(404).json({ code: 'COMPRA_INEXISTENTE', error: 'No existe esa compra en este evento' })
+  if (tx.entregado !== false) return res.status(409).json({ code: 'YA_ENVIADO', error: 'Las entradas de esta compra ya se enviaron' })
+  if (tx.alertaMonto || tx.reembolsado) return res.status(409).json({ code: 'NO_REENVIABLE', error: 'Esta compra está en revisión o fue reembolsada' })
+
+  await transactionModel.updateOne({ paymentId, entregado: false }, { $set: { intentosEntrega: 0, entregandoDesde: null } })
+  await procesarPagoMP(paymentId, 'reenvio')
+  const despues = await transactionModel.findOne({ paymentId }, { entregado: 1, ultimoErrorEntrega: 1 }).lean()
+  return despues?.entregado
+    ? res.status(200).json({ enviado: true })
+    : res.status(502).json({ code: 'NO_ENVIADO', error: 'No se pudo enviar el mail. Se va a reintentar automáticamente' })
+}
 
 export const mercadoPagoWebhookController = async (req, res) => {
 
@@ -1139,7 +1179,7 @@ export const addRRPPController = async (req, res) => {
     }
 
     // 3. Obtener datos del colaborador
-    const colabData = await userModel.findOne({ mail: rrppMail });
+    const colabData = await userModel.findOne({ mail: String(rrppMail ?? '').trim().toLowerCase() }).collation({ locale: 'en', strength: 2 });  //sin distinguir mayusculas
     if (!colabData) {
       return res.status(200).json({ msg: 3 });
     }
@@ -1727,7 +1767,7 @@ export const getRelateEventsController = async (req, res) => {
     
     const eventosRelacionados = await ticketModel.find({
       _id: { $in: idsRelacionados },
-    });
+    }, CAMPOS_PRIVADOS_EVENTO);
 
     return res.status(200).json({ relacionados: eventosRelacionados });
 

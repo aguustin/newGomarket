@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { confirmNewPassRequest } from "../../api/userRequests";
 import { Message } from "../../globalscomp/globalscomp"
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import goOriginalPng from '../../assets/goticketImgs/IPSg.svg'
 
 const RecoverPass = () => {
@@ -9,6 +9,7 @@ const RecoverPass = () => {
     const { token } = useParams();
     const [message, setMessage] = useState(false)
     const [error, setError] = useState(false)
+    const [vencido, setVencido] = useState(false)
 
     const confirmNewPass = async (e) => {
         e.preventDefault()
@@ -18,6 +19,7 @@ const RecoverPass = () => {
         if(nuevaContrasenia === repetirNuevaContrasenia){
             setError(false)
             const res = await confirmNewPassRequest({token, nuevaContrasenia})
+            if(res.data?.code === 'LINK_VENCIDO') setVencido(true)
             if(res.data === 1){  //axios devuelve la respuesta completa: el valor del backend esta en data
                 setMessage(true)
                 setTimeout(() => {
@@ -56,6 +58,7 @@ const RecoverPass = () => {
                            <input className="p-3 mt-3 w-full" type="password" minLength="5" maxLength="30" placeholder="Repetir contraseña" name="repetirNuevaContrasenia" required></input>
                         <div className="text-center">
                             {error && <p className="mt-3 text-red-600! text-xl">Las contraseñas no coinciden!</p>}
+                            {vencido && <p className="mt-3 text-red-600! text-xl">El link venció o no es válido. Pedí uno nuevo desde "Olvidé mi contraseña".</p>}
                            <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer" type="submit">Recuperar contraseña</button>
                         </div>
                          <div className="text-center mt-4">

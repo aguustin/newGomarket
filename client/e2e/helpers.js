@@ -36,7 +36,8 @@ export const registerAndVerify = async (page, request, { nombre = 'Usuario E2E',
   const verif = await waitForMail(request, mail, /Verifica tu correo/)
   //El link del mail lleva al backend, que crea la cuenta y redirige al login del frontend
   await page.goto(linkFromMail(verif, '/verify_account/'))
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(/\/login\?verificacion=ok$/)
+  await expect(page.getByText('Cuenta verificada. Ya podés ingresar')).toBeVisible()
 }
 
 export const login = async (page, { mail, pass = 'Clave12345' }) => {

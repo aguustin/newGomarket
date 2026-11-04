@@ -23,7 +23,7 @@ export const duenoDelEvento = (obtenerId) => async (req, res, next) => {
   try {
     const id = obtenerId(req)
     if (!isValidObjectId(id)) return invalido(res)
-    const evento = await ticketModel.findById(id, { userId: 1, nombreEvento: 1 }).lean()
+    const evento = await ticketModel.findById(id, { userId: 1, nombreEvento: 1, cancelado: 1 }).lean()
     if (!evento) return inexistente(res)
     if (!esDueno(evento, req.user)) return noEsDueno(res)
     req.evento = evento

@@ -19,26 +19,56 @@ const Cortesies = () => {
             if (!userId) return //esperar a que cargue la sesion
             const prod = await getOneProdRequest(prodId, userId)
             if (!prod.data.tickets?.length) { setNoDisponible(true); return } //no existe o no es de este usuario
-            const res = await getAllExcelsRequest(userId, prodId)
-            setCortesies(res.data)
+            await recargarInvitaciones()
         }
         getProdCortesiesFunc()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session])
 
+    const recargarInvitaciones = async () => {
+        const res = await getAllExcelsRequest(session?.userFinded?.[0]?._id, prodId)
+        setCortesies(res.data)
+    }
+
     const getRRPPExcelFunc = async () => {
         const res = await getAllRRPPExcelsRequest(session?.userFinded?.[0]?._id, prodId)
-        console.log(res.data)
         setRrppExcels(res.data)
         setShowColabs(true)
     }
 
+    //Los envios corren en segundo plano: se avisa cuantos salen y la lista muestra el avance al recargarla.
+    //Volver a enviar solo manda a quienes todavia no lo recibieron
+    const avisarEnvio = (data, que) => {
+        if (!data.aEnviar) return alert(`Todos los ${que} de esta lista ya fueron enviados.`)
+        alert(`Se están enviando ${data.aEnviar} ${que}${data.yaEnviadas ? ` (${data.yaEnviadas} ya habían sido enviados)` : ''}. Puede tardar unos minutos: tocá "Actualizar" para ver el avance.`)
+    }
     const handleSendCortesies = async (cortesieId) => {
-        await sendCortesiesRequest({prodId, cortesieId})
+        try {
+            const res = await sendCortesiesRequest({prodId, cortesieId})
+            avisarEnvio(res.data, 'mails de invitación')
+            await recargarInvitaciones()
+        } catch (err) {
+            alert(err?.response?.data?.error || 'No se pudieron enviar las invitaciones. Intentá de nuevo.')
+        }
     }
 
     const handleSendRRPPLinks = async (rrppListId) => {
-        await sendRRPPLinksRequest({prodId, rrppListId})
+        try {
+            const res = await sendRRPPLinksRequest({prodId, rrppListId})
+            avisarEnvio(res.data, 'avisos a RRPP')
+            await getRRPPExcelFunc()
+        } catch (err) {
+            alert(err?.response?.data?.error || 'No se pudieron enviar los avisos. Intentá de nuevo.')
+        }
+    }
+
+    //"12/15 enviados · 2 con error" (las listas viejas, sin seguimiento, muestran solo la cantidad)
+    const textoEnvio = (envio, total) => {
+        if (!envio || envio.sinEnviar === envio.total) return `${total ?? 0} (sin enviar)`
+        const partes = [`${envio.enviadas}/${envio.total} enviados`]
+        if (envio.pendientes) partes.push(`${envio.pendientes} enviándose`)
+        if (envio.conError) partes.push(`${envio.conError} con error`)
+        return partes.join(' · ')
     }
 
     //Borra solo el registro del Excel: los mails ya enviados y los RRPP ya agregados no se deshacen
@@ -69,6 +99,7 @@ const Cortesies = () => {
             <div className="flex items-center w-[400px] mb-3">
                 <button className="bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827] py-2 px-3 rounded-lg " onClick={() => getRRPPExcelFunc()}>Lista RRPP</button>
                 <button className="bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827] py-2 px-3 rounded-lg ml-3" onClick={() => setShowColabs(false)}>Lista invitaciones</button>
+                <button className="bg-gray-600 text-white py-2 px-3 rounded-lg ml-3" onClick={() => (showColabs ? getRRPPExcelFunc() : recargarInvitaciones())}>Actualizar</button>
             </div>
                 <table className="min-w-[850px]! w-full text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827] rounded-2xl shadow-lg overflow-hidden">
                     <thead className="text-xs uppercase bg-gray-50 bg-orange-500 text-[#111827]">
@@ -80,7 +111,7 @@ const Cortesies = () => {
                                 Fecha
                             </th>
                              <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                                {showColabs ? 'Cantidad de RRPP' : 'Invitaciónes enviadas' }
+                                {showColabs ? 'Avisos a RRPP' : 'Invitaciones' }
                             </th>
                             <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                                 Nombre de lista
@@ -94,7 +125,6 @@ const Cortesies = () => {
                         {showColabs 
                         ? 
                         rrppExcels.map((rrpp) => 
-                            <>
                          <tr key={rrpp._id} className="odd:bg-gray-700 even:bg-gray-800 border-b dark:border-gray-800 border-gray-600">
                             <td className="px-6 py-4 text-gray-300">
                                 {rrpp.eventName}
@@ -103,7 +133,7 @@ const Cortesies = () => {
                                 {rrpp.fechaCreacion}
                             </td>
                             <td className="px-6 py-4 text-gray-300">
-                                {rrpp.RRPPCount}
+                                {textoEnvio(rrpp.envio, rrpp.RRPPCount)}
                             </td>
                             <td className="px-6 py-4 text-gray-300">
                                 {rrpp.excelName}
@@ -136,14 +166,12 @@ const Cortesies = () => {
                                 </button>
                             </td>
                          </tr>
-                        </> 
                         )
 
 
                         :
                         
                        cortesies.map((cort) => 
-                       <>
                          <tr key={cort._id} className="odd:bg-gray-700 even:bg-gray-800 border-b dark:border-gray-800 border-gray-600">
                             <td className="px-6 py-4 text-gray-300">
                                 {cort.eventName}
@@ -152,7 +180,7 @@ const Cortesies = () => {
                                 {cort.fechaCreacion}
                             </td>
                             <td className="px-6 py-4 text-gray-300">
-                                {cort.courtesy}
+                                {textoEnvio(cort.envio, cort.courtesy)}
                             </td>
                             <td className="px-6 py-4 text-gray-300">
                                 {cort.excelName}
@@ -185,7 +213,6 @@ const Cortesies = () => {
                                 </button>
                             </td>
                          </tr>
-                        </> 
                     )
                         }
                     </tbody>

@@ -1,4 +1,5 @@
 import { pass, user_mail, urlFront, urlBack } from "../config.js"
+import crypto from "node:crypto"
 import { isValidObjectId } from "mongoose"
 import userModel from "../models/userModel.js"
 import bcrypt from "bcrypt"
@@ -9,6 +10,15 @@ import { resend, createMailTransport } from "../lib/resendDomain.js";
 import { firmarSesion, sinDatosPrivados } from "../lib/auth.js";
 
 import { jwtSecret as JWT_SECRET } from "../lib/secretos.js"
+import registroPendienteModel from "../models/registroPendienteModel.js"
+
+//Los mails de las cuentas no distinguen mayusculas: se guardan en minusculas y se buscan sin distinguirlas
+//(las cuentas viejas pueden tener mayusculas guardadas)
+const normalizarMail = (mail) => String(mail).trim().toLowerCase()
+const SIN_MAYUSCULAS = { locale: 'en', strength: 2 }
+const buscarUsuarioPorMail = (mail, proyeccion) => userModel.findOne({ mail: normalizarMail(mail) }, proyeccion).collation(SIN_MAYUSCULAS)
+const sha256 = (s) => crypto.createHash('sha256').update(String(s)).digest('hex')
+const VERIFICACION_HORAS = 24
 
 //Perfil publico (pagina de la productora): nunca incluye la contraseña
 export const getUserProfileController = async (req, res) => {
@@ -25,10 +35,12 @@ export const getAllUsersController = async (req, res) => {
 
 export const registerController = async (req, res) => {
     const {nombreCompleto, mail, dni, pais, contrasenia, repetirContrasenia} = req.body
-    
-    const findUser = await userModel.find({mail: mail})
+    if (![mail, contrasenia, nombreCompleto].every((v) => typeof v === 'string' && v.trim())) {
+        return res.status(400).json({ code: 'DATOS_INVALIDOS', msj: 'Completá todos los datos' })
+    }
 
-    if(findUser.length > 0){
+    const mailNormal = normalizarMail(mail)
+    if(await buscarUsuarioPorMail(mailNormal, { _id: 1 }).lean()){
         return res.status(200).json({msj:'El usuario ya existe'})
     }
     
@@ -38,13 +50,19 @@ export const registerController = async (req, res) => {
     
     const encriptContrasenia = await bcrypt.hash(contrasenia, 12);
 
-    const secret = JWT_SECRET
-
-    const token = jwt.sign({nombreCompleto, mail, dni, pais, encriptContrasenia}, secret, {expiresIn: '20m'});
+    //El link lleva solo un codigo al azar; los datos quedan guardados hasta que se verifique (o venza).
+    //Registrarse de nuevo con el mismo mail reemplaza el codigo: el link anterior deja de servir
+    const codigo = crypto.randomBytes(32).toString('hex')
+    await registroPendienteModel.findOneAndUpdate(
+        { mail: mailNormal },
+        { $set: { codigoHash: sha256(codigo), nombreCompleto: nombreCompleto.trim(), dni, pais, contrasenia: encriptContrasenia,
+            expiraEn: new Date(Date.now() + VERIFICACION_HORAS * 3600 * 1000) }, $unset: { usadoEn: 1 } },
+        { upsert: true }
+    )
 
     const { error: mailError } = await resend.emails.send({
         from: 'Ipass <no-reply@ipassi.com>',
-        to: [mail],
+        to: [mailNormal],
         subject: 'Verifica tu correo para completar tu registro en Ipasss',
         html: `
             <!DOCTYPE html>
@@ -90,7 +108,7 @@ export const registerController = async (req, res) => {
                 <div class="container">
                     <p>Gracias por registrarte en <strong>Ipasss</strong>. Para completar tu registro y empezar a disfrutar de todos nuestros servicios, necesitamos que verifiques tu dirección de correo electrónico.</p>
                     <p>
-                        <a href="${urlBack}/verify_account/${token}" class="button">Verificar mi correo</a>
+                        <a href="${urlBack}/verify_account/${codigo}" class="button">Verificar mi correo</a>
                     </p>
                     <p>Si no creaste una cuenta en Ipasss, puedes ignorar este correo.</p>
                     <p>¡Bienvenido a <strong>Ipasss</strong>!<br>El equipo de Ipasss</p>
@@ -117,33 +135,35 @@ export const registerController = async (req, res) => {
 }
 
 export const verifyAccountController = async (req, res) => {
-    const {token} = req.params
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const { nombreCompleto, mail, dni, pais, encriptContrasenia } = decoded;
+    const vencido = () => res.redirect(`${urlFront}/login?verificacion=vencida`)  //pedir otro registrandose de nuevo
+    const { token: codigo } = req.params
+    if (!/^[a-f0-9]{64}$/.test(String(codigo))) return vencido()
 
-    const userExist = await userModel.exists({mail: mail})  //si ya verifico antes no se duplica
-    if(userExist){
-        return res.redirect(`${urlFront}/login`);
+    const pendiente = await registroPendienteModel.findOne({ codigoHash: sha256(codigo), expiraEn: { $gt: new Date() } }).lean()
+    if (!pendiente) return vencido()
+
+    //Si ya verifico antes (o abrio el link dos veces) no se duplica la cuenta
+    if (!(await buscarUsuarioPorMail(pendiente.mail, { _id: 1 }).lean())) {
+        try {
+            await userModel.create({
+                nombreCompleto: pendiente.nombreCompleto, mail: pendiente.mail, dni: pendiente.dni, pais: pendiente.pais,
+                contrasenia: pendiente.contrasenia, comisionServicio: 15
+            })
+        } catch (err) {
+            if (err?.code !== 11000) throw err
+        }
     }
-
-    await userModel.create({
-            nombreCompleto: nombreCompleto,
-            mail: mail,
-            dni: dni,
-            pais: pais,
-            contrasenia: encriptContrasenia,
-            comisionServicio: 15
-    })
-
-    return res.redirect(`${urlFront}/login`);
+    return res.redirect(`${urlFront}/login?verificacion=ok`);
 }
 
 export const loginController = async (req, res) => {
     const {mail, contrasenia} = req.body
-    const userFinded = await userModel.find({mail: mail})
+    if (typeof mail !== 'string' || typeof contrasenia !== 'string') return res.status(400).json({ code: 'DATOS_INVALIDOS' })
+    const encontrado = await buscarUsuarioPorMail(mail)
+    const userFinded = encontrado ? [encontrado] : []
    
     if(userFinded.length > 0){
-        const decryptContrasenia = await bcrypt.compare(contrasenia, userFinded[0].contrasenia)
+        const decryptContrasenia = userFinded[0].contrasenia ? await bcrypt.compare(contrasenia, userFinded[0].contrasenia) : false
         if(decryptContrasenia){
             //Misma forma que antes (userFinded es un array) mas el token de sesion; sin la contraseña
             return res.status(200).json({userFinded: userFinded.map(sinDatosPrivados), estado: 1, token: firmarSesion(userFinded[0]) })
@@ -155,17 +175,24 @@ export const loginController = async (req, res) => {
     }
 }
 
+//El link de recuperacion sirve una sola vez: lleva una huella de la contraseña actual (no la contraseña).
+//Al cambiarla, la huella ya no coincide y el link queda invalido. typ evita usar otros tokens (verificacion, QR)
+const huellaContrasenia = (hash) => crypto.createHash('sha256').update(String(hash)).digest('hex').slice(0, 16)
+
 export const recoverPassController = async (req, res) => {
     const {mail} = req.body
+    if (typeof mail !== 'string' || !mail) return res.status(200).json({ok:true})
 
-    const secret = JWT_SECRET
+    const usuario = await buscarUsuarioPorMail(mail, { mail: 1, contrasenia: 1 }).lean()
+    //Mismo resultado exista o no la cuenta: no se revela que mails estan registrados
+    if (!usuario?.contrasenia) return res.status(200).json({ok:true})
 
-    const token = jwt.sign({mail:mail}, secret, {expiresIn: '20m'});
+    const token = jwt.sign({ mail: usuario.mail, typ: 'recupero', pv: huellaContrasenia(usuario.contrasenia) }, JWT_SECRET, {expiresIn: '20m'});
 
     const { error: mailError } = await resend.emails.send({
         from: '"Ipass" <no-reply@ipassi.com>',
-        to: [mail],
-        subject: `Recuperar contraseña para ${mail} - Ipasss`,
+        to: [usuario.mail],
+        subject: `Recuperar contraseña para ${usuario.mail} - Ipasss`,
         html: `<p>Ingresa al siguiente enlace para recuperar tu contraseña </p> <a href="${urlFront}/recover_password/${token}">Recuperar mi contraseña</a>`
     });
     if(mailError){
@@ -179,19 +206,31 @@ export const recoverPassController = async (req, res) => {
 export const newPasswordController = async (req, res) => {
     const {token, nuevaContrasenia} = req.body
 
-       const decoded = jwt.verify(token, JWT_SECRET);
-       const { mail } = decoded;
+       let decoded
+       try {
+           decoded = jwt.verify(token, JWT_SECRET);
+       } catch {
+           return res.status(200).json({ code: 'LINK_VENCIDO' })  //vencido (20 min) o invalido: pedir uno nuevo
+       }
+       const { mail, typ, pv } = decoded;
+       if (!mail || typeof mail !== 'string' || typ !== 'recupero') return res.status(200).json({ code: 'LINK_VENCIDO' })
+       if (typeof nuevaContrasenia !== 'string' || nuevaContrasenia.length < 5) return res.status(400).json({ code: 'CONTRASENIA_INVALIDA' })
+
+       const usuario = await buscarUsuarioPorMail(mail, { contrasenia: 1 }).lean()
+       if (!usuario || huellaContrasenia(usuario.contrasenia) !== pv) return res.status(200).json({ code: 'LINK_VENCIDO' })  //ya se uso
 
        const encryptPass = await bcrypt.hash(nuevaContrasenia, 12)
 
-       await userModel.updateOne(
-            {mail: mail},
+       const cambio = await userModel.updateOne(
+            {_id: usuario._id, contrasenia: usuario.contrasenia},  //si dos pedidos llegan a la vez, solo uno cambia
             {
                 $set:{
                     contrasenia: encryptPass
                 }
             }
        )
+
+       if (!cambio.modifiedCount) return res.status(200).json({ code: 'LINK_VENCIDO' })
 
        res.status(200).json(1)
 }

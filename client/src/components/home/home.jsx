@@ -467,7 +467,7 @@ const Home = () => {
                             ) : (
                                 filteredEvents.map((allEv) => (
                                     <div key={allEv?._id} className="primary-div bg-gradient-to-br from-gray-800 to-gray-900 w-[300px] max-[655px]:w-full relative rounded-2xl border-2 border-gray-700 hover:border-amber-500 transition-all duration-300 shadow-xl">
-                                        <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
+                                        <Link to={{ pathname: `/buy_tickets/${allEv._id}` }}>
                                             <div className="overflow-hidden rounded-t-2xl relative">
                                                 <FadeInImage
                                                     src={allEv.imgEvento}
@@ -500,7 +500,7 @@ const Home = () => {
                                                     <img src={starPng} alt="No favorito" className="w-6 h-6" />
                                                 </button>
                                             )}
-                                            <Link to={{ pathname: `/buy_tickets/${allEv._id}/${allEv.prodMail}` }}>
+                                            <Link to={{ pathname: `/buy_tickets/${allEv._id}` }}>
                                                 <h3 className="text-xl font-bold w-[240px] text-gray-300! hover:text-amber-400 transition-colors line-clamp-2">
                                                     {allEv.nombreEvento}
                                                 </h3>

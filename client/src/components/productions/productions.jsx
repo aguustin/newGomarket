@@ -218,7 +218,7 @@ return (
                           <button
                             type="button"
                             onClick={() => {
-                              navigator.clipboard.writeText(`${import.meta.env.VITE_URL_FRONT}/buy_tickets/${prod._id}/${prod.prodMail}`);
+                              navigator.clipboard.writeText(`${import.meta.env.VITE_URL_FRONT}/buy_tickets/${prod._id}`);
                               alert('LINK COPIADO!');
                             }}
                             className="flex items-center justify-center px-3 py-2 bg-gray-500 hover:bg-yellow-500 text-[#111827] rounded-lg text-xs font-semibold transition-all shadow-md hover:shadow-lg"

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import UserContext from "../../context/userContext";
 import { useParams } from "react-router";
-import { getBuyersRequest } from "../../api/eventRequests";
+import { getBuyersRequest, entregasPendientesRequest, reenviarEntradasRequest } from "../../api/eventRequests";
 import { EventoNoDisponible, formatDate } from "../../globalscomp/globalscomp";
 
 const BuyersList = () => { 
@@ -11,6 +11,27 @@ const BuyersList = () => {
     const {prodId} = useParams()
     const [buyers, setBuyers] = useState([])
     const [noDisponible, setNoDisponible] = useState(false)
+    const [pendientes, setPendientes] = useState([])
+    const [reenviando, setReenviando] = useState(null)
+    const [avisoReenvio, setAvisoReenvio] = useState(null)  //{ ok, texto }
+
+    const cargarPendientes = () => entregasPendientesRequest(prodId)
+        .then((res) => setPendientes(res.data?.pendientes ?? []))
+        .catch(() => setPendientes([]))
+
+    //Solo se reenvia a compras cuyo mail nunca salio (no se puede cambiar el mail del comprador)
+    const reenviar = async (paymentId) => {
+        setReenviando(paymentId)
+        try {
+            await reenviarEntradasRequest(prodId, paymentId)
+            setAvisoReenvio({ ok: true, texto: 'Entradas enviadas' })
+        } catch (err) {
+            setAvisoReenvio({ ok: false, texto: err?.response?.data?.error || 'No se pudo reenviar. Intentá de nuevo más tarde' })
+        } finally {
+            setReenviando(null)
+            cargarPendientes()
+        }
+    }
 
        useEffect(() => {
             const getBuyers = async () => {
@@ -20,6 +41,7 @@ const BuyersList = () => {
     
                     const res = await getBuyersRequest(prodId);
                     setBuyers(res.data);
+                    cargarPendientes();
                 } catch (err) {
                     if ([400, 403, 404].includes(err?.response?.status)) setNoDisponible(true);
                     console.error("Failed to fetch buyers:", err);
@@ -49,6 +71,22 @@ return (
               </div>
             </div>
           </div>
+
+          {pendientes.length > 0 && (
+            <div className="m-6 p-4 rounded-2xl border border-orange-500 bg-gray-900">
+              <p className="text-orange-400! font-bold text-lg">Entradas sin enviar ({pendientes.length})</p>
+              <p className="text-gray-300! text-sm mb-3">El mail con las entradas de estas compras no se pudo enviar. Podés reenviarlo al mail que cargó el comprador.</p>
+              {pendientes.map((p) => (
+                <div key={p.paymentId} className="flex flex-wrap items-center justify-between gap-2 py-2 border-t border-gray-700">
+                  <span className="text-gray-200!">{p.nombre || 'Sin nombre'} - {p.email}</span>
+                  <button className="bg-orange-500 text-[#111827]! font-semibold px-4 py-2 rounded-lg disabled:opacity-60" disabled={reenviando === p.paymentId} onClick={() => reenviar(p.paymentId)}>
+                    {reenviando === p.paymentId ? 'Reenviando...' : 'Reenviar entradas'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {avisoReenvio && <p className={`mx-6 mb-4 font-bold ${avisoReenvio.ok ? 'text-green-400!' : 'text-orange-500!'}`}>{avisoReenvio.texto}</p>}
 
           {/* Tabla con scroll horizontal para pantallas pequeñas */}
           <div className="ab overflow-x-auto!">

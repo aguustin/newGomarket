@@ -146,6 +146,9 @@ export const reactivarEventoRequest = async ({prodId, confirmar = false}) => axi
 export const soldOutEventRequest = async ({prodId, isSoldOut}) => axios.post(`${import.meta.env.VITE_URL}/sold_out`, {prodId, isSoldOut})
 
 export const getBuyersRequest = async (prodId) => axios.get(`${import.meta.env.VITE_URL}/get_buyers/${prodId}`)
+//Compras cuyo mail con las entradas nunca se pudo enviar, y reenviarlas (solo el dueño)
+export const entregasPendientesRequest = (prodId) => axios.get(`${import.meta.env.VITE_URL}/entregas_pendientes/${prodId}`)
+export const reenviarEntradasRequest = (prodId, paymentId) => axios.post(`${import.meta.env.VITE_URL}/reenviar_entradas`, { prodId, paymentId })
 
 export const createDiscountCodeRequest = async ({prodId, idDiscount, cantidadDescuentos, numeroDescuento }) => axios.post(`${import.meta.env.VITE_URL}/create_discount`, {prodId, idDiscount, cantidadDescuentos, numeroDescuento})
 

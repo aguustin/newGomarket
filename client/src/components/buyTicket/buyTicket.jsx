@@ -283,7 +283,7 @@ const activeDiscountCode = async (e) => {
                                     <option className="bg-gray-950!" value=''>Cambiar fecha</option>
                                     {relates.map((rel) => (<option className="bg-gray-950!" key={rel._id} value={rel._id}>{rel.nombreEvento} - {formatDateB(rel.fechaInicio)}</option>))}
                                 </select>
-                                <Link className="w-[101.5px]! ml-3! text-[#111827]! bg-yellow-500 rounded-lg p-2 mb-2" to={{ pathname: `/buy_tickets/${eventToRender._id}/${eventToRender.prodMail}` }}>Ir a evento</Link>
+                                <Link className="w-[101.5px]! ml-3! text-[#111827]! bg-yellow-500 rounded-lg p-2 mb-2" to={{ pathname: `/buy_tickets/${eventToRender._id}` }}>Ir a evento</Link>
                             </div> 
                            </> }
                             <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">

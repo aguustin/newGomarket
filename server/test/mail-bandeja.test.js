@@ -30,7 +30,7 @@ test('registro -> mail de verificacion en la bandeja -> verificar -> login', asy
   const verifyPath = new URL(findLink(verifMail.html, '/verify_account/')).pathname
   const verify = await request(app).get(verifyPath)
   assert.equal(verify.status, 302)
-  assert.equal(verify.headers.location, `${process.env.URL_FRONT_DEV}/login`)
+  assert.equal(verify.headers.location, `${process.env.URL_FRONT_DEV}/login?verificacion=ok`)
 
   const login = await request(app).post('/login').send({ mail, contrasenia: 'Prueba123' })
   assert.equal(login.body.estado, 1)
@@ -46,6 +46,8 @@ test('registro -> mail de verificacion en la bandeja -> verificar -> login', asy
 
 test('recuperar contraseña: el mail llega a la bandeja con el link al frontend', async () => {
   const mail = uniqueMail('recupero')
+  const userModel = (await import('../models/userModel.js')).default
+  await userModel.create({ mail, nombreCompleto: 'R', contrasenia: 'hash-cualquiera' })
   const res = await request(app).post('/recover_password').send({ mail })
   assert.deepEqual(res.body, { ok: true })
 

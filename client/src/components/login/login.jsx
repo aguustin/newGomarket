@@ -24,9 +24,19 @@ const Login = () => {
         const motivo = new URLSearchParams(window.location.search).get('sesion')
         if (motivo === 'vencida') setShowMsg('Tu sesión venció. Ingresá de nuevo')
         if (motivo === 'requerida') setShowMsg('Iniciá sesión para continuar')
+        const verificacion = new URLSearchParams(window.location.search).get('verificacion')
+        if (verificacion === 'ok') setShowMsg('Cuenta verificada. Ya podés ingresar')
+        if (verificacion === 'vencida') setShowMsg('El link de verificación venció o no es válido. Registrate de nuevo para recibir otro')
     // eslint-disable-next-line react-hooks/exhaustive-deps
     
   }, [])
+
+    //?next=/ruta: volver a donde estaba (por ejemplo, el QR que el organizador escaneo en la puerta).
+    //Solo rutas internas: nunca otro sitio
+    const destinoDespuesDelLogin = () => {
+        const next = new URLSearchParams(window.location.search).get('next')
+        return next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/login') ? next : '/'
+    }
 
     const onSuccess = () => {
         setCaptchaStatus(true)
@@ -50,7 +60,7 @@ const Login = () => {
           const res = await loginContext(userData)
           
           if(res.data?.estado === 1){
-            navigate('/')
+            navigate(destinoDespuesDelLogin())
           }
           if(res.estado === 2){
             setLoading(false)

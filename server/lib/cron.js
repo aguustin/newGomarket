@@ -67,3 +67,14 @@ cron.schedule('*/10 * * * *', async () => {
         console.error("Error reintentando reembolsos:", err?.message ?? err);
     }
 });
+
+//Cada 5 minutos: invitaciones por Excel y avisos a RRPP que quedaron pendientes o fallaron (hasta 5 intentos)
+cron.schedule('*/5 * * * *', async () => {
+    try {
+        const { procesarEnviosPendientes } = await import('./invitaciones.js');
+        const { invitaciones, avisosRRPP } = await procesarEnviosPendientes();
+        if (invitaciones || avisosRRPP) console.log(`Envios reintentados: ${invitaciones} invitaciones, ${avisosRRPP} avisos a RRPP`);
+    } catch (err) {
+        console.error("Error reintentando invitaciones:", err?.message ?? err);
+    }
+});

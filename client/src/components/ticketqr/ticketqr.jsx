@@ -86,7 +86,7 @@ const TicketQr = () => {
           </p>
         )}
         {!ticketInfo.puedeValidar && ticketInfo.estado === 'vigente' && (
-          <p className="text-gray-400! mt-8 text-sm">Presentá este QR en el acceso. ¿Sos el organizador? <Link className="underline text-gray-300!" to="/login">Iniciá sesión</Link> para validar entradas.</p>
+          <p className="text-gray-400! mt-8 text-sm">Presentá este QR en el acceso. ¿Sos el organizador? <Link className="underline text-gray-300!" to={`/login?next=${encodeURIComponent(`/ticket/validate/${token}`)}`}>Iniciá sesión</Link> para validar entradas.</p>
         )}
       </div>
     </div>

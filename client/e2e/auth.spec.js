@@ -23,7 +23,7 @@ test('verificar dos veces el mismo link no duplica la cuenta', async ({ page, re
   await registerAndVerify(page, request, { mail })
   const verif = await waitForMail(request, mail, /Verifica tu correo/)
   await page.goto(linkFromMail(verif, '/verify_account/'))
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(/\/login\?verificacion=ok$/)
 
   //Registrarse otra vez con el mismo mail: el backend responde que ya existe
   const res = await request.post(`${E2E_BACK}/register`, { data: { nombreCompleto: 'X', mail, dni: 1, pais: 'AR', contrasenia: 'a', repetirContrasenia: 'a' } })

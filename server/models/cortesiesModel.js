@@ -9,6 +9,14 @@ const cortesieSchema = mongoose.Schema({
     people:[{
         clientName:{type: String},
         email: {type:String},
+        //Seguimiento del envio (etapa 13). Sin estado = nunca se intento enviar
+        estado: {type: String, enum: [null, 'pendiente', 'enviado', 'error', 'cancelada'], default: null},
+        intentos: {type: Number, default: 0},
+        ultimoError: {type: String, default: null},
+        enviandoDesde: {type: Date, default: null},
+        enviadoEn: {type: Date, default: null},
+        //El QR de la invitacion: se crea una sola vez, asi un reintento manda el mismo QR
+        token: {type: String, default: null},
     }],
     courtesy:{type:Number},
 }, { strict: true })

@@ -32,7 +32,8 @@ axios.interceptors.response.use(
             localStorage.removeItem('session')
             if (!window.location.pathname.startsWith('/login')) {
                 const motivo = data.code === 'SESION_VENCIDA' ? 'vencida' : 'requerida'
-                window.location.assign(`/login?sesion=${motivo}`)
+                const next = encodeURIComponent(window.location.pathname + window.location.search)
+                window.location.assign(`/login?sesion=${motivo}&next=${next}`)
             }
         }
         return Promise.reject(error)
