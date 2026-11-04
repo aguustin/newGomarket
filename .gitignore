@@ -3,3 +3,5 @@
 .env
 .env.*
 !.env.example
+# Backups locales de scripts de mantenimiento (pueden tener datos personales)
+server/backups/

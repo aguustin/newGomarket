@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import { verificarTokenQR } from "./secretos.js";
 import { isValidObjectId } from "mongoose";
 import ticketModel from "../models/ticketsModel.js";
 import tokenModel from "../models/tokenModel.js";
@@ -7,14 +7,13 @@ import tokenModel from "../models/tokenModel.js";
 //Hay dos formatos de token:
 //  - entradas pagas y cortesias de RRPP: { eventId, ticketId, nombreCompleto, dni, jti }
 //  - cortesias por Excel:                 { prodId, nombreCompleto, jti }  -> "Invitación", valida hasta el fin del evento
-const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
 
 //Devuelve { ok:false, status } o { ok:true, evento, entrada, tipo, tokenDoc, venceEn, estado, payload }
-//estado: 'vigente' | 'usada' | 'vencida'
+//estado: 'vigente' | 'usada' | 'vencida' | 'anulada' (el evento se cancelo)
 export const leerEntrada = async (token, now = new Date()) => {
   let payload
   try {
-    payload = jwt.verify(token, JWT_SECRET)
+    payload = verificarTokenQR(token)  //clave actual o, durante una rotacion, la anterior
   } catch {
     return { ok: false, status: 404 }
   }
@@ -25,7 +24,7 @@ export const leerEntrada = async (token, now = new Date()) => {
 
   const [evento, tokenDoc] = await Promise.all([
     ticketModel.findById(eventId, {
-      userId: 1, 'rrpp.mail': 1, tickets: 1, cortesiaRRPP: 1, nombreEvento: 1, fechaInicio: 1, fechaFin: 1,
+      userId: 1, cancelado: 1, 'rrpp.mail': 1, tickets: 1, cortesiaRRPP: 1, nombreEvento: 1, fechaInicio: 1, fechaFin: 1,
       imgEvento: 1, localidad: 1, direccion: 1, eventoEdad: 1
     }).lean(),
     tokenModel.findOne({ token }).lean()
@@ -48,7 +47,10 @@ export const leerEntrada = async (token, now = new Date()) => {
     venceEn = evento.fechaFin ?? null
   }
 
-  const estado = tokenDoc.used ? 'usada' : (!venceEn || now > new Date(venceEn)) ? 'vencida' : 'vigente'
+  const estado = (tokenDoc.anulada || evento.cancelado) ? 'anulada'
+    : tokenDoc.used ? 'usada'
+    : (!venceEn || now > new Date(venceEn)) ? 'vencida'
+    : 'vigente'
   return { ok: true, evento, entrada, tipo, tokenDoc, venceEn, estado, payload }
 }
 

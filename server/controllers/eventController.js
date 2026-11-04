@@ -25,13 +25,13 @@ import { calcularCompra } from "../lib/pricing.js";
 import orderModel from "../models/orderModel.js";
 import { validarCantidades, asignarCortesiasARRPP, consumirCupoRRPP, devolverCupoRRPP, mailRRPPGuardado } from "../lib/cortesias.js";
 import { leerEntrada, marcarUsada } from "../lib/entradas.js";
+import { anularEntradasDelEvento, marcarParaReembolso, reembolsarPago, procesarReembolsosPendientes, comprasReembolsadas } from "../lib/reembolsos.js";
 import { esDueno, esRRPP } from "../lib/permisos.js";
 import { RESERVA_MINUTOS, fechaMP, reservarStock, devolverStock, liberarOrden, confirmarOrdenPagada } from "../lib/stock.js";
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
-const SECRET_MAIL_KEY = process.env.SECRET_MAIL_KEY || 'mjac32nk12n3123ja7das2'
+import { jwtSecret as JWT_SECRET, secretMailKey as SECRET_MAIL_KEY } from "../lib/secretos.js";
 const IV_LENGTH = 16
 
 export const getAllEventsController = async (req, res) => {  //OBTENER TODOS LOS EVENTOS
@@ -659,6 +659,17 @@ const procesarPagoAprobado = async (paymentId, payment, origen) => {
     }
     return false
   }
+  //Evento cancelado (por ejemplo, el comprador estaba en el checkout cuando el dueño cancelo): no se entregan
+  //entradas y el pago se reembolsa
+  if (event.cancelado) {
+    if (!tx.reembolsado && !['pendiente', 'ok', 'revision'].includes(tx.reembolsoEstado)) {
+      await transactionModel.updateOne({ paymentId }, { $set: { reembolsoEstado: 'pendiente', reembolsoIntentos: 0 } })
+      console.warn(`Pago ${paymentId} aprobado para un evento cancelado (${prod_id}): se reembolsa`)
+    }
+    reembolsarPago(paymentId).catch((err) => console.error(`Reembolso del pago ${paymentId}:`, err?.message ?? err))
+    return false
+  }
+
   //Completa, o anterior a la etapa 9 (sin estos campos)
   if (tx.ventaRegistrada !== false && tx.entregado !== false) return false
 
@@ -692,7 +703,7 @@ const procesarPagoAprobado = async (paymentId, payment, origen) => {
     { $set: { entregandoDesde: ahora } }
   )
   if (enCurso) {
-    const enviado = await qrGeneratorController(prod_id, quantities, mail, state, nombre_completo, dni)
+    const enviado = await qrGeneratorController(prod_id, quantities, mail, state, nombre_completo, dni, paymentId)
     if (enviado) {
       await transactionModel.updateOne({ paymentId }, { $set: { entregado: true, entregadoEn: new Date(), entregandoDesde: null, ultimoErrorEntrega: null } })
     } else {
@@ -706,6 +717,32 @@ const procesarPagoAprobado = async (paymentId, payment, origen) => {
     }
   }
   return ventaNueva
+}
+
+//Conciliacion (cron cada 10 minutos): pagos APROBADOS en Mercado Pago de las ultimas 48 h que Ipass nunca
+//registro porque no llego ningun aviso (webhook caido, URL vieja, servidor apagado) ni el comprador volvio a la
+//pagina de resultado. Solo toma pagos de Ipass (metadata con evento y orden) y usa el mismo procesamiento por pasos
+export const conciliarPagosAprobados = async () => {
+  const res = await mercadopago.payment.search({ qs: {
+    sort: 'date_created', criteria: 'desc', range: 'date_created', begin_date: 'NOW-2DAYS', end_date: 'NOW', status: 'approved', limit: 100
+  } })
+  const deIpass = (res.body?.results ?? []).filter((p) => p.metadata?.prod_id && p.metadata?.quantities)
+  if (deIpass.length === 0) return 0
+  const ids = deIpass.map((p) => String(p.id))
+  const registrados = new Set((await transactionModel.find({ paymentId: { $in: ids } }, { paymentId: 1 }).lean()).map((t) => t.paymentId))
+  let recuperados = 0
+  for (const id of ids.filter((i) => !registrados.has(i))) {
+    try {
+      const { procesado } = await procesarPagoMP(id, 'conciliacion')
+      if (procesado) {
+        recuperados++
+        console.warn(`Pago ${id} recuperado por conciliacion: Mercado Pago lo aprobo pero no habia llegado ningun aviso`)
+      }
+    } catch (err) {
+      console.error(`Conciliacion del pago ${id} fallo:`, err?.message ?? err)
+    }
+  }
+  return recuperados
 }
 
 //Reintento automatico (cron cada 5 minutos): pagos cobrados con la entrega pendiente
@@ -898,12 +935,15 @@ export const mercadoPagoWebhookController = async (req, res) => {
   }
 
   //Firma de Mercado Pago (lib/firmaMP.js). En "registrar" solo se deja constancia: el pago se confirma
-  //igual contra la API de MP, asi que un aviso falso no puede crear ventas
+  //igual contra la API de MP, asi que un aviso falso no puede crear ventas.
+  //En "estricto" un aviso sin firma valida se IGNORA con 200 (no 401): MP manda por cada pago un aviso firmado
+  //(WebHook v1.0) y otro en formato viejo sin firma valida (Feed v2.0); rechazarlo haria que MP lo reintente
+  //durante horas. El pago lo procesa el aviso firmado, la pagina de resultado o la conciliacion
   if (webhookFirma !== 'off') {
     const { valida, motivo } = verificarFirmaMP(req, webhookSecret);
     if (!valida) {
-      console.warn(`Webhook de MP sin firma valida (${motivo}) para el pago ${paymentId}${webhookFirma === 'estricto' ? ': rechazado' : ''}`);
-      if (webhookFirma === 'estricto') return res.sendStatus(401);
+      console.warn(`Webhook de MP sin firma valida (${motivo}) para el pago ${paymentId}${webhookFirma === 'estricto' ? ': ignorado' : ''}`);
+      if (webhookFirma === 'estricto') return res.sendStatus(200);
     } else {
       console.log(`Webhook de MP con firma valida para el pago ${paymentId}`);
     }
@@ -921,7 +961,7 @@ export const mercadoPagoWebhookController = async (req, res) => {
 
 
 
-export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni) => {
+export const qrGeneratorController = async (prodId, quantities, mail, state, nombreCompleto, dni, paymentId = null) => {
   
   try {
     
@@ -997,7 +1037,7 @@ for (const ticket of filteredTickets) {
     };    
 
     const token = jwt.sign(payload, JWT_SECRET);
-    const saveToken = new tokenModel({ token });
+    const saveToken = new tokenModel({ token, eventId: String(event._id), paymentId: paymentId ? String(paymentId) : null });
     await saveToken.save();
 
     const qrUrl = `${urlFront}/ticket/validate/${token}`;
@@ -1425,6 +1465,9 @@ export const validarEntradaController = async (req, res) => {
     if (lectura.estado === 'usada') {
       return res.status(409).json({ code: 'YA_USADA', error: 'Esta entrada ya fue usada', ...datosEntrada(lectura) });
     }
+    if (lectura.estado === 'anulada') {
+      return res.status(409).json({ code: 'ANULADA', error: 'Esta entrada está anulada: el evento fue cancelado', ...datosEntrada(lectura) });
+    }
     if (lectura.estado === 'vencida') {
       return res.status(409).json({ code: 'VENCIDA', error: 'Esta entrada está vencida', ...datosEntrada(lectura) });
     }
@@ -1607,78 +1650,11 @@ export const descargarCompradoresController = async (req, res) => {
   res.end()
 }
 
+//Reembolsa las compras de un evento (lo usa el worker de la cola, hoy sin uso). Ver lib/reembolsos.js
 export const refundsFunc = async ({ prodId }) => {
-  try {
-    // 1️⃣ Desactivar el evento
-    await ticketModel.updateOne(
-      { _id: prodId },
-      { $set: { active: false } }
-    );
-
-    // 2️⃣ Traer todos los pagos de ese evento
-    const payments = await transactionModel.find({ prodId });
-
-    if (!payments.length) {
-      return { success: true, fallidos: [] };
-    }
-
-    // 3️⃣ Crear requests de reembolso
-    const refundPromises = payments.map((pay) => {
-      // Si ya fue reembolsado, no volver a intentarlo
-      if (pay.reembolsado) {
-        return Promise.resolve({ skipped: true });
-      }
-
-      const idempotencyKey = `refund-${uuidv4()}`;
-
-      return axios.post(
-        `https://api.mercadopago.com/v1/payments/${pay.paymentId}/refunds`,
-        { amount: pay.montoPagado },
-        {
-          headers: {
-            Authorization: `Bearer ${mpAccessToken}`,
-            "Content-Type": "application/json",
-            "X-Idempotency-Key": idempotencyKey
-          }
-        }
-      );
-    });
-
-    // 4️⃣ Ejecutar todos los reembolsos
-    const results = await Promise.allSettled(refundPromises);
-
-    // 5️⃣ Actualizar estado en DB
-    const fallidos = [];
-
-    for (let i = 0; i < results.length; i++) {
-      const result = results[i];
-      const payment = payments[i];
-
-      // Si fue skipped (ya estaba reembolsado)
-      if (result.value?.skipped) continue;
-
-      if (result.status === "fulfilled") {
-        payment.reembolsado = true;
-      } else {
-        fallidos.push({
-          paymentId: payment.paymentId,
-          error: result.reason?.response?.data || result.reason
-        });
-      }
-    }
-
-    await Promise.all(payments.map((p) => p.save()));
-
-    if (fallidos.length > 0) {
-      console.warn("Algunos reembolsos fallaron:", fallidos);
-    }
-
-    return { success: true, fallidos };
-
-  } catch (err) {
-    console.error("Error en refundsFunc:", err);
-    return { success: false, fallidos: [] };
-  }
+  await marcarParaReembolso(prodId);
+  const { ok, fallidos } = await procesarReembolsosPendientes(prodId);
+  return { success: true, ok, fallidos };
 };
 
 export const relateEventsController = async (req, res) => {
@@ -1761,49 +1737,46 @@ export const getRelateEventsController = async (req, res) => {
   }
 };
 
+//Cancelar un evento (solo el dueño, ver lib/permisos.js):
+//  1. queda cancelado e inactivo   2. se anulan todos sus QR   3. se liberan las reservas pendientes
+//  4. cada compra queda con el reembolso pendiente: se procesan en segundo plano y el cron reintenta las fallidas
+//Cancelar dos veces no reembolsa dos veces (clave de idempotencia fija por pago)
 export const cancelarEventoController = async (req, res) => {
-  const {prodId} = req.body;
-   const { success, fallidos } = await refundsFunc({prodId})
-  /*const result = await refundQueue.add('reembolsar-pago', 
-    {prodId},
-    {
-    attempts: 3, // Reintentar 3 veces si falla
-    backoff: {
-      type: 'exponential', // o 'fixed'
-      delay: 5000 // 5 segundos de espera antes de reintentar
-    },
-      removeOnComplete: true, // limpia el job si se completó
-      removeOnFail: false // puedes dejarlo en false para revisar errores
+  const prodId = String(req.evento._id);
+  try {
+    await ticketModel.updateOne({ _id: prodId }, { $set: { active: false, cancelado: true, canceladoEn: new Date() } });
+    const entradasAnuladas = await anularEntradasDelEvento(prodId);
+    for (const { _id } of await orderModel.find({ prodId, estado: 'pendiente' }, { _id: 1 }).lean()) {
+      await liberarOrden(_id, 'cancelada');
     }
-  )*/
+    const reembolsosEnCurso = await marcarParaReembolso(prodId);
+    await purchaseModel.updateMany({ prodId }, { $set: { reembolsado: true } });
 
-  if (success) {
-    return res.status(200).json({
-      message: 'Reembolsos procesados',
-      fallidos: fallidos.length,
-      detalles: fallidos.map(f => f.reason?.response?.data || f.reason), // opcional
+    //En segundo plano: la respuesta no espera a Mercado Pago
+    setImmediate(() => procesarReembolsosPendientes(prodId).catch((err) => console.error('Reembolsos del evento', prodId, err?.message ?? err)));
+
+    return res.status(200).json({ message: 'Evento cancelado', entradasAnuladas, reembolsosEnCurso });
+  } catch (err) {
+    console.error('Error cancelando el evento', prodId, err?.message ?? err);
+    return res.status(500).json({ message: 'No se pudo cancelar el evento. Intentá de nuevo' });
+  }
+};
+
+//Reactivar: si el evento se habia cancelado, pide confirmacion explicita (confirmar: true), porque las compras
+//ya se reembolsaron y sus QR siguen anulados (no vuelven a valer)
+export const reactivarEventoController = async (req, res) => {
+  const prodId = String(req.evento._id);
+  const evento = await ticketModel.findById(prodId, { cancelado: 1 }).lean();
+  if (evento?.cancelado && req.body?.confirmar !== true) {
+    const reembolsadas = await comprasReembolsadas(prodId);
+    return res.status(409).json({
+      code: 'CONFIRMAR_REACTIVACION', reembolsadas,
+      error: `Este evento se canceló${reembolsadas ? ` y ${reembolsadas} compra(s) se reembolsaron` : ''}. Si lo reactivás, esas entradas siguen anuladas y los compradores tendrían que volver a comprar.`
     });
   }
-
-  return res.status(500).json({
-    message: 'Fallo el reembolso',
-    fallidos: fallidos.length,
-  });
-}
-
-export const reactivarEventoController = async (req, res) => {
-  const {prodId} = req.body;
-  await ticketModel.updateOne(
-    {_id: prodId},
-    {
-      $set:{
-        active: true
-      }
-    }
-  )
-
-  return res.status(200).json({message: 'Evento reactivado'})
-}
+  await ticketModel.updateOne({ _id: prodId }, { $set: { active: true, cancelado: false } });
+  return res.status(200).json({ message: 'Evento reactivado' });
+};
 
 export const soldOutEventController = async (req, res) => {
   const {prodId, isSoldOut} = req.body

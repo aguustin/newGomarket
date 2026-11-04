@@ -8,6 +8,7 @@ import QRCode from 'qrcode';
 import ticketModel from "../models/ticketsModel.js";
 import cortesieModel from "../models/cortesiesModel.js"
 import jwt from 'jsonwebtoken';
+import { jwtSecret } from "../lib/secretos.js";
 import tokenModel from "../models/tokenModel.js";
 import rrppExcelModel from "../models/rrppExcelModel.js";
 import { resend, createMailTransport } from "../lib/resendDomain.js";
@@ -118,8 +119,8 @@ export const sendCortesiesController = async (req, res) => {
           iat: Math.floor(Date.now() / 1000),
           jti: uuidv4()
         };
-        const token = jwt.sign(payload, process.env.JWT_SECRET);
-        const saveToken = new tokenModel({ token });
+        const token = jwt.sign(payload, jwtSecret);
+        const saveToken = new tokenModel({ token, eventId: String(evento._id) });
         await saveToken.save();
 
         // 2. Generar QR

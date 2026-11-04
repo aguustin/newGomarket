@@ -53,7 +53,16 @@ export const validateConfig = (env = process.env) => {
     warnings.push('MAIL_ENABLED ya no se usa: reemplazar por MAIL_MODE')
   }
 
-  const required = ['MONGO_URI', 'JWT_SECRET', 'SECRET_MAIL_KEY']
+  //Claves de firma y cifrado: no hay valores por defecto en el codigo, sin ellas no se arranca en ningun entorno
+  for (const key of ['JWT_SECRET', 'SECRET_MAIL_KEY']) {
+    if (!env[key]) errors.push(`Falta la variable ${key}`)
+    else if (!local && env[key].length < 32) warnings.push(`${key} es corta: usar al menos 32 caracteres al azar`)
+  }
+  if (env.JWT_SECRET_ANTERIOR && env.JWT_SECRET_ANTERIOR === env.JWT_SECRET) {
+    errors.push('JWT_SECRET_ANTERIOR es igual a JWT_SECRET: poner la clave vieja o borrar la variable')
+  }
+
+  const required = ['MONGO_URI']
   required.push(...(local
     ? ['URL_FRONT_DEV', 'URL_BACK_DEV', 'MP_ACCESS_TOKEN_DEV']
     : ['URL_FRONT', 'URL_BACK', 'MP_ACCESS_TOKEN_PROD']))

@@ -45,3 +45,25 @@ cron.schedule('*/5 * * * *', async () => {
         console.error("Error reintentando entregas pendientes:", err);
     }
 });
+
+//Cada 10 minutos: pagos aprobados en Mercado Pago de los que no llego ningun aviso se procesan igual
+cron.schedule('*/10 * * * *', async () => {
+    try {
+        const { conciliarPagosAprobados } = await import('../controllers/eventController.js');
+        const recuperados = await conciliarPagosAprobados();
+        if (recuperados > 0) console.warn(`Conciliacion: ${recuperados} pago(s) aprobados sin aviso fueron procesados`);
+    } catch (err) {
+        console.error("Error en la conciliacion de pagos:", err?.message ?? err);
+    }
+});
+
+//Cada 10 minutos: reembolsos de eventos cancelados que fallaron se reintentan (hasta 5 veces)
+cron.schedule('*/10 * * * *', async () => {
+    try {
+        const { procesarReembolsosPendientes } = await import('./reembolsos.js');
+        const { ok, fallidos } = await procesarReembolsosPendientes();
+        if (ok || fallidos) console.log(`Reembolsos reintentados: ${ok} ok, ${fallidos} fallidos`);
+    } catch (err) {
+        console.error("Error reintentando reembolsos:", err?.message ?? err);
+    }
+});

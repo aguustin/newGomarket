@@ -10,7 +10,8 @@ import { getEntradaRequest, validarEntradaRequest } from "../../api/eventRequest
 const ESTADOS = {
   vigente: { texto: 'Entrada válida', clase: 'bg-green-600' },
   usada: { texto: 'Entrada ya usada', clase: 'bg-red-600' },
-  vencida: { texto: 'Entrada vencida', clase: 'bg-gray-600' }
+  vencida: { texto: 'Entrada vencida', clase: 'bg-gray-600' },
+  anulada: { texto: 'Entrada anulada: el evento fue cancelado', clase: 'bg-red-800' }
 }
 
 const TicketQr = () => {

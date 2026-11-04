@@ -28,12 +28,13 @@ test('verificarFirmaMP: acepta la firma correcta y rechaza la alterada, la venci
   assert.equal(verificarFirmaMP(ok, undefined).valida, false)
 })
 
-test('modo estricto: el aviso sin firma valida se rechaza (401) y ni siquiera se consulta a MP', async () => {
+//Se responde 200 (no 401) para que MP no reintente el aviso sin firma durante horas; lo importante es que se ignora
+test('modo estricto: el aviso sin firma valida se ignora (200 sin consultar a MP ni procesar)', async () => {
   consultas = 0
   const sinFirma = await request(app).post('/webhook/mercadopago').query({ type: 'payment', 'data.id': '555' })
-  assert.equal(sinFirma.status, 401)
+  assert.equal(sinFirma.status, 200)
   const alterada = await request(app).post('/webhook/mercadopago').set({ 'x-signature': 'ts=1,v1=abcd', 'x-request-id': 'x' }).query({ type: 'payment', 'data.id': '555' })
-  assert.equal(alterada.status, 401)
+  assert.equal(alterada.status, 200)
   await new Promise((r) => setTimeout(r, 300))
   assert.equal(consultas, 0)
 })

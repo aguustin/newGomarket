@@ -7,7 +7,7 @@ import { loadApp, closeDb, resetDb, uniqueMail, crearSesion } from "./helpers.js
 
 //Etapa 6: sesion real en el backend
 let app, userModel, ticketModel
-const JWT_SECRET = () => process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
+const JWT_SECRET = () => process.env.JWT_SECRET
 
 before(async () => {
   app = await loadApp({ mailMode: 'bandeja' })

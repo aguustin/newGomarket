@@ -4,7 +4,7 @@ import request from "supertest"
 import { loadApp, closeDb, resetDb, uniqueMail } from "./helpers.js"
 
 //Etapa 9: entregas confiables (reintentos sin duplicar), control del monto y firma del webhook (modo registrar)
-let app, mercadopago, resend, ticketModel, transactionModel, purchaseModel, tokenModel, reintentarPagosPendientes, firmarComoMP
+let app, mercadopago, resend, ticketModel, transactionModel, purchaseModel, tokenModel, reintentarPagosPendientes, conciliarPagosAprobados, firmarComoMP
 let mpPayments = {}
 let fallasMail = 0          //cuantos envios de mail van a fallar
 let enviarOriginal
@@ -17,7 +17,11 @@ before(async () => {
   transactionModel = (await import('../models/transactionsModel.js')).default
   purchaseModel = (await import('../models/purchaseModel.js')).default
   tokenModel = (await import('../models/tokenModel.js')).default
-  ;({ reintentarPagosPendientes } = await import('../controllers/eventController.js'))
+  ;({ reintentarPagosPendientes, conciliarPagosAprobados } = await import('../controllers/eventController.js'))
+  //Busqueda de pagos aprobados: devuelve los de mpPayments con estado approved
+  mock.method(mercadopago.payment, 'search', async () => ({ status: 200, body: {
+    results: Object.entries(mpPayments).filter(([, b]) => b.status === 'approved').map(([id, b]) => ({ id: Number(id), ...b }))
+  } }))
   ;({ firmarComoMP } = await import('../lib/firmaMP.js'))
 
   mock.method(mercadopago.payment, 'findById', async (id) => {
@@ -170,4 +174,24 @@ test('firma del webhook en modo "registrar": con firma valida o invalida el pago
     while (Date.now() < fin && (await mails(mail)).length === 0) await new Promise((r) => setTimeout(r, 200))
     assert.equal((await mails(mail)).length, 1)
   }
+})
+
+test('CRITICO: conciliacion: un pago aprobado del que nunca llego aviso se procesa; los ya registrados y los ajenos no', async () => {
+  const ev = await crearEvento()
+  const sinAviso = uniqueMail('sin-aviso')
+  const yaProcesado = uniqueMail('ya-procesado')
+  mpPayments['9010'] = pago(ev, sinAviso)                       //nunca llego el webhook ni volvio el comprador
+  mpPayments['9011'] = pago(ev, yaProcesado)
+  mpPayments['9012'] = { status: 'approved', metadata: {} }     //pago de la cuenta que no es de Ipass
+  await confirmar('9011')
+
+  assert.equal(await conciliarPagosAprobados(), 1)
+  assert.equal((await tx('9010')).entregado, true)
+  assert.equal((await mails(sinAviso)).length, 1)
+  assert.equal((await mails(yaProcesado)).length, 1, 'el ya procesado no se reenvia')
+  assert.equal(await tx('9012'), null)
+  assert.equal(await ventas(ev), 4, 'dos compras de 2 entradas, cada una contada una vez')
+
+  assert.equal(await conciliarPagosAprobados(), 0, 'la segunda pasada no encuentra nada nuevo')
+  assert.equal((await mails(sinAviso)).length, 1)
 })

@@ -103,7 +103,10 @@ const ticketSchema = new mongoose.Schema({
     totalMontoVendido: {type: Number},
     totalMontoDescuento: {type: Number},
     montoTotal: {type: Number},
-    active: {type: Boolean, default: true}
+    active: {type: Boolean, default: true},
+    //Cancelado por el dueño (distinto de inactivo por haber terminado): sus QR quedan anulados y las compras se reembolsan
+    cancelado: {type: Boolean, default: false},
+    canceladoEn: {type: Date, default: null}
 })
 
 const ticketModel =  mongoose.model('ticketsModel', ticketSchema)

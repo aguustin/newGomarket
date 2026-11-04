@@ -5,7 +5,7 @@ import userModel from "../models/userModel.js";
 //Sesion de usuario: JWT firmado, enviado por el frontend en "Authorization: Bearer <token>".
 //JWT_SECRET tambien firma los QR, la recuperacion de contraseña y la verificacion de cuenta: por eso
 //la sesion lleva typ:'sesion' y el middleware rechaza cualquier otro token aunque la firma sea valida.
-const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
+import { jwtSecret as JWT_SECRET } from "./secretos.js"
 export const SESION_DURACION = '7d'
 const TIPO_SESION = 'sesion'
 

@@ -4,10 +4,11 @@ import mongoose from "mongoose";
 //  pendiente -> pagada   (pago aprobado)
 //  pendiente -> expirada (vencio la reserva sin pago: el stock se devuelve)
 //  pendiente -> fallida  (no se pudo crear el pago en Mercado Pago: el stock se devuelve)
+//  pendiente -> cancelada (el dueño cancelo el evento)
 //Su _id viaja a Mercado Pago como external_reference y en la metadata (order_id).
 const orderSchema = new mongoose.Schema({
     prodId: { type: String, required: true },
-    estado: { type: String, enum: ['pendiente', 'pagada', 'expirada', 'fallida'], default: 'pendiente' },
+    estado: { type: String, enum: ['pendiente', 'pagada', 'expirada', 'fallida', 'cancelada'], default: 'pendiente' },
     quantities: { type: Object, required: true },   // { ticketId: { amount, free: false } }, validadas por pricing.js
     total: { type: Number },
     montoEntradas: { type: Number },

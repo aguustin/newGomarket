@@ -400,8 +400,14 @@ const EditProd = () => {
   };
 
   const cancelarEvento = async (prodId) => {
-    await cancelarEventoRequest({ prodId });
-     alert('Tu evento fue dado de baja!')
+    //La confirmacion la pide el aviso "¡Atención!" de esta pantalla (cancelAlert)
+    try {
+      const res = await cancelarEventoRequest({ prodId });
+      const { entradasAnuladas = 0, reembolsosEnCurso = 0 } = res.data;
+      alert(`Tu evento fue cancelado. Se anularon ${entradasAnuladas} entradas y se están procesando ${reembolsosEnCurso} reembolsos.`);
+    } catch {
+      alert('No se pudo cancelar el evento. Intentá de nuevo.');
+    }
   };
 
   const handleFileChange = (e) => {
@@ -453,7 +459,17 @@ const EditProd = () => {
   };
 
   const reactivarEvento = async (prodId) => {
-    await reactivarEventoRequest({ prodId });
+    try {
+      await reactivarEventoRequest({ prodId });
+    } catch (err) {
+      const body = err?.response?.data;
+      //Evento cancelado: el backend pide confirmacion porque las compras ya se reembolsaron
+      if (body?.code !== 'CONFIRMAR_REACTIVACION') return alert('No se pudo reactivar el evento. Intentá de nuevo.');
+      if (!window.confirm(`${body.error}
+
+¿Reactivar igual?`)) return;
+      await reactivarEventoRequest({ prodId, confirmar: true });
+    }
     alert('Tu evento fue resubido!')
   }
 
@@ -2322,7 +2338,7 @@ const EditProd = () => {
                 ¿Estás seguro de <span className="text-red-400 font-bold">cancelar el evento</span>? 
                 <br />
                 <span className="text-sm text-gray-400 mt-2 block">
-                  Se reembolsará el dinero de los tickets comprados y el evento dejará de mostrarse.
+                  Se anulan todas las entradas (QR), a cada comprador se le devuelve el valor de sus entradas (sin el cargo por servicio) y el evento deja de mostrarse. No se puede deshacer.
                 </span>
               </>
             ) : (

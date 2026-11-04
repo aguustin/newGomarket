@@ -8,7 +8,7 @@ import cloudinary from "../middleware/cloudinary.js";
 import { resend, createMailTransport } from "../lib/resendDomain.js";
 import { firmarSesion, sinDatosPrivados } from "../lib/auth.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
+import { jwtSecret as JWT_SECRET } from "../lib/secretos.js"
 
 //Perfil publico (pagina de la productora): nunca incluye la contraseña
 export const getUserProfileController = async (req, res) => {
@@ -158,7 +158,7 @@ export const loginController = async (req, res) => {
 export const recoverPassController = async (req, res) => {
     const {mail} = req.body
 
-    const secret = process.env.JWT_SECRET
+    const secret = JWT_SECRET
 
     const token = jwt.sign({mail:mail}, secret, {expiresIn: '20m'});
 

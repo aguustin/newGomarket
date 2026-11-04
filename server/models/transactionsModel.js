@@ -22,9 +22,17 @@ const transactionModel = mongoose.Schema({
     entregandoDesde: { type: Date, default: null },   //marca de "entrega en curso" para que dos procesos no envien dos mails
     intentosEntrega: { type: Number, default: 0 },
     ultimoErrorEntrega: { type: String, default: null },
-    alertaMonto: { type: Boolean, default: false }    //MP cobro un monto distinto del calculado: no se entregan entradas
+    alertaMonto: { type: Boolean, default: false },   //MP cobro un monto distinto del calculado: no se entregan entradas
+    //Reembolso (etapa 10): pendiente -> ok | fallido (se reintenta hasta MAX_INTENTOS_REEMBOLSO, despues queda para revision)
+    reembolsoEstado: { type: String, enum: [null, 'pendiente', 'ok', 'fallido', 'revision'], default: null },
+    reembolsoIntentos: { type: Number, default: 0 },
+    reembolsoError: { type: String, default: null },
+    reembolsoId: { type: String, default: null },
+    reembolsadoEn: { type: Date, default: null },
+    reembolsoEnCursoDesde: { type: Date, default: null }
 })
 
 transactionModel.index({ entregado: 1, ventaRegistrada: 1, fecha: 1 })
+transactionModel.index({ reembolsoEstado: 1 })
 
 export default mongoose.model("transaccionModel", transactionModel)

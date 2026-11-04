@@ -7,7 +7,7 @@ import { loadApp, closeDb, resetDb, crearSesion } from "./helpers.js"
 
 //Etapa 8: abrir el QR solo muestra la entrada; validar el ingreso es del dueño o un RRPP del evento
 let app, ticketModel, tokenModel
-const SECRET = () => process.env.JWT_SECRET || 'kidjaskdhajsdbjadlfgkjmlkjbnsdlfgnsñlknamnczmjcf'
+const SECRET = () => process.env.JWT_SECRET
 
 before(async () => {
   app = await loadApp({ mailMode: 'bandeja' })
