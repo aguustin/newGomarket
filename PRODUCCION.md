@@ -5,9 +5,7 @@ Lista de lo que hay que hacer el día que se publique. Se actualiza en cada etap
 
 ## 1. Antes de publicar: pendientes de código
 
-- [ ] **Commit** de todo lo hecho desde la etapa 12 (está sin guardar en git).
 - [ ] **E2E pendiente:** "registro → verificación → login → la sesión persiste al recargar" falló en la etapa 13 y no se investigó. Probarlo a mano o revisar el test.
-- [ ] **Reemplazar `xlsx` por `exceljs`** al leer los Excel de cortesías y RRPP (`server/controllers/cortesieController.js`). `xlsx` tiene una vulnerabilidad alta sin arreglo publicado y procesa archivos que suben los usuarios. `exceljs` ya está instalado.
 - [ ] **(Recomendado) SDK de Mercado Pago v1 → v3** (`server/lib/mercadopago.js`). Arrastra 7 vulnerabilidades por la librería `request`. El riesgo real es bajo (solo habla con la API de MP), pero toca los pagos: hacerlo solo, en su propia etapa, y probarlo aparte.
 
 ## 2. Servicios externos
