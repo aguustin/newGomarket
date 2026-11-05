@@ -159,15 +159,15 @@ test('crear evento con categorias mal formadas: 400 sin romper el servidor', asy
   assert.equal(res.status, 400)
 })
 
-test('perfil publico y /getAllUsers no exponen contraseñas; /tokens queda cerrado', async () => {
+test('perfil publico y /getAllUsers no exponen contraseñas; /tokens ya no existen', async () => {
   const { user } = await crearUsuario()
   const perfil = await request(app).post('/get_profile').send({ userId: user._id.toString() })
   assert.equal(perfil.status, 200)
   assert.equal(perfil.body[0].mail, user.mail)
   assert.equal(perfil.body[0].contrasenia, undefined)
 
-  assert.equal((await request(app).get('/getAllUsers')).status, 410)
-  assert.equal((await request(app).get('/tokens')).status, 410)
+  assert.equal((await request(app).get('/getAllUsers')).status, 404)
+  assert.equal((await request(app).get('/tokens')).status, 404)
 })
 
 test('create_seller_profile responde el usuario sin contraseña', async () => {

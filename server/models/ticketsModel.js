@@ -109,6 +109,12 @@ const ticketSchema = new mongoose.Schema({
     canceladoEn: {type: Date, default: null}
 })
 
+//Indices para las consultas frecuentes (etapa 13)
+ticketSchema.index({ active: 1, fechaFin: 1 })
+ticketSchema.index({ userId: 1 })
+ticketSchema.index({ 'rrpp.mail': 1 })
+ticketSchema.index({ 'tickets._id': 1 })
+
 const ticketModel =  mongoose.model('ticketsModel', ticketSchema)
 
 export default ticketModel

@@ -224,7 +224,7 @@ const CreateEventForm = () => {
                     <p className="flex items-center p-3 bg-gradient-to-r from-orange-200 to-orange-300 mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
                     <div className="portal-evento bg-gradient-to-r from-amber-500 to-yellow-500 p-3 text-center rounded-2xl">
                         <label htmlFor="fileUpload" className="text-[#111827]!">Cargar portada</label>
-                        <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange}  required/>
+                        <input id="fileUpload" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgEvento" onChange={handleImageChange}  required/>
                     </div>
                    {/* <button onClick={() => window.navigator.clipboard.writeText()}></button> */}
                 </div>
@@ -282,11 +282,11 @@ const CreateEventForm = () => {
                         </div>
                         <div>
                             <label htmlFor="fileUpload" className="text-[#111827]">Banner del evento (opcional)</label>
-                            <input id="fileUpload" className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="file" name="bannerEvento" onChange={handleBannerChange} />
+                            <input id="fileUpload" className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="file" accept="image/jpeg,image/png,image/webp" name="bannerEvento" onChange={handleBannerChange} />
                         </div>
                         <div>
                             <label htmlFor="fileUpload" className="text-[#111827]">Imagen descriptiva (opcional)</label>
-                            <input id="fileUpload" className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="file" name="imagenDescriptiva" onChange={handleDescriptiveChange} />
+                            <input id="fileUpload" className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="file" accept="image/jpeg,image/png,image/webp" name="imagenDescriptiva" onChange={handleDescriptiveChange} />
                         </div>
                     </div>
                     <div className="create-event-form-div-child w-[50%]">
@@ -387,7 +387,7 @@ const CreateEventForm = () => {
                             <img className="object-cover rounded-2xl mx-auto mt-3" src={previewBanner} alt="" loading="lazy"></img>
                             <div className="portal-evento text-center rounded-2xl">
                                 <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Banner del evento</label>
-                                <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleBannerChange} />
+                                <input id="fileUpload" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgEvento" onChange={handleBannerChange} />
                             </div>
                         </div> }
                         {previewDescriptive && 
@@ -395,7 +395,7 @@ const CreateEventForm = () => {
                             <img className="object-cover rounded-2xl mx-auto mt-3" src={previewDescriptive} alt="" loading="lazy"></img>
                             <div className="portal-evento text-center rounded-2xl">
                                 <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Imagen descriptiva</label>
-                                <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleDescriptiveChange} />
+                                <input id="fileUpload" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgEvento" onChange={handleDescriptiveChange} />
                             </div>
                         </div>}
                     </div>
@@ -482,7 +482,7 @@ const CreateEventForm = () => {
                                 <div className="charge-ticket-img flex items-center mt-6 ml-3 max-[450px]:ml-0 max-[450px]:justify-center">
                                     <p className="text-gray-300!">Opcional: </p>
                                     <div className="bg-gradient-to-r from-amber-600 to-yellow-500 flex items-center p-3 rounded-xl ml-3 max-[450px]:ml-0 max-[450px]:w-[300px] max-[450px]:mx-auto! cursor-pointer hover:from-yellow-400 hover:to-yellow-400 "><img src={uploadPng} alt=""></img><label className="ml-3 text-[#111827]! cursor-pointer" htmlFor="imgTicketHtml">Cargar Imagen del ticket</label></div>
-                                    <input id="imgTicketHtml" className="hidden" type="file" name="imgTicket"></input>
+                                    <input id="imgTicketHtml" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgTicket"></input>
                                 </div>
                             </div>
                             <div className="relative text-center w-full">

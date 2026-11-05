@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import UserContext from "../../context/userContext"
 import {Link, useNavigate} from 'react-router'
 import { LoadingButton } from "../../globalscomp/globalscomp"
@@ -9,12 +9,15 @@ import goOriginalPng from '../../assets/goticketImgs/IPSg.svg'
 // reCAPTCHA activable por entorno: VITE_RECAPTCHA_ENABLED=false lo apaga (por ejemplo, en local
 // mientras la clave no es válida). Sin la variable, sigue activo como siempre.
 const CAPTCHA_ENABLED = import.meta.env.VITE_RECAPTCHA_ENABLED !== "false"
+// El token de la casilla lo verifica el servidor (RECAPTCHA_SECRET) y sirve una sola vez: se reinicia tras cada intento.
 
 const Login = () => {
     const { setSession, message, loginContext} = useContext(UserContext)
     const [showMsg, setShowMsg] = useState('')
     const [recoverPass, setRecoverPass] = useState(false)
-    const [captchaStatus, setCaptchaStatus] = useState(!CAPTCHA_ENABLED)
+    const [captchaToken, setCaptchaToken] = useState(null)
+    const captchaRef = useRef(null)
+    const reiniciarCaptcha = () => { captchaRef.current?.reset(); setCaptchaToken(null) }
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
@@ -38,8 +41,8 @@ const Login = () => {
         return next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/login') ? next : '/'
     }
 
-    const onSuccess = () => {
-        setCaptchaStatus(true)
+    const onSuccess = (token) => {
+        setCaptchaToken(token)
     }
    // let timeout = null
     let navigate = useNavigate()
@@ -48,19 +51,25 @@ const Login = () => {
         e.preventDefault()
         setLoading(true)
         
-        if(captchaStatus){ 
-          console.log('e')
-        }else{
+        if(CAPTCHA_ENABLED && !captchaToken){
             setShowMsg('Por favor, marca la casilla antes de continuar')
+            setLoading(false)
+            return
         }
           const userData = {
             mail: e.target.elements.mail.value,
-            contrasenia: e.target.elements.contrasenia.value
+            contrasenia: e.target.elements.contrasenia.value,
+            captcha: captchaToken
           }   
           const res = await loginContext(userData)
           
           if(res.data?.estado === 1){
             navigate(destinoDespuesDelLogin())
+            return
+          }
+          if (CAPTCHA_ENABLED) reiniciarCaptcha()
+          if(res.estado === 4){
+            setShowMsg(res.msj)
           }
           if(res.estado === 2){
             setLoading(false)
@@ -100,7 +109,6 @@ const Login = () => {
         }
     }
 
-    console.log(import.meta.env.VITE_RECAPTCHA_KEY)
 
     return (
     <div className="min-h-screen flex items-center justify-center  py-12 px-4 ">
@@ -280,8 +288,10 @@ const Login = () => {
           {CAPTCHA_ENABLED && (
             <div className="flex justify-center my-6">
               <ReCAPTCHA
+                ref={captchaRef}
                 sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
                 onChange={onSuccess}
+                onExpired={() => setCaptchaToken(null)}
               />
             </div>
           )}

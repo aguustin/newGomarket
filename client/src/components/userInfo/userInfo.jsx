@@ -173,7 +173,7 @@ const UserInfo = () => {
                     <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827] text-left"><img className='mr-3' src={advicePng} alt=""></img> Recomendación: 250 x 300px JPG/PNG</p>
                     <div className="portal-evento bg-orange-500 p-3 text-center rounded-2xl cursor-pointer">
                         <label htmlFor="fileUpload" className="text-[#111827]!">Imagen de perfil</label>
-                        <input id="fileUpload" className="hidden" type="file" name="imgEvento" onChange={handleImageChange} />
+                        <input id="fileUpload" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgEvento" onChange={handleImageChange} />
                     </div>
                 </form>
             </div>

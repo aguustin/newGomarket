@@ -215,13 +215,13 @@ test('/find_discount con prodId solo encuentra descuentos de ese evento', async 
   assert.equal((await request(app).get('/find_discount/AJENO').query({ prodId: ev._id.toString() })).body.discount, undefined)
 })
 
-test('/active_discount ya no modifica ni borra descuentos (antes borraba el primero de la coleccion)', async () => {
+test('/active_discount ya no existe y no toca descuentos (antes borraba el primero de la coleccion)', async () => {
   const ev = await crearEvento()
   await discountModel.create({ prodId: ev._id.toString(), idDescuento: 'A', cantidadDescuentos: 1, numeroDescuento: 10 })
   await discountModel.create({ prodId: ev._id.toString(), idDescuento: 'B', cantidadDescuentos: 1, numeroDescuento: 10 })
 
   const res = await request(app).post('/active_discount').send({ discountCode: 'A' })
-  assert.equal(res.status, 410)
+  assert.equal(res.status, 404)
   const quedan = await discountModel.find().lean()
   assert.deepEqual(quedan.map((d) => [d.idDescuento, d.cantidadDescuentos]).sort(), [['A', 1], ['B', 1]])
 })

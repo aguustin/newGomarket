@@ -2,6 +2,14 @@ import { test, before, after, beforeEach } from "node:test"
 import assert from "node:assert/strict"
 import request from "supertest"
 import { loadApp, closeDb, resetDb, crearSesion, uniqueMail } from "./helpers.js"
+import XLSX from "xlsx"
+
+//Excel .xlsx real con filas nombre/email (la primera fila es el encabezado)
+const xlsxCon = (filas) => {
+  const libro = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(libro, XLSX.utils.aoa_to_sheet([['nombre', 'email'], ...filas]), 'Hoja1')
+  return XLSX.write(libro, { type: 'buffer', bookType: 'xlsx' })
+}
 
 //Etapa 7: permisos por evento (dueño y RRPP)
 let app, ticketModel, cortesieModel, rrppExcelModel, purchaseModel, discountModel
@@ -169,7 +177,7 @@ test('cargar un Excel en el evento de otro: 403', async () => {
   const e = await escenario()
   const res = await request(app).post('/charge_excel').set(e.tercero.auth)
     .field('userId', e.tercero.id).field('prodId', e.eventoId).field('excelName', 'x.xlsx')
-    .attach('excelFile', Buffer.from('nombre,email\n'), 'x.csv')
+    .attach('excelFile', xlsxCon([['Ana', 'ana@x.com']]), 'x.xlsx')
   assert.equal(res.status, 403)
   assert.equal(await cortesieModel.countDocuments(), 0)
 })
@@ -185,4 +193,24 @@ test('get_prod no devuelve el evento ni sus codigos de descuento a quien no es e
   const propio = await request(app).get(`/get_prod/${e.eventoId}/${e.dueno.id}`).set(e.dueno.auth)
   assert.equal(propio.body.tickets.length, 1)
   assert.deepEqual(propio.body.prodDiscount.map((d) => d.idDescuento), ['SECRETO50'])
+})
+
+test('subidas: se rechazan archivos que no son del tipo pedido o son demasiado grandes (400)', async () => {
+  const e = await escenario()
+  const excel = (buffer, nombre) => request(app).post('/charge_excel').set(e.dueno.auth)
+    .field('userId', e.dueno.id).field('prodId', e.eventoId).field('excelName', 'x.xlsx').attach('excelFile', buffer, nombre)
+  assert.equal((await excel(Buffer.from('nombre,email\nAna,ana@x.com\n'), 'x.csv')).body.code, 'ARCHIVO_INVALIDO')
+  assert.equal((await excel(Buffer.from('no soy un zip'), 'x.xlsx')).body.code, 'ARCHIVO_INVALIDO', 'extension correcta, contenido falso')
+  const muchas = Array.from({ length: 2001 }, (_, i) => ['P' + i, `p${i}@x.com`])
+  assert.equal((await excel(xlsxCon(muchas), 'x.xlsx')).body.code, 'EXCEL_DEMASIADO_GRANDE')
+  assert.equal(await cortesieModel.countDocuments(), 0)
+
+  const img = (buffer, nombre, tipo) => request(app).post('/create_seller_profile').set(e.dueno.auth)
+    .field('userId', e.dueno.id).attach('productoraImg', buffer, { filename: nombre, contentType: tipo })
+  assert.equal((await img(Buffer.from('<svg onload=alert(1)>'), 'a.png', 'image/png')).status, 400, 'dice PNG pero no lo es')
+  assert.equal((await img(Buffer.from('GIF89a....'), 'a.gif', 'image/gif')).status, 400)
+  const pngGrande = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47]), Buffer.alloc(5 * 1024 * 1024 + 1)])
+  const grande = await img(pngGrande, 'a.png', 'image/png')
+  assert.equal(grande.status, 400)
+  assert.match(grande.body.message, /hasta 5 MB/)
 })

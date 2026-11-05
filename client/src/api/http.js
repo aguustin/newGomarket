@@ -36,6 +36,11 @@ axios.interceptors.response.use(
                 window.location.assign(`/login?sesion=${motivo}&next=${next}`)
             }
         }
+        //Archivo rechazado por el servidor (tipo o tamaño): se avisa el motivo en cualquier pantalla
+        if (esDelBackend && status === 400 && data?.code === 'ARCHIVO_INVALIDO') {
+            alert(data.message)
+            error.avisado = true
+        }
         return Promise.reject(error)
     }
 )

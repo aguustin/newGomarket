@@ -19,12 +19,18 @@ const Contact = () => {
             nombreEvento: e.target.elements.nombreEvento.value,
             mensaje: e.target.elements.mensaje.value,
         }
-        const res = await contactarRequest(mailData)
-     
-        if(res.data.state === 1){
+        try {
+            const res = await contactarRequest(mailData)
+            if(res.data.state === 1){
+                setShowMsg(true)
+                setTimeout(() => navigate('/'), 3000)
+                return
+            }
+            alert('No pudimos enviar tu mensaje. Intentá de nuevo más tarde')
+        } catch (err) {
+            alert(err?.response?.status === 400 ? 'Revisá los datos: nombre, correo válido y mensaje son obligatorios' : 'No pudimos enviar tu mensaje. Intentá de nuevo más tarde')
+        } finally {
             setLoading(false)
-            setShowMsg(true)
-            setTimeout(() => navigate('/home'), 3000)
         }
     }
 

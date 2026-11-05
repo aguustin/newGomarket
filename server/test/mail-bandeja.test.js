@@ -56,15 +56,26 @@ test('recuperar contraseña: el mail llega a la bandeja con el link al frontend'
   assert.ok(findLink(recMail.html, '/recover_password/').startsWith(`${process.env.URL_FRONT_DEV}/recover_password/`))
 })
 
-test('contacto (Gmail) tambien pasa por la bandeja', async () => {
-  const res = await request(app).post('/contactar').send({
-    pais: 'AR', nombreCompleto: 'Test Contacto', correo: uniqueMail('contacto'), dni: 1, nombreEvento: 'Evento X', mensaje: 'Hola'
-  })
-  assert.deepEqual(res.body, { state: 1 })
-  const mails = await inbox()
-  const contacto = mails.find((m) => m.subject.includes('Test Contacto - Evento X'))
-  assert.ok(contacto, 'no llego el mail de contacto')
-  assert.equal(contacto.provider, 'gmail')
+test('contacto: sale por Resend al ADMIN_MAIL, con el mensaje escapado; sin ADMIN_MAIL avisa el error', async () => {
+  const antes = process.env.ADMIN_MAIL
+  try {
+    process.env.ADMIN_MAIL = 'admin-contacto@x.com'
+    const res = await request(app).post('/contactar').send({
+      pais: 'AR', nombreCompleto: 'Test Contacto', correo: uniqueMail('contacto'), celular: '11', nombreEvento: 'Evento X', mensaje: 'Hola <img src=x onerror=alert(1)>'
+    })
+    assert.deepEqual(res.body, { state: 1 })
+    const [contacto] = await inbox('admin-contacto@x.com')
+    assert.ok(contacto?.subject.includes('Test Contacto - Evento X'), 'no llego el mail de contacto')
+    assert.equal(contacto.provider, 'resend')
+    assert.ok(contacto.html.includes('&lt;img') && !contacto.html.includes('<img src=x'), 'el mensaje debe ir escapado')
+
+    assert.equal((await request(app).post('/contactar').send({ nombreCompleto: 'A', correo: 'no-es-mail', mensaje: 'x' })).status, 400)
+    delete process.env.ADMIN_MAIL
+    const sinDestino = await request(app).post('/contactar').send({ nombreCompleto: 'A', correo: 'a@x.com', mensaje: 'x' })
+    assert.equal(sinDestino.status, 503)
+  } finally {
+    if (antes === undefined) delete process.env.ADMIN_MAIL; else process.env.ADMIN_MAIL = antes
+  }
 })
 
 test('la bandeja rechaza pedidos que llegan por un proxy (ngrok)', async () => {

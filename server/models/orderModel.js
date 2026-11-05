@@ -21,4 +21,7 @@ const orderSchema = new mongoose.Schema({
 
 orderSchema.index({ estado: 1, expiraEn: 1 })
 
+//Indices para las consultas frecuentes (etapa 13)
+orderSchema.index({ prodId: 1, estado: 1 })
+
 export default mongoose.model('orderModel', orderSchema)

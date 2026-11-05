@@ -18,7 +18,9 @@ import starBPng from '../../assets/botones/starB.png'
 import Skeleton from 'react-loading-skeleton';
 import { getFavoritesEventsRequest, saveEventRequest } from "../../api/userRequests"
 import { useContext } from "react"
-import { Country, State, City } from "country-state-city"
+//Solo provincias y ciudades de Argentina (la libreria completa pesa ~8 MB y frenaba la carga de la portada).
+//Generado desde country-state-city: si hace falta actualizarlo, regenerar src/data/argentina.json
+import ARGENTINA from "../../data/argentina.json"
 import ipassReducidoSvg from '../../assets/goticketImgs/IPSg.svg'
 import ipassBanckground from '../../assets/images/fondo.jpeg'
 
@@ -44,7 +46,7 @@ const Home = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const provinciasArg = State.getStatesOfCountry("AR");
+        const provinciasArg = ARGENTINA;
         setProvincias(provinciasArg);
 
         const getAllEventsFunc = async () => {
@@ -73,7 +75,7 @@ const Home = () => {
     
     useEffect(() => {
         if (provinciaSeleccionada) {
-            const ciudades = City.getCitiesOfState("AR", provinciaSeleccionada);
+            const ciudades = (ARGENTINA.find((p) => p.isoCode === provinciaSeleccionada)?.ciudades ?? []).map((name) => ({ name }));
             setLocalidades(ciudades);
         } else {
             setLocalidades([]);
@@ -180,7 +182,7 @@ const Home = () => {
         const matchesProvincia =
             provinciaSeleccionada === '' ||
             allEv.provincia?.toLowerCase() ===
-            State.getStateByCodeAndCountry(provinciaSeleccionada, 'AR')?.name.toLowerCase();
+            ARGENTINA.find((p) => p.isoCode === provinciaSeleccionada)?.name.toLowerCase();
 
         const matchesLocalidad =
             localidadSeleccionada === '' ||

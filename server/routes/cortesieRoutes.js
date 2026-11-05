@@ -3,10 +3,8 @@ import { sinOperadoresMongo } from "../lib/sanitizar.js";
 import { requireAuth, mismoUserId } from "../lib/auth.js";
 import { duenoDelEvento, excelDeCortesiasPropio, listaRRPPPropia } from "../lib/permisos.js";
 import { chargeExcelController, chargeRRPPExcelController, deleteCortesiesController, deleteRRPPExcelController, getAllExcelsInfoController, getAllRRPPExcelsController, getProdCortesiesController, sendCortesiesController, sendRRPPColabsListController } from "../controllers/cortesieController.js";
-import multer from "multer"
+import { subirExcel } from "../lib/subidas.js"
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 const router = Router()
 
 router.get('/get_event_cortesies/:userId/:prodId', requireAuth, mismoUserId((req) => req.params.userId), getAllExcelsInfoController)
@@ -15,9 +13,9 @@ router.get('/get_rrpp_event_excels/:userId/:prodId', requireAuth, mismoUserId((r
 
 router.get('/get_cortesie/:cortesieId', requireAuth, excelDeCortesiasPropio((req) => req.params.cortesieId), getProdCortesiesController)
 
-router.post('/charge_excel', requireAuth, upload.single('excelFile'), sinOperadoresMongo, mismoUserId((req) => req.body.userId), duenoDelEvento((req) => req.body.prodId), chargeExcelController)
+router.post('/charge_excel', requireAuth, subirExcel('excelFile'), sinOperadoresMongo, mismoUserId((req) => req.body.userId), duenoDelEvento((req) => req.body.prodId), chargeExcelController)
 
-router.post('/charge_rrpp_excel', requireAuth, upload.single('excelFile'), sinOperadoresMongo, mismoUserId((req) => req.body.userId), duenoDelEvento((req) => req.body.prodId), chargeRRPPExcelController)
+router.post('/charge_rrpp_excel', requireAuth, subirExcel('excelFile'), sinOperadoresMongo, mismoUserId((req) => req.body.userId), duenoDelEvento((req) => req.body.prodId), chargeRRPPExcelController)
 
 router.post('/send_cortesies', requireAuth, duenoDelEvento((req) => req.body.prodId), excelDeCortesiasPropio((req) => req.body.cortesieId, (req) => req.body.prodId), sendCortesiesController)
 

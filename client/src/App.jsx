@@ -1,34 +1,36 @@
 import './App.css'
-import Register from './components/register/register'
-import Login from './components/login/login'
-import CreateEventForm from './components/createEventForm/createEventForm'
+import { lazy, Suspense } from 'react'
+//Etapa 13: cada pagina se descarga recien cuando se abre (la portada, la barra y el pie van en el paquete inicial)
 import Home from './components/home/home'
 import Nav from './components/nav/nav'
 import Footer from './components/footer/footer'
-import Profile from './components/profile/profile'
-import Productions from './components/productions/productions'
-import EditProd from './components/editProd/editProd'
-import BuyTicket from './components/buyTicket/buyTicket'
-import TicketQr from './components/ticketqr/ticketqr'
-import Staff from './components/editProd/staff/staff'
-import SendFree from './components/sendFree/sendFree'
-import RRPPEvents from './components/rrppEvents/rrppEvents'
-import Statistics from './components/statistics/statistics'
-import Contact from './components/contact/contact'
-import RecoverPass from './components/recoverPass/recoverPass'
 import {BrowserRouter, Routes, Route, useLocation, matchPath, Navigate} from 'react-router'
 import { leerSesion } from './api/http'
 import { UserContextProvider } from './context/userContext'
-import Cortesies from './components/cortesies/cortesies'
-import NewCortesie from './components/newCortesie/newCortesie'
 import 'react-loading-skeleton/dist/skeleton.css';
-import LegalConditions from './components/conditions/legalConditions'
-import MyFavoritesEvents from './components/myFavoritesEvents/myFavoritesEvents'
-import UserInfo from './components/userInfo/userInfo'
-import ProfileCards from './components/seeProfile/seeProfile'
-import BuyersList from './components/buyersList/buyersList'
-import PaymentResult from './components/paymentResult/paymentResult'
 
+const Register = lazy(() => import('./components/register/register'))
+const Login = lazy(() => import('./components/login/login'))
+const CreateEventForm = lazy(() => import('./components/createEventForm/createEventForm'))
+const Profile = lazy(() => import('./components/profile/profile'))
+const Productions = lazy(() => import('./components/productions/productions'))
+const EditProd = lazy(() => import('./components/editProd/editProd'))
+const BuyTicket = lazy(() => import('./components/buyTicket/buyTicket'))
+const TicketQr = lazy(() => import('./components/ticketqr/ticketqr'))
+const Staff = lazy(() => import('./components/editProd/staff/staff'))
+const SendFree = lazy(() => import('./components/sendFree/sendFree'))
+const RRPPEvents = lazy(() => import('./components/rrppEvents/rrppEvents'))
+const Statistics = lazy(() => import('./components/statistics/statistics'))
+const Contact = lazy(() => import('./components/contact/contact'))
+const RecoverPass = lazy(() => import('./components/recoverPass/recoverPass'))
+const Cortesies = lazy(() => import('./components/cortesies/cortesies'))
+const NewCortesie = lazy(() => import('./components/newCortesie/newCortesie'))
+const LegalConditions = lazy(() => import('./components/conditions/legalConditions'))
+const MyFavoritesEvents = lazy(() => import('./components/myFavoritesEvents/myFavoritesEvents'))
+const UserInfo = lazy(() => import('./components/userInfo/userInfo'))
+const ProfileCards = lazy(() => import('./components/seeProfile/seeProfile'))
+const BuyersList = lazy(() => import('./components/buyersList/buyersList'))
+const PaymentResult = lazy(() => import('./components/paymentResult/paymentResult'))
 
 //Paginas que necesitan sesion: sin sesion se va al login y, al ingresar, se vuelve a la pagina pedida
 function ConSesion({ children }) {
@@ -48,6 +50,7 @@ function AppRoutes() {
   return (
     <>
       {!shouldHideNav && <Nav />}
+      <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -73,6 +76,7 @@ function AppRoutes() {
         <Route path="/new_excel/:prodId" element={<ConSesion><NewCortesie /></ConSesion>} />
         <Route path="/conditions" element={<LegalConditions />} />
       </Routes>
+      </Suspense>
       <Footer />
     </>
   );

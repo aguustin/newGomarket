@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { registerUserRequest } from "../../api/userRequests"
 import {Link, useNavigate} from 'react-router';
 import ReCAPTCHA from "react-google-recaptcha";
@@ -8,22 +8,24 @@ import goOriginalPng from '../../assets/goticketImgs/IPSg.svg'
 // reCAPTCHA activable por entorno: VITE_RECAPTCHA_ENABLED=false lo apaga (por ejemplo, en local
 // mientras la clave no es válida). Sin la variable, sigue activo como siempre.
 const CAPTCHA_ENABLED = import.meta.env.VITE_RECAPTCHA_ENABLED !== "false"
+// El token de la casilla lo verifica el servidor (RECAPTCHA_SECRET) y sirve una sola vez: se reinicia tras cada intento.
 
 const Register = () => {
     const navigate = useNavigate() 
     const [showMsg, setShowMsg] = useState()
     const [showMsgB, setShowMsgB] = useState()
-    const [captchaStatus, setCaptchaStatus] = useState(!CAPTCHA_ENABLED)
+    const [captchaToken, setCaptchaToken] = useState(null)
+    const captchaRef = useRef(null)
     const [loading, setLoading] = useState(false)
     
-     const onSuccess = () => {
-        setCaptchaStatus(true)
+     const onSuccess = (token) => {
+        setCaptchaToken(token)
     }
 
     const registerUser = async (e) => {
         e.preventDefault()
         setLoading(true)
-         if(captchaStatus){ 
+         if(!CAPTCHA_ENABLED || captchaToken){ 
              if(e.target.elements.contrasenia.value !== e.target.elements.repetirContrasenia.value){
                  setShowMsg('Las contraseñas no coinciden')
              }else{
@@ -33,9 +35,11 @@ const Register = () => {
                      dni: e.target.elements.dni.value,
                      pais: e.target.elements.pais.value,
                      contrasenia: e.target.elements.contrasenia.value,
-                     repetirContrasenia: e.target.elements.repetirContrasenia.value
+                     repetirContrasenia: e.target.elements.repetirContrasenia.value,
+                     captcha: captchaToken
                  }
                  const res = await registerUserRequest(userData)
+                 if (CAPTCHA_ENABLED) { captchaRef.current?.reset(); setCaptchaToken(null) }  //el token ya se uso
                  
                  if(res.data.msj === 1){
                      setTimeout(() => { // Set the timeout
@@ -211,8 +215,10 @@ const Register = () => {
         {CAPTCHA_ENABLED && (
           <div className="flex justify-center my-6">
             <ReCAPTCHA
+              ref={captchaRef}
               sitekey={import.meta.env.VITE_RECAPTCHA_KEY}
               onChange={onSuccess}
+              onExpired={() => setCaptchaToken(null)}
             />
           </div>
         )}

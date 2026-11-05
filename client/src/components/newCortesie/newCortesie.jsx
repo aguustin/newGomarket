@@ -40,18 +40,24 @@ const NewCortesie = () => {
         formData.append('excelFile', e.target.elements.excelFile.files[0])
         //formData.append('excelType', Number(listType))
         
-       if(listType === '1'){
-            const res = await chargeRRPPExcelRequest(formData)
-            if(res.data.success){
-                alert('Las colaboraciones fueron enviadas con exito!')
+        try {
+            if(listType === '1'){
+                const res = await chargeRRPPExcelRequest(formData)
+                if(res.data.success){
+                    alert('Las colaboraciones fueron enviadas con exito!')
+                }
+            }else{
+                const res = await chargeExcelRequest(formData)
+                if(res.data.success){
+                    alert('Las invitaciones fueron enviadas con exito!')
+                }
             }
-        }else{
-            const res = await chargeExcelRequest(formData)
-            if(res.data.success){
-                alert('Las invitaciones fueron enviadas con exito!')
-            }
+        } catch (err) {
+            //Archivo rechazado (tipo, tamaño o cantidad de filas) u otro error: se queda en la pantalla para corregirlo
+            if (!err?.avisado) alert(err?.response?.data?.message || err?.response?.data?.error || 'No pudimos cargar el Excel. Intentá de nuevo')
+            return
         }
-        
+
         navigate(`/cortesies/${prodId}`)
         
     }
@@ -83,7 +89,7 @@ const NewCortesie = () => {
                             <div className="w-[50%] mx-2">
                                 <label className="text-lg text-gray-300!">Cargar lista: </label><br></br>
                                 <label htmlFor="excelFileHtml" className="w-full flex items-center border-[1px] border-gray-300 p-2 text-gray-200! rounded-2xl"><img className="mr-2" src={uploadPng} alt=""></img>Subir excel</label>
-                                <input id="excelFileHtml" className="hidden " type="file" name="excelFile" required></input>
+                                <input id="excelFileHtml" className="hidden " type="file" accept=".xlsx" name="excelFile" required></input>
                             </div>
                             <select defaultValue={1} onChange={(e) => setListType(e.target.value)} className="bg-gray-900 text-gray-200!">
                                 <option className="text-" value={1}>RRPP</option>

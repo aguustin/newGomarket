@@ -21,6 +21,10 @@ const cortesieSchema = mongoose.Schema({
     courtesy:{type:Number},
 }, { strict: true })
 
+//Indices para las consultas frecuentes (etapa 13)
+cortesieSchema.index({ prodId: 1, userId: 1 })
+cortesieSchema.index({ 'people.estado': 1 })
+
 const cortesieModel = mongoose.model("cortesieModel", cortesieSchema)
 
 export default cortesieModel

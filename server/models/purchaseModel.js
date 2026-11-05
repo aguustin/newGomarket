@@ -10,6 +10,9 @@ const purchaseSchema = new mongoose.Schema({
     reembolsado: {type: Boolean, default: false}   //el evento se cancelo y se devolvio el pago
 })
 
+//Indices para las consultas frecuentes (etapa 13)
+purchaseSchema.index({ prodId: 1 })
+
 const purchaseModel = mongoose.model('purchaseModel', purchaseSchema)
 
 export default purchaseModel

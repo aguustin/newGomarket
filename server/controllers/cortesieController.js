@@ -1,6 +1,7 @@
 import { formatDateB } from "../lib/dates.js";
 import { isValidObjectId } from "mongoose";
 import XLSX from 'xlsx';
+import { MAX_FILAS_EXCEL } from "../lib/subidas.js";
 
 import ticketModel from "../models/ticketsModel.js";
 import cortesieModel from "../models/cortesiesModel.js"
@@ -63,6 +64,9 @@ export const chargeExcelController = async (req, res) => {
       header: ['clientName', 'email'],
       range: 1
     });
+    if (rawPeople.length > MAX_FILAS_EXCEL) {
+      return res.status(400).json({ code: 'EXCEL_DEMASIADO_GRANDE', message: `El Excel puede tener hasta ${MAX_FILAS_EXCEL} filas` });
+    }
 
     const courtesyCount = rawPeople.length;
 
@@ -116,6 +120,9 @@ export const chargeRRPPExcelController = async (req, res) => {
       header: ['nombreRRPP', 'email'],
       range: 1
     });
+    if (rawPeople.length > MAX_FILAS_EXCEL) {
+      return res.status(400).json({ code: 'EXCEL_DEMASIADO_GRANDE', message: `El Excel puede tener hasta ${MAX_FILAS_EXCEL} filas` });
+    }
 
     const rrppCount = rawPeople.length;
 

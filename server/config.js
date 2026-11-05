@@ -5,8 +5,6 @@ export const port =  process.env.PORT
 export const mongoUri = process.env.MONGO_URI
 //Opcional: fuerza el nombre de la base (los tests usan ipass_test). Sin definir = la que indica MONGO_URI
 export const mongoDbName = process.env.MONGO_DB_NAME
-export const user_mail = process.env.USER_MAIL
-export const pass = process.env.PASS
 
 //APP_ENV: development | test | (sin definir = produccion)
 //development y test usan sandbox de MP y las URLs _DEV
@@ -70,12 +68,10 @@ export const validateConfig = (env = process.env) => {
   for (const key of required) {
     if (!env[key]) (local ? warnings : errors).push(`Falta la variable ${key}`)
   }
-  if (!local && !env.ADMIN_MAIL) warnings.push('Falta ADMIN_MAIL: los avisos de casos para revisar (reembolsos, sobreventas) solo quedaran en el log')
+  if (!local && !env.ADMIN_MAIL) warnings.push('Falta ADMIN_MAIL: los avisos de casos para revisar (reembolsos, sobreventas) solo quedaran en el log y el formulario de contacto no podra entregarse')
+  if (!local && !env.RECAPTCHA_SECRET) warnings.push('Falta RECAPTCHA_SECRET: el reCAPTCHA de login y registro no se verifica en el servidor')
   for (const key of ['CLOUD_NAME', 'API_KEY', 'API_SECRET']) {
     if (!env[key]) warnings.push(`Falta la variable ${key} (subida de imagenes)`)
-  }
-  if (mode === 'resend' && (!env.USER_MAIL || !env.PASS)) {
-    warnings.push('Faltan USER_MAIL/PASS: contacto y cortesias por Excel no podran enviarse')
   }
   return { errors, warnings }
 }

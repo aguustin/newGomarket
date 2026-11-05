@@ -1,4 +1,4 @@
-import { pass, user_mail, urlFront, urlBack } from "../config.js"
+import { urlFront, urlBack } from "../config.js"
 import crypto from "node:crypto"
 import { isValidObjectId } from "mongoose"
 import userModel from "../models/userModel.js"
@@ -6,8 +6,9 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import ticketModel from "../models/ticketsModel.js";
 import cloudinary from "../middleware/cloudinary.js";
-import { resend, createMailTransport } from "../lib/resendDomain.js";
+import { resend } from "../lib/resendDomain.js";
 import { firmarSesion, sinDatosPrivados } from "../lib/auth.js";
+import { CAMPOS_PRIVADOS_EVENTO } from "./eventController.js";
 
 import { jwtSecret as JWT_SECRET } from "../lib/secretos.js"
 import registroPendienteModel from "../models/registroPendienteModel.js"
@@ -28,10 +29,6 @@ export const getUserProfileController = async (req, res) => {
     res.send(getUsers)
 }
 
-//Cerrado: devolvia todos los usuarios con sus datos bancarios y contraseñas. Ningun componente lo usa
-export const getAllUsersController = async (req, res) => {
-    res.status(410).json({ message: 'Este recurso ya no está disponible' })
-}
 
 export const registerController = async (req, res) => {
     const {nombreCompleto, mail, dni, pais, contrasenia, repetirContrasenia} = req.body
@@ -235,25 +232,40 @@ export const newPasswordController = async (req, res) => {
        res.status(200).json(1)
 }
 
-export const contactController = async (req, res) => {
-    const {pais, nombreCompleto, correo, dni, nombreEvento, mensaje} = req.body
-    const transporter = createMailTransport({
-        service: 'gmail',
-        auth: {
-            user: user_mail,
-            pass: pass
-        },
-    });
-    
-    await transporter.sendMail({
-        from: correo,
-        to: "agustin.molee@gmail.com",
-        subject: `${nombreCompleto} - ${nombreEvento} - País: ${pais}`,
-        text: mensaje,
-        html: `<b>${mensaje}</b>`
-    });
+//Formulario de contacto (etapa 13): sale por Resend como el resto de los mails, al ADMIN_MAIL.
+//Todo lo que escribe el visitante va escapado y la respuesta va directo a su correo (replyTo)
+const escaparHtml = (v = '') => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+const textoCorto = (v, max) => (typeof v === 'string' || typeof v === 'number') ? String(v).trim().slice(0, max) : ''
 
-    res.status(200).json({state:1})
+export const contactController = async (req, res) => {
+    const campos = {
+        nombreCompleto: textoCorto(req.body?.nombreCompleto, 120), correo: textoCorto(req.body?.correo, 200),
+        pais: textoCorto(req.body?.pais, 80), celular: textoCorto(req.body?.celular, 40),
+        nombreEvento: textoCorto(req.body?.nombreEvento, 150), mensaje: textoCorto(req.body?.mensaje, 5000)
+    }
+    if (!campos.nombreCompleto || !campos.mensaje || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campos.correo)) {
+        return res.status(400).json({ state: 0, code: 'DATOS_INVALIDOS' })
+    }
+    const destino = process.env.ADMIN_MAIL
+    if (!destino) {
+        console.error('Contacto sin ADMIN_MAIL: el mensaje no se pudo entregar')
+        return res.status(503).json({ state: 0, code: 'CONTACTO_NO_DISPONIBLE' })
+    }
+    const fila = (etiqueta, valor) => valor ? `<p><b>${etiqueta}:</b> ${escaparHtml(valor)}</p>` : ''
+    const { error } = await resend.emails.send({
+        from: '"Ipass" <no-reply@ipassi.com>',
+        to: [destino],
+        replyTo: campos.correo,
+        subject: `Contacto: ${campos.nombreCompleto}${campos.nombreEvento ? ` - ${campos.nombreEvento}` : ''}`.replace(/[\r\n]+/g, ' '),
+        text: Object.entries(campos).map(([k, v]) => `${k}: ${v}`).join('\n'),
+        html: fila('Nombre', campos.nombreCompleto) + fila('Correo', campos.correo) + fila('País', campos.pais) + fila('Celular', campos.celular)
+            + fila('Evento', campos.nombreEvento) + `<p><b>Mensaje:</b></p><p style="white-space:pre-wrap">${escaparHtml(campos.mensaje)}</p>`
+    })
+    if (error) {
+        console.error('Contacto: no se pudo enviar el mail', error)
+        return res.status(502).json({ state: 0, code: 'ENVIO_FALLIDO' })
+    }
+    return res.status(200).json({ state: 1 })
 }
 
 export const saveEventsController = async (req, res) => {
@@ -302,7 +314,7 @@ export const getMySavedEventsController = async (req, res) => {
 
     const favoriteEvents = await ticketModel.find({
         _id:{$in: filterFavorites}
-    })
+    }, CAMPOS_PRIVADOS_EVENTO).lean()  //sin mails de RRPP/productor ni montos
 
     return res.status(200).json(favoriteEvents)
 }
@@ -406,8 +418,8 @@ export const getFavoritesEventsController = async (req, res) => {
     const favoriteEvents = user.favorites.map((fvE) => fvE.eventId)
 
     const getFavoritesEvents = await ticketModel.find(
-        {_id: {$in: favoriteEvents  } }
-    )
+        {_id: {$in: favoriteEvents  } }, CAMPOS_PRIVADOS_EVENTO
+    ).lean()
 
     return res.status(200).json({favorites: getFavoritesEvents})
 }

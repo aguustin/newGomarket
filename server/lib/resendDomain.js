@@ -1,5 +1,4 @@
 import { Resend } from 'resend';
-import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { isDev, mailMode } from '../config.js';
 import devMailModel from '../models/devMailModel.js';
@@ -7,7 +6,6 @@ dotenv.config();
 
 //Punto unico de envio de mails. Los controladores usan:
 //  resend.emails.send(...)            -> mismo contrato que el SDK de Resend: devuelve { data, error }, no lanza
-//  createMailTransport(opts).sendMail -> mismo contrato que nodemailer: devuelve info o lanza un error
 //MAIL_MODE decide que pasa detras (ver config.js). Volver a produccion = MAIL_MODE=resend (o sin definir).
 
 //Defensa extra: bandeja/falla nunca actuan fuera de development/test, aunque alguien
@@ -70,25 +68,4 @@ export const resend = {
       return { data: null, error: null };
     }
   }
-};
-
-//--- Gmail / nodemailer ---
-export const createMailTransport = (options) => {
-  if (mode === 'resend') return nodemailer.createTransport(options);
-  return {
-    sendMail: async (message) => {
-      if (mode === 'bandeja') {
-        const id = await saveToInbox('gmail', message);
-        return { messageId: `<${id}@bandeja.local>`, accepted: toList(message.to), rejected: [] };
-      }
-      if (mode === 'falla') {
-        console.error('[MAIL falla simulada]', describe(message));
-        const err = new Error(SIMULATED_ERROR);
-        err.code = 'ESIMULATED';
-        throw err;
-      }
-      console.log('[MAIL desactivado]', describe(message));
-      return { messageId: null, accepted: [], rejected: [] };
-    }
-  };
 };

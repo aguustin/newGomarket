@@ -67,3 +67,27 @@ test('CRITICO: los mails no distinguen mayusculas: registro, login y recuperacio
   assert.deepEqual((await request(app).post('/recover_password').send({ mail: 'VIEJO@x.com' })).body, { ok: true })
   assert.equal((await request(app).get('/dev/mails.json').query({ to: 'Viejo@X.com' })).body.length, 1, 'el mail de recuperacion va a la cuenta guardada')
 })
+
+test('reCAPTCHA: con RECAPTCHA_SECRET, registro y login exigen un token que Google acepte', async () => {
+  const fetchReal = globalThis.fetch
+  const tokensValidos = new Set(['ok-1', 'ok-2'])
+  process.env.RECAPTCHA_SECRET = 'secreto-test'
+  globalThis.fetch = async (url, opts) => {
+    if (!String(url).includes('recaptcha/api/siteverify')) return fetchReal(url, opts)
+    return { json: async () => ({ success: tokensValidos.delete(new URLSearchParams(opts.body).get('response')) }) }
+  }
+  try {
+    const datos = { nombreCompleto: 'Dani', mail: 'dani@x.com', dni: 1, pais: 'AR', contrasenia: 'Clave12345', repetirContrasenia: 'Clave12345' }
+    assert.equal((await request(app).post('/register').send(datos)).body.code, 'CAPTCHA_INVALIDO', 'sin token')
+    assert.equal((await request(app).post('/register').send({ ...datos, captcha: 'inventado' })).body.code, 'CAPTCHA_INVALIDO')
+    assert.equal(await registroPendienteModel.countDocuments({ mail: 'dani@x.com' }), 0)
+    assert.deepEqual((await request(app).post('/register').send({ ...datos, captcha: 'ok-1' })).body, { msj: 1 })
+
+    assert.equal((await request(app).post('/login').send({ mail: 'dani@x.com', contrasenia: 'x' })).body.estado, 4)
+    assert.equal((await request(app).post('/login').send({ mail: 'dani@x.com', contrasenia: 'x', captcha: 'ok-1' })).body.estado, 4, 'un token ya usado no sirve')
+    assert.equal((await request(app).post('/login').send({ mail: 'dani@x.com', contrasenia: 'x', captcha: 'ok-2' })).body.estado, 3, 'token valido: pasa al login normal')
+  } finally {
+    globalThis.fetch = fetchReal
+    delete process.env.RECAPTCHA_SECRET
+  }
+})

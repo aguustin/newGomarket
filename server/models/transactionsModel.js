@@ -35,4 +35,7 @@ const transactionModel = mongoose.Schema({
 transactionModel.index({ entregado: 1, ventaRegistrada: 1, fecha: 1 })
 transactionModel.index({ reembolsoEstado: 1 })
 
+//Indices para las consultas frecuentes (etapa 13)
+transactionModel.index({ prodId: 1 })
+
 export default mongoose.model("transaccionModel", transactionModel)

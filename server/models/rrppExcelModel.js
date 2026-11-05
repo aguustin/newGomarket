@@ -19,6 +19,10 @@ const rrppExcelSchema = mongoose.Schema({
     RRPPCount:{type:Number},
 }, { strict: true })
 
+//Indices para las consultas frecuentes (etapa 13)
+rrppExcelSchema.index({ prodId: 1, userId: 1 })
+rrppExcelSchema.index({ 'rrppList.estado': 1 })
+
 const rrppExcelModel = mongoose.model("rrppExcelModel", rrppExcelSchema)
 
 export default rrppExcelModel

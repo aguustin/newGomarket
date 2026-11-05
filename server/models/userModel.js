@@ -44,6 +44,9 @@ const userSchema = new mongoose.Schema({
     }]
 })
 
+//Indices para las consultas frecuentes (etapa 13)
+userSchema.index({ mail: 1 }, { unique: true, collation: { locale: 'en', strength: 2 }, partialFilterExpression: { mail: { $type: 'string' } } })
+
 const userModel = mongoose.model('userModel', userSchema) 
 
 export default userModel

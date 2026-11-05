@@ -6,7 +6,7 @@ const base = {
   MONGO_URI: 'mongodb://x', JWT_SECRET: 'j', SECRET_MAIL_KEY: 's', RESEND_API_KEY: 'r',
   URL_FRONT: 'https://f', URL_BACK: 'https://b', MP_ACCESS_TOKEN_PROD: 'p',
   URL_FRONT_DEV: 'http://localhost:5173', URL_BACK_DEV: 'https://n', MP_ACCESS_TOKEN_DEV: 'd',
-  CLOUD_NAME: 'c', API_KEY: 'k', API_SECRET: 'x', USER_MAIL: 'u', PASS: 'p'
+  CLOUD_NAME: 'c', API_KEY: 'k', API_SECRET: 'x'
 }
 
 test('produccion completa con MAIL_MODE=resend arranca sin errores', () => {

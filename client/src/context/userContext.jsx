@@ -26,7 +26,7 @@ export const UserContextProvider = ({children}) => {
 
     const loginContext = async (userData) => {
         const res = await loginUserRequest(userData)
-        if(res.data.estado === 2 || res.data.estado === 3){
+        if(res.data.estado === 2 || res.data.estado === 3 || res.data.estado === 4){  //4 = captcha rechazado
             return res.data
         }else if(res.data.estado === 1){
             await localStorage.setItem('session', JSON.stringify(res.data))

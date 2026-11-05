@@ -604,7 +604,7 @@ const EditProd = () => {
                     />
                   </svg>
                   <span className="font-medium text-gray-300">Cargar nueva portada</span>
-                  <input type="file" className="hidden" name="imgEvento" ref={fileRef} onChange={handleFileChange}/>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" name="imgEvento" ref={fileRef} onChange={handleFileChange}/>
                 </label>
                     <div>
                       <button
@@ -1031,7 +1031,7 @@ const EditProd = () => {
                       <input
                         id="fileUploadBanner"
                         className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!!"
-                        type="file"
+                        type="file" accept="image/jpeg,image/png,image/webp"
                         name="bannerEvento"
                         onChange={handleBannerChange}
                         ref={fileRefBanner}
@@ -1051,7 +1051,7 @@ const EditProd = () => {
                       <input
                         id="fileUploadDescriptive"
                         className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500/50!  text-white!!"
-                        type="file"
+                        type="file" accept="image/jpeg,image/png,image/webp"
                         name="imagenDescriptiva"
                         onChange={handleDescriptiveChange}
                         ref={fileRefDescriptiveImg}
@@ -1307,7 +1307,7 @@ const EditProd = () => {
                             <input
                               id="fileUpload"
                               className="hidden"
-                              type="file"
+                              type="file" accept="image/jpeg,image/png,image/webp"
                               name="bannerEvento"
                               onChange={handleBannerChange}
                             />
@@ -1332,7 +1332,7 @@ const EditProd = () => {
                             <input
                               id="fileUpload"
                               className="hidden"
-                              type="file"
+                              type="file" accept="image/jpeg,image/png,image/webp"
                               name="imagenDescriptiva"
                               onChange={handleDescriptiveChange}
                             />
@@ -1542,7 +1542,7 @@ const EditProd = () => {
           <div className="relative">
             <input
               className="w-full px-4 py-3 bg-gray-900 border-2 border-dashed border-gray-700 focus:border-amber-500 text-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-amber-500 file:to-yellow-500 file:text-gray-900 file:font-semibold hover:file:from-amber-600 hover:file:to-yellow-600 file:cursor-pointer"
-              type="file"
+              type="file" accept="image/jpeg,image/png,image/webp"
               name="imgTicket"
             />
           </div>
@@ -1972,7 +1972,7 @@ const EditProd = () => {
           </label>
           <div className="relative">
             <input
-              type="file"
+              type="file" accept="image/jpeg,image/png,image/webp"
               name="imgTicket"
               className="w-full px-4 py-3 bg-gray-900 border-2 border-dashed border-gray-700 focus:border-amber-500 text-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-amber-500 file:to-yellow-500 file:text-gray-900 file:font-semibold hover:file:from-amber-600 hover:file:to-yellow-600 file:cursor-pointer"
               ref={(el) => (fileRefsB.current[tick._id] = el)}

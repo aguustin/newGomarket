@@ -3,9 +3,8 @@ import cloudinary from "../middleware/cloudinary.js";
 import ticketModel from "../models/ticketsModel.js";
 import mercadopago from "../lib/mercadopago.js";
 import QRCode from 'qrcode';
-import nodemailer from 'nodemailer'; 
 import dotenv from 'dotenv';
-import { user_mail, pass, urlFront, urlBack, mpAccessToken, webhookFirma, webhookSecret } from "../config.js";
+import { urlFront, urlBack, mpAccessToken, webhookFirma, webhookSecret } from "../config.js";
 import { verificarFirmaMP } from "../lib/firmaMP.js";
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid'
@@ -16,9 +15,6 @@ import transactionModel from "../models/transactionsModel.js";
 import { formatDateB } from "../lib/dates.js";
 import ExcelJS from 'exceljs';
 import axios from "axios";
-//La cola de Redis (queues/paymentQueue.js) no se importa: el worker esta fuera de uso y conectarse sin usarla
-//hacia fallar el arranque si faltaba REDIS_URL
-//import { redisClient } from "../lib/redisClient.js"; //DESCOMENTAR PARA PRODUCCION
 import { resend } from "../lib/resendDomain.js";
 import purchaseModel from "../models/purchaseModel.js";
 import discountModel from "../models/discountModel.js";
@@ -1236,13 +1232,6 @@ export const sendQrStaffQrController = async (req, res) => {
   const findRrPp = evento;
 
   // Enviar correo
-  /*const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: user_mail,
-      pass: pass
-    }
-  });*/
 
   try {
     
@@ -1642,10 +1631,6 @@ export const paymentConfirmController = async (req, res) => {
   }
 };
 
-//Cerrado: devolvia todos los tokens de QR validos (cualquiera podia entrar con entradas ajenas)
-export const verTokensController = async (req , res) => {
-  res.status(410).json({ message: 'Este recurso ya no está disponible' })
-}
 
 export const descargarCompradoresController = async (req, res) => {
   const {prodId} = req.body
@@ -1855,12 +1840,6 @@ export const createDiscountController = async (req, res) => {
   return res.status(200).json({message: 'El descuento fue creado con exito' })
 }
 
-//El uso de un descuento ya no se consume desde el navegador: lo consume el servidor al aprobarse el pago
-//(consumirDescuento). Esta ruta queda para clientes viejos y no modifica nada.
-//Antes borraba con un filtro invalido ({discountCode: undefined} = el primer descuento de la coleccion)
-export const activeDiscount = async (req, res) => {
-  return res.status(410).json({ message: 'El descuento se aplica automáticamente al pagar' })
-}
 
 export const findDiscountController = async (req, res) => {
   const {discountCode} = req.params
