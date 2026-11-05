@@ -2,13 +2,13 @@ import { test, before, after, beforeEach } from "node:test"
 import assert from "node:assert/strict"
 import request from "supertest"
 import { loadApp, closeDb, resetDb, crearSesion, uniqueMail } from "./helpers.js"
-import XLSX from "xlsx"
+import ExcelJS from "exceljs"
 
 //Excel .xlsx real con filas nombre/email (la primera fila es el encabezado)
-const xlsxCon = (filas) => {
-  const libro = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(libro, XLSX.utils.aoa_to_sheet([['nombre', 'email'], ...filas]), 'Hoja1')
-  return XLSX.write(libro, { type: 'buffer', bookType: 'xlsx' })
+const xlsxCon = async (filas) => {
+  const libro = new ExcelJS.Workbook()
+  libro.addWorksheet('Hoja1').addRows([['nombre', 'email'], ...filas])
+  return Buffer.from(await libro.xlsx.writeBuffer())
 }
 
 //Etapa 7: permisos por evento (dueño y RRPP)
@@ -177,7 +177,7 @@ test('cargar un Excel en el evento de otro: 403', async () => {
   const e = await escenario()
   const res = await request(app).post('/charge_excel').set(e.tercero.auth)
     .field('userId', e.tercero.id).field('prodId', e.eventoId).field('excelName', 'x.xlsx')
-    .attach('excelFile', xlsxCon([['Ana', 'ana@x.com']]), 'x.xlsx')
+    .attach('excelFile', await xlsxCon([['Ana', 'ana@x.com']]), 'x.xlsx')
   assert.equal(res.status, 403)
   assert.equal(await cortesieModel.countDocuments(), 0)
 })
@@ -202,7 +202,7 @@ test('subidas: se rechazan archivos que no son del tipo pedido o son demasiado g
   assert.equal((await excel(Buffer.from('nombre,email\nAna,ana@x.com\n'), 'x.csv')).body.code, 'ARCHIVO_INVALIDO')
   assert.equal((await excel(Buffer.from('no soy un zip'), 'x.xlsx')).body.code, 'ARCHIVO_INVALIDO', 'extension correcta, contenido falso')
   const muchas = Array.from({ length: 2001 }, (_, i) => ['P' + i, `p${i}@x.com`])
-  assert.equal((await excel(xlsxCon(muchas), 'x.xlsx')).body.code, 'EXCEL_DEMASIADO_GRANDE')
+  assert.equal((await excel(await xlsxCon(muchas), 'x.xlsx')).body.code, 'EXCEL_DEMASIADO_GRANDE')
   assert.equal(await cortesieModel.countDocuments(), 0)
 
   const img = (buffer, nombre, tipo) => request(app).post('/create_seller_profile').set(e.dueno.auth)
@@ -213,4 +213,17 @@ test('subidas: se rechazan archivos que no son del tipo pedido o son demasiado g
   const grande = await img(pngGrande, 'a.png', 'image/png')
   assert.equal(grande.status, 400)
   assert.match(grande.body.message, /hasta 5 MB/)
+})
+
+test('cargar un Excel valido: lee nombres y mails (tambien si el mail es un hipervinculo) y saltea filas vacias', async () => {
+  const e = await escenario()
+  const libro = new ExcelJS.Workbook()
+  const hoja = libro.addWorksheet('Hoja1')
+  hoja.addRows([['nombre', 'email'], ['Ana', 'ana@x.com'], [], ['Beto', { text: 'beto@x.com', hyperlink: 'mailto:beto@x.com' }]])
+  const res = await request(app).post('/charge_excel').set(e.dueno.auth)
+    .field('userId', e.dueno.id).field('prodId', e.eventoId).field('excelName', 'lista.xlsx')
+    .attach('excelFile', Buffer.from(await libro.xlsx.writeBuffer()), 'lista.xlsx')
+  assert.equal(res.status, 200)
+  const doc = await cortesieModel.findOne().lean()
+  assert.deepEqual(doc.people.map((p) => [p.clientName, p.email]), [['Ana', 'ana@x.com'], ['Beto', 'beto@x.com']])
 })

@@ -1,6 +1,6 @@
 import { formatDateB } from "../lib/dates.js";
 import { isValidObjectId } from "mongoose";
-import XLSX from 'xlsx';
+import { leerFilasExcel } from "../lib/excel.js";
 import { MAX_FILAS_EXCEL } from "../lib/subidas.js";
 
 import ticketModel from "../models/ticketsModel.js";
@@ -56,14 +56,7 @@ export const chargeExcelController = async (req, res) => {
 
   try {
     const formatedDate = formatDateB(Date.now())
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-
-    const rawPeople = XLSX.utils.sheet_to_json(worksheet, {
-      header: ['clientName', 'email'],
-      range: 1
-    });
+    const rawPeople = await leerFilasExcel(req.file.buffer, ['clientName', 'email'], { maxFilas: MAX_FILAS_EXCEL });
     if (rawPeople.length > MAX_FILAS_EXCEL) {
       return res.status(400).json({ code: 'EXCEL_DEMASIADO_GRANDE', message: `El Excel puede tener hasta ${MAX_FILAS_EXCEL} filas` });
     }
@@ -112,14 +105,7 @@ export const chargeRRPPExcelController = async (req, res) => {
 
   try {
     const formatedDate = formatDateB(Date.now())
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-
-    const rawPeople = XLSX.utils.sheet_to_json(worksheet, {
-      header: ['nombreRRPP', 'email'],
-      range: 1
-    });
+    const rawPeople = await leerFilasExcel(req.file.buffer, ['nombreRRPP', 'email'], { maxFilas: MAX_FILAS_EXCEL });
     if (rawPeople.length > MAX_FILAS_EXCEL) {
       return res.status(400).json({ code: 'EXCEL_DEMASIADO_GRANDE', message: `El Excel puede tener hasta ${MAX_FILAS_EXCEL} filas` });
     }
