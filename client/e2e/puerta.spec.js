@@ -37,7 +37,7 @@ test('puerta: el QR se muestra sin gastarse y solo el organizador valida el ingr
   await page.getByRole('button', { name: 'Ingresar' }).click()
   await expect(page).toHaveURL(new RegExp(`/ticket/validate/${token}$`))
   await page.getByRole('button', { name: 'Validar ingreso' }).click()
-  await expect(page.getByText('✓ Ingreso validado')).toBeVisible()
+  await expect(page.getByText('Ingreso validado')).toBeVisible()
 
   //Segundo escaneo: ya usada, sin boton
   await page.reload()

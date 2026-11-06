@@ -1,226 +1,145 @@
-import { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
-import UserContext from "../../context/userContext";
-import { getOneProdRequest } from "../../api/eventRequests";
-import { EventoNoDisponible } from "../../globalscomp/globalscomp";
-import { deleteCortesieRequest, deleteRRPPExcelRequest, getAllExcelsRequest, getAllRRPPExcelsRequest, sendCortesiesRequest, sendRRPPLinksRequest } from "../../api/cortesieRequest";
+import { useContext, useEffect, useState } from "react"
+import { useParams } from "react-router"
+import UserContext from "../../context/userContext"
+import { getOneProdRequest } from "../../api/eventRequests"
+import { EventoNoDisponible } from "../../globalscomp/globalscomp"
+import { deleteCortesieRequest, deleteRRPPExcelRequest, getAllExcelsRequest, getAllRRPPExcelsRequest, sendCortesiesRequest, sendRRPPLinksRequest } from "../../api/cortesieRequest"
+import { Icon } from "../../ui/icons"
+import { Badge, Button, Card, EmptyState, Page, PageHeader, Skeleton, cx } from "../../ui/primitives"
+import Modal from "../../ui/Modal"
+import { toast } from "../../ui/toast"
 
-const Cortesies = () => {
-    const {session} = useContext(UserContext)
-    const {prodId} = useParams()
-    const [cortesies, setCortesies] = useState([])
-    const [rrppExcels, setRrppExcels] = useState([])
-    const [showColabs, setShowColabs] = useState(false)
-    const [noDisponible, setNoDisponible] = useState(false)
-
-    useEffect(() => {
-        const getProdCortesiesFunc = async () => {
-            const userId = session?.userFinded?.[0]?._id
-            if (!userId) return //esperar a que cargue la sesion
-            const prod = await getOneProdRequest(prodId, userId)
-            if (!prod.data.tickets?.length) { setNoDisponible(true); return } //no existe o no es de este usuario
-            await recargarInvitaciones()
-        }
-        getProdCortesiesFunc()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session])
-
-    const recargarInvitaciones = async () => {
-        const res = await getAllExcelsRequest(session?.userFinded?.[0]?._id, prodId)
-        setCortesies(res.data)
-    }
-
-    const getRRPPExcelFunc = async () => {
-        const res = await getAllRRPPExcelsRequest(session?.userFinded?.[0]?._id, prodId)
-        setRrppExcels(res.data)
-        setShowColabs(true)
-    }
-
-    //Los envios corren en segundo plano: se avisa cuantos salen y la lista muestra el avance al recargarla.
-    //Volver a enviar solo manda a quienes todavia no lo recibieron
-    const avisarEnvio = (data, que) => {
-        if (!data.aEnviar) return alert(`Todos los ${que} de esta lista ya fueron enviados.`)
-        alert(`Se están enviando ${data.aEnviar} ${que}${data.yaEnviadas ? ` (${data.yaEnviadas} ya habían sido enviados)` : ''}. Puede tardar unos minutos: tocá "Actualizar" para ver el avance.`)
-    }
-    const handleSendCortesies = async (cortesieId) => {
-        try {
-            const res = await sendCortesiesRequest({prodId, cortesieId})
-            avisarEnvio(res.data, 'mails de invitación')
-            await recargarInvitaciones()
-        } catch (err) {
-            alert(err?.response?.data?.error || 'No se pudieron enviar las invitaciones. Intentá de nuevo.')
-        }
-    }
-
-    const handleSendRRPPLinks = async (rrppListId) => {
-        try {
-            const res = await sendRRPPLinksRequest({prodId, rrppListId})
-            avisarEnvio(res.data, 'avisos a RRPP')
-            await getRRPPExcelFunc()
-        } catch (err) {
-            alert(err?.response?.data?.error || 'No se pudieron enviar los avisos. Intentá de nuevo.')
-        }
-    }
-
-    //"12/15 enviados · 2 con error" (las listas viejas, sin seguimiento, muestran solo la cantidad)
-    const textoEnvio = (envio, total) => {
-        if (!envio || envio.sinEnviar === envio.total) return `${total ?? 0} (sin enviar)`
-        const partes = [`${envio.enviadas}/${envio.total} enviados`]
-        if (envio.pendientes) partes.push(`${envio.pendientes} enviándose`)
-        if (envio.conError) partes.push(`${envio.conError} con error`)
-        return partes.join(' · ')
-    }
-
-    //Borra solo el registro del Excel: los mails ya enviados y los RRPP ya agregados no se deshacen
-    const deleteExcel = async (e, excelId, isRRPP) => {
-        e.preventDefault()
-        if (!window.confirm('¿Eliminar este Excel de la lista? Los envíos ya realizados no se deshacen.')) return
-        const userId = session?.userFinded?.[0]?._id
-        try {
-            if (isRRPP) {
-                await deleteRRPPExcelRequest({userId, rrppListId: excelId})
-                setRrppExcels(prev => prev.filter(x => x._id !== excelId))
-            } else {
-                await deleteCortesieRequest({userId, cortesieId: excelId})
-                setCortesies(prev => prev.filter(x => x._id !== excelId))
-            }
-        } catch {
-            alert('No se pudo eliminar el Excel. Intentá de nuevo.')
-        }
-    }
-
-    if (noDisponible) return <EventoNoDisponible />
-
-    return(
-        <>
-            <div className="mb-24">
-            <div className="productions overflow-x-scroll w-screen sm:rounded-lg pl-2 pr-2 pb-10 pt-9">
-            <div className="text-center pb-10 pt-6"><Link className="bg-gradient-to-r from-amber-600 to-yellow-500 p-4 rounded-lg cursor-pointer" to={`/new_excel/${prodId}`}>Crear nueva lista de cortesias</Link></div>
-            <div className="flex items-center w-[400px] mb-3">
-                <button className="bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827] py-2 px-3 rounded-lg " onClick={() => getRRPPExcelFunc()}>Lista RRPP</button>
-                <button className="bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827] py-2 px-3 rounded-lg ml-3" onClick={() => setShowColabs(false)}>Lista invitaciones</button>
-                <button className="bg-gray-600 text-white py-2 px-3 rounded-lg ml-3" onClick={() => (showColabs ? getRRPPExcelFunc() : recargarInvitaciones())}>Actualizar</button>
-            </div>
-                <table className="min-w-[850px]! w-full text-sm text-left rtl:text-right text-[#111827] dark:text-[#111827] rounded-2xl shadow-lg overflow-hidden">
-                    <thead className="text-xs uppercase bg-gray-50 bg-orange-500 text-[#111827]">
-                        <tr className="bg-gray-600">
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                                Evento
-                            </th>
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                                Fecha
-                            </th>
-                             <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                                {showColabs ? 'Avisos a RRPP' : 'Invitaciones' }
-                            </th>
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                                Nombre de lista
-                            </th>
-                            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                            
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {showColabs 
-                        ? 
-                        rrppExcels.map((rrpp) => 
-                         <tr key={rrpp._id} className="odd:bg-gray-700 even:bg-gray-800 border-b dark:border-gray-800 border-gray-600">
-                            <td className="px-6 py-4 text-gray-300">
-                                {rrpp.eventName}
-                            </td>
-                            <td className="px-6 py-4 text-gray-300">
-                                {rrpp.fechaCreacion}
-                            </td>
-                            <td className="px-6 py-4 text-gray-300">
-                                {textoEnvio(rrpp.envio, rrpp.RRPPCount)}
-                            </td>
-                            <td className="px-6 py-4 text-gray-300">
-                                {rrpp.excelName}
-                            </td>
-                            <td className="px-6 py-4">
-                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-green-700 rounded-lg text-xs font-semibold transition-colors mb-2" onClick={() => handleSendRRPPLinks(rrpp._id)}>
-                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M22 4H2V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V4Z" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                        <path d="M22 4L12 13L2 4" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                    <p className="ml-2">Enviar</p>
-                                </button>
-                               {/* <Link to={`/get_cortesie/${cort._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>*/ }
-                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-red-700 rounded-lg text-xs font-semibold transition-colors" onClick={(e) => deleteExcel(e, rrpp._id, true)}>
-                                     <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="red"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    >
-                                        <line x1="18" y1="6" x2="6" y2="18" />
-                                        <line x1="6" y1="6" x2="18" y2="18" />
-                                    </svg>
-                                    <p className="ml-2">Eliminar</p>
-                                </button>
-                            </td>
-                         </tr>
-                        )
-
-
-                        :
-                        
-                       cortesies.map((cort) => 
-                         <tr key={cort._id} className="odd:bg-gray-700 even:bg-gray-800 border-b dark:border-gray-800 border-gray-600">
-                            <td className="px-6 py-4 text-gray-300">
-                                {cort.eventName}
-                            </td>
-                            <td className="px-6 py-4 text-gray-300">
-                                {cort.fechaCreacion}
-                            </td>
-                            <td className="px-6 py-4 text-gray-300">
-                                {textoEnvio(cort.envio, cort.courtesy)}
-                            </td>
-                            <td className="px-6 py-4 text-gray-300">
-                                {cort.excelName}
-                            </td>
-                            <td className="px-6 py-4">
-                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-green-700 rounded-lg text-xs font-semibold transition-colors mb-2" onClick={() => handleSendCortesies(cort._id)}>
-                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M22 4H2V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V4Z" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                        <path d="M22 4L12 13L2 4" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                    <p className="ml-2">Enviar</p>
-                                </button>
-                               {/* <Link to={`/get_cortesie/${cort._id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</Link><br></br>*/ }
-                                <button className="w-[150px] flex items-center justify-center px-3 py-2 bg-gray-800 hover:bg-gray-900 text-red-700 rounded-lg text-xs font-semibold transition-colors" onClick={(e) => deleteExcel(e, cort._id, false)}>
-                                     <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="red"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    >
-                                        <line x1="18" y1="6" x2="6" y2="18" />
-                                        <line x1="6" y1="6" x2="18" y2="18" />
-                                    </svg>
-                                    <p className="ml-2">Eliminar</p>
-                                </button>
-                            </td>
-                         </tr>
-                    )
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        </>
-    )
+//Listas de invitados y de RRPP cargadas por Excel (rediseño). Los envios corren en segundo plano:
+//la lista muestra el avance al actualizar. Volver a enviar solo manda a quienes todavia no lo recibieron.
+const Progreso = ({ envio, total }) => {
+  if (!envio || envio.sinEnviar === envio.total) return <p className="text-sm text-muted">{total ?? 0} personas · <span className="text-subtle">sin enviar</span></p>
+  const pct = envio.total ? Math.round((envio.enviadas / envio.total) * 100) : 0
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+        <span className="tabular-nums text-fg">{envio.enviadas}/{envio.total} enviados</span>
+        {envio.pendientes > 0 && <Badge tone="brand">{envio.pendientes} enviándose</Badge>}
+        {envio.conError > 0 && <Badge tone="danger">{envio.conError} con error</Badge>}
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-3"><div className="h-full rounded-full bg-brand-500 transition-[width]" style={{ width: `${pct}%` }} /></div>
+    </div>
+  )
 }
 
-export default Cortesies;
+const Cortesies = () => {
+  const { session } = useContext(UserContext)
+  const userId = session?.userFinded?.[0]?._id
+  const { prodId } = useParams()
+  const [tab, setTab] = useState('invitados')
+  const [listas, setListas] = useState({ invitados: null, rrpp: null })
+  const [noDisponible, setNoDisponible] = useState(false)
+  const [enviando, setEnviando] = useState(null)
+  const [aEliminar, setAEliminar] = useState(null)
+  const [actualizando, setActualizando] = useState(false)
+
+  const cargar = async (cual) => {
+    const res = cual === 'rrpp' ? await getAllRRPPExcelsRequest(userId, prodId) : await getAllExcelsRequest(userId, prodId)
+    setListas((prev) => ({ ...prev, [cual]: res.data ?? [] }))
+  }
+
+  useEffect(() => {
+    if (!userId) return //esperar a que cargue la sesion
+    getOneProdRequest(prodId, userId).then((prod) => {
+      if (!prod.data.tickets?.length) return setNoDisponible(true) //no existe o no es de este usuario
+      cargar('invitados')
+    }).catch(() => toast.error('No pudimos cargar las listas.'))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, prodId])
+
+  useEffect(() => { if (userId && tab === 'rrpp' && listas.rrpp === null) cargar('rrpp').catch(() => toast.error('No pudimos cargar las listas de RRPP.')) }, [tab])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const actualizar = async () => {
+    setActualizando(true)
+    try { await cargar(tab) } catch { toast.error('No pudimos actualizar.') } finally { setActualizando(false) }
+  }
+
+  const enviar = async (id) => {
+    const esRRPP = tab === 'rrpp'
+    const que = esRRPP ? 'avisos a RRPP' : 'mails de invitación'
+    setEnviando(id)
+    try {
+      const res = esRRPP ? await sendRRPPLinksRequest({ prodId, rrppListId: id }) : await sendCortesiesRequest({ prodId, cortesieId: id })
+      const d = res.data
+      if (!d.aEnviar) toast.info(`Todos los ${que} de esta lista ya fueron enviados.`)
+      else toast.success(`Se están enviando ${d.aEnviar} ${que}${d.yaEnviadas ? ` (${d.yaEnviadas} ya habían sido enviados)` : ''}. Puede tardar unos minutos: tocá "Actualizar" para ver el avance.`, { duracion: 8000 })
+      await cargar(tab)
+    } catch (err) {
+      toast.error(err?.response?.data?.error || 'No se pudo enviar. Intentá de nuevo.')
+    } finally {
+      setEnviando(null)
+    }
+  }
+
+  //Borra solo el registro del Excel: los mails ya enviados y los RRPP ya agregados no se deshacen
+  const eliminar = async () => {
+    const { id, cual } = aEliminar
+    try {
+      if (cual === 'rrpp') await deleteRRPPExcelRequest({ userId, rrppListId: id })
+      else await deleteCortesieRequest({ userId, cortesieId: id })
+      setListas((prev) => ({ ...prev, [cual]: prev[cual].filter((x) => x._id !== id) }))
+      toast.success('Eliminamos la lista')
+    } catch {
+      toast.error('No se pudo eliminar el Excel. Intentá de nuevo.')
+    } finally {
+      setAEliminar(null)
+    }
+  }
+
+  if (noDisponible) return <EventoNoDisponible />
+  const items = listas[tab]
+
+  return (
+    <Page>
+      <Button to={`/editar_evento/${prodId}`} variant="ghost" size="sm" icon={Icon.ArrowLeft} className="-ml-3 mb-4">Volver al evento</Button>
+      <PageHeader eyebrow="Cortesías" title="Listas de invitados" description="Cargá un Excel y mandá las invitaciones (o los links de venta a tus RRPP) a todos de una vez."
+        actions={<Button to={`/new_excel/${prodId}`} icon={Icon.Plus}>Nueva lista</Button>} />
+
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div role="tablist" className="inline-flex rounded-xl border border-line bg-surface p-1">
+          {[['invitados', 'Invitados'], ['rrpp', 'RRPP']].map(([id, label]) => (
+            <button key={id} role="tab" type="button" aria-selected={tab === id} onClick={() => setTab(id)}
+              className={cx('rounded-lg px-4 py-1.5 text-sm font-medium transition-colors', tab === id ? 'bg-surface-3 text-fg' : 'text-muted hover:text-fg')}>{label}</button>
+          ))}
+        </div>
+        <Button variant="ghost" size="sm" icon={Icon.Clock} loading={actualizando} onClick={actualizar}>Actualizar</Button>
+      </div>
+
+      {items === null ? (
+        <div className="space-y-3">{[...Array(2)].map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}</div>
+      ) : items.length === 0 ? (
+        <Card><EmptyState icon={Icon.Users} title={tab === 'rrpp' ? 'No cargaste listas de RRPP' : 'No cargaste listas de invitados'}
+          description="Subí un Excel con nombre y email en las dos primeras columnas." action={<Button to={`/new_excel/${prodId}`} icon={Icon.Plus}>Nueva lista</Button>} /></Card>
+      ) : (
+        <ul className="space-y-3">
+          {items.map((l) => (
+            <li key={l._id}>
+              <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-fg">{l.excelName || 'Lista sin nombre'}</p>
+                  <p className="mb-3 text-xs text-subtle">Creada el {l.fechaCreacion}</p>
+                  <Progreso envio={l.envio} total={tab === 'rrpp' ? l.RRPPCount : l.courtesy} />
+                </div>
+                <div className="flex gap-2 sm:shrink-0">
+                  <Button size="sm" icon={Icon.Mail} loading={enviando === l._id} onClick={() => enviar(l._id)}>Enviar</Button>
+                  <Button size="sm" variant="ghost" icon={Icon.Trash} onClick={() => setAEliminar({ id: l._id, cual: tab, nombre: l.excelName })} aria-label={`Eliminar ${l.excelName}`} />
+                </div>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Modal open={Boolean(aEliminar)} onClose={() => setAEliminar(null)} tone="danger" size="sm" title="¿Eliminar esta lista?"
+        footer={<><Button variant="ghost" onClick={() => setAEliminar(null)}>Volver</Button><Button variant="danger" onClick={eliminar}>Eliminar</Button></>}>
+        <p className="text-[15px] text-muted">Se quita <strong className="text-fg">{aEliminar?.nombre}</strong> de tus listas. Los envíos ya realizados no se deshacen.</p>
+      </Modal>
+    </Page>
+  )
+}
+
+export default Cortesies

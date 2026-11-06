@@ -34,8 +34,8 @@ test('RRPP: Mis colaboraciones -> Enviar cortesías -> el cliente recibe los QR 
   await expect(page.getByText('Cortesía VIP')).toBeVisible()
   await expect(page.getByText(/Disponibles:\s*3/)).toBeVisible()
 
-  await page.getByRole('button', { name: '+' }).click()
-  await page.getByRole('button', { name: '+' }).click()
+  await page.getByRole('button', { name: 'Sumar una cortesía' }).click()
+  await page.getByRole('button', { name: 'Sumar una cortesía' }).click()
   const cliente = uniqueMail('cliente')
   await page.locator('input[name="clientName"]').fill('Cliente E2E')
   await page.locator('input[name="clientMail"]').fill(cliente)
@@ -48,7 +48,7 @@ test('RRPP: Mis colaboraciones -> Enviar cortesías -> el cliente recibe los QR 
   expect(mail.attachments.length).toBe(2)
 
   //Intentar mandar mas de lo que queda: el boton + no pasa del cupo
-  await page.getByRole('button', { name: '+' }).click()
-  await page.getByRole('button', { name: '+' }).click()
-  await expect(page.locator('form p.w-8')).toHaveText('1')
+  await page.getByRole('button', { name: 'Sumar una cortesía' }).click()
+  await expect(page.getByTestId('cantidad')).toHaveText('1')
+  await expect(page.getByRole('button', { name: 'Sumar una cortesía' })).toBeDisabled()
 })

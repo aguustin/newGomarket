@@ -1,506 +1,367 @@
-import { useState } from "react"
-import { createEventRequest, createEventTicketsRequest } from "../../api/eventRequests"
-import eventoJpg from '../../assets/images/fondoB.jpeg'
-import { useContext } from "react"
-import UserContext from "../../context/userContext"
-import {Country, State, City} from "country-state-city"
+import { useContext, useMemo, useState } from "react"
 import { Link } from "react-router"
-import ticketPng from '../../assets/images/ticket.png'
-import { LoadingButton } from "../../globalscomp/globalscomp"
-import closePng from '../../assets/botones/close.png'
-import advicePng from '../../assets/images/advice.png'
-import megaphonePng from '../../assets/images/megaphone.png'
-import uploadPng from '../../assets/botones/upload.png'
+import { Country, State, City } from "country-state-city"
+import { createEventRequest, createEventTicketsRequest } from "../../api/eventRequests"
+import UserContext from "../../context/userContext"
+import { Icon } from "../../ui/icons"
+import { Alert, Badge, Button, Card, Field, FormSection as Seccion, Input, Page, PageHeader, Select, Textarea, cx } from "../../ui/primitives"
+import ImagePicker from "../../ui/ImagePicker"
+import { toast } from "../../ui/toast"
 
+//Crear evento (rediseño): asistente en 3 pasos (datos del evento -> entradas -> listo).
+//Los datos que se envian al servidor son los mismos de antes.
+const CATEGORIAS = [['musica', 'Música'], ['baile', 'Baile'], ['arte', 'Arte'], ['teatro', 'Teatro'], ['deporte', 'Deporte']]
+const PASOS = ['Datos del evento', 'Entradas', 'Listo']
+
+const Pasos = ({ actual }) => (
+    <ol className="mb-8 flex items-center gap-2 sm:gap-3">
+        {PASOS.map((p, i) => (
+            <li key={p} className="flex items-center gap-2 sm:gap-3">
+                <span className={cx('flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                    i < actual ? 'bg-brand-500 text-white' : i === actual ? 'bg-brand-500/15 text-brand-200 ring-1 ring-brand-400/50' : 'bg-surface-2 text-subtle')}>
+                    {i < actual ? <Icon.Check className="size-4" /> : i + 1}
+                </span>
+                <span className={cx('text-sm font-medium', i === actual ? 'text-fg' : 'hidden text-subtle sm:inline')}>{p}</span>
+                {i < PASOS.length - 1 && <span className="h-px w-6 bg-line sm:w-10" />}
+            </li>
+        ))}
+    </ol>
+)
 
 const CreateEventForm = () => {
-    const {session} = useContext(UserContext)
+    const { session } = useContext(UserContext)
+    const usuario = session?.userFinded?.[0]
+    const [paso, setPaso] = useState(0)
     const [startDate, setStartDate] = useState()
     const [endDate, setEndDate] = useState()
-    const [showTickets, setShowTickets] = useState(0)
-    const [estado, setEstado] = useState(1)
-    const [distribution, setDistribution] = useState(0)
+    const [estado, setEstado] = useState('1')
+    const [distribution, setDistribution] = useState('0')
     const [closeDate, setCloseDate] = useState()
-    const [disabledButton, setDisabledButton] = useState(false)
     const [saveEventId, setSaveEventId] = useState()
-    const [estadoEdad, setEstadoEdad] = useState()
-    const [eventoEdad, setEventoEdad] = useState()
-    const [countries, setCountries] = useState(Country.getAllCountries())
-    const [currency, setCurrency] = useState(null)
-    const [states, setStates] = useState([])
+    const [esMayores, setEsMayores] = useState(false)
+    const [eventoEdad, setEventoEdad] = useState('18')
+    const countries = useMemo(() => Country.getAllCountries(), [])
+    const [selectedCountry, setSelectedCountry] = useState(() => Country.getCountryByCode('AR'))
+    const [states, setStates] = useState(() => State.getStatesOfCountry('AR'))
     const [cities, setCities] = useState([])
-    const [selectedCountry, setSelectedCountry] = useState(null)
     const [selectedState, setSelectedState] = useState(null)
     const [selectedCity, setSelectedCity] = useState(null)
-    const [showEventInfo, setShowEventInfo] = useState(true)
-    const [previewImage, setPreviewImage] = useState(null)
-    const [imageFile, setImageFile] = useState()
-    const [previewBanner, setPreviewBanner] = useState(null)
-    const [imageBanner, setImageBanner] = useState()
-    const [previewDescriptive, setPreviewDescriptive] = useState(null)
-    const [imageDescriptive, setImageDescriptive] = useState()
+    const [imagenes, setImagenes] = useState({ portada: null, banner: null, descriptiva: null })
     const [loading, setLoading] = useState(false)
     const [categorias, setCategorias] = useState([])
-    const [dateMsg, setDateMsg] = useState(0)
-    const [pubOrPriv, setPubOrPriv] = useState(1)
-    let message = ''
-  
+    const [errores, setErrores] = useState({})
+    const [errorGeneral, setErrorGeneral] = useState('')
+    const [pubOrPriv, setPubOrPriv] = useState('1')
+    const [ticketsCreados, setTicketsCreados] = useState([])
+    const [formTicketKey, setFormTicketKey] = useState(0)
+    const [previewTicket, setPreviewTicket] = useState(null)
 
-    const createEvent = async (e) => {
-            e.preventDefault()
-           /* if(!imageFile){
-                alert("Por favor, carga una imagen de la portada del evento antes de continuar.");
-                return;
-            }*/
-            setLoading(true)
-            const currentDateTime = new Date()
-            const startDateToDate = new Date(startDate)
-            const endDateToDate = new Date(endDate)
-
-            if(startDateToDate > endDateToDate){
-                setLoading(false)
-                setDateMsg(2)
-                message = 'La fecha de inicio no puede ser mayor a la fecha de fin'
-            }else if(startDateToDate < currentDateTime){
-                setDateMsg(1)
-                message = 'La fecha de inicio no puede ser menor a la fecha actual'
-            }else{
-                
-                currency
-                selectedState?.name
-                selectedCity?.name
-                const tipoEvento = e.target.elements.tipoEvento.value
-                const rawEdad = eventoEdad;
-                // Si hay un número válido, lo agregás al FormData
-                const formData = new FormData()
-                formData.append('userId', session?.userFinded?.[0]?._id)
-                formData.append('prodMail', session?.userFinded?.[0]?.mail) //aca va el mail de la session
-                formData.append('codigoPais', selectedCity.countryCode)
-                formData.append('codigoCiudad', selectedCity.stateCode)
-                formData.append('paisDestino', selectedCountry.name)
-                formData.append('tipoEvento', tipoEvento)
-                if (rawEdad && !isNaN(Number(rawEdad))) {
-                    formData.append('eventoEdad', rawEdad);
-                }
-                formData.append('nombreEvento', e.target.elements.nombreEvento.value)
-                formData.append('descripcionEvento', e.target.elements.descripcionEvento.value)
-                formData.append('aviso', e.target.elements.aviso.value)
-                formData.append('categoriasEventos', JSON.stringify(categorias))
-                formData.append('artistas', e.target.elements.artistas.value)
-                formData.append('montoVentas', e.target.elements.montoVentas.value)
-                formData.append('porcentajeRRPP', e.target.elements.porcentajeRRPP.value ?? 0)
-                formData.append('fechaInicio',  new Date(startDate).toISOString())
-                formData.append('fechaFin', new Date(endDate).toISOString())
-                formData.append('provincia', selectedState?.name)
-                formData.append('localidad', selectedCity?.name)
-                formData.append('tipoMoneda', currency),
-                formData.append('direccion', e.target.elements.direccion.value)
-                formData.append('lugarEvento', e.target.elements.lugarEvento.value)
-                formData.append('linkVideo', e.target.elements.linkVideo.value)
-                formData.append('imgEvento', imageFile)
-                formData.append('bannerEvento', imageBanner)
-                formData.append('imagenDescriptiva', imageDescriptive)
-                formData.append('comisionServicio', session?.userFinded?.[0]?.comisionServicio ?? 15)
-                
-                const res = await createEventRequest(formData)
-    
-                if(res.data.estado === 1){
-                    setDateMsg(0)
-                    setLoading(false)
-                    setShowTickets(1)
-                    setSaveEventId(res.data.eventId)
-                }
-                setShowEventInfo(false)
-            }
-            setLoading(false)
+    const elegirImagen = (clave) => (e) => {
+        const file = e.target.files?.[0]
+        if (file) setImagenes((prev) => ({ ...prev, [clave]: { file, url: URL.createObjectURL(file) } }))
     }
 
-    const createEventTickets = async (e) => { //agregar estado a los tickets
+    const createEvent = async (e) => {
         e.preventDefault()
-        setLoading(true)
-        const startDateToDate = new Date(startDate)
-        const clodeDateToDate = new Date(closeDate)
-        const endDateToDate = new Date(endDate)
-
-        if(startDateToDate > clodeDateToDate){
-            setLoading(false)
-            setDateMsg(3)
-            message = 'La fecha de cierre del ticket no puede ser menor a la de inicio del evento'
-        }else if(endDateToDate < clodeDateToDate){
-            setLoading(false)
-            setDateMsg(4)
-            message = 'La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento'
-        }else{
-            setDateMsg(0)
-            const formData = new FormData()
-            formData.append('prodId', saveEventId)
-            formData.append('nombreTicket', e.target.elements.nombreTicket.value)
-            formData.append('descripcionTicket', e.target.elements.descripcionTicket.value ?? '')
-            formData.append('precio', e.target.elements.precio.value)
-            formData.append('cantidad', e.target.elements.cantidad.value)
-            formData.append('fechaDeCierre', new Date(closeDate).toISOString())
-            formData.append('imgTicket', e.target.elements.imgTicket.files[0])
-            formData.append('visibilidad', e.target.elements.estado.value)
-            formData.append('estado', estado)
-            formData.append('distribution', distribution)
-            formData.append('limit', e.target.elements?.limit?.value)
-            const res = await createEventTicketsRequest(formData)
-
-            if(res.data.estado === 1){
-                setLoading(false)
-                setDisabledButton(true)
-                e.target.reset()
-            }
+        const f = e.target.elements
+        const nuevos = {}
+        const ahora = new Date()
+        if (!imagenes.portada) nuevos.portada = 'Subí la imagen de portada'
+        if (categorias.length === 0) nuevos.categorias = 'Elegí al menos una categoría'
+        if (!selectedCity) nuevos.localidad = 'Elegí la provincia y la localidad'
+        if (startDate && new Date(startDate) < ahora) nuevos.inicio = 'La fecha de inicio no puede ser anterior a hoy'
+        if (startDate && endDate && new Date(startDate) > new Date(endDate)) nuevos.fin = 'La fecha de fin tiene que ser posterior al inicio'
+        setErrores(nuevos)
+        if (Object.keys(nuevos).length > 0) {
+            toast.error('Revisá los campos marcados antes de continuar.')
+            return
         }
 
+        setLoading(true)
+        setErrorGeneral('')
+        const formData = new FormData()
+        formData.append('userId', usuario?._id)
+        formData.append('prodMail', usuario?.mail)
+        formData.append('codigoPais', selectedCity.countryCode)
+        formData.append('codigoCiudad', selectedCity.stateCode)
+        formData.append('paisDestino', selectedCountry.name)
+        formData.append('tipoEvento', f.tipoEvento.value)
+        if (esMayores && eventoEdad && !isNaN(Number(eventoEdad))) formData.append('eventoEdad', eventoEdad)
+        formData.append('nombreEvento', f.nombreEvento.value)
+        formData.append('descripcionEvento', f.descripcionEvento.value)
+        formData.append('aviso', f.aviso.value)
+        formData.append('categoriasEventos', JSON.stringify(categorias))
+        formData.append('artistas', f.artistas.value)
+        formData.append('montoVentas', f.montoVentas.value)
+        formData.append('porcentajeRRPP', f.porcentajeRRPP.value || 0)
+        formData.append('fechaInicio', new Date(startDate).toISOString())
+        formData.append('fechaFin', new Date(endDate).toISOString())
+        formData.append('provincia', selectedState?.name)
+        formData.append('localidad', selectedCity?.name)
+        formData.append('tipoMoneda', selectedCountry?.currency)
+        formData.append('direccion', f.direccion.value)
+        formData.append('lugarEvento', f.lugarEvento.value)
+        formData.append('linkVideo', f.linkVideo.value)
+        formData.append('imgEvento', imagenes.portada?.file)
+        if (imagenes.banner) formData.append('bannerEvento', imagenes.banner.file)
+        if (imagenes.descriptiva) formData.append('imagenDescriptiva', imagenes.descriptiva.file)
+        formData.append('comisionServicio', usuario?.comisionServicio ?? 15)
+
+        try {
+            const res = await createEventRequest(formData)
+            if (res.data.estado === 1) {
+                setSaveEventId(res.data.eventId)
+                setPaso(1)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+            } else {
+                setErrorGeneral('No pudimos crear el evento. Revisá los datos e intentá de nuevo.')
+            }
+        } catch (err) {
+            if (!err?.avisado) setErrorGeneral(err?.response?.data?.error || 'No pudimos crear el evento. Revisá tu conexión e intentá de nuevo.')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const createEventTickets = async (e) => {
+        e.preventDefault()
+        const f = e.target.elements
+        const nuevos = {}
+        if (new Date(startDate) > new Date(closeDate)) nuevos.cierre = 'El cierre de venta no puede ser anterior al inicio del evento'
+        else if (new Date(endDate) < new Date(closeDate)) nuevos.cierre = 'El cierre de venta no puede ser posterior al fin del evento'
+        setErrores(nuevos)
+        if (nuevos.cierre) return
+
+        setLoading(true)
+        const formData = new FormData()
+        formData.append('prodId', saveEventId)
+        formData.append('nombreTicket', f.nombreTicket.value)
+        formData.append('descripcionTicket', f.descripcionTicket.value ?? '')
+        formData.append('precio', f.precio.value)
+        formData.append('cantidad', f.cantidad.value)
+        formData.append('fechaDeCierre', new Date(closeDate).toISOString())
+        formData.append('imgTicket', f.imgTicket.files[0])
+        formData.append('visibilidad', f.estado.value)
+        formData.append('estado', estado)
+        formData.append('distribution', distribution)
+        formData.append('limit', f?.limit?.value)
+        try {
+            const res = await createEventTicketsRequest(formData)
+            if (res.data.estado === 1) {
+                setTicketsCreados((prev) => [...prev, { nombre: f.nombreTicket.value, precio: f.precio.value, cantidad: f.cantidad.value, tipo: estado }])
+                toast.success('Entrada creada')
+                setFormTicketKey((k) => k + 1)  //formulario limpio para la siguiente
+                setEstado('1'); setDistribution('0'); setCloseDate(undefined); setPreviewTicket(null)
+            } else {
+                toast.error('No pudimos crear la entrada. Intentá de nuevo.')
+            }
+        } catch (err) {
+            if (!err?.avisado) toast.error('No pudimos crear la entrada. Intentá de nuevo.')
+        } finally {
+            setLoading(false)
+        }
     }
 
     const handleCountryChange = (country) => {
         setSelectedCountry(country)
-        setCurrency(country.currency)
-        setStates(State.getStatesOfCountry(country.isoCode))
-        setCities([])
+        setStates(country ? State.getStatesOfCountry(country.isoCode) : [])
+        setSelectedState(null); setSelectedCity(null); setCities([])
     }
-
     const handleStateChange = (state) => {
-        setSelectedState(state)
-        setCities(City.getCitiesOfState(selectedCountry.isoCode, state.isoCode))
+        setSelectedState(state); setSelectedCity(null)
+        setCities(state ? City.getCitiesOfState(selectedCountry.isoCode, state.isoCode) : [])
     }
+    const toggleCategoria = (valor) => setCategorias((prev) => prev.includes(valor) ? prev.filter((c) => c !== valor) : [...prev, valor])
 
-    const handleCityChange = (city) => {
-        setSelectedCity(city)
-    }
+    const linkEvento = `${import.meta.env.VITE_URL_FRONT}/buy_tickets/${saveEventId}`
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewImage(imageUrl);
-      setImageFile(file);
-    }
-};
+    return (
+        <Page size="medium">
+            <PageHeader eyebrow="Nuevo evento" title="Crear evento" description="Completá los datos, cargá las entradas y compartí el link para empezar a vender." />
+            <Pasos actual={paso} />
 
-  const handleBannerChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewBanner(imageUrl);
-      setImageBanner(file);
-    }
-  };
+            {paso === 0 && (
+                <Card className="p-5 sm:p-8">
+                    <form onSubmit={createEvent} encType="multipart/form-data" noValidate={false}>
+                        <Seccion titulo="Información básica" descripcion="Un título corto y una portada llamativa ayudan a que encuentren tu evento.">
+                            <Field label="Nombre del evento">{({ id }) => <Input id={id} name="nombreEvento" placeholder="Ej: Noche Electrónica" required maxLength={80} />}</Field>
+                            <div>
+                                <p className="mb-1.5 text-[13px] font-medium text-muted">Categorías</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {CATEGORIAS.map(([valor, label]) => {
+                                        const activa = categorias.includes(valor)
+                                        return (
+                                            <button key={valor} type="button" onClick={() => toggleCategoria(valor)} aria-pressed={activa}
+                                                className={cx('inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors',
+                                                    activa ? 'border-brand-400/60 bg-brand-500/15 text-brand-200' : 'border-line bg-surface-2 text-muted hover:text-fg')}>
+                                                {activa && <Icon.Check className="size-3.5" />}{label}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                                {errores.categorias && <p className="mt-1.5 text-xs text-danger">{errores.categorias}</p>}
+                            </div>
+                            <Field label="Descripción" optional>{({ id }) => <Textarea id={id} name="descripcionEvento" placeholder="Contá de qué se trata, quiénes tocan, qué incluye la entrada…" />}</Field>
+                            <Field label="Artistas" optional>{({ id }) => <Input id={id} name="artistas" placeholder="Separalos con comas" />}</Field>
+                        </Seccion>
 
-  const handleDescriptiveChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewDescriptive(imageUrl);
-      setImageDescriptive(file);
-    }
-  };
+                        <Seccion titulo="Imágenes" descripcion="La portada se ve en el listado de eventos. JPG, PNG o WebP de hasta 5 MB.">
+                            <div className="grid gap-4 sm:grid-cols-[minmax(0,220px)_1fr]">
+                                <ImagePicker label="Portada" name="imgEvento" required aspect="aspect-[11/12]" hint="550 × 600 px" preview={imagenes.portada?.url} onChange={elegirImagen('portada')} invalid={Boolean(errores.portada)} />
+                                <div className="grid content-start gap-4">
+                                    <ImagePicker label="Banner (opcional)" name="bannerEvento" aspect="aspect-[21/8]" hint="Se muestra arriba en la página de compra" preview={imagenes.banner?.url} onChange={elegirImagen('banner')} />
+                                    <ImagePicker label="Imagen descriptiva (opcional)" name="imagenDescriptiva" aspect="aspect-[21/8]" hint="Flyer, lineup o mapa del lugar" preview={imagenes.descriptiva?.url} onChange={elegirImagen('descriptiva')} />
+                                </div>
+                            </div>
+                            {errores.portada && <p className="text-xs text-danger">{errores.portada}</p>}
+                        </Seccion>
 
+                        <Seccion titulo="Fecha y lugar" descripcion="Dónde y cuándo es. La dirección se usa para el mapa.">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Field label="Inicio" error={errores.inicio}>{({ id, invalid }) => <Input id={id} invalid={invalid} type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required />}</Field>
+                                <Field label="Fin" error={errores.fin}>{({ id, invalid }) => <Input id={id} invalid={invalid} type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required />}</Field>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                <Field label="País">{({ id }) => (
+                                    <Select id={id} name="paisDestino" value={selectedCountry?.isoCode ?? ''} required onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))}>
+                                        <option value="">Elegir país</option>
+                                        {countries.map((c) => <option key={c.isoCode} value={c.isoCode}>{c.name}</option>)}
+                                    </Select>
+                                )}</Field>
+                                <Field label="Provincia">{({ id }) => (
+                                    <Select id={id} name="provincia" value={selectedState?.isoCode ?? ''} disabled={!selectedCountry} required onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))}>
+                                        <option value="">Elegir</option>
+                                        {states.map((s) => <option key={s.isoCode} value={s.isoCode}>{s.name}</option>)}
+                                    </Select>
+                                )}</Field>
+                                <Field label="Localidad" error={errores.localidad}>{({ id, invalid }) => (
+                                    <Select id={id} invalid={invalid} name="localidad" value={selectedCity?.name ?? ''} disabled={!selectedState} required onChange={(e) => setSelectedCity(cities.find((c) => c.name === e.target.value))}>
+                                        <option value="">Elegir</option>
+                                        {cities.map((c) => <option key={c.name} value={c.name}>{c.name}</option>)}
+                                    </Select>
+                                )}</Field>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Field label="Lugar">{({ id }) => <Input id={id} name="lugarEvento" placeholder="Ej: Club Niceto" required />}</Field>
+                                <Field label="Dirección">{({ id }) => <Input id={id} name="direccion" placeholder="Calle y número" required />}</Field>
+                            </div>
+                        </Seccion>
 
-    const handleChange = (e) => {
-        const selected = e.target.value;
-
-        // Agregamos si no está ya en el array
-        if (!categorias.includes(selected)) {
-            setCategorias((prev) => [...prev, selected]);
-        }
-    };
-    
-    const removeCategory = (e, categoryName) => {
-        e.preventDefault()
-        setCategorias(categorias.filter(c => !c.includes(categoryName)))
-    }
- 
-    return(
-        <>
-        <div className="create-event-and-ticket-container mx-auto mt-[20px] mb-[20px] pl-12 pr-12 ">
-            {showEventInfo &&
-            <div className="create-event-container w-[100%] flex items-start mx-auto justify-center ">
-                <div className="w-[375px] bg-white rounded-2xl p-3 bg-gradient-to-br from-gray-800 to-gray-900">
-                    <b className="text-white text-xl">Portada del evento</b>
-                    <img className="object-cover rounded-2xl mx-auto mt-3 " src={previewImage ?? eventoJpg} alt="" loading="lazy"></img>
-                    <p className="flex items-center p-3 bg-gradient-to-r from-orange-200 to-orange-300 mt-3 mb-3 rounded-xl text-[#111827]"><img src={advicePng} alt=""></img> Recomendación: 550 x 600px JPG/PNG</p>
-                    <div className="portal-evento bg-gradient-to-r from-amber-500 to-yellow-500 p-3 text-center rounded-2xl">
-                        <label htmlFor="fileUpload" className="text-[#111827]!">Cargar portada</label>
-                        <input id="fileUpload" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgEvento" onChange={handleImageChange}  required/>
-                    </div>
-                   {/* <button onClick={() => window.navigator.clipboard.writeText()}></button> */}
-                </div>
-                 <div className="event-form max-w-[70vw]">
-                    <div className="mx-6 mb-3">
-                        <div className="bg-gradient-to-r from-amber-600 to-yellow-500 rounded-2xl overflow-hidden p-4">
-                            <h2 className="text-3xl font-bold text-[#111827]!">Crear nuevo evento:</h2>
-                            <label className="text-[#111827]!">Llena todos los campos para poder publicar tu evento</label>
-
-                        </div>
-                        <p className="w-[auto] flex items-center p-3 bg-gradient-to-r from-orange-200 to-orange-300 mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Consejo: Un titulo corto + una portada llamativa mejora la busqueda del evento</p>
-                    </div>
-               <form className="create-event-form relative bg-gradient-to-r from-gray-800 to-gray-900 text-[#111827]! flex flex-wrap mx-9 rounded-2xl p-5" onSubmit={(e) => createEvent(e)} encType="multipart/form-data">
-                    <div className="create-event-form-div-child w-[50%]">
-                        <div>
-                            <label className="text-amber-500!">Pais del evento</label><br></br>
-                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="paisDestino" onChange={(e) => handleCountryChange(countries.find((c) => c.isoCode === e.target.value))} required>
-                                <option className="text-[#111827]!" value=''>Elegir país</option>
-                                {countries.map((cts) => (<option className="text-[#111827]" key={cts.isoCode} value={cts.isoCode}>{cts.name}</option>))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="text-white!">Privacidad del evento:</label><br></br>
-                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="tipoEvento" onChange={(e) => setPubOrPriv(e.target.value)}>
-                                <option className="text-[#111827]!" value={1}>Publico</option>
-                                <option className="text-[#111827]!" value={2}>Privado</option>
-                            </select>
-                        {pubOrPriv == 2 && <p className="w-[90%] p-2 bg-[#ffdeca] mt-1 mb-2 rounded-xl text-[#111827]">El evento solo sera visto por las personas a las que le envies tu enlace (link) del evento una vez creado</p> } 
-                        </div>
-                        <div>
-                            <label className="text-white!">Evento para mayores de edad:</label><br></br>
-                            <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" onChange={(e) => setEstadoEdad(e.target.value)}>
-                                <option className="text-[#111827]!" value={1}>NO</option>
-                                <option className="text-[#111827]!" value={2}>SI</option>
-                            </select>
-                            {estadoEdad && <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! border-gray-600!" type="number" placeholder="A partir de que edad" value={eventoEdad || ''} onChange={(e) => setEventoEdad(e.target.value === '' ? undefined : e.target.value)}></input>}
-                        </div>
-                        <div>
-                            <label className="text-white!">Nombre del evento:</label>
-                            <div>
-                                <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! border-gray-600!" type="text"  placeholder="..." name="nombreEvento" required></input>
-                            </div>
-                        </div>
-                        <div>
-                            <label>Descripcion del evento (opcional):</label>
-                            <div>
-                                <textarea className="h-[199px] bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white! border-gray-600!" type="text"  placeholder="..." name="descripcionEvento"></textarea>
-                            </div>
-                        </div>
-                         <div>
-                            <label>Aviso importante (opcional):</label>
-                            <div>
-                                <textarea className="h-[165px] bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="aviso"></textarea>
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="fileUpload" className="text-[#111827]">Banner del evento (opcional)</label>
-                            <input id="fileUpload" className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="file" accept="image/jpeg,image/png,image/webp" name="bannerEvento" onChange={handleBannerChange} />
-                        </div>
-                        <div>
-                            <label htmlFor="fileUpload" className="text-[#111827]">Imagen descriptiva (opcional)</label>
-                            <input id="fileUpload" className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="file" accept="image/jpeg,image/png,image/webp" name="imagenDescriptiva" onChange={handleDescriptiveChange} />
-                        </div>
-                    </div>
-                    <div className="create-event-form-div-child w-[50%]">
-                        <div>
-                            <label>Categorias del evento:</label>
-                            <div>
-                                <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" onChange={handleChange} defaultValue="" required>
-                                    <option className="text-[#111827]!" value="" disabled>Selecciona una categoría</option>
-                                    <option className="text-[#111827]!" value="baile">Baile</option>
-                                    <option className="text-[#111827]!" value="musica">Música</option>
-                                    <option className="text-[#111827]!" value="arte">Arte</option>
-                                    <option className="text-[#111827]!" value="teatro">Teatro</option>
-                                    <option className="text-[#111827]!" value="deporte">Deporte</option>
-                                </select>
-                                {/*<input type="text"  placeholder="..." name="categorias" required></input>*/ }
-                            </div>
-                            <div className="flex items-center ">
-                            {categorias.map((cat, i) => ( 
-                            <div key={i} className="flex ml-1 pt-2 pb-2 pl-3 pr-3 rounded-lg bg-orange-500">
-                                <label className="rounded-xl text-white!">{cat}</label>
-                                <button className="remove-cat ml-2 cursor-pointer " type="button" onClick={(e) => removeCategory(e, cat)}><img src={closePng} alt=""></img></button>
-                            </div>))}
-                            </div>
-                        </div>
-                        <div>
-                            <label>Artistas que participan (opcional):</label>
-                            <div>
-                                <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="text"  placeholder="..." name="artistas"></input>
-                            </div>
-                        </div>
-                            <div>
-                                <label>Monto de ventas estimado:</label>
-                                <div>
-                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" min="1" placeholder="0" name="montoVentas" required></input>
-                                </div>
-                            </div>
-                            <div>
-                                <label>Comision para colaboradores por venta:</label>
-                                <div>
-                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" type="number" min="0" max="100" placeholder="0%" name="porcentajeRRPP" defaultValue={0}></input>
-                                </div>
-                            </div>   
-                            <div>
-                                <label>Fecha y hora de inicio:</label>
-                                <div>
-                                <input className="bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827]! border-[#111827]!" type="datetime-local" onChange={(e) => setStartDate(e.target.value)} required></input>  {dateMsg == 1 && <p className="text-red-600!">La fecha de inicio no puede ser menor a la fecha actual</p>}
-                                </div>
-                            </div>
-                            <div>
-                                <label>Fecha y hora de fin:</label>
-                                <div>
-                                    <input className="bg-gradient-to-r from-amber-600 to-yellow-500 text-[#111827]! border-[#111827]!" type="datetime-local" onChange={(e) => setEndDate(e.target.value)} required></input> {dateMsg == 2 && <p className="text-red-600!">La fecha de inicio no puede ser mayor a la fecha de fin</p>}
-                                </div>
-                            </div>
-                                <div>
-                                    <label>Provincia:</label>
-                                    <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="provincia" disabled={!selectedCountry} onChange={(e) => handleStateChange(states.find((s) => s.isoCode === e.target.value))} required>
-                                        <option className="text-[#111827]" value=''>Elegir</option>
-                                        {states.map((st) => (
-                                            <option className="text-[#111827]" key={st.isoCode} value={st.isoCode}>{st.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label>Localidad:</label>
-                                    <select className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="localidad" disabled={!selectedState} onChange={(e) => handleCityChange(cities.find((c) => c.name === e.target.value))} required>
-                                    <option className="text-[#111827]" value=''>Elegir</option>
-                                    {cities.map((city) => (
-                                        <option className="text-[#111827]" key={city.name} value={city.name}>{city.name}</option>
-                                    ))}
-                                    </select>
-                                </div>
-                            
-                            <div>
-                                <label>Direccion:</label>
-                                <div>
-                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="direccion" placeholder="..." required></input>
-                                </div>
-                            </div>
-                            <div>
-                                <label>Lugar del evento:</label>
-                                <div>
-                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="lugarEvento" placeholder="..." required></input>
-                                </div>
-                            </div>
-                            <div>
-                                <label>Video del evento (opcional):</label>
-                                <div>
-                                    <input className="bg-gradient-to-r from-gray-800 to-gray-900 border-amber-500! text-white!" name="linkVideo" placeholder="..."></input>
-                                </div>
-                            </div>
-                            
-                </div>
-                <div>
-                    <div className="banner-descImg flex flex-wrap justify-center">
-                        {previewBanner && 
-                        <div className="w-[300px] bg-white rounded-2xl p-1">
-                            <img className="object-cover rounded-2xl mx-auto mt-3" src={previewBanner} alt="" loading="lazy"></img>
-                            <div className="portal-evento text-center rounded-2xl">
-                                <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Banner del evento</label>
-                                <input id="fileUpload" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgEvento" onChange={handleBannerChange} />
-                            </div>
-                        </div> }
-                        {previewDescriptive && 
-                        <div className="w-[300px] bg-white rounded-2xl p-1">
-                            <img className="object-cover rounded-2xl mx-auto mt-3" src={previewDescriptive} alt="" loading="lazy"></img>
-                            <div className="portal-evento text-center rounded-2xl">
-                                <label htmlFor="fileUpload" className="flex items-center justify-center p-3 bg-[#ffdeca] mt-1 mb-3 rounded-xl text-[#111827]!">Imagen descriptiva</label>
-                                <input id="fileUpload" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgEvento" onChange={handleDescriptiveChange} />
-                            </div>
-                        </div>}
-                    </div>
-                    <div className="relative mt-10 max-[760px]:mt-2 items-center flex flex-wrap">
-                        <Link className='text-blue-500! underline!' to={"/conditions"}>Terminos y condiciones.</Link>
-                        <label className="text-md text-white! ml-1">Acepto términos y condiciones</label>
-                        <input className="mt-3 ml-2 w-[15px]! min-w-[15px]!" type="checkbox" required></input>
-                    </div> 
-                </div>
-                    <button className="absolute right-4 bottom-4 bg-yellow-600 p-4 rounded-lg max-[760px]:relative max-[760px]:w-full max-[760px]:mt-6 max-[760px]:right-0 max-[760px]:bottom-0 text-[#111827]! font-bold hover:bg-amber-300 transition-all duration-300" type="submit">{loading ? <LoadingButton/> : 'CREAR EVENTO' } </button>
-            </form> 
-                </div>   
-            </div>
-               } 
-            <div className="create-ticket-container-father mx-auto pt-3 pb-3 pl-6 pr-6">
-                <div className="create-ticket-container max-w-[1000px] mx-auto rounded-2xl relative bg-gray-800">
-                {showTickets >= 1 && 
-                    <form className="create-ticket-form" onSubmit={(e) => createEventTickets(e)} encType="multipart/form-data">
-                        <div className="mt-9">
-                            <p className="w-[auto] flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827]"><img className="mr-3" src={megaphonePng} alt=""></img> Crea al menos un ticket para continuar:</p>
-                            <div className="flex items-center pl-3 mb-6 mt-6">
-                                <img id="img-create-ticket" className="mr-3" src={ticketPng} alt="" loading="lazy"></img>
-                                <h3 className="text-xl text-gray-200!">Crear nuevo ticket:</h3>
-                            </div>
-                            <div className="create-new-ticket rounded-2xl">
-                                <div className="mt-3 p-3">
-                                    <label className="text-gray-300!">Fecha y hora de fin:</label><br></br>
-                                    <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-gray-300!" type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required></input>
-                                    {dateMsg == 3 && <p className="text-yellow-500!">La fecha de cierre del ticket no puede ser menor a la de inicio del evento</p>}
-                                    {dateMsg == 4 && <p className="text-yellow-500!">La fecha de fin del ticket no puede ser mayor a la fecha de fin del evento</p>}
-                                </div>
-                                <div className="flex flex-wrap items-center">
-                                    <div className="div-inputs-tickets  w-[50%] min-w-[270px] p-3">
-                                        <div>
-                                            <label className="text-gray-300!">Nombre del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="text" placeholder="..." name="nombreTicket" required></input>
-                                        </div>
-                                        <div>
-                                            <label className="text-gray-300!">Descripcion del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="text" placeholder="..." name="descripcionTicket"></input>
-                                        </div>
+                        <Seccion titulo="Venta y visibilidad" descripcion="Quién puede ver el evento y cuánto gana cada RRPP por venta.">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Field label="Visibilidad" hint={pubOrPriv === '2' ? 'Solo lo verán quienes tengan el link del evento.' : 'Aparece en el listado de eventos.'}>{({ id }) => (
+                                    <Select id={id} name="tipoEvento" value={pubOrPriv} onChange={(e) => setPubOrPriv(e.target.value)}>
+                                        <option value="1">Público</option>
+                                        <option value="2">Privado</option>
+                                    </Select>
+                                )}</Field>
+                                <Field label="Edad mínima">{({ id }) => (
+                                    <div className="flex gap-2">
+                                        <Select id={id} value={esMayores ? 'si' : 'no'} onChange={(e) => setEsMayores(e.target.value === 'si')} className="flex-1">
+                                            <option value="no">Apto todo público</option>
+                                            <option value="si">Con edad mínima</option>
+                                        </Select>
+                                        {esMayores && <Input type="number" min="1" max="99" aria-label="Edad mínima" value={eventoEdad} onChange={(e) => setEventoEdad(e.target.value)} className="w-24" />}
                                     </div>
-                                    <div className="div-inputs-tickets w-[50%] min-w-[270px] p-3">
-                                        <div>
-                                            <label className="text-gray-300!">Precio del ticket</label>
-                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="number" min="0" placeholder="..." name="precio" required></input>
-                                        </div>
-                                        <div>
-                                            <label className="text-gray-300!">Cantidad</label>
-                                            <input className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" type="number" min="1" placeholder="..." name="cantidad" required></input>
-                                        </div> 
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex flex-wrap items-center ml-3">
-                                        <div>
-                                            <label className="text-gray-300!">Estado:</label>
-                                            <select className="reset-inp border-[2px]! border-gray-500! rounded-lg! text-white!" name="estado" onChange={(e) => setEstado(e.target.value)}>
-                                                <option className="text-[#111827]!" value={1}>Activo</option>
-                                                <option className="text-[#111827]!" value={2}>No visible</option>
-                                                <option className="text-[#111827]!" value={3}>Cortesia</option>
-                                            </select>
-                                        </div>
-                                    {estado === '3' &&
-                                        <>
-                                                <div>
-                                                    <label className="text-gray-300!">Para:</label>
-                                                    <select className="ml-1 text-white!" name="distribution" onChange={(e) => setDistribution(e.target.value)}>
-                                                        <option className="text-[#111827]!" value={1}>RRPP</option>
-                                                        <option className="text-[#111827]!" value={2}>Clientes</option>
-                                                    </select>
-                                                </div>
-                                            
-                                            {distribution === '2' &&
-                                                    <div>
-                                                        <label className="text-gray-300!">Limite a sacar por persona:</label>
-                                                        <input className="reset-inp text-white!" type="number" name="limit" placeholder="Ej: 3" required></input>
-                                                    </div>
-                                            } 
-                                        </>
-                                    } 
-                                    </div>
-                                </div>
-                                <div className="charge-ticket-img flex items-center mt-6 ml-3 max-[450px]:ml-0 max-[450px]:justify-center">
-                                    <p className="text-gray-300!">Opcional: </p>
-                                    <div className="bg-gradient-to-r from-amber-600 to-yellow-500 flex items-center p-3 rounded-xl ml-3 max-[450px]:ml-0 max-[450px]:w-[300px] max-[450px]:mx-auto! cursor-pointer hover:from-yellow-400 hover:to-yellow-400 "><img src={uploadPng} alt=""></img><label className="ml-3 text-[#111827]! cursor-pointer" htmlFor="imgTicketHtml">Cargar Imagen del ticket</label></div>
-                                    <input id="imgTicketHtml" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgTicket"></input>
-                                </div>
+                                )}</Field>
+                                <Field label="Ventas estimadas ($)" hint="Solo para tus estadísticas.">{({ id }) => <Input id={id} type="number" min="1" name="montoVentas" placeholder="0" required />}</Field>
+                                <Field label="Comisión para RRPP (%)">{({ id }) => <Input id={id} type="number" min="0" max="100" name="porcentajeRRPP" defaultValue={0} />}</Field>
                             </div>
-                            <div className="relative text-center w-full">
-                                <div className="relative mt-6 h-[250px]">
-                                    <button className="bg-orange-500! p-3 rounded-xl mb-6 text-lg text-white bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-500" type="submit">{loading ? <LoadingButton/> : disabledButton ? '+ Agregar otro ticket' : '+ Agregar ticket'}</button><br></br>
-                                    {disabledButton && <><p className="text-xl! text-yellow-400!">Tu ticket fue creado con exito!</p><br></br></>}
-                                    <p className="text-gray-300! text-lg mb-6 max-[530px]:text-sm!">Podras copiar el link de tu evento en la seccion - Mis producciones</p>
-                                    {/*disabledButton && */<Link className="w-[200px]! mx-auto! primary-button mx-auto mb-10 p-2 rounded-2xl flex items-center justify-center text-xl" to="/">Continuar</Link>}
-                                </div>
-                            </div>
+                            <Field label="Aviso importante" optional hint="Se destaca en la página de compra (ej: no se permite el ingreso con…).">{({ id }) => <Textarea id={id} name="aviso" className="min-h-20" />}</Field>
+                            <Field label="Video promocional" optional>{({ id }) => <Input id={id} name="linkVideo" type="url" placeholder="https://youtube.com/…" />}</Field>
+                        </Seccion>
 
-                            </div>
+                        <div className="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+                            <label className="flex items-start gap-3 text-sm text-muted">
+                                <input type="checkbox" required className="mt-0.5 size-4 shrink-0 accent-brand-500" />
+                                <span>Acepto los <Link to="/conditions" className="text-brand-300 underline-offset-2 hover:underline">términos y condiciones</Link> para publicar eventos.</span>
+                            </label>
+                            <Button type="submit" size="lg" loading={loading} iconRight={Icon.ArrowRight} className="sm:shrink-0">Crear evento y seguir</Button>
+                        </div>
+                        {errorGeneral && <Alert tone="danger" className="mt-4">{errorGeneral}</Alert>}
                     </form>
-                }
+                </Card>
+            )}
+
+            {paso === 1 && (
+                <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+                    <Card className="p-5 sm:p-8">
+                        <h2 className="text-lg font-semibold text-fg">Agregá una entrada</h2>
+                        <p className="mt-1 text-sm text-muted">Creá al menos una. Podés sumar más (General, VIP, anticipadas…) y editarlas después.</p>
+                        <form key={formTicketKey} onSubmit={createEventTickets} encType="multipart/form-data" className="mt-6 grid gap-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Field label="Nombre">{({ id }) => <Input id={id} name="nombreTicket" placeholder="Ej: General" required />}</Field>
+                                <Field label="Descripción" optional>{({ id }) => <Input id={id} name="descripcionTicket" placeholder="Ej: Ingreso hasta las 2 AM" />}</Field>
+                                <Field label="Precio ($)" hint="0 = gratis">{({ id }) => <Input id={id} type="number" min="0" name="precio" placeholder="0" required />}</Field>
+                                <Field label="Cantidad disponible">{({ id }) => <Input id={id} type="number" min="1" name="cantidad" placeholder="100" required />}</Field>
+                                <Field label="Cierre de la venta" error={errores.cierre}>{({ id, invalid }) => <Input id={id} invalid={invalid} type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required />}</Field>
+                                <Field label="Tipo">{({ id }) => (
+                                    <Select id={id} name="estado" value={estado} onChange={(e) => setEstado(e.target.value)}>
+                                        <option value="1">Activa (a la venta)</option>
+                                        <option value="2">No visible</option>
+                                        <option value="3">Cortesía</option>
+                                    </Select>
+                                )}</Field>
+                                {estado === '3' && (
+                                    <Field label="Cortesía para">{({ id }) => (
+                                        <Select id={id} name="distribution" value={distribution} onChange={(e) => setDistribution(e.target.value)}>
+                                            <option value="0" disabled>Elegir</option>
+                                            <option value="1">RRPP</option>
+                                            <option value="2">Clientes</option>
+                                        </Select>
+                                    )}</Field>
+                                )}
+                                {estado === '3' && distribution === '2' && (
+                                    <Field label="Límite por persona">{({ id }) => <Input id={id} type="number" min="1" name="limit" placeholder="Ej: 3" required />}</Field>
+                                )}
+                            </div>
+                            <div className="max-w-xs">
+                                <ImagePicker label="Imagen de la entrada (opcional)" name="imgTicket" aspect="aspect-[3/1]" preview={previewTicket}
+                                    onChange={(e) => { const file = e.target.files?.[0]; if (file) setPreviewTicket(URL.createObjectURL(file)) }} />
+                            </div>
+                            <div className="flex justify-end border-t border-line pt-5">
+                                <Button type="submit" loading={loading} icon={Icon.Plus}>{ticketsCreados.length ? 'Agregar otra entrada' : 'Agregar entrada'}</Button>
+                            </div>
+                        </form>
+                    </Card>
+
+                    <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+                        <Card className="p-5">
+                            <h3 className="text-sm font-semibold text-fg">Entradas del evento</h3>
+                            {ticketsCreados.length === 0 ? (
+                                <p className="mt-2 text-sm text-subtle">Todavía no agregaste ninguna.</p>
+                            ) : (
+                                <ul className="mt-3 divide-y divide-line">
+                                    {ticketsCreados.map((t, i) => (
+                                        <li key={i} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                                            <span className="truncate text-fg">{t.nombre}</span>
+                                            <span className="shrink-0 text-muted">{t.tipo === '3' ? <Badge tone="brand">Cortesía</Badge> : Number(t.precio) === 0 ? 'Gratis' : `$${Number(t.precio).toLocaleString('es-AR')}`} · {t.cantidad}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </Card>
+                        <Button block size="lg" disabled={ticketsCreados.length === 0} onClick={() => { setPaso(2); window.scrollTo({ top: 0, behavior: 'smooth' }) }} iconRight={Icon.ArrowRight}>Terminar</Button>
+                    </aside>
                 </div>
-            </div>
-        </div>
-        </>
+            )}
+
+            {paso === 2 && (
+                <Card className="mx-auto max-w-lg p-8 text-center animate-fade-up">
+                    <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-ok/12 text-ok ring-8 ring-ok/10"><Icon.CheckCircle className="size-8" /></div>
+                    <h2 className="mt-6 text-2xl font-bold tracking-tight text-fg">¡Tu evento está listo!</h2>
+                    <p className="mt-2 text-[15px] text-muted">Compartí este link para empezar a vender. También lo encontrás en Mis producciones.</p>
+                    <div className="mt-6 flex items-center gap-2 rounded-xl border border-line bg-surface-2 p-1.5 pl-3.5">
+                        <span className="min-w-0 flex-1 truncate text-left text-sm text-muted">{linkEvento}</span>
+                        <Button size="sm" variant="secondary" icon={Icon.Copy} onClick={async () => { try { await navigator.clipboard.writeText(linkEvento); toast.success('Link copiado') } catch { toast.error('No pudimos copiar el link') } }}>Copiar</Button>
+                    </div>
+                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                        <Button to={`/editar_evento/${saveEventId}`} variant="secondary">Seguir editando</Button>
+                        <Button to="/productions">Ir a mis producciones</Button>
+                    </div>
+                </Card>
+            )}
+        </Page>
     )
 }
 

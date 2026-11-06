@@ -7,7 +7,6 @@ import Footer from './components/footer/footer'
 import {BrowserRouter, Routes, Route, useLocation, matchPath, Navigate} from 'react-router'
 import { leerSesion } from './api/http'
 import { UserContextProvider } from './context/userContext'
-import 'react-loading-skeleton/dist/skeleton.css';
 import { ToastViewport } from './ui/toast'
 
 const Register = lazy(() => import('./components/register/register'))

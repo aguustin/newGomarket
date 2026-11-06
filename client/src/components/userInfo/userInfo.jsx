@@ -1,316 +1,154 @@
-import { useContext, useEffect, useState } from 'react';
-import advicePng from '../../assets/images/advice.png'
-import { createSellerProfileRequest } from '../../api/userRequests';
-import UserContext from '../../context/userContext';
-import userPng from "../../assets/user.png"
-import { Link } from 'react-router';
+import { useContext, useEffect, useState } from 'react'
+import { createSellerProfileRequest } from '../../api/userRequests'
+import UserContext from '../../context/userContext'
+import { Icon } from '../../ui/icons'
+import { Alert, Button, Card, Field, FormSection, Input, Page, PageHeader, cx } from '../../ui/primitives'
+import { toast } from '../../ui/toast'
+
+//Editar perfil (rediseño): foto + datos para cobrar como Particular o como Productora (una a la vez).
+//Se envian los mismos campos de antes (dataA..dataN). Correcciones: el campo "País" de productora decia
+//"Nombre del titular", el codigo internacional era obligatorio aunque es solo para fuera de Argentina,
+//la foto quedaba fuera de los formularios y los errores no se avisaban.
+const PARTICULAR = [
+  ['nombreCompleto', 'Nombre completo', { autoComplete: 'name' }], ['telefono', 'Teléfono', { type: 'tel', inputMode: 'tel' }],
+  ['dni', 'DNI', { inputMode: 'numeric' }], ['cuit', 'CUIT', { inputMode: 'numeric' }],
+  ['domicilio', 'Domicilio', { autoComplete: 'street-address' }], ['pais', 'País', { autoComplete: 'country-name' }]
+]
+const PARTICULAR_COBRO = [['cbu', 'CBU', { inputMode: 'numeric', maxLength: 22, pattern: '\\d*' }], ['alias', 'Alias'], ['nombreTitular', 'Nombre del titular']]
+const PRODUCTORA = [
+  ['nombreProductora', 'Nombre de la productora'], ['razonSocial', 'Razón social'],
+  ['cuitProductora', 'CUIT', { inputMode: 'numeric' }], ['dniRepresentante', 'DNI del representante', { inputMode: 'numeric' }],
+  ['mailProductora', 'Email', { type: 'email' }], ['telefonoProductora', 'Teléfono', { type: 'tel', inputMode: 'tel' }],
+  ['domicilioProductora', 'Domicilio'], ['paisProductora', 'País']
+]
+const PRODUCTORA_COBRO = [
+  ['nombreBanco', 'Banco'], ['numeroCuenta', 'Número de cuenta', { inputMode: 'numeric' }],
+  ['cbuProductora', 'CBU', { inputMode: 'numeric', maxLength: 22, pattern: '\\d*' }], ['aliasProductora', 'Alias'],
+  ['nombreTitularProductora', 'Nombre del titular'], ['codigoInternacional', 'Código internacional (SWIFT)', { optional: true, hint: 'Solo si la cuenta no es de Argentina.' }]
+]
+
+const Campos = ({ lista, datos, onChange }) => (
+  <div className="grid gap-4 sm:grid-cols-2">
+    {lista.map(([name, label, { optional, hint, ...extra } = {}]) => (
+      <Field key={name} label={label} optional={optional} hint={hint}>
+        {({ id }) => <Input id={id} name={name} value={datos[name] ?? ''} onChange={(e) => onChange(name, e.target.value)} required={!optional} {...extra} />}
+      </Field>
+    ))}
+  </div>
+)
 
 const UserInfo = () => {
-    const {session, setSession} = useContext(UserContext)
-    const [previewImage, setPreviewImage] = useState(null)
-    const [imageFile, setImageFile] = useState()
-    const [message, setMessage] = useState(0)
+  const { session, setSession } = useContext(UserContext)
+  const u = session?.userFinded?.[0]
+  const [tipo, setTipo] = useState(1)  // 1 particular | 2 productora
+  const [datos, setDatos] = useState({})
+  const [foto, setFoto] = useState(null) // { file, url }
+  const [loading, setLoading] = useState(false)
 
-    const [nombre, setNombre] = useState()
-    const [telefono, setTelefono] = useState()
-    const [pais, setPais] = useState()
-    const [dni, setDni] = useState()
-    const [cuit, setCuit] = useState()
-    const [domicilio, setDomicilio] = useState()
-    const [cbu, setCbu] = useState()
-    const [alias, setAlias] = useState()
-    const [nombreTitular, setNombreTitular] = useState()
-    const [mail, setMail] = useState()
-    const [imgProductora, setImgProductora] = useState()
+  useEffect(() => {
+    if (!u?.nombreCompleto) return
+    setDatos({
+      nombreCompleto: u.nombreCompleto, telefono: u.telefono, pais: u.pais, dni: u.dni, cuit: u.cuit, domicilio: u.domicilio,
+      cbu: u.cbu, alias: u.alias, nombreTitular: u.nombreTitular,
+      nombreProductora: u.nombreProductora, telefonoProductora: u.telefonoProductora, paisProductora: u.paisProductora,
+      dniRepresentante: u.dniRepresentante, cuitProductora: u.cuitProductora, domicilioProductora: u.domicilioProductora,
+      razonSocial: u.razonSocial, numeroCuenta: u.numeroCuenta, cbuProductora: u.cbuProductora, aliasProductora: u.aliasProductora,
+      nombreBanco: u.nombreBanco, codigoInternacional: u.codigoInternacional, mailProductora: u.mail, nombreTitularProductora: u.nombreTitularProductora
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session])
 
-    const [nombreProductora, setNombreProductora] = useState()
-    const [telefonoProductora, setTelefonoProductora] = useState()
-    const [paisProductora, setPaisProductora] = useState()
-    const [dniRepresentante, setDniRepresentante] = useState()
-    const [cuitProductora, setCuitProductora] = useState()
-    const [domicilioProductora, setDomicilioProductora] = useState()
-    const [razonSocial, setRazonSocial] = useState()
-    const [numeroCuenta, setnumeroCuenta] = useState()
-    const [cbuProductora, setCbuProductora] = useState()
-    const [nombreBanco, setNombreBanco] = useState()
-    const [aliasProductora, setAliasProductora] = useState()
-    const [codigoInternacional, setCodigoInternacional] = useState()
-    const [mailProductora, setMailProductora] = useState()
-    const [nombreTitularProductora, setNombreTitularProductora] = useState()
+  const cambiar = (campo, valor) => setDatos((prev) => ({ ...prev, [campo]: valor }))
+  const fotoActual = foto?.url ?? u?.imagenProductora
 
+  const guardar = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    const d = datos
+    const formData = new FormData()
+    formData.append('userId', u?._id)
+    const valores = tipo === 1
+      ? [d.nombreCompleto, d.dni, d.domicilio, d.cuit, u?.mail, d.telefono, d.pais, d.cbu, d.alias, d.nombreTitular]
+      : [d.nombreProductora, d.dniRepresentante, d.domicilioProductora, d.mailProductora, d.cuitProductora, d.telefonoProductora,
+         d.paisProductora, d.cbuProductora, d.aliasProductora, d.nombreTitularProductora, d.razonSocial, d.numeroCuenta, d.nombreBanco, d.codigoInternacional ?? '']
+    valores.forEach((v, i) => formData.append(`data${String.fromCharCode(65 + i)}`, v ?? ''))
+    formData.append('tipo', tipo)
+    if (foto?.file) formData.append('productoraImg', foto.file)
+    else if (u?.imagenProductora) formData.append('productoraImg', u.imagenProductora)
 
-   useEffect(() => {
-    if (session?.userFinded?.[0]?.nombreCompleto) {
-        setNombre(session?.userFinded?.[0]?.nombreCompleto);
-        setTelefono(session?.userFinded?.[0]?.telefono);
-        setPais(session?.userFinded?.[0]?.pais);
-        setDni(session?.userFinded?.[0]?.dni)
-        setCuit(session?.userFinded?.[0]?.cuit)
-        setDomicilio(session?.userFinded?.[0]?.domicilio)
-        setCbu(session?.userFinded?.[0]?.cbu)
-        setAlias(session?.userFinded?.[0]?.alias)
-        setNombreTitular(session?.userFinded?.[0]?.nombreTitular)
-        setMail(session?.userFinded?.[0]?.mail)
-        
-        setNombreProductora(session?.userFinded?.[0]?.nombreProductora);
-        setTelefonoProductora(session?.userFinded?.[0]?.telefonoProductora);
-        setPaisProductora(session?.userFinded?.[0]?.paisProductora);
-        setDniRepresentante(session?.userFinded?.[0]?.dniRepresentante)
-        setCuitProductora(session?.userFinded?.[0]?.cuitProductora)
-        setDomicilioProductora(session?.userFinded?.[0]?.domicilioProductora)
-        setRazonSocial(session?.userFinded?.[0]?.razonSocial)
-        setnumeroCuenta(session?.userFinded?.[0]?.numeroCuenta)
-        setCbuProductora(session?.userFinded?.[0]?.cbuProductora)
-        setAliasProductora(session?.userFinded?.[0]?.aliasProductora)
-        setNombreBanco(session?.userFinded?.[0]?.nombreBanco)
-        setCodigoInternacional(session?.userFinded?.[0]?.codigoInternacional)
-        setMailProductora(session?.userFinded?.[0]?.mail)
-        setNombreTitularProductora(session?.userFinded?.[0]?.nombreTitularProductora)
-
-        setImgProductora(session?.userFinded?.[0]?.imagenProductora)
+    try {
+      const res = await createSellerProfileRequest(formData)
+      localStorage.setItem('session', JSON.stringify({ ...res?.data, token: session?.token }))  //se conserva el token de la sesion
+      setSession(JSON.parse(localStorage.getItem('session')))
+      setFoto(null)
+      toast.success(tipo === 1 ? 'Guardamos tus datos de particular' : 'Guardamos los datos de tu productora')
+    } catch (err) {
+      if (!err?.avisado) toast.error('No pudimos guardar tus datos. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
     }
-
-}, [session]);
-
-    const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setImgProductora(imageUrl);
-      setImageFile(file);
-    }
-  };
-
-  const createSellerProfile = async (e, tipo) => {
-      e.preventDefault()
-      if(tipo === 1){
-        const cbuToNumber = Number(e.target.elements.cbu.value)
-        const formData = new FormData()
-        formData.append('userId', session?.userFinded?.[0]?._id)
-        formData.append('dataA', nombre ?? session?.userFinded?.[0]?.nombre)
-        formData.append('dataB', dni ?? session?.userFinded?.[0]?.dni)
-        formData.append('dataC', domicilio ?? session?.userFinded?.[0]?.domicilio)
-        formData.append('dataD', cuit ?? session?.userFinded?.[0]?.cuit)
-        formData.append('dataE', mail ?? session?.userFinded?.[0]?.mail)
-        formData.append('dataF', telefono ?? session?.userFinded?.[0]?.telefono)
-        formData.append('dataG', pais ?? session?.userFinded?.[0]?.pais)
-        formData.append('dataH', cbuToNumber ?? session?.userFinded?.[0]?.cbu)
-        formData.append('dataI', alias ?? session?.userFinded?.[0]?.alias)
-        formData.append('dataJ', nombreTitular ?? session?.userFinded?.[0]?.nombreTitular)
-        formData.append('tipo', tipo)
-
-        if(imageFile){
-            formData.append('productoraImg', imageFile)
-        }else if(imgProductora?.length > 0){
-            formData.append('productoraImg', imgProductora)
-        }
-        const updateSessionInfo = await createSellerProfileRequest(formData)
-        setMessage(1)
-
-        if (updateSessionInfo) {
-            localStorage.setItem('session', JSON.stringify({ ...updateSessionInfo?.data, token: session?.token }));  //se conserva el token de la sesion
-            const sess = JSON.parse(localStorage.getItem('session'))
-            setSession(sess);
-        }
-        return;
-    }
-
-     if(tipo === 2){
-        const cbuToNumber = Number(cbuProductora)
-        const formData = new FormData()
-        formData.append('userId', session?.userFinded?.[0]?._id)
-        formData.append('dataA', nombreProductora ?? session?.userFinded?.[0]?.nombreProductora)
-        formData.append('dataB', dniRepresentante ?? session?.userFinded?.[0]?.dniRepresentante)
-        formData.append('dataC', domicilioProductora ?? session?.userFinded?.[0]?.domicilioProductora)
-        formData.append('dataD', mailProductora ?? session?.userFinded?.[0]?.mailProductora)
-        formData.append('dataE', cuitProductora ?? session?.userFinded?.[0]?.cuitProductora)
-        formData.append('dataF', telefonoProductora ?? session?.userFinded?.[0]?.telefonoProductora)
-        formData.append('dataG', paisProductora ?? session?.userFinded?.[0]?.paisProductora)
-        formData.append('dataH', cbuToNumber ?? session?.userFinded?.[0]?.cbuToNumber)
-        formData.append('dataI', aliasProductora ?? session?.userFinded?.[0]?.aliasProductora)
-        formData.append('dataJ', nombreTitularProductora ?? session?.userFinded?.[0]?.nombreTitularProductora)
-        formData.append('dataK', razonSocial ?? session?.userFinded?.[0]?.razonSocial)
-        formData.append('dataL', numeroCuenta ?? session?.userFinded?.[0]?.numeroCuenta)
-        formData.append('dataM', nombreBanco ?? session?.userFinded?.[0]?.nombreBanco)
-        formData.append('dataN', codigoInternacional ?? session?.userFinded?.[0]?.codigoInternacional)
-        formData.append('tipo', tipo)
-
-        if(imageFile){
-            formData.append('productoraImg', imageFile ?? session?.userFinded?.[0]?.imgProductora)
-        }else if(imgProductora?.length > 0){
-            formData.append('productoraImg', imgProductora ?? session?.userFinded?.[0]?.imgProductora)
-        }
-        const updateSessionInfo = await createSellerProfileRequest(formData)
-        setMessage(2)
-
-        if (updateSessionInfo) {
-            localStorage.setItem('session', JSON.stringify({ ...updateSessionInfo?.data, token: session?.token }));  //se conserva el token de la sesion
-            const sess = JSON.parse(localStorage.getItem('session'))
-            setSession(sess);
-        }
-        return;
-    }
-
   }
 
-    return(
-        <>
-            <div className="p-6">
-            <div>
-            <p className="max-w-[1035px] flex items-center p-3 bg-[#ffdeca] mx-auto mt-3  mb-2 rounded-xl text-[#111827]!"><img className='mr-2' src={advicePng} alt=""></img>Asegurate de que todos los datos sean correctos. Estos seran los datos que se utilizaran para enviar el dinero a tu cuenta.</p>
-                <form className="max-w-[455px] bg-gray-800 rounded-2xl p-3 mx-auto text-center mb-3">
-                    <b className="text-gray-300 text-xl">Imagen de perfil (opcional)</b>
-                      
-                               <div className="flex justify-center mb-4 mt-3">
-                                  <div className="relative">
-                                    <img 
-                                      src={imgProductora ?? userPng} 
-                                      alt="Perfil"
-                                      className="w-42 h-42 rounded-full object-cover border-4 border-gray-300"
-                                    />
-                                  </div>
-                                </div>
-                    <p className="flex items-center p-3 bg-[#ffdeca] mt-3 mb-3 rounded-xl text-[#111827] text-left"><img className='mr-3' src={advicePng} alt=""></img> Recomendación: 250 x 300px JPG/PNG</p>
-                    <div className="portal-evento bg-orange-500 p-3 text-center rounded-2xl cursor-pointer">
-                        <label htmlFor="fileUpload" className="text-[#111827]!">Imagen de perfil</label>
-                        <input id="fileUpload" className="hidden" type="file" accept="image/jpeg,image/png,image/webp" name="imgEvento" onChange={handleImageChange} />
-                    </div>
-                </form>
-            </div>
-            <div className='grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-start'>
-                <form className="relative bg-gray-800 rounded-3xl p-8 pb-8 border-2 border-gray-800" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 1)}>
-                     <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-yellow-500! p-3 rounded-xl">
-                        </div>
-                        <h2 className="text-2xl font-bold text-yellow-500!">Particular</h2>
-                    </div>
-                    <span className="bg-gray-900 text-yellow-500 px-3 py-1 rounded-full text-sm font-semibold">
-                        Personal
-                    </span>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">Nombre completo</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreCompleto" value={nombre ?? ''} onChange={(e) => setNombre(e.target.value)} required></input>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">Email</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="email" name="email" value={session?.userFinded?.[0]?.mail ?? ''} disabled required></input>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">Telefono</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="telefono" value={telefono ?? ''} onChange={(e) => setTelefono(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">DNI</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="dni" value={dni ?? ''} onChange={(e) => setDni(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">CUIT</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="cuit" value={cuit ?? ''} onChange={(e) => setCuit(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Domicilio</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="domicilio" value={domicilio ?? ''} onChange={(e) => setDomicilio(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Pais</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="pais" value={pais ?? ''} onChange={(e) => setPais(e.target.value)} required></input>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">CBU</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="cbu" maxLength={22} pattern="\d*" inputMode="numeric" value={cbu ?? ''} onChange={(e) => setCbu(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Alias</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="alias" value={alias ?? ''} onChange={(e) => setAlias(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Nombre del titular</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreTitular" value={nombreTitular ?? ''} onChange={(e) => setNombreTitular(e.target.value)} required></input>
-                    </div>
-                    {message === 1 ? <button className="w-[100%] text-center mt-6 bg-orange-500! text-[#111827] font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link className=' text-white! font-semibold' to="/home">Ir a inicio</Link></button> : <button className="w-[100%] text-center mt-6 bg-yellow-500! text-[#111827] font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar particular</button>}
-                    {message === 1 && <p className='text-green-600! text-center mt-6'>Particular actualizada con exito!</p>}
-                </form>
+  return (
+    <Page size="medium">
+      <PageHeader eyebrow="Tu cuenta" title="Editar perfil" description="Estos datos se usan para transferirte lo que vendas. Revisá que sean correctos." />
 
-
-
-                
-                <form className="relative bg-gray-800 rounded-3xl p-8 pb-8 border-2 border-gray-800" encType="multipart/form-data" onSubmit={(e) => createSellerProfile(e, 2)}>
-                         <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="bg-amber-600 p-3 rounded-xl">
-                </div>
-                <h2 className="text-2xl font-bold text-amber-600!">Productora</h2>
+      <form onSubmit={guardar} encType="multipart/form-data">
+        <Card className="p-5 sm:p-8">
+          <FormSection titulo="Foto de perfil" descripcion="Se muestra en tu perfil público y en la barra. JPG, PNG o WebP.">
+            <div className="flex items-center gap-5">
+              {fotoActual ? <img src={fotoActual} alt="" className="size-20 rounded-full object-cover ring-1 ring-line" />
+                : <span className="flex size-20 items-center justify-center rounded-full bg-brand-500/15 text-2xl font-semibold text-brand-200">{(u?.nombreCompleto || '?').charAt(0).toUpperCase()}</span>}
+              <div>
+                <label htmlFor="fotoPerfil" className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-surface-2 px-3.5 text-sm font-semibold text-fg transition-colors hover:bg-surface-3">
+                  <Icon.Upload className="size-4" />{fotoActual ? 'Cambiar foto' : 'Subir foto'}
+                </label>
+                <input id="fotoPerfil" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only"
+                  onChange={(e) => { const file = e.target.files?.[0]; if (file) setFoto({ file, url: URL.createObjectURL(file) }) }} />
+                <p className="mt-1.5 text-xs text-subtle">Recomendado: 250 × 300 px</p>
               </div>
-              <span className="bg-gray-900 text-amber-600 px-3 py-1 rounded-full text-sm font-semibold">
-                Empresa
-              </span>
             </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Nombre de productora</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreProductora" value={nombreProductora ?? ''} onChange={(e) => setNombreProductora(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">DNI del representante</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="dniRepresentante" value={dniRepresentante ?? ''} onChange={(e) => setDniRepresentante(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Domicilio de Productora</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="domicilioProductora" value={domicilioProductora ?? ''} onChange={(e) => setDomicilioProductora(e.target.value)} required></input>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">Telefono</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="telefonoProductora" value={telefonoProductora ?? ''} onChange={(e) => setTelefonoProductora(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Nombre del titular</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="paisProductora" value={paisProductora ?? ''} onChange={(e) => setPaisProductora(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Razon social</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="razonSocial" value={razonSocial ?? ''} onChange={(e) => setRazonSocial(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Cuit de Productora</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="cuitProductora" value={cuitProductora ?? ''} onChange={(e) => setCuitProductora(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Numero de cuenta</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="number" name="numeroCuenta" value={numeroCuenta ?? ''} onChange={(e) => setnumeroCuenta(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Nombre del banco</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreBanco" value={nombreBanco ?? ''} onChange={(e) => setNombreBanco(e.target.value)} required></input>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">CBU</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="cbuProductora" value={cbuProductora ?? ''} maxLength={22} pattern="\d*" inputMode="numeric" onChange={(e) => setCbuProductora(e.target.value)} required></input>
-                    </div>
-                     <div className="mt-3">
-                        <label className="text-gray-300!">Alias</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="aliasProductora" value={aliasProductora ?? ''} onChange={(e) => setAliasProductora(e.target.value)} required></input>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">Codigo internacional (solo si no eres de Argentina)</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="codigoInternacional" value={codigoInternacional ?? ''} onChange={(e) => setCodigoInternacional(e.target.value)} required></input>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">Email</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="email" name="mailProductora" value={mailProductora ?? ''} onChange={(e) => setMailProductora(e.target.value)} required></input>
-                    </div>
-                    <div className="mt-3">
-                        <label className="text-gray-300!">Nombre del titular</label><br></br>
-                        <input className="bg-gradient-to-r from-gray-800 to-gray-900 text-white! rounded-xl w-[100%] p-2 border-[1px] border-yellow-500" type="text" name="nombreTitularProductora" value={nombreTitularProductora ?? ''} onChange={(e) => setNombreTitularProductora(e.target.value)} required></input>
-                    </div>
-                    {message === 2 ? <button className="w-[100%] text-center mt-6 bg-orange-500! text-[#111827] font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"><Link className='text-white! font-semibold' to="/home">Ir a inicio</Link></button> : <button className="w-[100%] text-center mt-4 bg-orange-500! text-[#111827] font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105" type="submit">Guardar productora</button>}
-                    {message === 2 && <p className='text-green-600! text-center mt-4'>Productora actualizada con exito!</p>}
-                </form>
-                </div>
+          </FormSection>
+
+          <FormSection titulo="¿Cómo cobrás?" descripcion="Elegí si cobrás como persona o como productora (empresa).">
+            <div role="radiogroup" className="grid gap-2 sm:grid-cols-2">
+              {[[1, 'Particular', 'Cobro a mi nombre', Icon.User], [2, 'Productora', 'Cobro como empresa', Icon.Sparkles]].map(([v, t, desc, Ico]) => (
+                <button key={v} type="button" role="radio" aria-checked={tipo === v} onClick={() => setTipo(v)}
+                  className={cx('flex gap-3 rounded-xl border p-4 text-left transition-colors', tipo === v ? 'border-brand-400/60 bg-brand-500/10' : 'border-line bg-surface-2 hover:border-line-strong')}>
+                  <Ico className={cx('mt-0.5 size-5 shrink-0', tipo === v ? 'text-brand-300' : 'text-subtle')} />
+                  <span><span className="block font-medium text-fg">{t}</span><span className="text-sm text-muted">{desc}</span></span>
+                </button>
+              ))}
             </div>
-          
-        </>
-    )
+          </FormSection>
+
+          {tipo === 1 ? (
+            <>
+              <FormSection titulo="Datos personales">
+                <Field label="Email" hint="No se puede cambiar.">{({ id }) => <Input id={id} type="email" name="email" value={u?.mail ?? ''} disabled />}</Field>
+                <Campos lista={PARTICULAR} datos={datos} onChange={cambiar} />
+              </FormSection>
+              <FormSection titulo="Datos para cobrar" descripcion="Cuenta donde te transferimos las ventas.">
+                <Campos lista={PARTICULAR_COBRO} datos={datos} onChange={cambiar} />
+              </FormSection>
+            </>
+          ) : (
+            <>
+              <FormSection titulo="Datos de la productora"><Campos lista={PRODUCTORA} datos={datos} onChange={cambiar} /></FormSection>
+              <FormSection titulo="Datos para cobrar" descripcion="Cuenta de la productora donde te transferimos las ventas.">
+                <Campos lista={PRODUCTORA_COBRO} datos={datos} onChange={cambiar} />
+              </FormSection>
+            </>
+          )}
+
+          <Alert tone="info" className="mt-2">Asegurate de que el CBU y el titular coincidan: si no, la transferencia puede rebotar.</Alert>
+          <div className="mt-6 flex justify-end border-t border-line pt-5">
+            <Button type="submit" loading={loading}>{tipo === 1 ? 'Guardar datos' : 'Guardar productora'}</Button>
+          </div>
+        </Card>
+      </form>
+    </Page>
+  )
 }
 
 export default UserInfo

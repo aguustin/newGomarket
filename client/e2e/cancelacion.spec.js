@@ -21,15 +21,14 @@ test('cancelar el evento desde la pantalla anula el QR de una compra; reactivar 
   await page.goto(`/ticket/validate/${token}`)
   await expect(page.getByText('Entrada válida')).toBeVisible()
 
-  //Cancelar desde "Editar evento": "Bajar evento" abre el aviso de la pantalla, que explica las consecuencias
-  const dialogos = []
-  page.on('dialog', async (d) => { dialogos.push(d.message()); await d.accept() })
+  //Cancelar desde "Editar evento" > Ajustes: el modal explica las consecuencias y el resultado se avisa en pantalla
   await page.goto(`/editar_evento/${eventId}`)
-  await page.getByRole('button', { name: 'Bajar evento' }).click()
+  await page.getByRole('tab', { name: 'Ajustes' }).click()
+  await page.getByRole('button', { name: 'Cancelar evento' }).click()
   await expect(page.getByText(/Se anulan todas las entradas \(QR\)/)).toBeVisible()
-  await page.getByRole('button', { name: 'Dar de baja' }).click()
-  await expect.poll(() => dialogos.length).toBe(1)
-  expect(dialogos[0]).toMatch(/Se anularon 1 entradas/)
+  await page.getByRole('button', { name: 'Sí, cancelar evento' }).click()
+  await expect(page.getByText(/Se anularon 1 entradas/)).toBeVisible()
+  await expect(page.getByText('Cancelado').first()).toBeVisible()
 
   //El QR ya no vale
   await page.goto(`/ticket/validate/${token}`)

@@ -1,12 +1,17 @@
 # Pasar Ipass a producción
 
 Lista de lo que hay que hacer el día que se publique. Se actualiza en cada etapa: si algo cambia, anotarlo acá.
-Última actualización: 2026-11-05 (etapa 13).
+Última actualización: 2026-11-06 (rediseño, etapa 3).
 
 ## 1. Antes de publicar: pendientes de código
 
 - [x] **E2E "registro → verificación → login → la sesión persiste al recargar":** falló una vez en la etapa 13 corriendo junto a otros, y solo pasó (2026-11-05). Probablemente fue un tiempo de espera. Si vuelve a fallar, mirar `client/test-results/` antes de reintentar.
 - [x] SDK de Mercado Pago reemplazado por llamadas directas a la API (`server/lib/mercadopago.js`, 2026-11-06). `npm audit` del servidor: solo 2 moderadas por `uuid` dentro de `exceljs`, de bajo impacto.
+
+- [ ] **CBU guardado como número** (`server/models/userModel.js`: `cbu`, `cbuProductora`; `ticketsModel.js`: `rrpp.cbu`). Un CBU tiene 22 dígitos y un número de JavaScript solo guarda ~15 exactos: el CBU queda alterado. Pasarlo a `String` (sin datos reales no hace falta migrar). Encontrado en el rediseño, etapa 3.
+- [ ] **Perfil público expone datos privados**: `POST /get_profile` devuelve email, teléfono y titular de cualquier usuario. La pantalla nueva ya no los muestra a terceros, pero el servidor los sigue enviando: devolver solo nombre, productora, país e imagen salvo al dueño.
+- [ ] `createSellerController` hace `console.log` de los datos personales y bancarios: sacarlo antes de publicar.
+- [ ] La imagen de ejemplo del Excel (`client/src/assets/images/excelEj.png`) muestra emails reales: reemplazarla por una con datos de ejemplo.
 
 ## 2. Servicios externos
 

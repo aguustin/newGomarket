@@ -148,8 +148,9 @@ export const EmptyState = ({ icon: Ico = Icon.Search, title, description, action
 )
 
 //Contenedor de pagina: ancho maximo y margenes consistentes
-export const Page = ({ className, children, narrow }) => (
-  <main className={cx('mx-auto w-full flex-1 px-4 pb-20 pt-8 sm:px-6 lg:px-8', narrow ? 'max-w-3xl' : 'max-w-7xl', className)}>{children}</main>
+const ANCHOS = { narrow: 'max-w-3xl', medium: 'max-w-5xl', wide: 'max-w-7xl' }
+export const Page = ({ className, children, narrow, size = narrow ? 'narrow' : 'wide' }) => (
+  <main className={cx('mx-auto w-full flex-1 px-4 pb-20 pt-8 sm:px-6 lg:px-8', ANCHOS[size], className)}>{children}</main>
 )
 
 export const PageHeader = ({ eyebrow, title, description, actions, className }) => (
@@ -195,3 +196,15 @@ export const Alert = ({ tone = 'info', className, children }) => {
     </div>
   )
 }
+
+/* ---------- Seccion de formulario: titulo y descripcion a la izquierda, campos a la derecha ---------- */
+export const FormSection = ({ titulo, descripcion, children }) => (
+    <section className="grid gap-6 border-t border-line py-8 first:border-t-0 first:pt-0 lg:grid-cols-[240px_1fr] lg:gap-10">
+        <div>
+            <h2 className="font-semibold text-fg">{titulo}</h2>
+            {descripcion && <p className="mt-1 text-sm leading-relaxed text-muted">{descripcion}</p>}
+        </div>
+        <div className="grid min-w-0 gap-4">{children}</div>
+    </section>
+)
+

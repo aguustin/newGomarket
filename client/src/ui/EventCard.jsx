@@ -31,6 +31,15 @@ export const precioDesde = (tickets = []) => {
 
 export const lugarDe = (ev) => [ev?.lugarEvento, ev?.localidad || ev?.provincia].filter(Boolean).join(' · ')
 
+//Estado de un evento para el productor (insignia en Mis producciones y Editar evento)
+export const estadoEvento = (ev) => {
+  if (ev.cancelado) return { label: 'Cancelado', tone: 'danger' }
+  if (ev.fechaFin && new Date(ev.fechaFin) < new Date()) return { label: 'Finalizado', tone: 'neutral' }
+  if (ev.active === false) return { label: 'Pausado', tone: 'warn' }
+  if (ev.soldOut) return { label: 'Agotado', tone: 'warn' }
+  return { label: 'En venta', tone: 'ok' }
+}
+
 const EventCard = ({ evento, favorito, onToggleFavorito, puedeGuardar = true, style }) => {
   const f = fechaPartes(evento.fechaInicio)
   const desde = precioDesde(evento.tickets)

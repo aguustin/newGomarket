@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import { E2E_BACK, E2E_FRONT } from '../playwright.config.js'
-import { uniqueMail, registerAndVerify, login, sesionDelNavegador, createEventViaApi } from '../e2e/helpers.js'
+import { uniqueMail, registerAndVerify, login, sesionDelNavegador, createEventViaApi, ultimoTokenQR } from '../e2e/helpers.js'
 
 //Siembra eventos de muestra con imagenes locales (servidas por Vite, sin subir nada a Cloudinary)
 //y saca capturas de cada pantalla en escritorio y celular.
@@ -115,4 +115,69 @@ test('pantallas de cuenta', async ({ page }) => {
     }
   })
   await capturar(page, '14-nueva-contrasenia', '/recover_password/token-de-prueba')
+})
+
+test('panel del productor', async ({ page, request }) => {
+  const mail = uniqueMail('prod')
+  await registerAndVerify(page, request, { nombre: 'Camila Productora', mail })
+  await login(page, { mail })
+  await expect(page).toHaveURL(/\/$/)
+  const { userId, auth } = await sesionDelNavegador(page)
+  const ids = []
+  for (const ev of EVENTOS.slice(0, 2)) ids.push(await createEventViaApi(request, { auth, userId, prodMail: mail, nombreEvento: ev.nombreEvento, precio: ev.precio }))
+  await conBaseE2E(async (db, mongoose) => {
+    for (const [i, ev] of EVENTOS.slice(0, 2).entries()) {
+      await db.collection('ticketsmodels').updateOne({ _id: new mongoose.Types.ObjectId(ids[i]) },
+        { $set: { imgEvento: IMG(ev.img), bannerEvento: IMG(ev.img), totalVentas: 37, totalMontoVendido: 666000, montoVentas: 1500000, 'tickets.0.ventas': 37 } })
+    }
+  })
+  const id = ids[0]
+  await capturar(page, '20-producciones', '/productions')
+  await capturar(page, '21-crear-evento', '/create_event')
+  await capturar(page, '22-editar-info', `/editar_evento/${id}`)
+  await capturar(page, '23-editar-entradas', `/editar_evento/${id}`, { antes: async (p) => { await p.getByRole('tab', { name: 'Entradas' }).click() } })
+  await capturar(page, '24-editar-ajustes', `/editar_evento/${id}`, { antes: async (p) => { await p.getByRole('tab', { name: 'Ajustes' }).click() } })
+  await capturar(page, '25-estadisticas', `/statistics/${id}/${userId}`)
+  await capturar(page, '26-compradores', `/get_buyers/${id}`)
+  await capturar(page, '27-cortesias', `/cortesies/${id}`)
+  await capturar(page, '28-nueva-lista', `/new_excel/${id}`)
+  await capturar(page, '29-invitaciones', `/editar_evento/staff/${id}`)
+  await capturar(page, '30-editar-perfil', '/user_info')
+  await capturar(page, '31-perfil', `/see_profile/${userId}`)
+  await capturar(page, '32-contacto', '/contact')
+})
+
+test('rrpp y puerta', async ({ page, request }) => {
+  const rrppMail = uniqueMail('rrpp')
+  await registerAndVerify(page, request, { nombre: 'Lucas RRPP', mail: rrppMail })
+  const duenoMail = uniqueMail('dueno')
+  await registerAndVerify(page, request, { nombre: 'Camila Productora', mail: duenoMail })
+  await login(page, { mail: duenoMail })
+  await expect(page).toHaveURL(/\/$/)
+  const dueno = await sesionDelNavegador(page)
+  const eventId = await createEventViaApi(request, { auth: dueno.auth, userId: dueno.userId, prodMail: duenoMail, nombreEvento: 'Noche Electrónica', precio: 0 })
+  await conBaseE2E(async (db, mongoose) => {
+    await db.collection('ticketsmodels').updateOne({ _id: new mongoose.Types.ObjectId(eventId) }, { $set: { imgEvento: IMG('dj-party-meaning.png') } })
+  })
+  const enUnMes = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString()
+  await request.post(`${E2E_BACK}/createEventTickets`, { headers: dueno.auth, multipart: {
+    prodId: eventId, nombreTicket: 'Cortesía VIP', descripcionTicket: 'Invitación', precio: '0', cantidad: '5',
+    fechaDeCierre: enUnMes, visibilidad: '1', estado: '3', distribution: '0', limit: '10' } })
+  const prod = await (await request.get(`${E2E_BACK}/get_prod/${eventId}/${dueno.userId}`, { headers: dueno.auth })).json()
+  await request.post(`${E2E_BACK}/sendQrStaff`, { headers: dueno.auth, data: { prodId: eventId, quantities: { [prod.tickets[0].cortesiaRRPP[0]._id]: 3 }, mail: rrppMail } })
+
+  //Entrada gratis para ver el QR
+  const evento = (await (await request.get(`${E2E_BACK}/buy_tickets/${eventId}`)).json())[0]
+  await request.post(`${E2E_BACK}/buy`, { data: { prodId: eventId, quantities: { [evento.tickets[0]._id]: { amount: 1, free: false } }, total: 0,
+    mail: uniqueMail('comprador'), nombreCompleto: 'Martina López', dni: '30111222', telefono: '1155550000' } })
+  const token = await ultimoTokenQR()
+  await capturar(page, '42-qr-organizador', `/ticket/validate/${token}`)
+
+  await login(page, { mail: rrppMail })
+  await expect(page).toHaveURL(/\/$/)
+  await capturar(page, '40-colaboraciones', `/get_my_rrpp_events/${rrppMail}`)
+  await capturar(page, '41-enviar-cortesias', `/rrpp_get_event_free/${eventId}/${rrppMail}`)
+  await page.evaluate(() => localStorage.removeItem('session'))
+  await capturar(page, '43-qr-comprador', `/ticket/validate/${token}`)
+  await capturar(page, '44-terminos', '/conditions')
 })

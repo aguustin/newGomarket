@@ -22,7 +22,7 @@ test('pantallas privadas y publicas sin advertencias de React', async ({ page, r
     [`/editar_evento/${eventId}`, 'Consola E2E'],
     [`/see_profile/${userId}`, 'Consola E2E'],
     ['/user_info', null],
-    [`/buy_tickets/${eventId}`, 'COMPRAR TICKETS']
+    [`/buy_tickets/${eventId}`, 'Tus datos']
   ]
   for (const [ruta, texto] of pantallas) {
     await page.goto(ruta)

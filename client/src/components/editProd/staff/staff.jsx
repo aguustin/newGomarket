@@ -1,280 +1,122 @@
-import { useEffect } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useParams } from "react-router"
 import { getOneProdRequest, staffQrRequest } from "../../../api/eventRequests"
-import { useState } from "react"
-import { EventoNoDisponible, formatDate } from "../../../globalscomp/globalscomp"
-import { useContext } from "react"
+import { EventoNoDisponible, formatDateB } from "../../../globalscomp/globalscomp"
 import UserContext from "../../../context/userContext"
-import calendarPng from "../../../assets/images/calendar.png"
+import { Icon } from "../../../ui/icons"
+import { Badge, Button, Card, EmptyState, Field, Input, Page, PageHeader, Skeleton } from "../../../ui/primitives"
+import SmartImage from "../../../ui/SmartImage"
+import { toast } from "../../../ui/toast"
 
+//Enviar invitaciones (cortesias) a una persona por email (rediseño).
+//Correcciones: los mensajes estaban invertidos (state 2 = "no alcanzan las cortesias" se mostraba como exito
+//y el exito real no mostraba nada) y nunca se avisaba si no se elegia ninguna invitacion.
 const Staff = () => {
-    const {session} = useContext(UserContext)
-    const {prodId} = useParams()
-    const [producction, setProducction] = useState([])
-    const [quantities, setQuantities] = useState({});
-    const [quantity, setQuantity] = useState(0)
-    const [totalQuantity, setTotalQuantity] = useState(0)
-    const [showMsg, setShowMsg] = useState(0)
-    const [noDisponible, setNoDisponible] = useState(false)
+  const { session } = useContext(UserContext)
+  const userId = session?.userFinded?.[0]?._id
+  const { prodId } = useParams()
+  const [evento, setEvento] = useState(null)
+  const [quantities, setQuantities] = useState({})
+  const [loading, setLoading] = useState(false)
+  const [noDisponible, setNoDisponible] = useState(false)
 
-    useEffect(() => {
-        const obtainUserProd = async () => {
-            const userId = session?.userFinded?.[0]?._id
-            if (!userId) return //esperar a que cargue la sesion
-            const res = await getOneProdRequest(prodId, userId)
-            setNoDisponible(!res.data.tickets?.length) //no existe o no es de este usuario
-            setProducction(res.data)
-        }
-        obtainUserProd()
-    },[session])
-  
-      const restQuantity = (e, ticketId) => {
-        e.preventDefault()
-        setQuantities(prev => {
-            const current = prev[ticketId] || 0;
-            if (current > 0) {
-                setTotalQuantity(totalQuantity - 1)
-                return {
-                    ...prev,
-                    [ticketId]: current - 1
-                };
-            }
-            return prev
-        });
-    };
+  useEffect(() => {
+    if (!userId) return //esperar a que cargue la sesion
+    getOneProdRequest(prodId, userId).then((res) => {
+      const ev = res.data.tickets?.[0]
+      setNoDisponible(!ev) //no existe o no es de este usuario
+      setEvento(ev ?? null)
+    })
+  }, [userId, prodId])
 
-    const addQuantity = (e, ticketId) => {
-        e.preventDefault()
-        if(quantity < 20){
-            setTotalQuantity(totalQuantity + 1)
-            setQuantities(prev => ({
-                ...prev,
-                [ticketId]: (prev[ticketId] || 0) + 1, 
-            }));
-        }
+  const cambiar = (ticketId, delta, max) => setQuantities((prev) => {
+    const nuevo = Math.max(0, Math.min(max, (prev[ticketId] || 0) + delta))
+    const copia = { ...prev, [ticketId]: nuevo }
+    if (nuevo === 0) delete copia[ticketId]
+    return copia
+  })
+  const total = Object.values(quantities).reduce((a, n) => a + n, 0)
+
+  const addStaff = async (e) => {
+    e.preventDefault()
+    if (total === 0) return toast.error('Elegí al menos una invitación.')
+    const form = e.target
+    setLoading(true)
+    try {
+      const res = await staffQrRequest({ prodId, quantities, mail: form.elements.emailStaff.value.trim() })
+      if (res.data.state === 1) {
+        toast.success(`¡Listo! Enviamos ${total} ${total === 1 ? 'invitación' : 'invitaciones'} a ${form.elements.emailStaff.value.trim()}.`)
+        setQuantities({})
+        form.reset()
+      } else if (res.data.state === 2) {
+        toast.error('No quedan suficientes cortesías de ese tipo.')
+      } else {
+        toast.error('No pudimos enviar las invitaciones. Intentá de nuevo.')
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || 'No pudimos enviar las invitaciones. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    const addStaff = async (e) => {
-        e.preventDefault()
-        
-        if(quantities.length <= 0){
-            setShowMsg(2)
-        }else{
-            const mail = e.target.elements.emailStaff.value
-            const sendData = {
-                prodId, 
-                quantities, 
-                mail
-            }
-            const res = await staffQrRequest(sendData)
-            
-            if(res.data.state === 2){
-                setShowMsg(3)
-            }else{
-                setShowMsg(1)
-                setTimeout(() => {
-                    setShowMsg(0)
-                }, 3000);    
-            }
-        }
-    }
-console.log(producction.tickets)
-   if (noDisponible) return <EventoNoDisponible />
+  if (noDisponible) return <EventoNoDisponible />
+  if (!evento) return <Page size="medium"><Skeleton className="h-10 w-64" /><Skeleton className="mt-8 h-96 rounded-2xl" /></Page>
 
-   return (
-  <>
-    <div className="min-h-screen py-8 px-4">
-      <form onSubmit={(e) => addStaff(e)} className="max-w-6xl mx-auto bg-gray-800 rounded-3xl">
-        {producction?.tickets?.map((p) => (
-          <div key={p._id} className="rounded-3xl shadow-xl overflow-hidden">
-            {/* Header con degradado */}
-            <div className="bg-gradient-to-r from-amber-600 to-yellow-500 p-6">
-              <h2 className="text-3xl font-bold text-[#111827]!">Confirmar detalles del evento</h2>
+  const cortesias = evento.cortesiaRRPP ?? []
+
+  return (
+    <Page size="medium">
+      <Button to={`/editar_evento/${prodId}`} variant="ghost" size="sm" icon={Icon.ArrowLeft} className="-ml-3 mb-4">Volver al evento</Button>
+      <PageHeader eyebrow={evento.nombreEvento} title="Enviar invitaciones" description="Elegí las cortesías y el email: le llega una entrada con QR por cada una." />
+
+      <form onSubmit={addStaff} className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <Card className="overflow-hidden">
+          <div className="border-b border-line px-5 py-4"><h2 className="font-semibold text-fg">Cortesías disponibles</h2></div>
+          {cortesias.length === 0 ? (
+            <EmptyState icon={Icon.Ticket} title="Este evento no tiene cortesías" description="Creá una entrada de tipo Cortesía desde la pestaña Entradas del evento."
+              action={<Button to={`/editar_evento/${prodId}`} variant="secondary">Ir a Entradas</Button>} />
+          ) : (
+            <ul className="divide-y divide-line">
+              {cortesias.map((tck) => {
+                const disponibles = Number(tck.cantidadDeCortesias) || 0
+                const cantidad = quantities[tck._id] || 0
+                return (
+                  <li key={tck._id} className="flex flex-wrap items-center gap-4 p-4 sm:flex-nowrap sm:px-5">
+                    {tck.imgTicket ? <img src={tck.imgTicket} alt="" className="size-12 rounded-xl object-cover" loading="lazy" /> : <span className="flex size-12 items-center justify-center rounded-xl bg-surface-2 text-brand-300"><Icon.Ticket /></span>}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-fg">{tck.nombreTicket}</p>
+                      <p className="text-sm text-muted">{disponibles} disponibles{tck.fechaDeCierre && ` · hasta ${formatDateB(tck.fechaDeCierre)}`}</p>
+                    </div>
+                    {disponibles >= 1 ? (
+                      <div className="flex items-center gap-1 rounded-xl border border-line bg-surface-2 p-1">
+                        <button type="button" onClick={() => cambiar(tck._id, -1, disponibles)} disabled={cantidad === 0} aria-label={`Restar ${tck.nombreTicket}`}
+                          className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-surface-3 hover:text-fg disabled:opacity-30"><Icon.Minus className="size-4" /></button>
+                        <span className="w-7 text-center font-semibold tabular-nums text-fg">{cantidad}</span>
+                        <button type="button" onClick={() => cambiar(tck._id, 1, disponibles)} disabled={cantidad >= disponibles} aria-label={`Sumar ${tck.nombreTicket}`}
+                          className="flex size-8 items-center justify-center rounded-lg bg-brand-500 text-white hover:bg-brand-400 disabled:bg-surface-3 disabled:text-subtle"><Icon.Plus className="size-4" /></button>
+                      </div>
+                    ) : <Badge tone="danger">Agotada</Badge>}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </Card>
+
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <Card className="space-y-4 p-5">
+            <SmartImage src={evento.imgEvento} className="aspect-video w-full rounded-xl" />
+            <Field label="Email de quien recibe">{({ id }) => <Input id={id} icon={Icon.Mail} type="email" name="emailStaff" placeholder="nombre@email.com" required />}</Field>
+            <div className="flex items-center justify-between border-t border-line pt-4 text-sm">
+              <span className="text-muted">Invitaciones</span><span className="font-semibold tabular-nums text-fg">{total}</span>
             </div>
-
-            {/* Contenido principal */}
-            <div className="p-8">
-              {/* Sección de información del evento */}
-              <div className="grid md:grid-cols-2 gap-8 mb-10">
-                {/* Imagen del evento */}
-                <div className="relative group">
-                  <div className="overflow-hidden rounded-2xl shadow-lg">
-                    <img 
-                      className="w-full h-[280px] object-cover transition-transform" 
-                      src={p?.imgEvento} 
-                      alt="Evento" 
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-
-                {/* Información del evento */}
-                <div className="flex flex-col justify-center space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-300! mb-2">{p.nombreEvento}</h3>
-                    <div className="h-1 w-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full"></div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3 bg-gray-900 p-4 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="black" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 font-medium">Fecha de inicio</p>
-                        <p className="text-gray-400 font-semibold">{formatDate(p.fechaInicio)}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-3 bg-gray-900 p-4 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="black" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 font-medium">Fecha de cierre</p>
-                        <p className="text-gray-400 font-semibold">{formatDate(p.fechaFin)}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Campo de email mejorado */}
-                  <div className="mt-4">
-                    <label className="block text-sm font-semibold text-gray-300! mb-3">
-                      Enviar invitaciones a:
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                        </svg>
-                      </div>
-                      <input 
-                        className="w-full pl-12 pr-4 py-4 border-2 border-amber-200 rounded-xl focus:border-amber-500  focus:border-amber-500 transition-all outline-none text-gray-400!" 
-                        type="email" 
-                        name="emailStaff" 
-                        placeholder="Ej: JohnDoe@gmail.com"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección de tickets */}
-              <div className="border-t-2 border-gray-100 pt-8">
-                <h3 className="text-xl text-gray-300! mb-6 flex items-center">
-                  Cortesías disponibles
-                </h3>
-
-                <div className="staff-tickets space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                  {p.cortesiaRRPP?.map((tck) => (
-                    <div 
-                      key={tck._id} 
-                      className="bg-gray-900 border-2 border-gray-500 rounded-2xl p-5 hover:shadow-lg transition-all duration-300"
-                    >
-                      <div className="flex items-center justify-between flex-wrap gap-4">
-                        {/* Imagen y nombre del ticket */}
-                        <div className="flex items-center space-x-4 min-w-[200px]">
-                          <div className="relative">
-                            <img 
-                              className="w-16 h-16 rounded-xl object-cover shadow-md" 
-                              src={tck.imgTicket} 
-                              alt="Ticket" 
-                              loading="lazy"
-                            />
-                          </div>
-                          <div>
-                            <p className="text-gray-400 text-lg">{tck.nombreTicket}</p>
-                            {/*<p className="text-sm text-gray-500">Tipo de entrada</p>*/}
-                          </div>
-                        </div>
-
-                        {/* Información adicional */}
-                        <div className="flex items-center space-x-6">
-                          <div className="text-center">
-                            <p className="text-xs text-gray-300 font-medium">Total disponible</p>
-                            <p className="text-lg text-gray-400">{tck.cantidadDeCortesias}</p>
-                          </div>
-
-                          <div className="flex items-center space-x-2 bg-gray-800 px-4 py-2 rounded-lg border border-gray-600">
-                            <img className="h-5 w-5" src={calendarPng} alt="" />
-                            <p className="text-sm text-gray-400 font-medium">{formatDate(tck.fechaDeCierre)}</p>
-                          </div>
-                        </div>
-
-                        {/* Controles de cantidad */}
-                        {tck?.cantidadDeCortesias >= 1 ? (
-                          <div className="flex items-center space-x-3 bg-gray-800 rounded-xl p-1 border-1 border-gray-600 shadow-sm">
-                            <button 
-                              className="w-10 h-10 bg-gray-600 hover:bg-gray-200 rounded-lg text-[#111827]! transition-all active:scale-95" 
-                              onClick={(e) => restQuantity(e, tck._id)}
-                            >
-                              -
-                            </button>
-                            <div className="w-14 text-center">
-                              <p className="text-md text-gray-300">{quantities[tck._id] || 0}</p>
-                            </div>
-                            <button 
-                              className="w-10 h-10 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 rounded-lg  text-[#111827] transition-all active:scale-95 shadow-md" 
-                              onClick={(e) => addQuantity(e, tck._id)}
-                            >
-                              +
-                            </button>
-                          </div>
-                        ) : (
-                           <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
-                              <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
-                              </svg>
-                              <p className="text-red-700 font-semibold">Agotado</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Botón de confirmación y mensajes */}
-              <div className="mt-8 text-center space-y-4">
-                <button 
-                  className="group relative inline-flex items-center justify-center px-8 py-4 bg-yellow-500 hover:from-purple-700 hover:bg-yellow-300 rounded-2xl cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95" 
-                  type="submit"
-                >
-                
-                  <span className="text-[#111827] font-bold text-lg">Confirmar invitaciones</span>
-                </button>
-
-                {/* Mensajes de estado */}
-                {(showMsg === 3) && (
-                  <div className="animate-fade-in bg-green-50 border-2 border-green-200 rounded-xl p-4 inline-block">
-                    <p className="text-green-700 font-semibold flex items-center">
-                      ¡Invitaciones enviadas exitosamente!
-                    </p>
-                  </div>
-                )}
-                
-                {showMsg === 2 && (
-                  <div className="animate-fade-in bg-orange-50 border-2 border-orange-200 rounded-xl p-4 inline-block">
-                    <p className="text-orange-600 font-semibold flex items-center">
-                      <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      Falta agregar invitaciones
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+            <Button type="submit" block size="lg" loading={loading} icon={Icon.Mail}>Enviar invitaciones</Button>
+          </Card>
+        </aside>
       </form>
-    </div>
-  </>
-);
+    </Page>
+  )
 }
 
 export default Staff

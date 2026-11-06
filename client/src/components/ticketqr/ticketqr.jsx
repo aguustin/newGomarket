@@ -1,31 +1,38 @@
-import { useParams, Link } from "react-router";
-import { useState, useEffect } from "react";
-import warningPng from "../../assets/warning.png"
-import { formatDateB } from "../../globalscomp/globalscomp";
-import { getEntradaRequest, validarEntradaRequest } from "../../api/eventRequests";
+import { Link, useParams } from "react-router"
+import { useState, useEffect } from "react"
+import { formatDateB } from "../../globalscomp/globalscomp"
+import { getEntradaRequest, validarEntradaRequest } from "../../api/eventRequests"
+import { Icon } from "../../ui/icons"
+import { Button, Card, Spinner, cx } from "../../ui/primitives"
+import SmartImage from "../../ui/SmartImage"
 
-//Pantalla que se abre al escanear el QR de una entrada.
+//Pantalla que se abre al escanear el QR de una entrada (rediseño, pensada para el celular en la puerta).
 //Abrirla SOLO muestra la entrada. El ingreso lo valida el organizador o un RRPP del evento con su sesion
 //(boton "Validar ingreso"); el backend lo marca de forma atomica y nunca dos veces.
 const ESTADOS = {
-  vigente: { texto: 'Entrada válida', clase: 'bg-green-600' },
-  usada: { texto: 'Entrada ya usada', clase: 'bg-red-600' },
-  vencida: { texto: 'Entrada vencida', clase: 'bg-gray-600' },
-  anulada: { texto: 'Entrada anulada: el evento fue cancelado', clase: 'bg-red-800' }
+  vigente: { texto: 'Entrada válida', icon: Icon.CheckCircle, clase: 'bg-ok/15 text-ok ring-ok/30' },
+  usada: { texto: 'Entrada ya usada', icon: Icon.XCircle, clase: 'bg-danger/15 text-danger ring-danger/30' },
+  vencida: { texto: 'Entrada vencida', icon: Icon.Clock, clase: 'bg-white/8 text-muted ring-line' },
+  anulada: { texto: 'Entrada anulada: el evento fue cancelado', icon: Icon.XCircle, clase: 'bg-danger/15 text-danger ring-danger/30' }
 }
 
+const Dato = ({ label, children }) => (
+  <div className="flex items-start justify-between gap-4 py-3">
+    <dt className="text-sm text-muted">{label}</dt>
+    <dd className="text-right text-[15px] font-medium text-fg">{children}</dd>
+  </div>
+)
+
 const TicketQr = () => {
-  const { token } = useParams();
-  const [ticketInfo, setTicketInfo] = useState(null);
-  const [error, setError] = useState(false);
-  const [validando, setValidando] = useState(false);
-  const [resultado, setResultado] = useState(null);  //{ ok, texto }
+  const { token } = useParams()
+  const [ticketInfo, setTicketInfo] = useState(null)
+  const [error, setError] = useState(false)
+  const [validando, setValidando] = useState(false)
+  const [resultado, setResultado] = useState(null)  //{ ok, texto }
 
   useEffect(() => {
-    getEntradaRequest(token)
-      .then((res) => setTicketInfo(res.data))
-      .catch(() => setError(true))
-  }, [token]);
+    getEntradaRequest(token).then((res) => setTicketInfo(res.data)).catch(() => setError(true))
+  }, [token])
 
   const validar = async () => {
     setValidando(true)
@@ -42,55 +49,56 @@ const TicketQr = () => {
     }
   }
 
-  if (error)
+  if (error) {
     return (
-      <div className="h-screen text-center mt-[110px] pt-10 pr-3 pl-3">
-        <img className="mx-auto" src={warningPng} loading="lazy"></img>
-        <p className="text-white! text-center mt-6 text-xl">La entrada no existe</p>
-      </div>
+      <main className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
+        <div className="flex size-16 items-center justify-center rounded-full bg-danger/12 text-danger ring-8 ring-danger/10"><Icon.AlertCircle className="size-8" /></div>
+        <h1 className="mt-6 text-xl font-semibold text-fg">La entrada no existe</h1>
+        <p className="mt-2 text-muted">Revisá que el QR sea el que llegó por email.</p>
+      </main>
     )
-
-  if (!ticketInfo) return <p>Cargando ticket...</p>;
+  }
+  if (!ticketInfo) return <main className="flex flex-1 items-center justify-center gap-3 py-24 text-muted"><Spinner className="size-6 text-brand-400" />Cargando entrada…</main>
 
   const estado = ESTADOS[ticketInfo.estado] ?? ESTADOS.vencida
+  const Ico = resultado?.ok ? Icon.CheckCircle : estado.icon
 
   return (
-    <div className='evento-desc flex justify-center'>
-      <div className="mx-auto text-center h-full px-3">
-        <h1 className="text-white text-4xl underline">{ticketInfo.nombreEvento}</h1>
-        <img className="mx-auto mt-6" src={ticketInfo.imgEvento} alt="evento" width="300" loading="lazy"/>
-
-        <p className={`inline-block mt-6 px-5 py-2 rounded-xl text-white! text-xl font-bold ${estado.clase}`}>{estado.texto}</p>
-        {ticketInfo.estado === 'usada' && ticketInfo.usadaEn && (
-          <p className="text-gray-300! mt-2">Validada el {formatDateB(ticketInfo.usadaEn)}</p>
-        )}
-
-        <p className='text-2xl mt-6'><b className="text-violet-500">Ticket: </b>{ticketInfo.nombreTicket} - {ticketInfo.tipo}{ticketInfo.eventoEdad ? ` - Edad: +${ticketInfo.eventoEdad}` : ''}</p>
-        {ticketInfo.nombreCompleto && <p className='text-2xl mt-3'><b className="text-violet-500">A nombre de: </b>{ticketInfo.nombreCompleto}</p>}
-        <p className="text-2xl mt-3"><b className="text-violet-500">Lugar: </b>{ticketInfo.localidad} </p>
-        <p className='text-2xl mt-3'><b className="text-violet-500">Dirección: </b>{ticketInfo.direccion}</p>
-        <p className='text-2xl mt-3'><b className="text-violet-500">Fecha: </b>{formatDateB(ticketInfo.fechaInicioEvento)}</p>
-
-        {ticketInfo.puedeValidar && ticketInfo.estado === 'vigente' && !resultado?.ok && (
-          <button
-            className="mt-8 w-full max-w-sm bg-gradient-to-r from-green-600 to-emerald-500 text-white! text-2xl font-bold py-5 rounded-2xl disabled:opacity-60"
-            onClick={validar}
-            disabled={validando}
-          >
-            {validando ? 'Validando...' : 'Validar ingreso'}
-          </button>
-        )}
-        {resultado && (
-          <p className={`mt-6 text-2xl font-bold ${resultado.ok ? 'text-green-400!' : 'text-orange-500!'}`}>
-            {resultado.ok ? '✓ ' : ''}{resultado.texto}
-          </p>
-        )}
-        {!ticketInfo.puedeValidar && ticketInfo.estado === 'vigente' && (
-          <p className="text-gray-400! mt-8 text-sm">Presentá este QR en el acceso. ¿Sos el organizador? <Link className="underline text-gray-300!" to={`/login?next=${encodeURIComponent(`/ticket/validate/${token}`)}`}>Iniciá sesión</Link> para validar entradas.</p>
-        )}
+    <main className="mx-auto w-full max-w-md flex-1 px-4 pb-16 pt-6">
+      <div className={cx('flex items-center gap-3 rounded-2xl px-5 py-4 ring-1 animate-fade-up', resultado?.ok ? ESTADOS.vigente.clase : estado.clase)} role="status">
+        <Ico className="size-8 shrink-0" />
+        <div>
+          <p className="text-lg font-bold leading-tight">{resultado?.ok ? 'Ingreso validado' : estado.texto}</p>
+          {ticketInfo.estado === 'usada' && ticketInfo.usadaEn && <p className="mt-0.5 text-sm opacity-90">Validada el {formatDateB(ticketInfo.usadaEn)}</p>}
+        </div>
       </div>
-    </div>
-  );
-};
 
-export default TicketQr;
+      <Card className="mt-4 overflow-hidden">
+        <SmartImage src={ticketInfo.imgEvento} className="aspect-[16/9] w-full" />
+        <div className="p-5">
+          <h1 className="text-xl font-bold tracking-tight text-fg">{ticketInfo.nombreEvento}</h1>
+          <dl className="mt-2 divide-y divide-line">
+            <Dato label="Entrada">{ticketInfo.nombreTicket}{ticketInfo.tipo ? ` · ${ticketInfo.tipo}` : ''}</Dato>
+            {ticketInfo.nombreCompleto && <Dato label="A nombre de">{ticketInfo.nombreCompleto}</Dato>}
+            {ticketInfo.eventoEdad ? <Dato label="Edad mínima">+{ticketInfo.eventoEdad}</Dato> : null}
+            <Dato label="Fecha">{formatDateB(ticketInfo.fechaInicioEvento)}</Dato>
+            <Dato label="Lugar">{[ticketInfo.direccion, ticketInfo.localidad].filter(Boolean).join(', ')}</Dato>
+          </dl>
+        </div>
+      </Card>
+
+      {ticketInfo.puedeValidar && ticketInfo.estado === 'vigente' && !resultado?.ok && (
+        <Button size="lg" block loading={validando} onClick={validar} className="mt-5 h-16 text-lg" icon={Icon.Check}>Validar ingreso</Button>
+      )}
+      {resultado && !resultado.ok && <p role="alert" className="mt-4 text-center text-base font-semibold text-warn">{resultado.texto}</p>}
+      {!ticketInfo.puedeValidar && ticketInfo.estado === 'vigente' && (
+        <p className="mt-6 text-center text-sm leading-relaxed text-muted">
+          Presentá este QR en el acceso. ¿Sos el organizador?{' '}
+          <Link to={`/login?next=${encodeURIComponent(`/ticket/validate/${token}`)}`} className="font-semibold text-brand-300 underline-offset-2 hover:underline">Iniciá sesión</Link> para validar entradas.
+        </p>
+      )}
+    </main>
+  )
+}
+
+export default TicketQr
