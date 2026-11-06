@@ -6,7 +6,7 @@ Lista de lo que hay que hacer el día que se publique. Se actualiza en cada etap
 ## 1. Antes de publicar: pendientes de código
 
 - [x] **E2E "registro → verificación → login → la sesión persiste al recargar":** falló una vez en la etapa 13 corriendo junto a otros, y solo pasó (2026-11-05). Probablemente fue un tiempo de espera. Si vuelve a fallar, mirar `client/test-results/` antes de reintentar.
-- [ ] **(Recomendado) SDK de Mercado Pago v1 → v3** (`server/lib/mercadopago.js`). Arrastra 7 vulnerabilidades por la librería `request`. El riesgo real es bajo (solo habla con la API de MP), pero toca los pagos: hacerlo solo, en su propia etapa, y probarlo aparte.
+- [x] SDK de Mercado Pago reemplazado por llamadas directas a la API (`server/lib/mercadopago.js`, 2026-11-06). `npm audit` del servidor: solo 2 moderadas por `uuid` dentro de `exceljs`, de bajo impacto.
 
 ## 2. Servicios externos
 

@@ -21,7 +21,11 @@ test('evento publico en Home -> pagina de compra -> total con 15% -> redireccion
   await expect(page).toHaveURL(new RegExp(`/buy_tickets/${eventId}`))
 
   //2 entradas de 20.000 + 15% = 46.000
+  //Cada clic espera a que se vea el total: si la pagina todavia esta recargando los datos del evento,
+  //dos clics seguidos pueden contar uno solo (paso una vez en la etapa 13)
+  await expect(page.getByText(/Total:\s*\$\s*0/)).toBeVisible()
   await page.getByRole('button', { name: '+' }).first().click()
+  await expect(page.getByText(/Total:\s*\$\s*23\.000/)).toBeVisible()
   await page.getByRole('button', { name: '+' }).first().click()
   await expect(page.getByText(/Total:\s*\$\s*46\.000/)).toBeVisible()
 
