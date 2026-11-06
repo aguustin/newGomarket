@@ -8,6 +8,7 @@ import {BrowserRouter, Routes, Route, useLocation, matchPath, Navigate} from 're
 import { leerSesion } from './api/http'
 import { UserContextProvider } from './context/userContext'
 import 'react-loading-skeleton/dist/skeleton.css';
+import { ToastViewport } from './ui/toast'
 
 const Register = lazy(() => import('./components/register/register'))
 const Login = lazy(() => import('./components/login/login'))
@@ -77,7 +78,8 @@ function AppRoutes() {
         <Route path="/conditions" element={<LegalConditions />} />
       </Routes>
       </Suspense>
-      <Footer />
+      {!shouldHideNav && <Footer />}
+      <ToastViewport />
     </>
   );
 }

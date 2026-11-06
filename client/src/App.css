@@ -1,23 +1,70 @@
 @import "tailwindcss";
 
+/* ===== Sistema de diseño Ipass (rediseño 2026) =====
+   Paleta oscura con acento violeta. Usar estas clases (bg-canvas, bg-surface, text-fg, text-muted,
+   border-line, bg-brand-500, text-ok...) en vez de colores sueltos. Componentes en src/ui/. */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: #09090F;      /* fondo de la pagina */
+  --color-surface: #111119;     /* tarjetas */
+  --color-surface-2: #181823;   /* campos, tarjetas internas */
+  --color-surface-3: #22222F;   /* hover */
+  --color-line: #26263A;        /* bordes */
+  --color-line-strong: #3A3A55;
+  --color-fg: #F3F3F8;          /* texto principal */
+  --color-muted: #A3A3B8;       /* texto secundario */
+  --color-subtle: #72728A;      /* texto terciario / placeholders */
+
+  --color-brand-200: #D4CEFF;
+  --color-brand-300: #B7ADFF;
+  --color-brand-400: #9384FF;
+  --color-brand-500: #7663F7;
+  --color-brand-600: #604CE8;
+  --color-brand-700: #4D3AC7;
+  --color-brand-900: #1E1747;
+
+  --color-ok: #34D27F;
+  --color-danger: #F2555A;
+  --color-warn: #F5B23C;
+
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px -16px rgb(0 0 0 / 0.7);
+  --shadow-glow: 0 12px 36px -12px rgb(118 99 247 / 0.6);
+
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-fade-in: fade-in 0.25s ease-out both;
+  --animate-toast-in: toast-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
 *{
   list-style: none;
-  outline: none;
 }
 
-button:focus{
-  outline: none;
+input[type="date"], input[type="datetime-local"], input[type="time"] {
+  color-scheme: dark;
 }
 
-input[type="date"] {
-  color-scheme: light; 
-  -webkit-appearance: auto;
-  appearance: auto;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1); 
-  opacity: 1;
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -30,7 +77,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 /*------------------------------------------------------------------------------------- NAV -------------------------------------------------------------*/
 
-.nav, footer, .nav-mobile-options, .conditions-container{
+.nav, .nav-mobile-options, .conditions-container{
   z-index: 4;
   background:#111827 !important;
   /* linear-gradient(
@@ -907,22 +954,22 @@ border: 1px solid #e0e0e0;
 
 
 @media screen and (max-width:700px) { 
-  footer{
+  .footer-legacy{
     display: block;
     height: auto;
     text-align: center;
   }
 
-  footer img, footer > div{
+  .footer-legacy img, .footer-legacy > div{
     margin: auto;
   }
 
-  footer p{
+  .footer-legacy p{
     margin-top: 20px;
     margin-bottom: 20px;
   }
 
-  footer > div a{
+  .footer-legacy > div a{
     margin: auto;
   }
 
@@ -1053,7 +1100,7 @@ border: 1px solid #e0e0e0;
   .edit-prod-bottom-buttons{
     display: block;
   }
-  .edit-prod-bottom-buttons button, a{
+  .edit-prod-bottom-buttons button, .edit-prod-bottom-buttons a{
     width: 100%;
     margin: 0;
   }
@@ -1097,11 +1144,11 @@ border: 1px solid #e0e0e0;
     right: 10px;
   }
 
-  footer > div:nth-of-type(2){
+  .footer-legacy > div:nth-of-type(2){
     padding-left: 10px;
     padding-right: 10px;
   }
-  footer p{
+  .footer-legacy p{
     font-size: 13px;
   }
   .staff-summary-buttons, .summary-event-info{
@@ -1352,7 +1399,7 @@ border: 1px solid #e0e0e0;
 /* ============================================
    NAVIGATION & FOOTER
    ============================================ */
-.nav, footer, .nav-mobile-options, .conditions-container {
+.nav, .nav-mobile-options, .conditions-container {
   z-index: 4;
   background: linear-gradient(135deg, #0f172a 0%, #111827 50%, #1e293b 100%) !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);

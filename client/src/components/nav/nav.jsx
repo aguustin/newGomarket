@@ -1,355 +1,160 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
+import { Link, NavLink, useLocation, useNavigate } from "react-router"
 import UserContext from "../../context/userContext"
-/*import userPng from "../../assets/botones/user.png"
-import editProfilePng from "../../assets/botones/edit-profile.png"
-import exitPng from "../../assets/botones/exit.png"
-import menuPng from "../../assets/images/menu.png"
-import colaborationPng from "../../assets/botones/colaboration.png"*/
-import { Link, useNavigate } from "react-router"
-import goPng from "../../assets/goticketImgs/IPSg.svg"
-import userImgPng from "../../assets/user.png"
+import logoSvg from "../../assets/goticketImgs/IPSg.svg"
+import { Icon } from "../../ui/icons"
+import { Button, cx } from "../../ui/primitives"
+
+//Barra superior (rediseño): links principales, accion "Crear evento" y menu de cuenta.
+//En celular todo pasa a un panel desplegable.
+const linkClase = ({ isActive }) => cx(
+  'relative rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200',
+  isActive ? 'text-fg' : 'text-muted hover:text-fg'
+)
+
+const Avatar = ({ usuario, className = 'size-8' }) => (
+  usuario?.imagenProductora
+    ? <img src={usuario.imagenProductora} alt="" className={cx('rounded-full object-cover ring-1 ring-white/10', className)} />
+    : <span className={cx('flex items-center justify-center rounded-full bg-brand-500/20 text-sm font-semibold text-brand-200 ring-1 ring-brand-400/30', className)}>
+        {(usuario?.nombreCompleto || '?').trim().charAt(0).toUpperCase()}
+      </span>
+)
 
 const Nav = () => {
+  const { session, setSession } = useContext(UserContext)
+  const usuario = session?.userFinded?.[0]
+  const logueado = Boolean(usuario)
+  const [menuCuenta, setMenuCuenta] = useState(false)
+  const [menuMovil, setMenuMovil] = useState(false)
+  const cuentaRef = useRef(null)
+  const navigate = useNavigate()
+  const location = useLocation()
 
-    const {session, setSession} = useContext(UserContext)
-    const [openProfileConf, setOpenProfileCong] = useState(false)
-    const [width, setWidth] = useState(null)
-    const [showMobileNav, setShowMobileNav] = useState(false)
-    const navigate = useNavigate()
+  //Cerrar menus al cambiar de pagina, con Escape o con un clic afuera
+  useEffect(() => { setMenuCuenta(false); setMenuMovil(false) }, [location.pathname])
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') { setMenuCuenta(false); setMenuMovil(false) } }
+    const onClick = (e) => { if (cuentaRef.current && !cuentaRef.current.contains(e.target)) setMenuCuenta(false) }
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('mousedown', onClick)
+    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onClick) }
+  }, [])
+  //Sin scroll del fondo con el menu movil abierto
+  useEffect(() => {
+    document.body.style.overflow = menuMovil ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuMovil])
 
-    useEffect(() => {
-        const mediaQuery = window.matchMedia("(min-width: 950px)");
-        const handleResize = () => {
-           setWidth(mediaQuery.matches ? 950 : 949);
-       };
-       
-       handleResize(); // valor inicial
-       mediaQuery.addEventListener("change", handleResize);
-       return () => mediaQuery.removeEventListener("change", handleResize);
-    }, [session]);
-        
-    if (width === null) return null;
+  const cerrarSesion = () => {
+    localStorage.clear()
+    setMenuCuenta(false)
+    setMenuMovil(false)
+    setSession('')
+    navigate('/')
+  }
 
-    const logoutFunc = () => {
-        localStorage.clear()
-        setOpenProfileCong(false)
-        setSession('')
-        navigate("/")
-    }
+  const crearEventoHref = logueado ? '/create_event' : '/login'
+  const itemsCuenta = logueado ? [
+    { to: `/see_profile/${usuario._id}`, label: 'Ver mi perfil', icon: Icon.User },
+    { to: '/user_info', label: 'Editar perfil', icon: Icon.Edit },
+    { to: '/my_favorites_events', label: 'Mis favoritos', icon: Icon.Heart },
+    { to: `/get_my_rrpp_events/${usuario.mail}`, label: 'Colaboraciones (RRPP)', icon: Icon.Users }
+  ] : []
 
-    const closeMenu = () => setShowMobileNav(false)
+  return (
+    <>
+    <nav className="fixed inset-x-0 top-0 z-50 h-16 border-b border-line/70 bg-canvas/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="flex shrink-0 items-center transition-opacity hover:opacity-85" aria-label="Ipass, inicio">
+          <img src={logoSvg} alt="Ipass" className="h-7 w-[66px] object-contain object-left" />
+        </Link>
 
-    return (
-  <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-br from-black-800  to-black-700 backdrop-blur-lg border-b border-gray-900 shadow-sm">
-    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-      {width >= 950 ? (
-        <>
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0 hover:opacity-80 transition-opacity">
-            <img className="w-34 h-auto" src={goPng} alt="Logo" loading="lazy" />
-          </Link>
+        {/* Escritorio */}
+        <div className="hidden flex-1 items-center gap-1 md:flex md:pl-6">
+          <NavLink to="/" end className={linkClase}>Eventos</NavLink>
+          {logueado && <NavLink to="/productions" className={linkClase}>Mis producciones</NavLink>}
+          <NavLink to="/contact" className={linkClase}>Contacto</NavLink>
+        </div>
 
-          {/* Navigation Links - Desktop */}
-          <div className="flex items-center space-x-2">
-            <Link 
-              className="px-5 py-2.5 rounded-xl text-md font-semibold text-white! hover:bg-gray-900 hover:text-purple-700 transition-all duration-300" 
-              to="/"
-            >
-              Inicio
-            </Link>
-            <Link 
-              className="px-5 py-2.5 rounded-xl text-md font-semibold text-white! hover:bg-gray-900 hover:text-purple-700 transition-all duration-300" 
-              to="/Contact"
-            >
-              Contacto
-            </Link>
-            <Link 
-              className="px-5 py-2.5 rounded-xl text-md font-semibold text-white! hover:bg-gray-900 hover:text-purple-700 transition-all duration-300" 
-              to={session?.userFinded?.length > 0 ? "/Create_event" : "/login"}
-              onClick={closeMenu}
-            >
-              Crear evento
-            </Link>
-            {session?.userFinded?.length > 0 && (
-              <Link 
-                className="px-5 py-2.5 rounded-xl text-md font-semibold text-white! hover:bg-gray-900 hover:text-purple-700 transition-all duration-300" 
-                to="/productions"
-                onClick={closeMenu}
-              >
-                Producciones
-              </Link>
-            )}
-          </div>
-
-          {/* User Profile or Login */}
-          <div className="flex-shrink-0 relative">
-            {session?.userFinded?.length > 0 ? (
-              <>
-                <button 
-                  className="flex items-center space-x-3 px-4 py-2 rounded-2xl hover:bg-gray-900 transition-all duration-300 group"
-                  onClick={() => setOpenProfileCong(!openProfileConf)}
-                >
-                  <img 
-                    className="w-12 h-12 rounded-full object-cover ring-2 ring-purple-300 group-hover:ring-yellow-500 transition-all" 
-                    src={session?.userFinded[0]?.imagenProductora ?? userImgPng} 
-                    alt="Profile"
-                  />
-                  <span className="text-sm font-semibold text-white! hidden xl:block">
-                    {session?.userFinded[0]?.nombreCompleto}
-                  </span>
-                  <svg 
-                    className={`w-4 h-4 text-white! transition-transform duration-300 ${openProfileConf ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* Dropdown Menu */}
-                {openProfileConf && (
-                  <div className="absolute right-6 top-[70px] w-64 bg-white rounded-2xl shadow-2xl border border-gray-700 overflow-hidden animate-fade-in">
-                    <div className="bg-gradient-to-r from-amber-600 to-yellow-500 px-4 py-3">
-                      <p className="text-[#111827] font-semibold text-sm truncate">
-                        {session?.userFinded[0]?.nombreCompleto}
-                      </p>
-                      <p className="text-[#111827] text-xs truncate">
-                        {session?.userFinded[0]?.mail}
-                      </p>
-                    </div>
-
-                    <div className="py-2 bg-gradient-to-br from-gray-800 to-gray-900">
-                      <Link 
-                        to={`/see_profile/${session?.userFinded?.[0]?._id}`}
-                        className="flex items-center px-4 py-3 text-white hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 group"
-                      >
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-purple-200 transition-colors">
-                          <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium">Ver mi perfil</span>
-                      </Link>
-
-                      <Link 
-                        to="/user_info"
-                        className="flex items-center px-4 py-3 text-white hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 group"
-                      >
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
-                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium">Editar perfil</span>
-                      </Link>
-
-                      <Link 
-                        to={`/get_my_rrpp_events/${session?.userFinded?.[0]?.mail}`}
-                        onClick={() => setShowMobileNav(!showMobileNav)}
-                        className="flex items-center px-4 py-3 text-white hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 group"
-                      >
-                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-orange-200 transition-colors">
-                          <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium">Colaboraciones</span>
-                      </Link>
-
-                      <div className="border-t border-gray-700 mt-2 pt-2">
-                        <button 
-                          onClick={() => logoutFunc()}
-                          className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 group"
-                        >
-                          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-200 transition-colors">
-                            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                          </div>
-                          <span className="text-sm font-medium text-gray-300">Cerrar sesión</span>
-                        </button>
-                      </div>
+        <div className="hidden items-center gap-2 md:flex">
+          <Button to={crearEventoHref} size="sm" variant={logueado ? 'primary' : 'secondary'} icon={Icon.Plus}>Crear evento</Button>
+          {logueado ? (
+            <div className="relative" ref={cuentaRef}>
+              <button type="button" onClick={() => setMenuCuenta((v) => !v)} aria-expanded={menuCuenta} aria-haspopup="menu"
+                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2.5 transition-colors hover:bg-surface-2">
+                <Avatar usuario={usuario} />
+                <span className="max-w-36 truncate text-sm font-medium text-fg">{usuario.nombreCompleto?.split(' ')[0]}</span>
+                <Icon.ChevronDown className={cx('size-4 text-subtle transition-transform duration-200', menuCuenta && 'rotate-180')} />
+              </button>
+              {menuCuenta && (
+                <div role="menu" className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-2xl border border-line bg-surface-2/95 p-1.5 shadow-card backdrop-blur-xl animate-fade-in">
+                  <div className="flex items-center gap-3 px-3 py-3">
+                    <Avatar usuario={usuario} className="size-9" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-fg">{usuario.nombreCompleto}</p>
+                      <p className="truncate text-xs text-muted">{usuario.mail}</p>
                     </div>
                   </div>
-                )}
-              </>
-            ) : (
-              <Link 
-                to="/login" 
-                className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-300 active:scale-95"
-              >
-                Iniciar sesión
-              </Link>
-            )}
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Mobile Layout */}
-          <Link to="/" className="flex-shrink-0 w-20!">
-            <img className="w-20! h-auto" src={goPng} alt="Logo" loading="lazy" />
-          </Link>
-
-          {/* Mobile Menu Button */}
-          <button 
-            className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
-            onClick={() => setShowMobileNav(!showMobileNav)}
-          >
-            <svg 
-              className="w-7 h-7 text-gray-700" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              {showMobileNav ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-
-          {/* Mobile Menu */}
-          {showMobileNav && (
-            <div className="absolute left-0 right-0 top-20 bg-gray-800 border-b border-gray-200 shadow-xl animate-slide-down">
-              <div className="max-h-[calc(100vh-5rem)] overflow-y-auto">
-                {/* User Info Header (if logged in) */}
-                {session?.userFinded?.length > 0 && (
-                  <div className="bg-gradient-to-r from-amber-600 to-yellow-500 px-6 py-4 flex items-center space-x-3">
-                    <img 
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-[#111827]" 
-                      src={session?.userFinded[0]?.imagenProductora ?? userImgPng} 
-                      alt="Profile"
-                    />
-                    <div>
-                      <p className="text-[#111827] font-semibold text-sm">
-                        {session?.userFinded[0]?.nombreCompleto}
-                      </p>
-                      <p className="text-[#111827] text-xs">
-                        {session?.userFinded[0]?.mail}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Navigation Items */}
-                <div className="">
-                  <Link 
-                    to="/" 
-                    onClick={() => setShowMobileNav(!showMobileNav)}
-                    className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border-b border-gray-500"
-                  >
-                    <svg className="w-5 h-5 mr-3 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    <span className="font-medium text-gray-300">Inicio</span>
-                  </Link>
-
-                  <Link 
-                    to="/Contact" 
-                    onClick={() => setShowMobileNav(!showMobileNav)}
-                    className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border-b border-gray-100"
-                  >
-                    <svg className="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span className="font-medium text-gray-300">Contacto</span>
-                  </Link>
-
-                  <Link 
-                    to={session?.userFinded?.length > 0 ? "/Create_event" : "/login"} 
-                    onClick={() => setShowMobileNav(!showMobileNav)}
-                    className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border-b border-gray-100"
-                  >
-                    <svg className="w-5 h-5 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span className="font-medium text-gray-300">Crear evento</span>
-                  </Link>
-
-                  {session?.userFinded?.length > 0 && (
-                    <>
-                      <Link 
-                        to="/productions" 
-                        onClick={() => setShowMobileNav(!showMobileNav)}
-                        className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border-b border-gray-100"
-                      >
-                        <svg className="w-5 h-5 mr-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                        <span className="font-medium text-gray-300">Producciones</span>
-                      </Link>
-
-                      <Link 
-                        to={`/get_my_rrpp_events/${session?.userFinded?.[0]?.mail}`} 
-                        onClick={() => setShowMobileNav(!showMobileNav)}
-                        className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border-b border-gray-100"
-                      >
-                        <svg className="w-5 h-5 mr-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span className="font-medium text-gray-300">Colaboraciones</span>
-                      </Link>
-
-                      <Link 
-                        to={`/see_profile/${session?.userFinded?.[0]?._id}`} 
-                        onClick={() => setShowMobileNav(!showMobileNav)}
-                        className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border-b border-gray-100"
-                      >
-                        <svg className="w-5 h-5 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <span className="font-medium text-gray-300">Ver mi perfil</span>
-                      </Link>
-
-                      <Link 
-                        to="/user_info" 
-                        onClick={() => setShowMobileNav(!showMobileNav)}
-                        className="flex items-center px-6 py-4 text-gray-700 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border-b border-gray-100"
-                      >
-                        <svg className="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        <span className="font-medium text-gray-300">Editar perfil</span>
-                      </Link>
-
-                      <button 
-                        onClick={() => logoutFunc()}
-                        className="flex items-center w-full px-6 py-4 text-red-600 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 transition-all duration-300"
-                      >
-                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        <span className="font-medium">Cerrar sesión</span>
-                      </button>
-                    </>
-                  )}
-
-                  {/* Login button for non-logged users */}
-                  {!session?.userFinded?.length && (
-                    <div className="px-6 py-4">
-                      <Link 
-                        to="/login"
-                        onClick={() => setShowMobileNav(!showMobileNav)}
-                        className="flex items-center justify-center w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold shadow-md transition-all duration-300"
-                      >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                        </svg>
-                        Iniciar sesión
-                      </Link>
-                    </div>
-                  )}
+                  <div className="my-1 h-px bg-line" />
+                  {itemsCuenta.map(({ to, label, icon: Ico }) => (
+                    <Link key={to} to={to} role="menuitem" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted transition-colors hover:bg-surface-3 hover:text-fg">
+                      <Ico className="size-[18px]" />{label}
+                    </Link>
+                  ))}
+                  <div className="my-1 h-px bg-line" />
+                  <button type="button" role="menuitem" onClick={cerrarSesion} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted transition-colors hover:bg-danger/10 hover:text-danger">
+                    <Icon.LogOut className="size-[18px]" />Cerrar sesión
+                  </button>
                 </div>
+              )}
+            </div>
+          ) : (
+            <Button to="/login" size="sm" variant="primary">Ingresar</Button>
+          )}
+        </div>
+
+        {/* Celular */}
+        <button type="button" className="-mr-2 flex size-10 shrink-0 items-center justify-center rounded-xl text-fg transition-colors hover:bg-surface-2 md:hidden"
+          onClick={() => setMenuMovil((v) => !v)} aria-expanded={menuMovil} aria-label={menuMovil ? 'Cerrar menú' : 'Abrir menú'}>
+          {menuMovil ? <Icon.X className="size-6" /> : <Icon.Menu className="size-6" />}
+        </button>
+      </div>
+    </nav>
+
+      {menuMovil && (
+        <div className="fixed inset-x-0 bottom-0 top-16 z-50 overflow-y-auto border-t border-line bg-canvas px-4 pb-10 pt-4 animate-fade-in md:hidden">
+          {logueado && (
+            <div className="mb-4 flex items-center gap-3 rounded-2xl border border-line bg-surface p-4">
+              <Avatar usuario={usuario} className="size-11" />
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-fg">{usuario.nombreCompleto}</p>
+                <p className="truncate text-sm text-muted">{usuario.mail}</p>
               </div>
             </div>
           )}
-        </>
+          <div className="flex flex-col">
+            {[
+              { to: '/', label: 'Eventos', icon: Icon.Ticket },
+              ...(logueado ? [{ to: '/productions', label: 'Mis producciones', icon: Icon.Sparkles }] : []),
+              ...itemsCuenta,
+              { to: '/contact', label: 'Contacto', icon: Icon.Mail }
+            ].map(({ to, label, icon: Ico }) => (
+              <Link key={to} to={to} className="flex items-center gap-3.5 rounded-xl px-3 py-3.5 text-[15px] font-medium text-fg transition-colors active:bg-surface-2">
+                <Ico className="size-5 text-muted" />{label}
+                <Icon.ChevronRight className="ml-auto size-4 text-subtle" />
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-col gap-3">
+            <Button to={crearEventoHref} block size="lg" icon={Icon.Plus}>Crear evento</Button>
+            {logueado
+              ? <Button variant="ghost" block onClick={cerrarSesion} icon={Icon.LogOut}>Cerrar sesión</Button>
+              : <Button to="/login" variant="secondary" block size="lg">Ingresar</Button>}
+          </div>
+        </div>
       )}
-    </div>
-  </nav>
-);
+    </>
+  )
 }
 
 export default Nav

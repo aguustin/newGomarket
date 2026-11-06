@@ -1,14 +1,13 @@
 import { useContext, useEffect, useState } from "react"
-import { Link, useParams } from "react-router"
+import { Link, useNavigate, useParams } from "react-router"
 import { buyTicketsRequest, findDiscountCodeRequest, getEventToBuyRequest, getRelateEventsRequest } from "../../api/eventRequests"
-import { formatDate, formatDateB, LoadingButton, MapComponent, Message, Timer } from "../../globalscomp/globalscomp"
-import checkWhitePng from "../../assets/images/check-white.png"
-import mapPng from "../../assets/botones/map.png"
-import copyPng from "../../assets/botones/copy.png"
+import { formatDateB, MapComponent } from "../../globalscomp/globalscomp"
 import UserContext from "../../context/userContext"
-import { useNavigate } from "react-router"
-import calendarPng from "../../assets/images/calendar.png"
-import goPng from "../../assets/bannerR.png"
+import { Icon } from "../../ui/icons"
+import { Badge, Button, Card, Field, Input, Select, Skeleton, cx } from "../../ui/primitives"
+import SmartImage from "../../ui/SmartImage"
+import { fechaPartes, lugarDe } from "../../ui/EventCard"
+import { toast } from "../../ui/toast"
 
 //La venta de un ticket cierra al pasar su fecha de cierre, al terminar el evento o si el evento esta inactivo.
 //Se calcula en el momento (no depende del cron, que corre una vez por semana)
@@ -17,15 +16,64 @@ const ventaCerrada = (event, ticket, now = new Date()) =>
     (event?.fechaFin && new Date(event.fechaFin) < now) ||
     (ticket?.fechaDeCierre && new Date(ticket.fechaDeCierre) < now)
 
+const currencyFormatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' })
+const TIEMPO_COMPRA_MS = 12 * 60 * 1000
+
+const MENSAJES = {
+    1: 'Elegí al menos una entrada para continuar.',
+    2: 'Completá todos tus datos para recibir las entradas.',
+    3: 'Los emails no coinciden. Revisalos antes de seguir.',
+    4: 'La venta de alguna de las entradas que elegiste ya cerró. La quitamos de tu compra.'
+}
+
+//Cuenta regresiva del tiempo para completar la compra. Al terminar vuelve a la portada
+const useCuentaRegresiva = (ms, alTerminar) => {
+    const [restante, setRestante] = useState(ms)
+    useEffect(() => {
+        const fin = Date.now() + ms
+        const id = setInterval(() => {
+            const r = Math.max(0, fin - Date.now())
+            setRestante(r)
+            if (r === 0) { clearInterval(id); alTerminar() }
+        }, 1000)
+        return () => clearInterval(id)
+    }, [])
+    const s = Math.ceil(restante / 1000)
+    return { texto: `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`, poco: s <= 120 }
+}
+
+const Aviso = ({ tono = 'warn', children }) => (
+    <div role="alert" className={cx('flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-sm',
+        tono === 'ok' ? 'border-ok/25 bg-ok/10 text-ok' : tono === 'danger' ? 'border-danger/25 bg-danger/10 text-danger' : 'border-warn/25 bg-warn/10 text-warn')}>
+        {tono === 'ok' ? <Icon.CheckCircle className="mt-0.5 size-[18px] shrink-0" /> : <Icon.AlertCircle className="mt-0.5 size-[18px] shrink-0" />}
+        <p className="leading-relaxed">{children}</p>
+    </div>
+)
+
+const Stepper = ({ cantidad, onRestar, onSumar, nombre, maximoAlcanzado }) => (
+    <div className="flex items-center gap-1 rounded-xl border border-line bg-surface-2 p-1">
+        <button type="button" onClick={onRestar} disabled={cantidad === 0} aria-label={`Restar una entrada ${nombre}`}
+            className="flex size-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-3 hover:text-fg disabled:opacity-30">
+            <Icon.Minus className="size-4" />
+        </button>
+        <span className="w-7 text-center text-[15px] font-semibold tabular-nums text-fg" aria-live="polite">{cantidad}</span>
+        <button type="button" onClick={onSumar} disabled={maximoAlcanzado} aria-label={`Sumar una entrada ${nombre}`}
+            className="flex size-8 items-center justify-center rounded-lg bg-brand-500 text-white transition-colors hover:bg-brand-400 disabled:bg-surface-3 disabled:text-subtle">
+            <Icon.Plus className="size-4" />
+        </button>
+    </div>
+)
+
 const BuyTicket = () => {
-    const {session} = useContext(UserContext)
-    const {prodId, emailHash} = useParams()
+    const { session } = useContext(UserContext)
+    const { prodId, emailHash } = useParams()
     const [prod, setProd] = useState([])
-    const [quantities, setQuantities] = useState({});
-    // eslint-disable-next-line no-unused-vars
-    const [totalQuantity, setTotalQuantity] = useState(0)
-    const [discountCode, setDiscountValueCode] = useState(0)
+    const [cargando, setCargando] = useState(true)
+    const [quantities, setQuantities] = useState({})
+    const [discountCode, setDiscountValueCode] = useState('')
     const [appliedDiscount, setAppliedDiscount] = useState(null)  //{ code, pct } validado contra el evento
+    const [verificandoCodigo, setVerificandoCodigo] = useState(false)
+    const [codigoMsg, setCodigoMsg] = useState('')
     const [serverMsg, setServerMsg] = useState('')
     const [reloadKey, setReloadKey] = useState(0)
     const [showMsg, setShowMsg] = useState(0)
@@ -36,136 +84,107 @@ const BuyTicket = () => {
     const [showBanner, setShowBanner] = useState(false)
     const navigate = useNavigate()
 
- useEffect(() => {
-
-  const fetchData = async () => {
-    try {
-      const resEvent = await getEventToBuyRequest(prodId);
-      setProd(resEvent.data);
-      if(!resEvent.data[0]?.active){
+    const tiempo = useCuentaRegresiva(TIEMPO_COMPRA_MS, () => {
+        toast.info('Se terminó el tiempo para completar la compra. Podés empezar de nuevo cuando quieras.')
         navigate('/')
-      }
-      const resRelated = await getRelateEventsRequest(prodId);
-      setRelates(resRelated.data.relacionados);
-    } catch (error) {
-      console.error('Error al obtener eventos:', error);
-    }
-  };
-  fetchData();
-}, [session, prodId, navigate, reloadKey]);
+    })
 
-    const currencyFormatter = new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-});
-
-
- const restQuantity = (e, ticketId) => {
-  e.preventDefault();
-
-  setQuantities(prev => {
-    const current = prev[ticketId];
-
-    // Si no existe ese ticket, no hacemos nada
-    if (!current) return prev;
-
-    const newAmount = current.amount - 1;
-
-    // Si el nuevo amount es 0 o menor → eliminar ese ticket del objeto
-    if (newAmount <= 0) {
-      const updated = { ...prev };
-      delete updated[ticketId];
-      return updated;
-    }
-
-    // Sino, simplemente actualizamos el amount
-    return {
-      ...prev,
-      [ticketId]: {
-        ...current,
-        amount: newAmount
-      }
-    };
-  });
-
-  // Actualizamos el total
-  setTotalQuantity(prevTotal => Math.max(prevTotal - 1, 0));
-};
-
-const addQuantity = (e, ticketId, limit, cantidad, free) => {
-  e.preventDefault();
-  setQuantities(prev => {
-    const currentObj = prev[ticketId] || { amount: 0, free: false };
-    const maxLimit = limit !== undefined ? limit : 30;
-
-    if (currentObj.amount < maxLimit && currentObj.amount < cantidad) {
-      setTotalQuantity(prev => prev + 1);
-      return {
-          ...prev,
-          [ticketId]: {
-              amount: currentObj.amount + 1,
-              free: free || currentObj.free 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const resEvent = await getEventToBuyRequest(prodId)
+                setProd(resEvent.data)
+                if (!resEvent.data[0]?.active) navigate('/')
+                const resRelated = await getRelateEventsRequest(prodId)
+                setRelates(resRelated.data.relacionados)
+            } catch (error) {
+                console.error('Error al obtener eventos:', error)
+            } finally {
+                setCargando(false)
             }
-        };
+        }
+        fetchData()
+    }, [session, prodId, navigate, reloadKey])
+
+    useEffect(() => {
+        if (!showBanner) return
+        const onKey = (e) => e.key === 'Escape' && setShowBanner(false)
+        document.addEventListener('keydown', onKey)
+        return () => document.removeEventListener('keydown', onKey)
+    }, [showBanner])
+
+    const restQuantity = (ticketId) => {
+        setQuantities((prev) => {
+            const current = prev[ticketId]
+            if (!current) return prev
+            const newAmount = current.amount - 1
+            if (newAmount <= 0) {
+                const updated = { ...prev }
+                delete updated[ticketId]
+                return updated
+            }
+            return { ...prev, [ticketId]: { ...current, amount: newAmount } }
+        })
+        setShowMsg(0)
     }
-    
-    return prev;
-});
-};
 
-
-//Mismo calculo que el servidor (server/lib/pricing.js) sobre el evento que se esta viendo.
-//Es solo para mostrar: el servidor recalcula y, si no coincide, rechaza la compra y devuelve el total correcto
-const redondear = (n) => Math.round(n * 100) / 100
-const eventToRender = selectedEvent || prod[0];
-const comision = eventToRender?.comisionServicio ?? 15; // 15% si no existe (igual que el backend)
-const subtotal = (eventToRender?.tickets ?? []).reduce((acc, tck) => acc + (quantities[tck._id]?.amount || 0) * tck.precio, 0)
-const descuentoPct = appliedDiscount?.pct ?? 0
-const total = redondear(subtotal * (1 + comision / 100) * (1 - descuentoPct / 100))
-
-const activeDiscountCode = async (e) => {
-  e.preventDefault()
-  setServerMsg('')
-  const code = String(discountCode || '').trim()
-  if(code.length === 0) return
-
-  try {
-    const res = await findDiscountCodeRequest({discountCode: code, prodId: eventToRender?._id})
-    if(res.data.discount){
-      setAppliedDiscount({ code, pct: Number(res.data.discount.numeroDescuento) || 0 })
-      return
+    const addQuantity = (ticketId, limit, cantidad, free) => {
+        setQuantities((prev) => {
+            const currentObj = prev[ticketId] || { amount: 0, free: false }
+            const maxLimit = limit !== undefined ? limit : 30
+            if (currentObj.amount < maxLimit && currentObj.amount < cantidad) {
+                return { ...prev, [ticketId]: { amount: currentObj.amount + 1, free: free || currentObj.free } }
+            }
+            return prev
+        })
+        setShowMsg(0)
     }
-    setAppliedDiscount(null)
-    setServerMsg('El código de descuento no es válido para este evento o ya no tiene usos')
-  } catch {
-    setServerMsg('No pudimos verificar el código de descuento. Intentá de nuevo')
-  }
-}
+
+    //Mismo calculo que el servidor (server/lib/pricing.js) sobre el evento que se esta viendo.
+    //Es solo para mostrar: el servidor recalcula y, si no coincide, rechaza la compra y devuelve el total correcto
+    const redondear = (n) => Math.round(n * 100) / 100
+    const eventToRender = selectedEvent || prod[0]
+    const comision = eventToRender?.comisionServicio ?? 15 // 15% si no existe (igual que el backend)
+    const subtotal = (eventToRender?.tickets ?? []).reduce((acc, tck) => acc + (quantities[tck._id]?.amount || 0) * tck.precio, 0)
+    const descuentoPct = appliedDiscount?.pct ?? 0
+    const total = redondear(subtotal * (1 + comision / 100) * (1 - descuentoPct / 100))
+    const cargoServicio = redondear(subtotal * comision / 100)
+    const montoDescuento = redondear((subtotal + cargoServicio) * descuentoPct / 100)
+    const cantidadElegida = Object.values(quantities).reduce((a, q) => a + (q?.amount || 0), 0)
+
+    const activeDiscountCode = async () => {
+        setCodigoMsg('')
+        const code = String(discountCode || '').trim()
+        if (code.length === 0) return
+        setVerificandoCodigo(true)
+        try {
+            const res = await findDiscountCodeRequest({ discountCode: code, prodId: eventToRender?._id })
+            if (res.data.discount) {
+                setAppliedDiscount({ code, pct: Number(res.data.discount.numeroDescuento) || 0 })
+                return
+            }
+            setAppliedDiscount(null)
+            setCodigoMsg('El código de descuento no es válido para este evento o ya no tiene usos')
+        } catch {
+            setCodigoMsg('No pudimos verificar el código de descuento. Intentá de nuevo')
+        } finally {
+            setVerificandoCodigo(false)
+        }
+    }
 
     const buyTickets = async (e) => {
-        e.preventDefault();
+        e.preventDefault()
         setServerMsg('')
-        const mail = e.target.elements.mail.value;
-        const repetirMail = e.target.elements.repetirMail.value
-        const nombreCompleto = e.target.elements.nombreCompleto.value
-        const dni = e.target.elements.dni.value
-        const telefono = e.target.elements.telefono.value
+        const f = e.target.elements
+        const mail = f.mail.value.trim()
+        const repetirMail = f.repetirMail.value.trim()
+        const nombreCompleto = f.nombreCompleto.value.trim()
+        const dni = f.dni.value.trim()
+        const telefono = f.telefono.value.trim()
 
-        const hasTickets = Object.values(quantities).some(value => parseInt(value?.amount) > 0);
-        
-        if (!hasTickets) {
-            setShowMsg(1)
-            return;
-        }
-        if(mail.length <= 0 || repetirMail.length <= 0 || nombreCompleto.length <= 0 || dni.length <= 0 || telefono.length <= 0){
-            setShowMsg(2)
-            return;
-        }
-
-        if(mail !== repetirMail){
-            setShowMsg(3)
-            return;
-        }
+        if (!Object.values(quantities).some((v) => parseInt(v?.amount) > 0)) return setShowMsg(1)
+        if (!mail || !repetirMail || !nombreCompleto || !dni || !telefono) return setShowMsg(2)
+        if (mail !== repetirMail) return setShowMsg(3)
 
         //Por si la venta cerro mientras la pagina estaba abierta: se quitan esos tickets y se avisa
         const cerrados = Object.keys(quantities).filter((ticketId) => {
@@ -174,26 +193,23 @@ const activeDiscountCode = async (e) => {
         })
         if (cerrados.length > 0) {
             setQuantities((prev) => Object.fromEntries(Object.entries(prev).filter(([id]) => !cerrados.includes(id))))
-            setShowMsg(4)
-            return;
+            return setShowMsg(4)
         }
+        setShowMsg(0)
 
         try {
             setLoading(true)
             //Se compra el evento que se esta viendo (puede ser otra fecha relacionada). El total es el que se muestra
-            const data = await buyTicketsRequest(eventToRender._id, eventToRender.nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono, appliedDiscount?.code ?? null);
+            const data = await buyTicketsRequest(eventToRender._id, eventToRender.nombreEvento, quantities, mail, 1, total, emailHash, nombreCompleto, dni, telefono, appliedDiscount?.code ?? null)
             setLoading(false)
-
             if (data === 3) {  //entradas gratis: el servidor las emitio sin pasar por Mercado Pago
                 setQuantities({})
                 setShowMsg(5)
-                return;
+                toast.success('¡Listo! Te enviamos las entradas por email.')
+                return
             }
-            if (!data?.init_point) {
-                setServerMsg('No pudimos iniciar el pago. Intentá de nuevo')
-                return;
-            }
-            window.location.href = data.init_point;
+            if (!data?.init_point) return setServerMsg('No pudimos iniciar el pago. Intentá de nuevo')
+            window.location.href = data.init_point
         } catch (error) {
             setLoading(false)
             const body = error?.response?.data
@@ -204,323 +220,251 @@ const activeDiscountCode = async (e) => {
         }
     }
 
-   const handleEventChange = (eventId) => {
+    const handleEventChange = (eventId) => {
         //Al cambiar de fecha se empieza de cero: las entradas y el descuento son de cada evento
         setQuantities({})
         setAppliedDiscount(null)
         setServerMsg('')
-        if (eventId === '') {
-            setSelectedEvent(null);
-        } else {
-            const foundEvent = relates.find((rel) => rel._id === eventId);
-            setSelectedEvent(foundEvent);
-        }
-    };
-    
-    
-    return(
-         
-        <div className="buy-tickets-container relative mx-12 mt-[30px] border-[1px] border-gray-700 rounded-2xl p-5 mb-8 bg-gradient-to-br from-gray-800 to-gray-900">
-            {prod.map((p) => 
-            <div className="relative flex flex-wrap justify-center " key={p._id}>
-                        <div className="w-full">
-                            <div className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 p-6 rounded-t-lg">
-                                <h2 className="text-[#111827] text-center text-2xl font-bold flex items-center justify-center">
-                                    <span className="text-4xl mr-3">🎟️</span>
-                                    COMPRAR TICKETS
-                                </h2>
-                            </div>
-                        <div className="desc-and-map text-left ml-4 mt-9">
-                            <h2 className="text-xl text-gray-200! mb-2">Evento: {p.nombreEvento}</h2>
-                            <p className="mb-2 text-gray-400!">Dirección: {p.direccion}</p>
-                            <div className="flex items-center mt-2">
-                                <p className="text-yellow-500">Fecha de inicio: {formatDate(p.fechaInicio) }</p>
-                                <p className="ml-3 text-yellow-500">Fecha de cierre: {formatDate(p.fechaFin) }</p>
-                            </div>
-                            <div className="flex items-center mt-2">
-                                <p className="text-gray-400">Artistas: {p.artistas}</p>
-                            </div>
-                            <div className="mb-3">
-                                <p className="text-gray-400 mt-3 text-sm">{p.descripcionEvento}</p>
-                                {p?.aviso?.length > 0 && <p className="text-[#111827] mt-3 text-sm bg-gray-400! p-2 rounded-lg">{p.aviso}</p> }
-                            </div>
-                            <div className="flex flex-wrap items-center mb-2">
-                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-[#111827]! px-5 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => setShowMap(!showMap)}><img className="mr-1" src={mapPng} alt=""></img>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</button>
-                                <button className="buy-buttons w-[auto] text-white flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 text-[#111827]! px-5 py-2 ml-2 rounded-xl  transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={() => navigator.clipboard.writeText(window.location.href)}><img className="mr-1" src={copyPng} alt=""></img>Copiar enlace</button>
-                               {/*p?.linkVideo?.length > 0 && <a href={`${p.linkVideo}`} className="buy-buttons w-[169.94px]! text-white flex items-center rounded-xl bg-orange-500! p-2 ml-2  transition-all duration-300 hover:scale-105 shadow-lg" >Video promocional</a> */}
-                            </div>
-                            {showMap && <MapComponent className="mx-2" provincia={p.provincia} direccion={p.direccion} />}
-                        </div>
-                            <div className="flex justify-center mt-3">
-                                <img className="h-[320px] object-cover rounded-lg mt-3" src={p.imgEvento} alt="" loading="lazy"></img>   
-                            </div>
-                        </div>
-                           {p.bannerEvento && 
-                           <div className="relative w-[100%] h-[300px] hover:brightness-80 hover:cursor-pointer duration-100 ease-linear group">
-                               <img onClick={() => setShowBanner(true)} className="relative w-[100%] h-[300px] flex-start object-cover mx-auto mt-5" src={p.bannerEvento ?? ''} alt=""></img>
-                              <p onClick={() => setShowBanner(true)}  className="buy-buttons p-3 rounded-lg absolute bottom-3 right-3 cursor-pointer opacity-0 group-hover:opacity-100">Ver banner completo</p>
-                           </div> }
-                           {showBanner &&
-                           <>
-                                <div onClick={() => setShowBanner(false)} className="fixed z-[6] bg-black h-screen top-[0%] w-screen opacity-[0.5]"></div> 
-                                <img onClick={() => setShowBanner(false)} className="top-40 fixed flex-start object-contain mx-auto mt-5 z-[7]" src={p.bannerEvento ?? ''} alt=""></img>
-                           </>
-                           }
+        setSelectedEvent(eventId === '' ? null : relates.find((rel) => rel._id === eventId))
+    }
+
+    const copiarEnlace = async () => {
+        try {
+            if (navigator.share && window.matchMedia('(pointer: coarse)').matches) {
+                await navigator.share({ title: p?.nombreEvento, url: window.location.href })
+                return
+            }
+            await navigator.clipboard.writeText(window.location.href)
+            toast.success('Enlace copiado. ¡Compartilo con quien quieras!')
+        } catch { /* el usuario cancelo el menu de compartir */ }
+    }
+
+    const p = prod[0]
+
+    if (cargando) {
+        return (
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-20 pt-6 sm:px-6 lg:px-8">
+                <Skeleton className="aspect-[21/9] w-full rounded-3xl" />
+                <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_420px]">
+                    <div className="space-y-4"><Skeleton className="h-9 w-2/3" /><Skeleton className="h-5 w-1/2" /><Skeleton className="h-24 w-full" /></div>
+                    <Skeleton className="h-96 w-full rounded-2xl" />
+                </div>
+            </main>
+        )
+    }
+    if (!p) {
+        return (
+            <main className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
+                <h1 className="text-xl font-semibold text-fg">No encontramos este evento</h1>
+                <p className="mt-2 text-muted">Puede que ya no esté a la venta.</p>
+                <Button to="/" variant="secondary" className="mt-6" icon={Icon.ArrowLeft}>Ver otros eventos</Button>
+            </main>
+        )
+    }
+
+    const f = fechaPartes(p.fechaInicio)
+    const fFin = fechaPartes(p.fechaFin)
+    const portada = p.bannerEvento || p.imgEvento
+    const tickets = (eventToRender?.tickets ?? []).filter((tck) => tck.estado !== 2)
+    const mensaje = showMsg ? MENSAJES[showMsg] : null
+
+    return (
+        <main className="flex-1 pb-28 lg:pb-20">
+            {/* Portada */}
+            <div className="mx-auto max-w-7xl px-0 sm:px-6 sm:pt-6 lg:px-8">
+                <button type="button" onClick={() => setShowBanner(true)} aria-label="Ver imagen completa"
+                    className="group relative block w-full overflow-hidden sm:rounded-3xl">
+                    <SmartImage src={portada} eager className="aspect-[16/10] w-full sm:aspect-[21/8]" imgClassName="transition-transform duration-700 group-hover:scale-[1.02]" />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-canvas via-canvas/20 to-transparent" />
+                </button>
+            </div>
+
+            <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-12 lg:px-8">
+                {/* Informacion del evento */}
+                <section className="relative -mt-16 min-w-0 sm:-mt-20">
+                    <div className="flex flex-wrap gap-2">
+                        {p.categoriasEventos?.slice(0, 3).map((c) => <Badge key={c} tone="brand" className="capitalize">{c.toLowerCase()}</Badge>)}
+                        {Number(p.eventoEdad) >= 18 && <Badge tone="neutral">+18</Badge>}
                     </div>
-            )}
-            <form className="form-buy-inputs " onSubmit={(e) => buyTickets(e)}>
-                 <div> 
-              {eventToRender && (
-                        <>
-                            <div >
-                                <img className="w-[350px] mx-auto mt-5" src={prod?.[0]?.imagenDescriptiva} alt=""></img>
-                            </div>
-                           {relates.length > 0  && 
-                           <>
-                           <p className="text-gray-300! max-[450px]:text-center">Filtrar tickets por fecha:</p>
-                           <div className="max-[780px]:text-center! max-[450px]:justify-center mt-1 flex flex-wrap items-center">
-                                <select className="w-auto mt-1 mb-3 bg-gradient-to-r from-gray-950 to-gray-900 p-3 border border-gray-300 rounded-lg appearance-none text-gray-300!" name="otrasFechas" onChange={(e) => handleEventChange(e.target.value)}>
-                                    <option className="bg-gray-950!" value=''>Cambiar fecha</option>
-                                    {relates.map((rel) => (<option className="bg-gray-950!" key={rel._id} value={rel._id}>{rel.nombreEvento} - {formatDateB(rel.fechaInicio)}</option>))}
-                                </select>
-                                <Link className="w-[101.5px]! ml-3! text-[#111827]! bg-yellow-500 rounded-lg p-2 mb-2" to={{ pathname: `/buy_tickets/${eventToRender._id}` }}>Ir a evento</Link>
-                            </div> 
-                           </> }
-                            <div className="cortesies-desc-container mt-6 text-center max-h-[432px]! mb-6">
-                            {eventToRender.tickets.filter((tck) => tck.estado !== 2).map((tck) => (
-                            <div key={tck._id} className="flex justify-center mx-auto text-center">
-                              <div className="w-full mb-3 p-4 bg-gray-800  border-2 border-gray-600 rounded-2xl hover:shadow-lg transition-all duration-300">
+                    <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-fg sm:text-4xl lg:text-[2.75rem]">{p.nombreEvento}</h1>
 
-                                <div className="flex items-center justify-between max-[550px]:justify-center flex-wrap gap-4">
-
-                                  {/* Imagen + nombre + descripción */}
-                                  <div className="flex items-center space-x-4 min-w-[200px]">
-                                    <img 
-                                      className="w-16 h-16 rounded-xl object-cover shadow-md" 
-                                      src={tck.imgTicket ?? goPng} 
-                                      alt="Ticket"
-                                      loading="lazy"
-                                    />
-
-                                    <div className="text-left">
-                                      <p className="text-gray-200 text-md">{tck.nombreTicket}</p>
-                                      <p className="text-sm text-yellow-500">Válido hasta: {formatDate(tck.fechaDeCierre)}</p>
-                                      <p className="text-xs text-gray-400 max-w-[260px] mt-1">{tck.descripcionTicket}</p>
-                                    </div>
-                                  </div>
-
-                                  {/* Precio + fecha */}
-                                  <div className="flex items-center space-x-6 max-[550px]:w-full max-[550px]:justify-center">
-                                    <div className="text-center">
-                                      <p className="text-xs text-gray-300 font-medium">Precio</p>
-                                      <p className="text-sm text-gray-200">${tck.precio} c/u</p>
-                                    </div>
-
-                                    <div className="flex items-center space-x-2 bg-gray-700 px-4 py-2 rounded-lg border border-gray-600">
-                                      <img className="h-5 w-5" src={calendarPng} alt="" />
-                                      <p className="text-sm text-gray-200 font-medium">
-                                        {formatDate(tck.fechaDeCierre)}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  {/* Cantidades */}
-                                  {ventaCerrada(eventToRender, tck) ? (
-                                    <div className="flex items-center space-x-2 bg-gray-700 border border-gray-500 px-4 py-2 rounded-xl shadow-sm">
-                                        <p className="text-gray-200 font-semibold">Venta cerrada</p>
-                                    </div>
-                                  ) : tck.cantidad > 0 && tck.estado !== 4 && !eventToRender?.soldOut ? (
-                                    <div className="flex items-center space-x-2 bg-gray-700 rounded-xl p-1 border border-gray-200 shadow-sm max-[550px]:w-[90%] max-[550px]:justify-between max-[550px]:mt-2">
-                                      <button
-                                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95" 
-                                        onClick={(e) => restQuantity(e, tck._id, tck.limit)}
-                                      >
-                                        -
-                                      </button>
-
-                                      <div className="w-14 text-center">
-                                        <p className="text-md text-white!">
-                                          {quantities[tck._id]?.amount || 0}
-                                        </p>
-                                      </div>
-
-                                      <button
-                                        className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg text-white transition-all active:scale-95 shadow-md" 
-                                        onClick={(e) => addQuantity(e, tck._id, tck.limit, tck.cantidad)}
-                                      >
-                                        +
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
-                                        <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
-                                        </svg>
-                                        <p className="text-red-700 font-semibold">Agotado</p>
-                                    </div>
-                                  )}
-                                  {tck.cantidad >= 1 && eventToRender?.soldOut === false && !ventaCerrada(eventToRender, tck) && (
-                                    <p className="text-white-800 font-medium text-sm mt-2">
-                                      {currencyFormatter.format((quantities[tck._id]?.amount || 0) * tck.precio)}
-                                    </p>
-                                  )}
-
+                    <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+                        {f && (
+                            <div className="flex gap-3">
+                                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-line bg-surface text-brand-300"><Icon.Calendar /></span>
+                                <div>
+                                    <dt className="text-sm font-semibold capitalize text-fg">{f.larga}</dt>
+                                    <dd className="text-sm text-muted">{f.hora} h{fFin && fFin.larga !== f.larga ? ` · hasta el ${fFin.larga}` : fFin && fFin.hora !== f.hora ? ` a ${fFin.hora} h` : ''}</dd>
                                 </div>
-                              </div>
                             </div>
-))}
+                        )}
+                        <div className="flex gap-3">
+                            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-line bg-surface text-brand-300"><Icon.MapPin /></span>
+                            <div className="min-w-0">
+                                <dt className="truncate text-sm font-semibold text-fg">{p.lugarEvento || p.localidad || p.provincia}</dt>
+                                <dd className="truncate text-sm text-muted">{[p.direccion, p.localidad, p.provincia].filter(Boolean).join(', ')}</dd>
+                            </div>
+                        </div>
+                    </dl>
 
-{/**eventToRender.cortesiaRRPP iba aca */}
+                    <div className="mt-6 flex flex-wrap gap-2">
+                        <Button variant="secondary" size="sm" icon={Icon.MapPin} onClick={() => setShowMap((v) => !v)} aria-expanded={showMap}>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</Button>
+                        <Button variant="secondary" size="sm" icon={Icon.Share} onClick={copiarEnlace}>Copiar enlace</Button>
+                    </div>
+                    {showMap && <Card className="mt-4 overflow-hidden p-0 animate-fade-in"><MapComponent provincia={p.provincia} direccion={p.direccion} /></Card>}
+
+                    {p?.aviso?.length > 0 && <div className="mt-8"><Aviso tono="warn">{p.aviso}</Aviso></div>}
+
+                    {(p.descripcionEvento || p.artistas) && (
+                        <div className="mt-10">
+                            <h2 className="text-lg font-semibold text-fg">Sobre el evento</h2>
+                            {p.descripcionEvento && <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-muted">{p.descripcionEvento}</p>}
+                            {p.artistas && (
+                                <p className="mt-4 text-[15px] text-muted"><span className="font-medium text-fg">Artistas: </span>{p.artistas}</p>
+                            )}
+                        </div>
+                    )}
+
+                    {p.imagenDescriptiva && p.imagenDescriptiva !== p.imgEvento && (
+                        <SmartImage src={p.imagenDescriptiva} className="mt-8 aspect-[4/3] w-full max-w-xl rounded-2xl border border-line" />
+                    )}
+
+                    <p className="mt-10 flex items-start gap-2.5 text-sm leading-relaxed text-subtle">
+                        <Icon.Shield className="mt-0.5 size-[18px] shrink-0" />
+                        Si el evento no se realiza o no cumple con algún aspecto fundamental, Ipass te devuelve el valor de las entradas. El cargo por servicio no es reembolsable.
+                    </p>
+                </section>
+
+                {/* Checkout */}
+                <aside className="lg:sticky lg:top-24 lg:self-start">
+                    <Card className="p-5 sm:p-6">
+                        <form id="checkout" onSubmit={buyTickets} noValidate>
+                            <div className="flex items-center justify-between gap-3">
+                                <h2 className="text-lg font-semibold text-fg">Entradas</h2>
+                                <span className={cx('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium tabular-nums', tiempo.poco ? 'bg-warn/12 text-warn' : 'bg-surface-2 text-muted')} title="Tiempo para completar la compra">
+                                    <Icon.Clock className="size-3.5" />{tiempo.texto}
+                                </span>
                             </div>
-                        </>
-                   
-                )}
-                </div>
-                <div className="flex flex-wrap items-center justify-center">
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">NOMBRE COMPLETO:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="text" name="nombreCompleto" placeholder="..."></input>
+
+                            {relates.length > 0 && (
+                                <div className="mt-4 flex items-center gap-2">
+                                    <Select name="otrasFechas" aria-label="Elegir otra fecha" className="flex-1" value={selectedEvent?._id ?? ''} onChange={(e) => handleEventChange(e.target.value)}>
+                                        <option value="">{formatDateB(p.fechaInicio)} (esta fecha)</option>
+                                        {relates.map((rel) => <option key={rel._id} value={rel._id}>{formatDateB(rel.fechaInicio)} · {rel.nombreEvento}</option>)}
+                                    </Select>
+                                    {selectedEvent && <Button to={`/buy_tickets/${selectedEvent._id}`} variant="ghost" size="sm">Ver</Button>}
+                                </div>
+                            )}
+
+                            <ul className="mt-4 divide-y divide-line rounded-xl border border-line">
+                                {tickets.length === 0 && <li className="p-4 text-sm text-muted">Todavía no hay entradas a la venta.</li>}
+                                {tickets.map((tck) => {
+                                    const cerrada = ventaCerrada(eventToRender, tck)
+                                    const disponible = tck.cantidad > 0 && tck.estado !== 4 && !eventToRender?.soldOut
+                                    const cantidad = quantities[tck._id]?.amount || 0
+                                    const max = Math.min(tck.limit !== undefined ? tck.limit : 30, tck.cantidad)
+                                    return (
+                                        <li key={tck._id} className={cx('flex items-center gap-3 p-4 transition-colors', cantidad > 0 && 'bg-brand-500/[0.06]')}>
+                                            {tck.imgTicket && <img src={tck.imgTicket} alt="" className="size-11 shrink-0 rounded-lg object-cover" loading="lazy" />}
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate font-medium text-fg">{tck.nombreTicket}</p>
+                                                <p className="text-sm font-semibold text-fg/90">{Number(tck.precio) === 0 ? 'Gratis' : currencyFormatter.format(tck.precio)}</p>
+                                                {tck.descripcionTicket && <p className="mt-0.5 line-clamp-2 text-xs text-subtle">{tck.descripcionTicket}</p>}
+                                                {!cerrada && disponible && tck.fechaDeCierre && <p className="mt-0.5 text-xs text-subtle">Venta hasta {formatDateB(tck.fechaDeCierre)}</p>}
+                                            </div>
+                                            {cerrada ? <Badge tone="neutral">Venta cerrada</Badge>
+                                                : disponible ? <Stepper nombre={tck.nombreTicket} cantidad={cantidad} maximoAlcanzado={cantidad >= max}
+                                                    onRestar={() => restQuantity(tck._id)} onSumar={() => addQuantity(tck._id, tck.limit, tck.cantidad)} />
+                                                    : <Badge tone="danger">Agotado</Badge>}
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+
+                            <h2 className="mt-7 text-lg font-semibold text-fg">Tus datos</h2>
+                            <p className="mt-1 text-sm text-muted">Te enviamos las entradas a este email.</p>
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                                <Field label="Nombre completo" className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                                    {({ id }) => <Input id={id} name="nombreCompleto" autoComplete="name" placeholder="Como figura en tu DNI" />}
+                                </Field>
+                                <Field label="Email">{({ id }) => <Input id={id} type="email" name="mail" autoComplete="email" inputMode="email" placeholder="tu@email.com" />}</Field>
+                                <Field label="Repetir email">{({ id }) => <Input id={id} type="email" name="repetirMail" autoComplete="email" inputMode="email" placeholder="tu@email.com" />}</Field>
+                                <Field label="DNI">{({ id }) => <Input id={id} type="text" name="dni" inputMode="numeric" pattern="[0-9]*" placeholder="Sin puntos" />}</Field>
+                                <Field label="Teléfono">{({ id }) => <Input id={id} type="tel" name="telefono" autoComplete="tel" inputMode="tel" placeholder="11 1234 5678" />}</Field>
+                            </div>
+
+                            {/* Codigo de descuento */}
+                            <div className="mt-6">
+                                {appliedDiscount ? (
+                                    <div className="flex items-center justify-between gap-3 rounded-xl border border-ok/25 bg-ok/10 px-3.5 py-2.5">
+                                        <p className="flex items-center gap-2 text-sm font-medium text-ok"><Icon.Tag className="size-4" />Descuento aplicado: {appliedDiscount.pct}%</p>
+                                        <button type="button" className="text-xs font-medium text-muted underline-offset-2 hover:text-fg hover:underline"
+                                            onClick={() => { setAppliedDiscount(null); setDiscountValueCode('') }}>Quitar</button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <Input icon={Icon.Tag} name="codigoDescuento" aria-label="Código de descuento" placeholder="Código de descuento" className="flex-1"
+                                            value={discountCode} onChange={(e) => { setDiscountValueCode(e.target.value); setAppliedDiscount(null); setCodigoMsg('') }}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); activeDiscountCode() } }} />
+                                        <Button variant="secondary" onClick={activeDiscountCode} loading={verificandoCodigo} disabled={!String(discountCode).trim()} aria-label="Aplicar descuento">Aplicar</Button>
+                                    </div>
+                                )}
+                                {codigoMsg && <p className="mt-2 text-sm text-danger">{codigoMsg}</p>}
+                            </div>
+
+                            {/* Resumen */}
+                            <dl className="mt-6 space-y-2 border-t border-line pt-5 text-sm">
+                                <div className="flex justify-between text-muted"><dt>Subtotal{cantidadElegida > 0 && ` · ${cantidadElegida} ${cantidadElegida === 1 ? 'entrada' : 'entradas'}`}</dt><dd className="tabular-nums">{currencyFormatter.format(subtotal)}</dd></div>
+                                <div className="flex justify-between text-muted"><dt>Cargo por servicio ({comision}%)</dt><dd className="tabular-nums">{currencyFormatter.format(cargoServicio)}</dd></div>
+                                {descuentoPct > 0 && <div className="flex justify-between text-ok"><dt>Descuento ({descuentoPct}%)</dt><dd className="tabular-nums">−{currencyFormatter.format(montoDescuento)}</dd></div>}
+                                <div className="flex items-baseline justify-between pt-2">
+                                    <dt className="text-base font-semibold text-fg">Total</dt>
+                                    <dd data-testid="total" className="text-2xl font-bold tabular-nums tracking-tight text-fg">{currencyFormatter.format(total)}</dd>
+                                </div>
+                            </dl>
+
+                            <div className="mt-5 space-y-3">
+                                {mensaje && <Aviso>{mensaje}</Aviso>}
+                                {serverMsg && <Aviso tono="danger">{serverMsg}</Aviso>}
+                                {showMsg === 5 && <Aviso tono="ok">¡Listo! Te enviamos las entradas por email</Aviso>}
+                            </div>
+
+                            <div className="mt-5 hidden lg:block">
+                                <Button type="submit" size="lg" block loading={loading} iconRight={total > 0 ? Icon.ArrowRight : undefined}>
+                                    {total > 0 ? 'Continuar al pago' : 'Obtener entradas'}
+                                </Button>
+                                <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-subtle"><Icon.Lock className="size-3.5" />Pago seguro con Mercado Pago</p>
+                            </div>
+                        </form>
+                    </Card>
+                </aside>
+            </div>
+
+            {/* Barra de pago fija en celular */}
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/90 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-xl lg:hidden">
+                <div className="mx-auto flex max-w-xl items-center gap-4">
+                    <div className="min-w-0">
+                        <p className="text-xs text-muted">{cantidadElegida > 0 ? `${cantidadElegida} ${cantidadElegida === 1 ? 'entrada' : 'entradas'}` : 'Total'}</p>
+                        <p className="text-lg font-bold tabular-nums text-fg">{currencyFormatter.format(total)}</p>
                     </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">EMAIL:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="email" name="mail" placeholder="example@gmail.com"></input>
-                    </div>
-                     <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">REPETIR EMAIL:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="email" name="repetirMail" placeholder="example@gmail.com"></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 mb-2! border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">DNI:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="number" name="dni" placeholder="..."></input>
-                    </div>
-                    <div className="w-[30%] min-w-[265px]! mx-2 border-[1px] border-yellow-500 rounded-2xl p-2">
-                        <label className="text-MD text-gray-300!">CONTACTO:</label><br></br>
-                        <input className="w-[100%] text-gray-200!" type="number" name="telefono" placeholder="..."></input>
-                    </div>
+                    <Button type="submit" form="checkout" size="lg" className="flex-1" loading={loading}>
+                        {total > 0 ? 'Continuar al pago' : 'Obtener entradas'}
+                    </Button>
                 </div>
-                <div className="flex flex-wrap justify-center items-center mt-4">
-                  <p>Codigo de descuento:</p>
-                  <input className="border-[1px] border-gray-400 rounded-lg p-2 ml-1 text-gray-300!" type="text" onChange={(e) => { setDiscountValueCode(e.target.value); setAppliedDiscount(null) }}></input>
-                  <button className="flex items-center py-2 px-3 ml-2 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-lg max-[630px]:mt-3" type="button" onClick={(e) => activeDiscountCode(e)}>
-                    <svg viewBox="0 0 24 24" width={24} className="mr-1" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3.9889 14.6604L2.46891 13.1404C1.84891 12.5204 1.84891 11.5004 2.46891 10.8804L3.9889 9.36039C4.2489 9.10039 4.4589 8.59038 4.4589 8.23038V6.08036C4.4589 5.20036 5.1789 4.48038 6.0589 4.48038H8.2089C8.5689 4.48038 9.0789 4.27041 9.3389 4.01041L10.8589 2.49039C11.4789 1.87039 12.4989 1.87039 13.1189 2.49039L14.6389 4.01041C14.8989 4.27041 15.4089 4.48038 15.7689 4.48038H17.9189C18.7989 4.48038 19.5189 5.20036 19.5189 6.08036V8.23038C19.5189 8.59038 19.7289 9.10039 19.9889 9.36039L21.5089 10.8804C22.1289 11.5004 22.1289 12.5204 21.5089 13.1404L19.9889 14.6604C19.7289 14.9204 19.5189 15.4304 19.5189 15.7904V17.9403C19.5189 18.8203 18.7989 19.5404 17.9189 19.5404H15.7689C15.4089 19.5404 14.8989 19.7504 14.6389 20.0104L13.1189 21.5304C12.4989 22.1504 11.4789 22.1504 10.8589 21.5304L9.3389 20.0104C9.0789 19.7504 8.5689 19.5404 8.2089 19.5404H6.0589C5.1789 19.5404 4.4589 18.8203 4.4589 17.9403V15.7904C4.4589 15.4204 4.2489 14.9104 3.9889 14.6604Z" stroke="#111827" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path> <path d="M9 15L15 9" stroke="#111827" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path> <path d="M14.4945 14.5H14.5035" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path> <path d="M9.49451 9.5H9.50349" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path> </g></svg>
-                    <p className="text-[#111827]">Aplicar descuento</p>
-                  </button>
+            </div>
+
+            {/* Imagen completa */}
+            {showBanner && (
+                <div role="dialog" aria-modal="true" aria-label="Imagen del evento" onClick={() => setShowBanner(false)}
+                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm animate-fade-in">
+                    <img src={portada} alt={p.nombreEvento} className="max-h-[88vh] max-w-full rounded-2xl object-contain" />
+                    <button type="button" aria-label="Cerrar" className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+                        <Icon.X className="size-5" />
+                    </button>
                 </div>
-                <div className="mt-3 p-4 rounded-xl text-center" >
-                    <Timer duration={720000}></Timer>
-                </div>
-                <div className="relative h-[auto] mt-4">
-                    {showMsg === 1 && <p className="text-md text-orange-500! h-[0px]">Debes agregar al menos un ticket</p>}
-                    <p className="text-center text-2xl text-yellow-500!">Total:{currencyFormatter.format(total)}</p>
-                    {showMsg === 2 && <p className="text-md text-orange-500! h-[0px]">Debes llenar todos los campos</p>}
-                    {showMsg === 3 && <p className="text-md text-orange-500! h-[0px]">Los emails no coinciden</p>}
-                    {showMsg === 4 && <p className="text-md text-orange-500! h-[0px]">La venta de alguno de los tickets elegidos ya cerró. Lo quitamos de tu compra</p>}
-                    {showMsg === 5 && <p className="text-md text-green-500! text-center">¡Listo! Te enviamos las entradas por email</p>}
-                    {serverMsg && <p className="text-md text-orange-500! text-center">{serverMsg}</p>}
-                    {appliedDiscount && <p className="text-sm text-green-400! text-center">Descuento aplicado: {appliedDiscount.pct}%</p>}
-                    <p className="text-center text-gray-300! mt-3 text-sm">En caso de no realizarse el evento o este no cumplir con algún aspecto fundamental del mismo Ipass regresará el valor de las entradas No así el cargo por servicio.</p>
-                    <button className="flex items-center w-[auto] mx-auto mt-6 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-yellow-400 hover:to-yellow-400 text-[#111827] font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl" type="submit"><img className="mr-3" src={checkWhitePng} alt=""></img>{ loading ? <LoadingButton/> : 'Comprar'}</button>
-                </div>
-            </form>
-        </div>
+            )}
+        </main>
     )
 }
 
 export default BuyTicket
-
-   {/*eventToRender.cortesiaRRPP
-  .filter((crt) => crt.estado !== 2)
-  .map((crt) => {
-    const userCortesia = session?.userFinded?.[0]?.cortesias?.find(
-      c => c.cortesiaId === crt._id
-    );
-
-    const isDisabled = userCortesia && userCortesia.qty >= crt.limit;
-
-    return (
-      <div
-        key={crt._id}
-        className={`flex justify-center mx-auto text-center ${isDisabled ? "opacity-50 pointer-events-none" : ""}`}
-      >
-        <div className="w-full mb-3 p-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:shadow-lg transition-all duration-300">
-
-          <div className="flex items-center justify-between flex-wrap gap-4">
-
-            {/* Imagen + nombre + desc }
-            <div className="flex items-center space-x-4 min-w-[200px]">
-              <img
-                className="w-16 h-16 rounded-xl object-cover shadow-md"
-                src={crt.imgTicket ?? goPng}
-                alt="Ticket"
-                loading="lazy"
-              />
-
-              <div className="text-left">
-                <p className="text-gray-200 text-md">{crt.nombreTicket}</p>
-                <p className="text-sm text-yellow-500">
-                  Válido hasta: {formatDate(crt.fechaDeCierre)}
-                </p>
-                <p className="text-xs text-gray-400 max-w-[260px] mt-1">
-                  {crt.descripcionTicket}
-                </p>
-              </div>
-            </div>
-
-            {/* Disponibles + fecha }
-            <div className="flex items-center space-x-6">
-
-              <div className="text-center">
-                <p className="text-xs text-gray-300 font-medium">Disponibles</p>
-                <p className="text-md text-gray-200">{crt.limit}</p>
-              </div>
-
-              <div className="flex items-center space-x-2 bg-gray-700 px-4 py-2 rounded-lg border border-gray-600">
-                <img className="h-5 w-5" src={calendarPng} alt="" />
-                <p className="text-sm text-gray-200 font-medium">
-                  {formatDate(crt.fechaDeCierre)}
-                </p>
-              </div>
-            </div>
-
-            {/* Controles }
-            {crt.cantidadDeCortesias >= 1 && eventToRender?.soldOut === false ? (
-            <div className="flex items-center space-x-2 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
-              <button
-                className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-all active:scale-95"
-                onClick={(e) => restQuantity(e, crt._id, crt.limit)}
-              >
-                -
-              </button>
-
-              <div className="w-14 text-center">
-                <p className="text-md text-gray-800">
-                  {quantities[crt._id]?.amount || 0}
-                </p>
-              </div>
-
-              <button
-                className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg text-white transition-all active:scale-95 shadow-md"
-                onClick={(e) =>
-                  addQuantity(e, crt._id, crt.limit, crt.cantidadDeCortesias, true)
-                }
-              >
-                +
-              </button>
-            </div>
-            ):(
-             
-            <div className="flex items-center space-x-2 bg-red-100 border border-red-300 px-4 py-2 rounded-xl shadow-sm">
-                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11V5a1 1 0 10-2 0v2a1 1 0 002 0zm0 8v-6a1 1 0 10-2 0v6a1 1 0 002 0z" clipRule="evenodd"/>
-                </svg>
-                <p className="text-red-700 font-semibold">Agotado</p>
-            </div>
-            )}
-            {crt.cantidadDeCortesias >= 1 && eventToRender?.soldOut === false && (<p className="text-green-800 font-medium text-sm mt-2">
-              Cortesia
-            </p>)}
-          </div>
-        </div>
-      </div>
-    );
-  })*/}

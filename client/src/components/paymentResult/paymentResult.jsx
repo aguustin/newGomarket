@@ -1,41 +1,29 @@
 import { useEffect, useState } from "react"
-import { Link, useSearchParams } from "react-router"
+import { useSearchParams } from "react-router"
 import { confirmPaymentRequest } from "../../api/eventRequests"
+import { Icon } from "../../ui/icons"
+import { Button, Card, Spinner, cx } from "../../ui/primitives"
 
 //Pagina a la que vuelve Mercado Pago (back_urls). El backend consulta el estado a MP y, si esta
 //aprobado y el webhook no llego, procesa el pago (QR por mail). Nunca se usa el "status" de la URL.
+const ESPERA = { icon: Icon.Hourglass, tono: 'warn' }
 const MESSAGES = {
-    approved: {
-        title: '¡Pago aprobado!',
-        text: 'En unos minutos vas a recibir tus entradas por email. Revisá también la carpeta de spam.',
-        color: 'text-green-400'
-    },
-    pending: {
-        title: 'Pago pendiente',
-        text: 'Mercado Pago todavía está procesando tu pago. Cuando se apruebe, te enviaremos las entradas por email.',
-        color: 'text-yellow-500'
-    },
-    in_process: {
-        title: 'Pago en revisión',
-        text: 'Mercado Pago está revisando tu pago. Cuando se apruebe, te enviaremos las entradas por email.',
-        color: 'text-yellow-500'
-    },
-    rejected: {
-        title: 'Pago rechazado',
-        text: 'No se realizó ningún cobro. Podés intentar de nuevo con otro medio de pago.',
-        color: 'text-red-400'
-    },
-    cancelled: {
-        title: 'Pago cancelado',
-        text: 'No se realizó ningún cobro.',
-        color: 'text-red-400'
-    }
+    approved: { title: '¡Pago aprobado!', text: 'En unos minutos vas a recibir tus entradas por email. Revisá también la carpeta de spam.', icon: Icon.CheckCircle, tono: 'ok' },
+    pending: { title: 'Pago pendiente', text: 'Mercado Pago todavía está procesando tu pago. Cuando se apruebe, te enviaremos las entradas por email.', ...ESPERA },
+    in_process: { title: 'Pago en revisión', text: 'Mercado Pago está revisando tu pago. Cuando se apruebe, te enviaremos las entradas por email.', ...ESPERA },
+    rejected: { title: 'Pago rechazado', text: 'No se realizó ningún cobro. Podés intentar de nuevo con otro medio de pago.', icon: Icon.XCircle, tono: 'danger' },
+    cancelled: { title: 'Pago cancelado', text: 'No se realizó ningún cobro.', icon: Icon.XCircle, tono: 'danger' }
 }
-
 const FALLBACK = {
     title: 'No pudimos confirmar el estado del pago',
     text: 'Si se te cobró, vas a recibir tus entradas por email. Si no llegan, escribinos desde Contacto.',
-    color: 'text-gray-300'
+    icon: Icon.Info, tono: 'neutral'
+}
+const TONOS = {
+    ok: 'bg-ok/12 text-ok ring-ok/25',
+    warn: 'bg-warn/12 text-warn ring-warn/25',
+    danger: 'bg-danger/12 text-danger ring-danger/25',
+    neutral: 'bg-surface-2 text-muted ring-line'
 }
 
 const PaymentResult = () => {
@@ -60,29 +48,41 @@ const PaymentResult = () => {
     }, [paymentId])
 
     if (!result) {
-        return <p className="text-center text-gray-300 mt-[120px] h-screen">Verificando tu pago...</p>
+        return (
+            <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-muted">
+                <Spinner className="size-7 text-brand-400" />
+                <p>Verificando tu pago…</p>
+            </main>
+        )
     }
 
     const msg = MESSAGES[result.status] || FALLBACK
     const retryLink = result.prodId && (result.status === 'rejected' || result.status === 'cancelled')
+    const Ico = msg.icon
 
     return (
-        <div className="min-h-screen flex justify-center px-4 pt-[110px]">
-            <div className="max-w-xl w-full h-fit bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden text-center">
-                <div className="bg-gradient-to-r from-amber-600 to-yellow-500 p-6">
-                    <h2 className="text-[#111827]! text-2xl font-bold">Resultado de tu compra</h2>
+        <main className="flex flex-1 items-start justify-center px-4 pb-20 pt-12 sm:pt-20">
+            <Card className="w-full max-w-md p-8 text-center animate-fade-up sm:p-10">
+                <div className={cx('mx-auto flex size-16 items-center justify-center rounded-full ring-8', TONOS[msg.tono])}>
+                    <Ico className="size-8" />
                 </div>
-                <div className="p-8">
-                    <h3 data-testid="payment-status" data-status={result.status} className={`text-3xl font-bold mb-4 ${msg.color}`}>{msg.title}</h3>
-                    {result.nombreEvento && <p className="text-gray-200! mb-3">Evento: {result.nombreEvento}</p>}
-                    <p className="text-gray-300! mb-8">{msg.text}</p>
-                    <div className="flex flex-wrap justify-center gap-3">
-                        {retryLink && <Link className="bg-gradient-to-r from-amber-500 to-yellow-500 text-[#111827]! px-5 py-2 rounded-xl" to={`/buy_tickets/${result.prodId}`}>Intentar de nuevo</Link>}
-                        <Link className="bg-gray-700 text-gray-200! px-5 py-2 rounded-xl" to="/">Volver al inicio</Link>
+                <h1 data-testid="payment-status" data-status={result.status} className="mt-6 text-2xl font-bold tracking-tight text-fg">{msg.title}</h1>
+                {result.nombreEvento && <p className="mt-2 text-[15px] font-medium text-brand-200">{result.nombreEvento}</p>}
+                <p className="mt-3 text-[15px] leading-relaxed text-muted">{msg.text}</p>
+
+                {result.status === 'approved' && (
+                    <div className="mt-6 flex items-start gap-3 rounded-xl border border-line bg-surface-2 p-4 text-left text-sm text-muted">
+                        <Icon.Mail className="mt-0.5 size-5 shrink-0 text-brand-300" />
+                        <p>Mostrá el QR del email en la puerta del evento. Cada entrada tiene su propio código.</p>
                     </div>
+                )}
+
+                <div className="mt-8 flex flex-col gap-3">
+                    {retryLink && <Button to={`/buy_tickets/${result.prodId}`} size="lg" block iconRight={Icon.ArrowRight}>Intentar de nuevo</Button>}
+                    <Button to="/" variant={retryLink ? 'ghost' : result.status === 'approved' ? 'primary' : 'secondary'} size="lg" block>Volver al inicio</Button>
                 </div>
-            </div>
-        </div>
+            </Card>
+        </main>
     )
 }
 

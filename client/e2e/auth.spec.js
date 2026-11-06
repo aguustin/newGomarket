@@ -9,11 +9,11 @@ test('registro -> verificacion desde la bandeja -> login -> sesion persiste al r
   //Antes de verificar no habia usuario; despues si: el login funciona
   await login(page, { mail })
   await expect(page).toHaveURL(/\/$/)
-  await expect(page.getByText('Ana E2E').first()).toBeVisible()
+  await expect(page.getByRole('button', { name: /Ana/ })).toBeVisible()
 
   //Persistencia: la sesion vive en localStorage y sobrevive a la recarga
   await page.reload()
-  await expect(page.getByText('Ana E2E').first()).toBeVisible()
+  await expect(page.getByRole('button', { name: /Ana/ })).toBeVisible()
   const session = await page.evaluate(() => JSON.parse(localStorage.getItem('session')))
   expect(session.userFinded[0].mail).toBe(mail)
 })
@@ -47,7 +47,7 @@ test('recuperar contraseña: mail en la bandeja -> nueva contraseña -> login co
   await registerAndVerify(page, request, { mail })
 
   await page.goto('/login')
-  await page.getByRole('button', { name: 'Haz click aquí' }).click()
+  await page.getByRole('button', { name: '¿Olvidaste tu contraseña?' }).click()
   await page.locator('input[name="mail"]').fill(mail)
   await page.locator('form button[type="submit"]').click()
   await expect(page.getByText('Se envió un correo electronico')).toBeVisible()
@@ -82,7 +82,7 @@ test('sesion guardada antes del token: se descarta y el usuario queda sin sesion
   //Sesion como la guardaba el frontend antes de esta etapa (sin token)
   await page.evaluate(() => localStorage.setItem('session', JSON.stringify({ userFinded: [{ _id: '000000000000000000000000', mail: 'viejo@ipass-e2e.local', nombreCompleto: 'Viejo' }], estado: 1 })))
   await page.reload()
-  await expect(page.getByRole('link', { name: 'Iniciar sesión' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Ingresar' })).toBeVisible()
   await expect(page.getByText('Viejo')).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem('session'))).toBeNull()
 })

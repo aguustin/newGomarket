@@ -1,74 +1,61 @@
-import { useState } from "react";
-import { confirmNewPassRequest } from "../../api/userRequests";
-import { Message } from "../../globalscomp/globalscomp"
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import goOriginalPng from '../../assets/goticketImgs/IPSg.svg'
+import { useState } from "react"
+import { useParams } from 'react-router'
+import { confirmNewPassRequest } from "../../api/userRequests"
+import AuthLayout from "../../ui/AuthLayout"
+import { Icon } from "../../ui/icons"
+import { Alert, Button, Field, PasswordInput } from "../../ui/primitives"
 
+//Crear contraseña nueva desde el link del email (rediseño). El link sirve una sola vez y vence a los 20 minutos.
 const RecoverPass = () => {
-    const navigate = useNavigate()
-    const { token } = useParams();
-    const [message, setMessage] = useState(false)
-    const [error, setError] = useState(false)
-    const [vencido, setVencido] = useState(false)
+    const { token } = useParams()
+    const [estado, setEstado] = useState('form')  // form | ok | vencido
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const confirmNewPass = async (e) => {
         e.preventDefault()
         const nuevaContrasenia = e.target.elements.nuevaContrasenia.value
-        const repetirNuevaContrasenia = e.target.elements.repetirNuevaContrasenia.value
-
-        if(nuevaContrasenia === repetirNuevaContrasenia){
-            setError(false)
-            const res = await confirmNewPassRequest({token, nuevaContrasenia})
-            if(res.data?.code === 'LINK_VENCIDO') setVencido(true)
-            if(res.data === 1){  //axios devuelve la respuesta completa: el valor del backend esta en data
-                setMessage(true)
-                setTimeout(() => {
-                    navigate('/')
-                },3000)
-            }
-        }else{
-            setError(true)
+        if (nuevaContrasenia !== e.target.elements.repetirNuevaContrasenia.value) return setError('Las contraseñas no coinciden')
+        setError('')
+        setLoading(true)
+        try {
+            const res = await confirmNewPassRequest({ token, nuevaContrasenia })
+            if (res.data?.code === 'LINK_VENCIDO') setEstado('vencido')
+            else if (res.data === 1) setEstado('ok')  //axios devuelve la respuesta completa: el valor del backend esta en data
+            else setError('No pudimos actualizar la contraseña. Intentá de nuevo')
+        } catch {
+            setError('No pudimos actualizar la contraseña. Revisá tu conexión e intentá de nuevo')
+        } finally {
+            setLoading(false)
         }
-
     }
 
-    return(
-           <>
-                   <div className="form-background pt-6 pb-29">
-                   <Link to="/"><img className="h-[70px] mx-auto mb-5" src={goOriginalPng} alt=""></img></Link>
-                   <form className="register-form mb-30 mx-auto w-[450px] p-6 rounded-lg" onSubmit={(e) => confirmNewPass(e)}>
-                    {message ?
-                    <>
-                        <div className="text-center p-4">
-                            <h3 className="text-3xl">Escribe tu nueva contraseña</h3>
-                        </div>
-                        <div>
-                           <p className="text-2xl text-violet-400!">Tu contraseña fue actualizada con exito!</p>
-                        </div>
-                        <div className="text-center">
-                           <Link className="bg-violet-900 p-4 rounded-lg mt-6 cursor-pointer" to='/'>Volver a ingresar</Link>
-                        </div>
-                    </>  
-                    : 
-                    <>
-                        <div className="text-center p-4">
-                            <h3 className="text-3xl">Escribe tu nueva contraseña</h3>
-                        </div>
-                           <input className="p-3 mt-3 w-full" type="password" minLength="5" maxLength="30" placeholder="Nueva contraseña" name="nuevaContrasenia" required></input>
-                           <input className="p-3 mt-3 w-full" type="password" minLength="5" maxLength="30" placeholder="Repetir contraseña" name="repetirNuevaContrasenia" required></input>
-                        <div className="text-center">
-                            {error && <p className="mt-3 text-red-600! text-xl">Las contraseñas no coinciden!</p>}
-                            {vencido && <p className="mt-3 text-red-600! text-xl">El link venció o no es válido. Pedí uno nuevo desde "Olvidé mi contraseña".</p>}
-                           <button className="primary-button w-full h-[56px] p-4 rounded-lg mt-6 cursor-pointer" type="submit">Recuperar contraseña</button>
-                        </div>
-                         <div className="text-center mt-4">
-                            <Link to="/"><button>Volver</button></Link>
-                        </div>
-                    </>  
-                    }
-                   </form>
-                   </div>
-               </>
+    if (estado === 'ok') {
+        return (
+            <AuthLayout title="¡Listo!" subtitle={null}>
+                <Alert tone="ok">Tu contraseña fue actualizada con exito! Ya podés ingresar con la nueva.</Alert>
+                <Button to="/login" size="lg" block className="mt-6">Ir a ingresar</Button>
+            </AuthLayout>
+        )
+    }
+    if (estado === 'vencido') {
+        return (
+            <AuthLayout title="El enlace venció" subtitle={null}>
+                <Alert tone="warn">El link venció o no es válido. Pedí uno nuevo desde "¿Olvidaste tu contraseña?".</Alert>
+                <Button to="/login" size="lg" block className="mt-6" icon={Icon.ArrowLeft}>Volver a ingresar</Button>
+            </AuthLayout>
+        )
+    }
+
+    return (
+        <AuthLayout title="Creá una contraseña nueva" subtitle="Elegí una contraseña que no uses en otros sitios.">
+            <form onSubmit={confirmNewPass} className="space-y-4">
+                <Field label="Nueva contraseña" hint="Mínimo 5 caracteres">{({ id }) => <PasswordInput id={id} name="nuevaContrasenia" autoComplete="new-password" minLength={5} maxLength={30} required autoFocus />}</Field>
+                <Field label="Repetir contraseña">{({ id }) => <PasswordInput id={id} name="repetirNuevaContrasenia" autoComplete="new-password" minLength={5} maxLength={30} required />}</Field>
+                {error && <Alert tone="danger">{error}</Alert>}
+                <Button type="submit" size="lg" block loading={loading}>Guardar contraseña</Button>
+            </form>
+        </AuthLayout>
     )
 }
 

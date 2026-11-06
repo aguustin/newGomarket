@@ -23,11 +23,11 @@ test('evento publico en Home -> pagina de compra -> total con 15% -> redireccion
   //2 entradas de 20.000 + 15% = 46.000
   //Cada clic espera a que se vea el total: si la pagina todavia esta recargando los datos del evento,
   //dos clics seguidos pueden contar uno solo (paso una vez en la etapa 13)
-  await expect(page.getByText(/Total:\s*\$\s*0/)).toBeVisible()
-  await page.getByRole('button', { name: '+' }).first().click()
-  await expect(page.getByText(/Total:\s*\$\s*23\.000/)).toBeVisible()
-  await page.getByRole('button', { name: '+' }).first().click()
-  await expect(page.getByText(/Total:\s*\$\s*46\.000/)).toBeVisible()
+  await expect(page.getByTestId('total')).toHaveText(/\$\s*0/)
+  await page.getByRole('button', { name: /Sumar una entrada/ }).first().click()
+  await expect(page.getByTestId('total')).toHaveText(/\$\s*23\.000/)
+  await page.getByRole('button', { name: /Sumar una entrada/ }).first().click()
+  await expect(page.getByTestId('total')).toHaveText(/\$\s*46\.000/)
 
   await page.locator('input[name="nombreCompleto"]').fill('Comprador E2E')
   await page.locator('input[name="mail"]').fill('comprador@ipass-e2e.local')
@@ -48,7 +48,7 @@ test('evento publico en Home -> pagina de compra -> total con 15% -> redireccion
     buyBody = await response.json()
     await route.fulfill({ response })
   })
-  await page.getByRole('button', { name: 'Comprar' }).click()
+  await page.getByRole('button', { name: 'Continuar al pago' }).click()
   await expect.poll(() => buyStatus).toBe(200)
 
   expect(sent.total).toBe(46000)
@@ -92,8 +92,8 @@ test('ticket con la fecha de cierre vencida: "Venta cerrada" y no se puede elegi
 
   await page.goto(`/buy_tickets/${eventId}`)
   await expect(page.getByText('Venta cerrada')).toBeVisible()
-  await expect(page.getByRole('button', { name: '+' })).toHaveCount(0)
-  await expect(page.getByText(/Total:\s*\$\s*0,00/)).toBeVisible()
+  await expect(page.getByRole('button', { name: /Sumar una entrada/ })).toHaveCount(0)
+  await expect(page.getByTestId('total')).toHaveText(/\$\s*0,00/)
 })
 
 test('codigo de descuento: se aplica en pantalla y el servidor cobra el total con descuento', async ({ page, request }) => {
@@ -107,20 +107,20 @@ test('codigo de descuento: se aplica en pantalla y el servidor cobra el total co
   expect((await request.post(`${E2E_BACK}/create_discount`, { headers: auth, data: { prodId: eventId, idDiscount: code, cantidadDescuentos: 5, numeroDescuento: 10 } })).ok()).toBe(true)
 
   await page.goto(`/buy_tickets/${eventId}`)
-  await page.getByRole('button', { name: '+' }).first().click()
-  await page.getByRole('button', { name: '+' }).first().click()
-  await expect(page.getByText(/Total:\s*\$\s*46\.000/)).toBeVisible()
+  await page.getByRole('button', { name: /Sumar una entrada/ }).first().click()
+  await page.getByRole('button', { name: /Sumar una entrada/ }).first().click()
+  await expect(page.getByTestId('total')).toHaveText(/\$\s*46\.000/)
 
   //Codigo inexistente: avisa y no cambia el total
-  await page.locator('input[type="text"]').last().fill('NO-EXISTE')
+  await page.locator('input[name="codigoDescuento"]').fill('NO-EXISTE')
   await page.getByRole('button', { name: 'Aplicar descuento' }).click()
   await expect(page.getByText('El código de descuento no es válido')).toBeVisible()
-  await expect(page.getByText(/Total:\s*\$\s*46\.000/)).toBeVisible()
+  await expect(page.getByTestId('total')).toHaveText(/\$\s*46\.000/)
 
-  await page.locator('input[type="text"]').last().fill(code)
+  await page.locator('input[name="codigoDescuento"]').fill(code)
   await page.getByRole('button', { name: 'Aplicar descuento' }).click()
   await expect(page.getByText('Descuento aplicado: 10%')).toBeVisible()
-  await expect(page.getByText(/Total:\s*\$\s*41\.400/)).toBeVisible()
+  await expect(page.getByTestId('total')).toHaveText(/\$\s*41\.400/)
 
   await page.locator('input[name="nombreCompleto"]').fill('Comprador E2E')
   await page.locator('input[name="mail"]').fill('comprador@ipass-e2e.local')
@@ -137,7 +137,7 @@ test('codigo de descuento: se aplica en pantalla y el servidor cobra el total co
     buyBody = await response.json()
     await route.fulfill({ response })
   })
-  await page.getByRole('button', { name: 'Comprar' }).click()
+  await page.getByRole('button', { name: 'Continuar al pago' }).click()
   await expect.poll(() => buyStatus).toBe(200)
   expect(sent.total).toBe(41400)
   expect(sent.discountCode).toBe(code)

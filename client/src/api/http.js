@@ -1,4 +1,5 @@
 import axios from "axios"
+import { toast } from "../ui/toast"
 
 //Unico lugar que maneja la sesion en los pedidos al backend:
 //  - agrega "Authorization: Bearer <token>" a todo pedido a VITE_URL (nunca a otros dominios)
@@ -38,7 +39,7 @@ axios.interceptors.response.use(
         }
         //Archivo rechazado por el servidor (tipo o tamaño): se avisa el motivo en cualquier pantalla
         if (esDelBackend && status === 400 && data?.code === 'ARCHIVO_INVALIDO') {
-            alert(data.message)
+            toast.error(data.message)
             error.avisado = true
         }
         return Promise.reject(error)

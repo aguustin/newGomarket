@@ -28,3 +28,6 @@ dist-ssr
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Capturas de diseño (playwright.ux.config.js)
+ux/capturas/

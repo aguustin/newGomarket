@@ -3,6 +3,7 @@ import ipassBanckground from "../assets/images/fondoB.jpeg"
 import { Link, useNavigate } from "react-router";
 import timerPng from "../assets/images/timer.png"
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { toast } from "../ui/toast";
 
 export const Timer = ({duration}) => {
     const [time, setTime] = useState(duration)
@@ -139,7 +140,7 @@ export const MapComponent = ({ provincia, direccion }) => {
   const handleShare = () => {
     if (shareUrl) {
       navigator.clipboard.writeText(shareUrl)
-        .then(() => alert('Enlace copiado al portapapeles'))
+        .then(() => toast.success('Enlace del mapa copiado'))
         .catch(err => console.error('Error al copiar el enlace:', err));
     }
   };
@@ -149,23 +150,19 @@ export const MapComponent = ({ provincia, direccion }) => {
       <GoogleMap
         center={center}
         zoom={15}
-        mapContainerStyle={{ width: '100%', height: '200px' }}
+        mapContainerStyle={{ width: '100%', height: '240px' }}
       >
         <Marker position={center} />
       </GoogleMap>
       {shareUrl && (
-        <>
-          <button onClick={handleShare}>Compartir mapa</button>
-          <p>
-            <a href={shareUrl} target="_blank" rel="noopener noreferrer">
-              Ver en Google Maps
-            </a>
-          </p>
-        </>
+        <div className="flex flex-wrap gap-2 p-3">
+          <button type="button" onClick={handleShare} className="inline-flex h-9 items-center rounded-lg border border-line bg-surface-2 px-3.5 text-sm font-medium text-fg transition-colors hover:bg-surface-3">Copiar ubicación</button>
+          <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center rounded-lg px-3.5 text-sm font-medium text-brand-300 transition-colors hover:bg-surface-2">Abrir en Google Maps</a>
+        </div>
       )}
     </div>
   ) : (
-    <p>Cargando mapa...</p>
+    <p className="p-4 text-sm text-muted">Cargando mapa…</p>
   );
 };
 
