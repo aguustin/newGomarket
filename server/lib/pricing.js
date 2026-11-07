@@ -9,6 +9,9 @@
 
 export const COMISION_POR_DEFECTO = 15
 export const LIMITE_POR_DEFECTO = 30
+//Cortesia para el publico (lib/cortesiaPublica.js): gratis, con maximo por email, y se pide sola (sin entradas pagas)
+const ESTADO_CORTESIA_PUBLICA = 5
+export const LIMITE_CORTESIA_POR_DEFECTO = 1
 
 const redondear = (n) => Math.round(n * 100) / 100
 
@@ -41,21 +44,28 @@ export const calcularCompra = (event, quantities, { descuento = null, now = new 
     if (!ticket) return rechazo(400, 'TICKET_INEXISTENTE', 'Una de las entradas no pertenece a este evento')
 
     const nombre = ticket.nombreTicket
+    const cortesiaPublica = ticket.estado === ESTADO_CORTESIA_PUBLICA
     if (ticket.estado === 2 || ticket.estado === 3) return rechazo(409, 'TICKET_NO_DISPONIBLE', `La entrada "${nombre}" no está a la venta`)
     if (ticket.estado === 4) return rechazo(409, 'AGOTADO', `La entrada "${nombre}" está agotada`)
     if (ventaCerrada(event, ticket, now)) return rechazo(409, 'VENTA_CERRADA', `La venta de "${nombre}" ya cerró`)
 
-    const limite = ticket.limit || LIMITE_POR_DEFECTO
-    if (amount > limite) return rechazo(400, 'LIMITE_SUPERADO', `Máximo ${limite} entradas "${nombre}" por compra`)
+    const limite = ticket.limit || (cortesiaPublica ? LIMITE_CORTESIA_POR_DEFECTO : LIMITE_POR_DEFECTO)
+    if (amount > limite) {
+      return rechazo(400, 'LIMITE_SUPERADO', cortesiaPublica ? `Máximo ${limite} cortesías "${nombre}" por email` : `Máximo ${limite} entradas "${nombre}" por compra`)
+    }
     if (typeof ticket.cantidad === 'number' && amount > ticket.cantidad) {
       return rechazo(409, 'SIN_STOCK', `No quedan suficientes entradas "${nombre}"`)
     }
-    const precio = Number(ticket.precio)
+    const precio = cortesiaPublica ? 0 : Number(ticket.precio)
     if (!Number.isFinite(precio) || precio < 0) return rechazo(409, 'PRECIO_INVALIDO', `La entrada "${nombre}" no tiene un precio válido`)
 
-    items.push({ ticketId, nombreTicket: nombre, precio, amount })
+    items.push({ ticketId, nombreTicket: nombre, precio, amount, limite, cortesiaPublica })
   }
   if (items.length === 0) return rechazo(400, 'SIN_ENTRADAS', 'Elegí al menos una entrada')
+  const cortesias = items.filter((i) => i.cortesiaPublica).length
+  if (cortesias > 0 && cortesias < items.length) {
+    return rechazo(400, 'CORTESIA_SOLA', 'Las cortesías se piden por separado: sacá las entradas pagas de esta compra')
+  }
 
   const comision = Number(event.comisionServicio ?? COMISION_POR_DEFECTO)
   const descuentoPct = descuento ? Math.min(Math.max(Number(descuento.numeroDescuento) || 0, 0), 100) : 0
@@ -71,6 +81,7 @@ export const calcularCompra = (event, quantities, { descuento = null, now = new 
     quantities: Object.fromEntries(items.map((i) => [i.ticketId, { amount: i.amount, free: false }])),
     comision,
     descuentoPct,
+    cortesiaPublica: cortesias > 0,
     subtotal: redondear(subtotal),
     total: redondear(conComision * factor),
     montoEntradas: redondear(subtotal * factor)

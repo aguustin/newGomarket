@@ -9,7 +9,10 @@ import { toast } from "../../ui/toast"
 
 //Pestaña "Entradas" de Editar evento: lista + crear + editar (mismos datos que antes al servidor).
 const pesos = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(n) || 0)
-const ESTADOS = { 1: { label: 'Activa', tone: 'ok' }, 2: { label: 'No visible', tone: 'neutral' }, 3: { label: 'Cortesía', tone: 'brand' }, 4: { label: 'Agotada', tone: 'warn' } }
+const ESTADOS = { 1: { label: 'Activa', tone: 'ok' }, 2: { label: 'No visible', tone: 'neutral' }, 3: { label: 'Cortesía', tone: 'brand' }, 4: { label: 'Agotada', tone: 'warn' }, 5: { label: 'Cortesía para el público', tone: 'brand' } }
+//Cortesia para el publico (estado 5): gratis, la pide cualquiera desde la pagina del evento, con un maximo por email
+const PUBLICA = '5'
+const errorDelServidor = (err, porDefecto) => err?.response?.data?.error || porDefecto
 
 const CrearEntrada = ({ evento, onClose, onChanged }) => {
   const [estado, setEstado] = useState('1')
@@ -26,9 +29,9 @@ const CrearEntrada = ({ evento, onClose, onChanged }) => {
     formData.append("prodId", evento._id)
     formData.append("nombreTicket", f.nombreTicket.value)
     formData.append("descripcionTicket", f.descripcionTicket.value ?? '')
-    formData.append("precio", estado === '3' ? 0 : f.precio.value)
+    formData.append("precio", estado === '3' || estado === PUBLICA ? 0 : f.precio.value)
     formData.append("cantidad", f.cantidad.value)
-    formData.append("fechaDeCierre", new Date(closeDate))
+    formData.append("fechaDeCierre", new Date(closeDate).toISOString())
     formData.append("imgTicket", f.imgTicket.files[0])
     formData.append("visibilidad", estado)  //igual que en Crear evento (antes viajaba vacio)
     formData.append("distribution", estado === '3' ? distribution : 0)
@@ -42,7 +45,7 @@ const CrearEntrada = ({ evento, onClose, onChanged }) => {
         onClose()
       } else toast.error('No pudimos crear la entrada.')
     } catch (err) {
-      if (!err?.avisado) toast.error('No pudimos crear la entrada. Intentá de nuevo.')
+      if (!err?.avisado) toast.error(errorDelServidor(err, 'No pudimos crear la entrada. Intentá de nuevo.'))
     } finally {
       setLoading(false)
     }
@@ -59,10 +62,13 @@ const CrearEntrada = ({ evento, onClose, onChanged }) => {
             <option value="1">Activa (a la venta)</option>
             <option value="2">No visible</option>
             <option value="3">Cortesía</option>
+            <option value={PUBLICA}>Cortesía para el público</option>
             <option value="4">Agotada</option>
           </Select>
         )}</Field>
-        {estado === '3' ? (
+        {estado === PUBLICA ? (
+          <p className="self-end pb-2 text-sm text-muted">Gratis. Cualquiera la pide desde la página del evento, hasta el máximo por email.</p>
+        ) : estado === '3' ? (
           <Field label="Cortesía para">{({ id }) => (
             <Select id={id} name="distribution" value={distribution} onChange={(e) => setDistribution(e.target.value)} required>
               <option value="0" disabled>Elegir</option>
@@ -73,8 +79,10 @@ const CrearEntrada = ({ evento, onClose, onChanged }) => {
         ) : (
           <Field label="Precio ($)" hint="0 = gratis">{({ id }) => <Input id={id} type="number" min="0" name="precio" placeholder="0" required />}</Field>
         )}
-        <Field label="Cantidad">{({ id }) => <Input id={id} type="number" min="1" name="cantidad" placeholder="100" required />}</Field>
-        <Field label="Límite por persona" optional>{({ id }) => <Input id={id} type="number" min="1" name="limit" placeholder="Ej: 3" required={estado === '3' && distribution === '2'} />}</Field>
+        <Field label={estado === PUBLICA ? 'Cantidad total de cortesías' : 'Cantidad'}>{({ id }) => <Input id={id} type="number" min="1" name="cantidad" placeholder="100" required />}</Field>
+        {estado === PUBLICA
+          ? <Field label="Máximo por email">{({ id }) => <Input id={id} type="number" min="1" name="limit" placeholder="Ej: 2" required />}</Field>
+          : <Field label="Límite por persona" optional>{({ id }) => <Input id={id} type="number" min="1" name="limit" placeholder="Ej: 3" required={estado === '3' && distribution === '2'} />}</Field>}
         <Field label="Cierre de la venta" className="sm:col-span-2">{({ id }) => <Input id={id} type="datetime-local" value={closeDate} onChange={(e) => setCloseDate(e.target.value)} required />}</Field>
         <div className="sm:col-span-2 sm:max-w-xs">
           <ImagePicker label="Imagen (opcional)" name="imgTicket" aspect="aspect-[3/1]" preview={preview}
@@ -91,9 +99,11 @@ const EditarEntrada = ({ tick, onClose, onChanged }) => {
   const [archivo, setArchivo] = useState(null)
   const [loading, setLoading] = useState(false)
   const esCortesia = Number(estado) === 3
+  const esPublica = estado === PUBLICA
   const v = (campo, original) => datos[campo] ?? original ?? ''
   const cambiar = (campo) => (e) => setDatos((prev) => ({ ...prev, [campo]: e.target.value }))
-  const cantidadOriginal = esCortesia ? tick.cantidadDeCortesias : tick.cantidad
+  //La cantidad sale de donde esta guardada la entrada HOY (no del estado elegido en el formulario)
+  const cantidadOriginal = tick.tipo === 'cortesia' ? tick.cantidadDeCortesias : tick.cantidad
 
   const guardar = async (e) => {
     e.preventDefault()
@@ -103,10 +113,12 @@ const EditarEntrada = ({ tick, onClose, onChanged }) => {
     formData.append("ticketId", tick._id)
     formData.append("nombreTicket", v('nombreTicket', tick.nombreTicket))
     formData.append("descripcionTicket", v('descripcionTicket', tick.descripcionTicket))
-    formData.append("precio", datos.precio ?? tick.precio ?? '')
+    formData.append("precio", esPublica ? 0 : datos.precio ?? tick.precio ?? '')
     formData.append("cantidad", datos.cantidad ?? cantidadOriginal)
     formData.append("limit", datos.limit ?? tick.limit)
-    formData.append("fechaDeCierre", datos.fechaDeCierre ?? tick.fechaDeCierre)
+    //datetime-local no trae zona horaria: se convierte aca (hora del navegador). Si viajara crudo, el servidor
+    //(UTC en Render) lo leeria como UTC y el cierre quedaria 3 horas antes
+    formData.append("fechaDeCierre", datos.fechaDeCierre ? new Date(datos.fechaDeCierre).toISOString() : tick.fechaDeCierre)
     formData.append("visibilidad", tick.visibilidad)
     formData.append("estado", parseInt(estado))
     try {
@@ -117,7 +129,7 @@ const EditarEntrada = ({ tick, onClose, onChanged }) => {
         onClose()
       } else toast.error('No pudimos guardar la entrada.')
     } catch (err) {
-      if (!err?.avisado) toast.error('No pudimos guardar la entrada. Intentá de nuevo.')
+      if (!err?.avisado) toast.error(errorDelServidor(err, 'No pudimos guardar la entrada. Intentá de nuevo.'))
     } finally {
       setLoading(false)
     }
@@ -129,15 +141,16 @@ const EditarEntrada = ({ tick, onClose, onChanged }) => {
       <form id="editar-entrada" onSubmit={guardar} className="grid gap-4 sm:grid-cols-2">
         <Field label="Nombre">{({ id }) => <Input id={id} name="nombreTicket" value={v('nombreTicket', tick.nombreTicket)} onChange={cambiar('nombreTicket')} />}</Field>
         <Field label="Descripción" optional>{({ id }) => <Input id={id} name="descripcionTicket" value={v('descripcionTicket', tick.descripcionTicket)} onChange={cambiar('descripcionTicket')} />}</Field>
-        {!esCortesia && <Field label="Precio ($)">{({ id }) => <Input id={id} type="number" min="0" name="precio" value={v('precio', tick.precio)} onChange={cambiar('precio')} />}</Field>}
+        {!esCortesia && !esPublica && <Field label="Precio ($)">{({ id }) => <Input id={id} type="number" min="0" name="precio" value={v('precio', tick.precio)} onChange={cambiar('precio')} />}</Field>}
         <Field label="Cantidad">{({ id }) => <Input id={id} type="number" min="1" name="cantidad" value={v('cantidad', cantidadOriginal)} onChange={cambiar('cantidad')} />}</Field>
-        <Field label="Límite por persona" optional>{({ id }) => <Input id={id} type="number" min="1" name="limit" value={v('limit', tick.limit)} onChange={cambiar('limit')} />}</Field>
+        <Field label={esPublica ? 'Máximo por email' : 'Límite por persona'} optional={!esPublica}>{({ id }) => <Input id={id} type="number" min="1" name="limit" value={v('limit', tick.limit)} onChange={cambiar('limit')} />}</Field>
         <Field label="Estado">{({ id }) => (
           <Select id={id} name="estado" value={estado} onChange={(e) => setEstado(e.target.value)}>
             {tick.estado === 3 && <option value="3">Cortesía</option>}
             <option value="1">Activa</option>
             <option value="2">No visible</option>
             <option value="4">Agotada</option>
+            <option value={PUBLICA}>Cortesía para el público</option>
           </Select>
         )}</Field>
         <Field label="Cierre de la venta" hint={`Actual: ${formatDateB(tick.fechaDeCierre)}`} className="sm:col-span-2">{({ id }) => (
@@ -187,7 +200,7 @@ const TicketsTab = ({ evento, onChanged }) => {
                     <Badge tone={est.tone}>{est.label}</Badge>
                   </div>
                   <p className="mt-0.5 text-sm text-muted">
-                    {t.tipo === 'cortesia' || t.estado === 3 ? 'Cortesía' : Number(t.precio) === 0 ? 'Gratis' : pesos(t.precio)}
+                    {t.tipo === 'cortesia' || t.estado === 3 ? 'Cortesía' : t.estado === 5 ? 'Cortesía gratis' : Number(t.precio) === 0 ? 'Gratis' : pesos(t.precio)}
                     <span className="text-subtle"> · </span>{cantidad ?? 0} disponibles
                     {t.fechaDeCierre && <><span className="text-subtle"> · </span>cierra {formatDateB(t.fechaDeCierre)}</>}
                   </p>

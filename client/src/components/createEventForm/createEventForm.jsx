@@ -137,7 +137,7 @@ const CreateEventForm = () => {
         formData.append('prodId', saveEventId)
         formData.append('nombreTicket', f.nombreTicket.value)
         formData.append('descripcionTicket', f.descripcionTicket.value ?? '')
-        formData.append('precio', f.precio.value)
+        formData.append('precio', estado === '5' ? 0 : f.precio.value)  //5 = cortesia para el publico (gratis)
         formData.append('cantidad', f.cantidad.value)
         formData.append('fechaDeCierre', new Date(closeDate).toISOString())
         formData.append('imgTicket', f.imgTicket.files[0])
@@ -148,7 +148,7 @@ const CreateEventForm = () => {
         try {
             const res = await createEventTicketsRequest(formData)
             if (res.data.estado === 1) {
-                setTicketsCreados((prev) => [...prev, { nombre: f.nombreTicket.value, precio: f.precio.value, cantidad: f.cantidad.value, tipo: estado }])
+                setTicketsCreados((prev) => [...prev, { nombre: f.nombreTicket.value, precio: estado === '5' ? 0 : f.precio.value, cantidad: f.cantidad.value, tipo: estado }])
                 toast.success('Entrada creada')
                 setFormTicketKey((k) => k + 1)  //formulario limpio para la siguiente
                 setEstado('1'); setDistribution('0'); setCloseDate(undefined); setPreviewTicket(null)
@@ -292,7 +292,9 @@ const CreateEventForm = () => {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <Field label="Nombre">{({ id }) => <Input id={id} name="nombreTicket" placeholder="Ej: General" required />}</Field>
                                 <Field label="Descripción" optional>{({ id }) => <Input id={id} name="descripcionTicket" placeholder="Ej: Ingreso hasta las 2 AM" />}</Field>
-                                <Field label="Precio ($)" hint="0 = gratis">{({ id }) => <Input id={id} type="number" min="0" name="precio" placeholder="0" required />}</Field>
+                                {estado === '5'
+                                    ? <p className="self-end pb-2 text-sm text-muted">Gratis. Cualquiera la pide desde la página del evento, hasta el máximo por email.</p>
+                                    : <Field label="Precio ($)" hint="0 = gratis">{({ id }) => <Input id={id} type="number" min="0" name="precio" placeholder="0" required />}</Field>}
                                 <Field label="Cantidad disponible">{({ id }) => <Input id={id} type="number" min="1" name="cantidad" placeholder="100" required />}</Field>
                                 <Field label="Cierre de la venta" error={errores.cierre}>{({ id, invalid }) => <Input id={id} invalid={invalid} type="datetime-local" onChange={(e) => setCloseDate(e.target.value)} required />}</Field>
                                 <Field label="Tipo">{({ id }) => (
@@ -300,6 +302,7 @@ const CreateEventForm = () => {
                                         <option value="1">Activa (a la venta)</option>
                                         <option value="2">No visible</option>
                                         <option value="3">Cortesía</option>
+                                        <option value="5">Cortesía para el público</option>
                                     </Select>
                                 )}</Field>
                                 {estado === '3' && (
@@ -310,6 +313,9 @@ const CreateEventForm = () => {
                                             <option value="2">Clientes</option>
                                         </Select>
                                     )}</Field>
+                                )}
+                                {estado === '5' && (
+                                    <Field label="Máximo por email">{({ id }) => <Input id={id} type="number" min="1" name="limit" placeholder="Ej: 2" required />}</Field>
                                 )}
                                 {estado === '3' && distribution === '2' && (
                                     <Field label="Límite por persona">{({ id }) => <Input id={id} type="number" min="1" name="limit" placeholder="Ej: 3" required />}</Field>
@@ -335,7 +341,7 @@ const CreateEventForm = () => {
                                     {ticketsCreados.map((t, i) => (
                                         <li key={i} className="flex items-center justify-between gap-3 py-2.5 text-sm">
                                             <span className="truncate text-fg">{t.nombre}</span>
-                                            <span className="shrink-0 text-muted">{t.tipo === '3' ? <Badge tone="brand">Cortesía</Badge> : Number(t.precio) === 0 ? 'Gratis' : `$${Number(t.precio).toLocaleString('es-AR')}`} · {t.cantidad}</span>
+                                            <span className="shrink-0 text-muted">{t.tipo === '3' || t.tipo === '5' ? <Badge tone="brand">Cortesía</Badge> : Number(t.precio) === 0 ? 'Gratis' : `$${Number(t.precio).toLocaleString('es-AR')}`} · {t.cantidad}</span>
                                         </li>
                                     ))}
                                 </ul>

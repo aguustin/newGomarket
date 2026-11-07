@@ -17,6 +17,10 @@ const ventaCerrada = (event, ticket, now = new Date()) =>
     (ticket?.fechaDeCierre && new Date(ticket.fechaDeCierre) < now)
 
 const currencyFormatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' })
+//Cortesia para el publico: gratis, con maximo por email, y se pide sola (sin entradas pagas). Igual que server/lib/pricing.js
+const ESTADO_CORTESIA_PUBLICA = 5
+const esCortesiaPublica = (tck) => tck?.estado === ESTADO_CORTESIA_PUBLICA
+const limiteDe = (tck) => tck?.limit || (esCortesiaPublica(tck) ? 1 : 30)
 const TIEMPO_COMPRA_MS = 12 * 60 * 1000
 
 const MENSAJES = {
@@ -145,12 +149,15 @@ const BuyTicket = () => {
     const redondear = (n) => Math.round(n * 100) / 100
     const eventToRender = selectedEvent || prod[0]
     const comision = eventToRender?.comisionServicio ?? 15 // 15% si no existe (igual que el backend)
-    const subtotal = (eventToRender?.tickets ?? []).reduce((acc, tck) => acc + (quantities[tck._id]?.amount || 0) * tck.precio, 0)
+    const subtotal = (eventToRender?.tickets ?? []).reduce((acc, tck) => acc + (quantities[tck._id]?.amount || 0) * (esCortesiaPublica(tck) ? 0 : tck.precio), 0)
     const descuentoPct = appliedDiscount?.pct ?? 0
     const total = redondear(subtotal * (1 + comision / 100) * (1 - descuentoPct / 100))
     const cargoServicio = redondear(subtotal * comision / 100)
     const montoDescuento = redondear((subtotal + cargoServicio) * descuentoPct / 100)
     const cantidadElegida = Object.values(quantities).reduce((a, q) => a + (q?.amount || 0), 0)
+    const elegidas = (eventToRender?.tickets ?? []).filter((tck) => quantities[tck._id]?.amount > 0)
+    const pidiendoCortesia = elegidas.some(esCortesiaPublica)
+    const comprandoPagas = elegidas.some((tck) => !esCortesiaPublica(tck))
 
     const activeDiscountCode = async () => {
         setCodigoMsg('')
@@ -362,19 +369,24 @@ const BuyTicket = () => {
                                     const cerrada = ventaCerrada(eventToRender, tck)
                                     const disponible = tck.cantidad > 0 && tck.estado !== 4 && !eventToRender?.soldOut
                                     const cantidad = quantities[tck._id]?.amount || 0
-                                    const max = Math.min(tck.limit !== undefined ? tck.limit : 30, tck.cantidad)
+                                    const cortesia = esCortesiaPublica(tck)
+                                    const max = Math.min(limiteDe(tck), tck.cantidad)
+                                    //Las cortesias se piden por separado: mientras haya de un tipo elegidas, el otro no se puede sumar
+                                    const separada = cortesia ? comprandoPagas : pidiendoCortesia
                                     return (
                                         <li key={tck._id} className={cx('flex items-center gap-3 p-4 transition-colors', cantidad > 0 && 'bg-brand-500/[0.06]')}>
                                             {tck.imgTicket && <img src={tck.imgTicket} alt="" className="size-11 shrink-0 rounded-lg object-cover" loading="lazy" />}
                                             <div className="min-w-0 flex-1">
                                                 <p className="truncate font-medium text-fg">{tck.nombreTicket}</p>
-                                                <p className="text-sm font-semibold text-fg/90">{Number(tck.precio) === 0 ? 'Gratis' : currencyFormatter.format(tck.precio)}</p>
+                                                <p className="text-sm font-semibold text-fg/90">{cortesia ? 'Cortesía gratis' : Number(tck.precio) === 0 ? 'Gratis' : currencyFormatter.format(tck.precio)}</p>
+                                                {cortesia && <p className="mt-0.5 text-xs text-subtle">Hasta {limiteDe(tck)} por email</p>}
+                                                {separada && cantidad === 0 && <p className="mt-0.5 text-xs text-warn">{cortesia ? 'Las cortesías se piden por separado de las entradas pagas' : 'Para comprar esta entrada, quitá las cortesías'}</p>}
                                                 {tck.descripcionTicket && <p className="mt-0.5 line-clamp-2 text-xs text-subtle">{tck.descripcionTicket}</p>}
                                                 {!cerrada && disponible && tck.fechaDeCierre && <p className="mt-0.5 text-xs text-subtle">Venta hasta {formatDateB(tck.fechaDeCierre)}</p>}
                                             </div>
                                             {cerrada ? <Badge tone="neutral">Venta cerrada</Badge>
-                                                : disponible ? <Stepper nombre={tck.nombreTicket} cantidad={cantidad} maximoAlcanzado={cantidad >= max}
-                                                    onRestar={() => restQuantity(tck._id)} onSumar={() => addQuantity(tck._id, tck.limit, tck.cantidad)} />
+                                                : disponible ? <Stepper nombre={tck.nombreTicket} cantidad={cantidad} maximoAlcanzado={cantidad >= max || separada}
+                                                    onRestar={() => restQuantity(tck._id)} onSumar={() => addQuantity(tck._id, limiteDe(tck), tck.cantidad)} />
                                                     : <Badge tone="danger">Agotado</Badge>}
                                         </li>
                                     )
@@ -393,8 +405,8 @@ const BuyTicket = () => {
                                 <Field label="Teléfono">{({ id }) => <Input id={id} type="tel" name="telefono" autoComplete="tel" inputMode="tel" placeholder="11 1234 5678" />}</Field>
                             </div>
 
-                            {/* Codigo de descuento */}
-                            <div className="mt-6">
+                            {/* Codigo de descuento (no aplica a cortesias) */}
+                            <div className={cx('mt-6', pidiendoCortesia && 'hidden')}>
                                 {appliedDiscount ? (
                                     <div className="flex items-center justify-between gap-3 rounded-xl border border-ok/25 bg-ok/10 px-3.5 py-2.5">
                                         <p className="flex items-center gap-2 text-sm font-medium text-ok"><Icon.Tag className="size-4" />Descuento aplicado: {appliedDiscount.pct}%</p>

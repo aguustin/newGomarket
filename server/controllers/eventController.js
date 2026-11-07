@@ -18,7 +18,7 @@ import axios from "axios";
 import { resend } from "../lib/resendDomain.js";
 import purchaseModel from "../models/purchaseModel.js";
 import discountModel from "../models/discountModel.js";
-import { calcularCompra } from "../lib/pricing.js";
+import { calcularCompra, LIMITE_POR_DEFECTO, LIMITE_CORTESIA_POR_DEFECTO } from "../lib/pricing.js";
 import orderModel from "../models/orderModel.js";
 import { validarCantidades, asignarCortesiasARRPP, consumirCupoRRPP, devolverCupoRRPP, mailRRPPGuardado } from "../lib/cortesias.js";
 import { leerEntrada, marcarUsada } from "../lib/entradas.js";
@@ -26,6 +26,7 @@ import { anularEntradasDelEvento, marcarParaReembolso, reembolsarPago, procesarR
 import { esDueno, esRRPP } from "../lib/permisos.js";
 import { alertarAdmin } from "../lib/alertas.js";
 import { RESERVA_MINUTOS, fechaMP, reservarStock, devolverStock, liberarOrden, confirmarOrdenPagada } from "../lib/stock.js";
+import { ESTADO_CORTESIA_PUBLICA, reservarPorEmail, devolverPorEmail } from "../lib/cortesiaPublica.js";
 
 dotenv.config();
 
@@ -160,21 +161,26 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
   let estadoToInt = Number(estado)
   let distributionToInt = Number(distribution)
   let limitToInt = Number(limit)
+  //Cortesia para el publico: el creador del evento tiene que fijar cuantas puede pedir cada email
+  if (estadoToInt === ESTADO_CORTESIA_PUBLICA && !(Number.isInteger(limitToInt) && limitToInt >= 1)) {
+    return res.status(400).json({ code: 'LIMITE_REQUERIDO', error: 'Indicá cuántas cortesías puede pedir cada email' })
+  }
   
   
   const buildPayload = (imgUrl) => {
     if (estadoToInt !== 3) {  // SI EL ESTADO ES DIFERENTE DE 3 (DE CORTESIA) SE LE AGREGA EL ESTADO PARA DIFERENCIAR LOS TICKETS NORMALES A LOS DE CORTESIA
+      const cortesiaPublica = estadoToInt === ESTADO_CORTESIA_PUBLICA  //gratis, limit = maximo por email
       return {
         tickets: {
           nombreTicket,
           descripcionTicket,
-          precio,
+          precio: cortesiaPublica ? 0 : precio,
           cantidad,
           fechaDeCierre: fechaDeCierre,
           visibilidad,
           estado: estadoToInt,
           imgTicket: imgUrl,
-          limit: limitToInt || 30
+          limit: limitToInt || (cortesiaPublica ? LIMITE_CORTESIA_POR_DEFECTO : LIMITE_POR_DEFECTO)
         }
       };
     } else {  
@@ -344,98 +350,89 @@ if (!isNaN(Number(tipoEvento))) {
   }
 };
 
+//Edita una entrada (ticket o cortesia de RRPP). Se busca donde esta HOY, no segun el estado nuevo: antes, pasar
+//una cortesia a "Activa" buscaba el id entre los tickets, no lo encontraba, no cambiaba nada y respondia exito.
+//Si el estado nuevo la cambia de lista (cortesia <-> entrada), se mueve con el mismo _id (los QR siguen valiendo),
+//salvo que ya este en uso: una cortesia asignada a RRPP o una entrada con ventas u ordenes de pago abiertas.
+const ESTADOS_ENTRADA = [1, 2, 3, 4, ESTADO_CORTESIA_PUBLICA]
+
+const subirImagenCloudinary = (file, folder) => new Promise((resolve, reject) => {
+  cloudinary.uploader.upload_stream({ resource_type: 'image', folder }, (error, result) => error ? reject(error) : resolve(result.secure_url)).end(file.buffer)
+})
+
 export const updateEventTicketsController = async (req, res) => {   //SE ACTUALIZAN LOS TICKETS DEL EVENTO
-  const {
-    ticketId,
-    nombreTicket,
-    descripcionTicket,
-    precio,
-    cantidad,
-    fechaDeCierre,
-    visibilidad,
-    estado,
-    limit
-  } = req.body;
-  
- let estadoInt = Number(estado)     
-// Construye campos comunes para actualización
- const buildUpdateFields = (imgUrl = null) => {
-  const commonFields = {
-    nombreTicket,
-    descripcionTicket,
-    //cantidad,
-    fechaDeCierre,
-    visibilidad,
-    estado:estadoInt,
-    limit
-  };
+  const { ticketId, nombreTicket, descripcionTicket, precio, cantidad, fechaDeCierre, visibilidad, estado, limit, distribution } = req.body
+  const estadoNuevo = Number(estado)
+  if (!ESTADOS_ENTRADA.includes(estadoNuevo)) return res.status(400).json({ code: 'ESTADO_INVALIDO', error: 'Estado de entrada inválido' })
 
-  if (imgUrl) {
-    commonFields.imgTicket = imgUrl;
-  }
+  const evento = await ticketModel.findOne({ $or: [{ 'tickets._id': ticketId }, { 'cortesiaRRPP._id': ticketId }] }, { tickets: 1, cortesiaRRPP: 1, rrpp: 1 }).lean()
+  const enTickets = evento?.tickets?.find((t) => String(t._id) === String(ticketId))
+  const actual = enTickets ?? evento?.cortesiaRRPP?.find((c) => String(c._id) === String(ticketId))
+  if (!actual) return res.status(404).json({ code: 'ENTRADA_INEXISTENTE', error: 'La entrada no existe' })
 
-  if (estadoInt !== 3) {  
-    commonFields.precio = precio;
-  }else{
-    commonFields.precio = '0';
-  }
+  const origen = enTickets ? 'tickets' : 'cortesiaRRPP'
+  const destino = estadoNuevo === 3 ? 'cortesiaRRPP' : 'tickets'
 
-  return commonFields;
-};
+  //Los formularios mandan "" o "undefined" en los campos que no cambian: se conserva el valor actual
+  const vacio = (v) => v === undefined || v === null || v === '' || v === 'undefined' || v === 'null'
+  const numero = (v, actualV) => vacio(v) || !Number.isFinite(Number(v)) ? actualV : Number(v)
+  const texto = (v, actualV) => v === undefined || v === 'undefined' || v === 'null' ? actualV : String(v)
+  const fecha = vacio(fechaDeCierre) || Number.isNaN(new Date(fechaDeCierre).getTime()) ? actual.fechaDeCierre : new Date(fechaDeCierre)
 
-// Actualiza el ticket correspondiente
-const updateTicket = async (imgUrl = null) => {
-  const updateFields = buildUpdateFields(imgUrl);
-  const pathPrefix = estadoInt === 3 ? "cortesiaRRPP" : "tickets";
-  //const cantidadField = estadoInt === 3 ? "cantidadDeCortesias" : "cantidad";
-  
-  const updateSet = Object.fromEntries(
-    Object.entries(updateFields).map(([key, value]) => [
-      `${pathPrefix}.$.${key}`,
-      value
-    ])
-  );
-
-  if (estadoInt === 3) {
-    updateSet[`${pathPrefix}.$.cantidadDeCortesias`] = cantidad;
-  } else {
-    updateSet[`${pathPrefix}.$.cantidad`] = cantidad;
-  }
-
-  const updateResult = await ticketModel.updateOne(
-    { [`${pathPrefix}._id`]: ticketId },
-    { $set: updateSet }
-  );
-
-  return updateResult;
- };
-
-  // Si hay imagen, sube a Cloudinary
+  let imgTicket = actual.imgTicket
   if (req.file) {
-    cloudinary.uploader.upload_stream(
-      { resource_type: 'image', folder: 'GoTicketsT' },
-      async (error, result) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).json({ error: 'Error uploading to Cloudinary' });
-        }
-
-        const updateResult = await updateTicket(result.secure_url);
-        return res.status(200).json({
-          url: result.secure_url,
-          updated: updateResult.modifiedCount > 0,
-          estado: 1
-        });
-      }
-    ).end(req.file.buffer);
-  } else {
-    // Sin imagen
-    const updateResult = await updateTicket();
-    return res.status(200).json({
-      updated: updateResult.modifiedCount > 0,
-      estado: 1
-    });
+    try {
+      imgTicket = await subirImagenCloudinary(req.file, 'GoTicketsT')
+    } catch (error) {
+      console.error('Cloudinary upload error:', error?.message ?? error)
+      return res.status(500).json({ error: 'No pudimos subir la imagen. Intentá de nuevo' })
+    }
   }
+
+  const comunes = {
+    nombreTicket: texto(nombreTicket, actual.nombreTicket),
+    descripcionTicket: texto(descripcionTicket, actual.descripcionTicket),
+    fechaDeCierre: fecha,
+    imgTicket,
+    estado: estadoNuevo,
+    limit: numero(limit, actual.limit)
+  }
+  if (estadoNuevo === ESTADO_CORTESIA_PUBLICA && !(Number.isInteger(comunes.limit) && comunes.limit >= 1)) {
+    return res.status(400).json({ code: 'LIMITE_REQUERIDO', error: 'Indicá cuántas cortesías puede pedir cada email' })
+  }
+  const cantidadActual = actual.cantidad ?? actual.cantidadDeCortesias ?? 0
+  const campos = destino === 'tickets'
+    ? { ...comunes, precio: estadoNuevo === ESTADO_CORTESIA_PUBLICA ? 0 : numero(precio, actual.precio ?? 0), cantidad: numero(cantidad, cantidadActual), visibilidad: texto(visibilidad, actual.visibilidad) }
+    : { ...comunes, cantidadDeCortesias: numero(cantidad, cantidadActual), distribution: numero(distribution, actual.distribution ?? 1) }
+
+  const id = new mongoose.Types.ObjectId(String(ticketId))
+
+  if (origen === destino) {
+    const set = Object.fromEntries(Object.entries(campos).map(([k, v]) => [`${origen}.$.${k}`, v]))
+    const r = await ticketModel.updateOne({ _id: evento._id, [`${origen}._id`]: id }, { $set: set })
+    if (r.matchedCount === 0) return res.status(404).json({ code: 'ENTRADA_INEXISTENTE', error: 'La entrada no existe' })
+    return res.status(200).json({ updated: r.modifiedCount > 0, estado: 1, ...(req.file ? { url: imgTicket } : {}) })
+  }
+
+  //Cambio de lista: solo si la entrada todavia no se uso
+  const enUso = origen === 'cortesiaRRPP'
+    ? (actual.entregados ?? 0) > 0 || (evento.rrpp ?? []).some((r) => (r.ticketsCortesias ?? []).some((t) => String(t.ticketIdCortesia) === String(ticketId)))
+    : (actual.ventas ?? 0) > 0 || Boolean(await orderModel.exists({ prodId: String(evento._id), estado: 'pendiente', [`quantities.${ticketId}`]: { $exists: true } }))
+  const errorEnUso = origen === 'cortesiaRRPP'
+    ? 'Esta cortesía ya se asignó a RRPP: no se puede convertir en entrada. Creá una entrada nueva'
+    : 'Esta entrada ya tiene ventas o pagos en curso: no se puede convertir en cortesía. Creá una cortesía nueva'
+  if (enUso) return res.status(409).json({ code: 'ENTRADA_EN_USO', error: errorEnUso })
+
+  const sinUso = origen === 'cortesiaRRPP'
+    ? { cortesiaRRPP: { $elemMatch: { _id: id, entregados: { $in: [0, null] } } }, 'rrpp.ticketsCortesias.ticketIdCortesia': { $ne: String(ticketId) } }
+    : { tickets: { $elemMatch: { _id: id, ventas: { $in: [0, null] } } } }
+  const extra = destino === 'tickets' ? { ventas: 0 } : { entregados: 0 }
+  const r = await ticketModel.updateOne(
+    { _id: evento._id, ...sinUso },
+    { $pull: { [origen]: { _id: id } }, $push: { [destino]: { _id: id, ...campos, ...extra } } }
+  )
+  if (r.modifiedCount === 0) return res.status(409).json({ code: 'ENTRADA_EN_USO', error: errorEnUso })
+  return res.status(200).json({ updated: true, estado: 1, ...(req.file ? { url: imgTicket } : {}) })
 }
 
 export const getEventToBuyController = async (req, res) => {
@@ -806,21 +803,37 @@ export const buyEventTicketsController = async (req, res) => {
 
     const comprador = { mail: mail.trim(), nombreCompleto: nombreCompleto.trim(), dni, telefono: String(telefono) }
 
+    //Cortesias para el publico: primero el maximo por email (atomico), despues el cupo total (stock)
+    if (compra.cortesiaPublica) {
+      const excedida = await reservarPorEmail(prodId, compra.items, comprador.mail)
+      if (excedida) {
+        return res.status(409).json({ code: 'LIMITE_POR_EMAIL', error: `Ya pediste el máximo de cortesías "${excedida.nombreTicket}" (${excedida.limite} por email)` })
+      }
+    }
+    const devolverCortesias = () => compra.cortesiaPublica ? devolverPorEmail(prodId, compra.items, comprador.mail) : null
+
     //Reserva atomica: si otra compra se llevo las ultimas entradas, no se cobra nada
     if (!(await reservarStock(prodId, compra.quantities))) {
-      return res.status(409).json({ code: 'SIN_STOCK', error: 'No quedan suficientes entradas. Revisá la disponibilidad' })
+      await devolverCortesias()
+      return res.status(409).json({ code: 'SIN_STOCK', error: compra.cortesiaPublica ? 'No quedan suficientes cortesías' : 'No quedan suficientes entradas. Revisá la disponibilidad' })
     }
 
-    //Gratis solo si lo calcula el servidor (entradas de precio 0 o 100% de descuento): se emite sin pasar por MP
+    //Gratis solo si lo calcula el servidor (entradas de precio 0, cortesias para el publico o 100% de descuento): se emite sin pasar por MP
     if (compra.total === 0) {
-      const enviados = await qrGeneratorController(prodId, compra.quantities, comprador.mail, 1, comprador.nombreCompleto, dni)
-      if (!enviados) {
-        await devolverStock(prodId, compra.quantities)
-        return res.status(502).json({ code: 'ENTRADAS_NO_ENVIADAS', error: 'No pudimos enviar tus entradas. Intentá de nuevo' })
+      let enviados = false
+      try {
+        enviados = await qrGeneratorController(prodId, compra.quantities, comprador.mail, 1, comprador.nombreCompleto, dni)
+      } finally {
+        if (!enviados) {
+          await devolverStock(prodId, compra.quantities)
+          await devolverCortesias()
+        }
       }
+      if (!enviados) return res.status(502).json({ code: 'ENTRADAS_NO_ENVIADAS', error: 'No pudimos enviar tus entradas. Intentá de nuevo' })
       await procesarVentaGeneral(prodId, compra.quantities, 0, { descontarStock: false })
       await purchaseModel.create({ prodId, nombreCompleto: comprador.nombreCompleto, email: comprador.mail, dni, telefono: comprador.telefono })
-      await consumirDescuento(descuento?.idDescuento, prodId, 'compra gratuita')
+      //Una cortesia no gasta usos de un codigo de descuento (no hay nada que descontar)
+      if (!compra.cortesiaPublica) await consumirDescuento(descuento?.idDescuento, prodId, 'compra gratuita')
       return res.status(200).json(3)
     }
 
