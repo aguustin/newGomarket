@@ -159,12 +159,26 @@ test('crear evento con categorias mal formadas: 400 sin romper el servidor', asy
   assert.equal(res.status, 400)
 })
 
-test('perfil publico y /getAllUsers no exponen contraseñas; /tokens ya no existen', async () => {
-  const { user } = await crearUsuario()
-  const perfil = await request(app).post('/get_profile').send({ userId: user._id.toString() })
-  assert.equal(perfil.status, 200)
-  assert.equal(perfil.body[0].mail, user.mail)
-  assert.equal(perfil.body[0].contrasenia, undefined)
+test('perfil publico: solo datos publicos a terceros, todo (sin contraseña) al dueño; /tokens ya no existen', async () => {
+  const yo = await crearSesion()
+  await userModel.updateOne({ _id: yo.id }, { $set: { nombreCompleto: 'Dueño', telefono: '01155550000', cbu: '0170099220000067797370', dni: 30111222 } })
+
+  const visitante = await request(app).post('/get_profile').send({ userId: yo.id })
+  assert.equal(visitante.status, 200)
+  assert.equal(visitante.body[0].nombreCompleto, 'Dueño')
+  for (const campo of ['mail', 'telefono', 'cbu', 'dni', 'contrasenia', 'rol', 'comisionServicio']) {
+    assert.equal(visitante.body[0][campo], undefined, `un visitante no ve ${campo}`)
+  }
+
+  const otro = await crearSesion()
+  const ajeno = await request(app).post('/get_profile').set(otro.auth).send({ userId: yo.id })
+  assert.equal(ajeno.body[0].mail, undefined, 'otro usuario logueado tampoco ve los datos privados')
+
+  const dueno = await request(app).post('/get_profile').set(yo.auth).send({ userId: yo.id })
+  assert.equal(dueno.body[0].mail, yo.user.mail)
+  assert.equal(dueno.body[0].cbu, '0170099220000067797370', 'el CBU se guarda completo (texto, no numero)')
+  assert.equal(dueno.body[0].telefono, '01155550000')
+  assert.equal(dueno.body[0].contrasenia, undefined)
 
   assert.equal((await request(app).get('/getAllUsers')).status, 404)
   assert.equal((await request(app).get('/tokens')).status, 404)

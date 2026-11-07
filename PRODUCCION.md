@@ -1,24 +1,32 @@
 # Pasar Ipass a producción
 
 Lista de lo que hay que hacer el día que se publique. Se actualiza en cada etapa: si algo cambia, anotarlo acá.
-Última actualización: 2026-11-06 (rediseño, etapa 3).
+Última actualización: 2026-11-07 (limpieza de datos sensibles para producción).
 
 ## 1. Antes de publicar: pendientes de código
 
 - [x] **E2E "registro → verificación → login → la sesión persiste al recargar":** falló una vez en la etapa 13 corriendo junto a otros, y solo pasó (2026-11-05). Probablemente fue un tiempo de espera. Si vuelve a fallar, mirar `client/test-results/` antes de reintentar.
 - [x] SDK de Mercado Pago reemplazado por llamadas directas a la API (`server/lib/mercadopago.js`, 2026-11-06). `npm audit` del servidor: solo 2 moderadas por `uuid` dentro de `exceljs`, de bajo impacto.
 
-- [ ] **CBU guardado como número** (`server/models/userModel.js`: `cbu`, `cbuProductora`; `ticketsModel.js`: `rrpp.cbu`). Un CBU tiene 22 dígitos y un número de JavaScript solo guarda ~15 exactos: el CBU queda alterado. Pasarlo a `String` (sin datos reales no hace falta migrar). Encontrado en el rediseño, etapa 3.
-- [ ] **Perfil público expone datos privados**: `POST /get_profile` devuelve email, teléfono y titular de cualquier usuario. La pantalla nueva ya no los muestra a terceros, pero el servidor los sigue enviando: devolver solo nombre, productora, país e imagen salvo al dueño.
-- [ ] `createSellerController` hace `console.log` de los datos personales y bancarios: sacarlo antes de publicar.
-- [ ] La imagen de ejemplo del Excel (`client/src/assets/images/excelEj.png`) muestra emails reales: reemplazarla por una con datos de ejemplo.
+- [x] **CBU, número de cuenta y teléfonos pasados a `String`** (usuario, RRPP y compradores; 2026-11-07). Como número se alteraba el CBU (22 dígitos) y los teléfonos perdían el 0 inicial. Sin datos reales no hace falta migrar.
+- [x] **`POST /get_profile`**: a terceros solo devuelve nombre, productora, país, imagen y redes; el dueño (con sesión) ve todo menos la contraseña (2026-11-07).
+- [x] Logs con datos sensibles eliminados: datos bancarios en `createSellerController`, el evento entero con CBU/mails de los RRPP en `addRRPPController`, el mail cifrado + hash del link de RRPP, y los logs de depuración de ventas e imágenes (2026-11-07).
+- [x] Imagen de ejemplo del Excel reemplazada por datos ficticios (2026-11-07).
+- [x] `fechaCompra` de las compras tomaba la hora de arranque del servidor (`default: Date.now()`): corregido a `Date.now` (2026-11-07).
+- [ ] **Rotar TODOS los secretos que estuvieron en git**: commits viejos versionaron `server/.env` y `client/.env` (access token de MP, CLIENT_SECRET, MONGO_URI, JWT_SECRET, SECRET_MAIL_KEY, Cloudinary, Resend, reCAPTCHA, clave del webhook, contraseña de Gmail). Siguen en el historial aunque se hayan borrado: tratarlos como públicos y generar nuevos para producción.
 
 ## 2. Servicios externos
 
 **Render (backend)**
 - [ ] Plan pago, **siempre encendido** y con **una sola instancia**. Las tareas programadas (reservas vencidas, reintentos de pagos, mails e invitaciones, desactivar eventos viejos) corren dentro del servidor (`server/lib/cron.js`): si el servicio se duerme no corren, y con 2 instancias corren dos veces.
-- [ ] Revisar el comando `start`: usa `--max-old-space-size=8192` (8 GB). Ajustarlo a la memoria real del plan, o sacarlo.
+- [ ] Plan **Starter** (512 MB). Para eventos muy grandes se puede pasar a Standard (2 GB) ese día y volver.
+- [ ] Runtime **Node nativo, sin Docker** (los archivos de Docker se borraron el 2026-11-07). Root Directory `server`, build `npm ci`, start `npm start`, `NODE_VERSION=22`.
+- [ ] Revisar el comando `start`: `--max-old-space-size` tiene que quedar por debajo de la memoria del plan (~400 en Starter, ~1600 en Standard).
 - [ ] Confirmar la rama que despliega Render (hoy es el último commit de `ipass_v_0.8`).
+
+**Render (frontend, Static Site gratis)**
+- [ ] Root Directory `client`, build `npm ci && npm run build`, publish `dist`.
+- [ ] Regla de rewrite `/*` → `/index.html` (si no, recargar cualquier página que no sea el inicio da 404).
 
 **MongoDB Atlas**
 - [ ] Base de producción **separada** de la de desarrollo, con **backups automáticos** activados.
@@ -28,6 +36,7 @@ Lista de lo que hay que hacer el día que se publique. Se actualiza en cada etap
 **Resend (mails)**
 - [ ] Dominio `ipassi.com` **verificado** (todos los mails salen de `no-reply@ipassi.com`).
 - [ ] API key de producción.
+- [ ] Plan **Pro** en los meses con eventos grandes: el gratis permite 100 mails por día. Resend limita además los envíos por segundo (por defecto 2): con una pausa entre invitaciones menor a 500 ms algunos envíos se rechazan y los reintenta el cron cada 5 minutos.
 
 **Mercado Pago**
 - [ ] Credenciales de **producción nuevas** (rotar access token, CLIENT_SECRET y clave del webhook de la app real).

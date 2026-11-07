@@ -21,11 +21,15 @@ const buscarUsuarioPorMail = (mail, proyeccion) => userModel.findOne({ mail: nor
 const sha256 = (s) => crypto.createHash('sha256').update(String(s)).digest('hex')
 const VERIFICACION_HORAS = 24
 
-//Perfil publico (pagina de la productora): nunca incluye la contraseña
+//Perfil (pagina de la productora). Cualquiera ve solo los datos publicos; el dueño (con sesion) ve todo menos la contraseña.
+//Antes devolvia mail, telefono, DNI, CUIT, domicilio y CBU de cualquier usuario a quien lo pidiera.
+const CAMPOS_PERFIL_PUBLICO = { nombreCompleto: 1, nombreProductora: 1, imagenProductora: 1, pais: 1, paisProductora: 1, redes: 1 }
+
 export const getUserProfileController = async (req, res) => {
     const {userId} = req.body
     if(!isValidObjectId(userId)) return res.send([])
-    const getUsers = await userModel.find({_id:userId}, {contrasenia: 0}).lean()
+    const esDueno = Boolean(req.user) && String(req.user._id) === String(userId)
+    const getUsers = await userModel.find({_id:userId}, esDueno ? {contrasenia: 0} : CAMPOS_PERFIL_PUBLICO).lean()
     res.send(getUsers)
 }
 
@@ -321,7 +325,6 @@ export const getMySavedEventsController = async (req, res) => {
 
 export const createSellerController = async (req, res) => {
     const {userId, dataA, dataB, dataC, dataD, dataE, dataF, dataG, dataH, dataI, dataJ, dataK, dataL, dataM, dataN, imgProductora} = req.body
-    console.log(dataA,'' , dataB, '' ,dataC, '' ,dataD, '' ,dataE, '' ,dataF,'' , dataG,'' , dataH,'' , dataI,'' , dataJ,'' , dataK,'' , dataL,'' , dataM,'' , dataN)
     const tipoNumber = Number(req.body.tipo)
     const buildData = (imgUrl) => {
     if (tipoNumber === 1) {  
@@ -364,7 +367,7 @@ export const createSellerController = async (req, res) => {
             { resource_type: 'image', folder: 'gotickets_profiles' },
             async (error, result) => {
               if (error) {
-                console.log(error);
+                console.error('Cloudinary upload error:', error?.message ?? error);
                 return res.status(204).json({ error: 'Error uploading to Cloudinary' });
               }
               

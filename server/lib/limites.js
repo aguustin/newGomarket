@@ -23,7 +23,7 @@ export const limites = {
   recuperar: limite(15, 5, ESPERA),          //cada pedido manda un mail
   nuevaContrasenia: limite(15, 10, ESPERA),
   contacto: limite(60, 5, ESPERA),           //cada pedido manda un mail
-  compra: limite(10, 30, 'Demasiados intentos de compra. Esperá unos minutos y volvé a probar'),
+  compra: limite(10, 200, 'Demasiados intentos de compra. Esperá unos minutos y volvé a probar'),
   descuento: limite(10, 30, ESPERA),         //evita probar codigos de descuento al azar
   general: limite(1, 600, 'Demasiados pedidos. Esperá un momento')
 }

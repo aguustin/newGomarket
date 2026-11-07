@@ -17,16 +17,25 @@ test('registro: si el mail de verificacion falla, se avisa y no se responde exit
 })
 
 test('recuperar contraseña: si el mail falla responde ok:false', async () => {
-  const res = await request(app).post('/recover_password').send({ mail: uniqueMail('falla') })
+  //Con una cuenta real: a un mail inexistente se responde ok:true sin enviar nada (no revela que mails estan registrados)
+  const { user } = await crearSesion({ contrasenia: 'hash-cualquiera' })
+  const res = await request(app).post('/recover_password').send({ mail: user.mail })
   assert.deepEqual(res.body, { ok: false })
 })
 
-test('contacto (Gmail): la falla del proveedor llega como error del servidor, no como exito', async () => {
-  const res = await request(app).post('/contactar').send({
-    pais: 'AR', nombreCompleto: 'T', correo: uniqueMail('falla'), dni: 1, nombreEvento: 'E', mensaje: 'm'
-  })
-  assert.equal(res.status, 500)
-  assert.notDeepEqual(res.body, { state: 1 })
+test('contacto: la falla del proveedor llega como error (502), no como exito', async () => {
+  const antes = process.env.ADMIN_MAIL
+  process.env.ADMIN_MAIL = 'admin-falla@ipass-test.local'
+  try {
+    const res = await request(app).post('/contactar').send({
+      pais: 'AR', nombreCompleto: 'T', correo: uniqueMail('falla'), dni: 1, nombreEvento: 'E', mensaje: 'm'
+    })
+    assert.equal(res.status, 502)
+    assert.equal(res.body.code, 'ENVIO_FALLIDO')
+  } finally {
+    if (antes === undefined) delete process.env.ADMIN_MAIL
+    else process.env.ADMIN_MAIL = antes
+  }
 })
 
 test('en modo falla no se guarda nada en la bandeja', async () => {

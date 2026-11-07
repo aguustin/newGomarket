@@ -211,13 +211,12 @@ export const createEventTicketsController = async (req, res) => {  //CREA TICKET
     { resource_type: 'image', folder: 'GoTicketsT' },
     async (error, result) => {
       if (error) {
-        console.log(error);
+        console.error('Cloudinary upload error:', error?.message ?? error);
         return res.status(204).json({ error: 'Error uploading to Cloudinary' });
       }
       
       const updatePayload = buildPayload(result.secure_url);
       
-      console.log(updatePayload)
       await ticketModel.updateOne(
         { _id: prodId },
         { $addToSet: updatePayload }
@@ -243,11 +242,6 @@ export const getOneProdController = async (req, res) => {  //TRAE TODA LA INFO D
     //Los codigos de descuento solo para el dueño (antes se devolvian aunque el evento fuera de otro)
     const getProdDiscount = getProd.length > 0 ? await discountModel.find({prodId: prodId}) : []
     res.send({tickets:getProd, prodDiscount: getProdDiscount})
-    /*const {prodId, userId} = req.params
-    console.log(prodId, ' ', userId)
-    const getProd = await ticketModel.find({_id: prodId, userId: userId})
-    
-    res.send(getProd)*/
 }
 
 
@@ -291,12 +285,10 @@ export const updateEventController = async (req, res) => {
 }
 
 if (!isNaN(Number(tipoEvento))) {
-  console.log('tipo evento', tipoEvento)
   updateFields.tipoEvento = Number(tipoEvento);
 }
 
   const files = req.files || {};
-  console.log(req.files)
   // Función para subir a Cloudinary
   const uploadToCloudinary = (file) => {
     return new Promise((resolve, reject) => {
@@ -316,12 +308,10 @@ if (!isNaN(Number(tipoEvento))) {
   try {
     // Subir imágenes si existen
     if (files?.imgEvento?.[0]) {
-      console.log(updateFields.imgEvento)
       updateFields.imgEvento = await uploadToCloudinary(files.imgEvento[0]);
     }
 
     if (files?.bannerEvento?.[0]) {
-      console.log('banner: ', updateFields.bannerEvento)
       updateFields.bannerEvento = await uploadToCloudinary(files.bannerEvento[0]);
     }
 
@@ -368,7 +358,6 @@ export const updateEventTicketsController = async (req, res) => {   //SE ACTUALI
   } = req.body;
   
  let estadoInt = Number(estado)     
-  console.log('estadoint: ', estadoInt)
 // Construye campos comunes para actualización
  const buildUpdateFields = (imgUrl = null) => {
   const commonFields = {
@@ -477,7 +466,6 @@ const obtenerRRPPDesdeHash = (event, emailHash) => {
 
 //descontarStock=false cuando el stock ya se reservo al crear la orden (lib/stock.js)
 const procesarVentaGeneral = async (prodId, quantities, total, { descontarStock = true } = {}) => {
-  console.log('ENTRO A PROCESAR VENTA GENERAL: ', prodId, ' ', quantities, ' ', total)
   const bulkOps = Object.entries(quantities).map(([ticketId, quantityObj]) => {
     const { amount, free } = quantityObj;
     return {
@@ -494,7 +482,6 @@ const procesarVentaGeneral = async (prodId, quantities, total, { descontarStock 
   });
 
   const ventasTotales = Object.values(quantities).reduce((sum, quantityObj) => sum + quantityObj.amount, 0);
-  console.log('VENTAS GENERALES: ', ventasTotales)
 
   await Promise.all([
     ticketModel.updateOne(
@@ -516,7 +503,6 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
   const rrpp = event.rrpp.find(r => r.mail === decryptedMail);
   if (!rrpp) return;
 
-  console.log('SE ENCONTRO EL RRPP');
 
   const existingTicketIds = rrpp.ventasRRPP.map(v => v.ticketId.toString());
   const ticketIds = Object.keys(quantities).map(id => new mongoose.Types.ObjectId(id));
@@ -542,7 +528,6 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
     const nombreCategoria = ticket.nombreTicket;
     const alreadyExists = existingTicketIds.includes(ticketId);
 
-    console.log('TICKETID:', ticketId, 'VENDIDOS:', vendidos, 'TOTAL:', total, 'NOMBRE CATEGORIA:', nombreCategoria);
 
     if (alreadyExists) {
       bulkOpsRRPP.push({
@@ -599,7 +584,6 @@ const procesarVentaRRPP = async (event, quantities, decryptedMail) => {
 
   if (bulkOpsRRPP.length > 0) {
     await ticketModel.bulkWrite(bulkOpsRRPP);
-    console.log('RRPP actualizado correctamente.');
   }
 };
 
@@ -692,7 +676,7 @@ const procesarPagoAprobado = async (paymentId, payment, origen) => {
       await procesarVentaGeneral(prod_id, quantities, total, { descontarStock: !stockYaDescontado })
       const { rrppMatch, decryptedMail } = obtenerRRPPDesdeHash(event, email_hash)
       if (rrppMatch && decryptedMail) await procesarVentaRRPP(event, quantities, decryptedMail)
-      await purchaseModel.create({ prodId: prod_id, nombreCompleto: nombre_completo, email: mail, dni, telefono: parseInt(telefono) })
+      await purchaseModel.create({ prodId: prod_id, nombreCompleto: nombre_completo, email: mail, dni, telefono: telefono == null ? undefined : String(telefono) })
       await consumirDescuento(discount_code, prod_id, `pago ${paymentId}`)
       ventaNueva = true
       console.log(`Pago ${paymentId}: venta registrada (${origen}).`)
@@ -835,7 +819,7 @@ export const buyEventTicketsController = async (req, res) => {
         return res.status(502).json({ code: 'ENTRADAS_NO_ENVIADAS', error: 'No pudimos enviar tus entradas. Intentá de nuevo' })
       }
       await procesarVentaGeneral(prodId, compra.quantities, 0, { descontarStock: false })
-      await purchaseModel.create({ prodId, nombreCompleto: comprador.nombreCompleto, email: comprador.mail, dni, telefono: parseInt(comprador.telefono) })
+      await purchaseModel.create({ prodId, nombreCompleto: comprador.nombreCompleto, email: comprador.mail, dni, telefono: comprador.telefono })
       await consumirDescuento(descuento?.idDescuento, prodId, 'compra gratuita')
       return res.status(200).json(3)
     }
@@ -1108,7 +1092,6 @@ await sendQrEmail(
   nombreCompleto
 );
 
-console.log("QRs generados y enviados.");
 
   return true
 } catch (err) {
@@ -1167,7 +1150,6 @@ export const addRRPPController = async (req, res) => {
       _id: prodId,
       'rrpp.mail': rrppMail
     });
-    console.log(rrppExist)
     // 2. Si ya existe → enviar email y cortar
     if (rrppExist) {
       await sendColabMail(rrppMail, nombreEvento, eventImg);
@@ -1544,7 +1526,6 @@ export const generateMyRRPPLinkController = async (req, res) => {  //guardar en 
   const {prodId, rrppMail} = req.body
   const encryptedMail = encrypt(rrppMail)
   const emailHash = hashForSearch(rrppMail);
-  console.log(encryptedMail, emailHash)
 
   const response = await ticketModel.findOne({_id: prodId, "rrpp.mailHash": emailHash})
 
@@ -1821,7 +1802,6 @@ export const soldOutEventController = async (req, res) => {
 
 export const getBuyersController = async (req, res) => {
   const {prodId} = req.params
-  console.log(prodId)
   const findEvent = await purchaseModel.find({prodId: prodId})
 
   res.status(200).json(findEvent)

@@ -7,9 +7,9 @@ const userSchema = new mongoose.Schema({
     domicilio:{type: String},
     cuit:{type: Number},
     mail: {type: String},
-    telefono:{type: Number},
+    telefono:{type: String},
     pais: {type: String},
-    cbu:{type: Number},
+    cbu:{type: String},
     alias: {type: String},
     nombreTitular:{type: String},
     nombreProductora: {type: String},
@@ -17,13 +17,13 @@ const userSchema = new mongoose.Schema({
     domicilioProductora:{type: String},
     mailProductora:{type: String},
     cuitProductora:{type: Number},
-    telefonoProductora:{type: Number},
+    telefonoProductora:{type: String},
     paisProductora:{type:String},
-    cbuProductora:{type: Number},
+    cbuProductora:{type: String},
     aliasProductora: {type: String},
     nombreTitularProductora:{type: String},
     razonSocial: {type: String},
-    numeroCuenta:{type: Number},
+    numeroCuenta:{type: String},
     nombreBanco:{type: String},
     contrasenia: {type: String},
     codigoInternacional:{type: String},
@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     redes:[{
         instagram:{type: String},
         facebook:{type: String},
-        whatsapp:{type: Number}
+        whatsapp:{type: String}
     }],
     favorites:[{
         eventId:{type: String}

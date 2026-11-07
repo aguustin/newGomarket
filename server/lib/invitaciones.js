@@ -17,7 +17,7 @@ import { alertarAdmin } from "./alertas.js";
 //  - El cron reintenta las fallidas hasta MAX_INTENTOS_INVITACION y despues avisa al administrador.
 export const MAX_INTENTOS_INVITACION = 5
 const EN_CURSO_MS = 2 * 60 * 1000
-export const config = { pausaMs: 600 }  //entre envios; los tests la bajan a 0
+export const config = { pausaMs: 500 }  //entre envios; los tests la bajan a 0
 
 const pausa = () => new Promise((r) => setTimeout(r, config.pausaMs))
 const escapar = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))

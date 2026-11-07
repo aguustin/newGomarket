@@ -5,8 +5,8 @@ const purchaseSchema = new mongoose.Schema({
     nombreCompleto: {type: String},
     email: {type: String},
     dni:{type: Number},
-    telefono: {type: Number},
-    fechaCompra: {type: Date, default: Date.now()},
+    telefono: {type: String},
+    fechaCompra: {type: Date, default: Date.now},
     reembolsado: {type: Boolean, default: false}   //el evento se cancelo y se devolvio el pago
 })
 
